@@ -4,8 +4,16 @@ import { View, Text, StyleSheet } from "react-native";
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Link href='/project-list'>
-        Enter Project List
+      <Text>Home</Text>
+      <Link 
+        href={{
+          pathname: '/details/[id]',
+          params: { id: 'beef' },
+        }}>
+        View user details
+      </Link>
+      <Link href='/modal' style={styles.link}>
+        View modal
       </Link>
     </View>
   );
