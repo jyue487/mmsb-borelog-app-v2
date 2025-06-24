@@ -1,12 +1,13 @@
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet } from "react-native";
 
-export default function HomeScreen() {
+export default function ProjectScreen() {
+	const { id } = useLocalSearchParams()
+
   return (
     <View style={styles.container}>
-      <Link href='/project-list'>
-        Enter Project List
-      </Link>
+			<Text>Project {id}</Text>
+			<Link href='/project/modal' >Add new modal</Link>
     </View>
   );
 }

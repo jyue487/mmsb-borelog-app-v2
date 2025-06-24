@@ -1,12 +1,17 @@
 import { Link } from 'expo-router';
 import { View, Text, StyleSheet } from "react-native";
 
-export default function HomeScreen() {
+export default function ProjectListScreen() {
   return (
     <View style={styles.container}>
-      <Link href='/project-list'>
-        Enter Project List
-      </Link>
+        <Text>Project List:</Text>
+        <Link 
+          href={{
+            pathname: '/project/[id]',
+            params: { id: 'beef' },
+          }}>
+          Project 1
+        </Link>
     </View>
   );
 }
