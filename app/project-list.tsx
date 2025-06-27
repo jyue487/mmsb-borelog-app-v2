@@ -8,7 +8,7 @@ import { Project } from '../types/Project';
 
 export default function ProjectListScreen() {
   const db = SQLite.openDatabaseSync('test.db');
-  const [items, setItems] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     const initDb = async () => {
@@ -18,36 +18,37 @@ export default function ProjectListScreen() {
         CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY NOT NULL, value TEXT NOT NULL, intValue INTEGER);
         `
       );
-      await fetchAllItems();
+      await fetchAllProjects();
     };
     initDb();
   }, []);
 
-  const insertItem = async () => {
+  // TODO: How to make it safe from SQL injections?
+  const insertProject = async () => {
     await db.runAsync('INSERT INTO test (value, intValue) VALUES (?, ?)', 'aaa', 100);
-    await fetchAllItems();
+    await fetchAllProjects();
   };
 
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
-  const fetchAllItems = async () => {
-    const rawItems = await db.getAllAsync('SELECT * FROM test');
-    const items: Project[] = rawItems.map((row: any) => ({
+  const fetchAllProjects = async () => {
+    const rawProjects = await db.getAllAsync('SELECT * FROM test');
+    const Projects: Project[] = rawProjects.map((row: any) => ({
       id: row.id
     }));
-    setItems(items);
+    setProjects(Projects);
   };
 
   const clearDatabase = async () => {
     await db.runAsync(`DELETE FROM test;`);
-    await fetchAllItems();
+    await fetchAllProjects();
   };
 
   return (
     <View style={styles.container}>
       <Text>Project List:</Text>
       <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
+        data={projects}
+        keyExtractor={(project) => project.id.toString()}
         renderItem={({ item }) => (
           <Link 
             href={{
@@ -59,8 +60,8 @@ export default function ProjectListScreen() {
         )}
       />
       <Button
-        title='Add item'
-        onPress={insertItem}
+        title='Add Project'
+        onPress={insertProject}
       />
       <Button
         title='Clear Database'
