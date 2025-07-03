@@ -1,68 +1,109 @@
-import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Button, View, Text, TextInput, StyleSheet, Pressable, FlatList } from "react-native";
-import { BlurView } from 'expo-blur';
+import { useSQLiteContext } from 'expo-sqlite';
+import { Link, Stack, useLocalSearchParams, router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Button, KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Pressable, FlatList } from "react-native";
 
 // Local Imports
-import { Block } from '../../types/Block';
-import { useSafeAreaFrame } from 'react-native-safe-area-context';
+import { Borehole } from '@/types/Borehole';
 
 export default function ProjectScreen() {
-	const { id } = useLocalSearchParams();
-  const [isPressed, setIsPressed] = useState<boolean>(false);
-  const [data, setData] = useState<Block[]>([
-    {id: 1, name: 'Spt', sptName: 'SptName'},
-    {id: 2, name: 'SPT', sptName: 'SptName'},
-    {id: 3, name: 'UD', udName: 'udName'},
-  ]);
-  const [text, setText] = useState<string>('')
+  const db = useSQLiteContext()
+  const { id, name } = useLocalSearchParams();
+  if (typeof id != 'string' || typeof name != 'string') {
+    throw new Error(`Error. id: ${id}`);
+  }
+  const project_id: number = parseInt(id, 10);
+  const project_name: string = name;
+  const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
+  const [boreholes, setBoreholes] = useState<Borehole[]>([]);
+  const [newBoreholeName, setNewBoreholeName] = useState<string>('')
 
+  useEffect(() => {
+    const initDb = async () => {
+      await db.execAsync(
+        `
+        PRAGMA foreign_keys = ON;
+        PRAGMA journal_mode = WAL;
+        CREATE TABLE IF NOT EXISTS boreholes (
+          id INTEGER PRIMARY KEY,
+          project_id INTEGER,
+          name TEXT NOT NULL,
+          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+        );
+        `
+      );
+      await fetchAllBoreholes();
+    };
+    initDb();
+  }, []);
 
-
-  const addNewBlock = async (name: string, udName: string) => {
-    const newBlock: Block = { id: data[data.length - 1] ? data[data.length - 1].id + 1 : 1, name: name, udName: udName};
-    setData(prev => [...prev, newBlock]);
+  const addNewBorehole = async () => {
+    await db.runAsync('INSERT INTO boreholes (project_id, name) VALUES (?, ?)', [project_id, newBoreholeName]);
+    await fetchAllBoreholes();
   };
 
-  const clearData = async () => {
-    setData([]);
+  const fetchAllBoreholes = async () => {
+    const rawBoreholes = await db.getAllAsync(`SELECT * FROM boreholes WHERE project_id = ?;`, [project_id]);
+    const boreholes: Borehole[] = rawBoreholes.map((row: any) => ({
+      id: row.id,
+      project_id: project_id,
+      name: row.name
+    }));
+    setBoreholes(boreholes);
+  };
+
+  const clearTable = async () => {
+    await db.runAsync(`DELETE FROM boreholes WHERE project_id = ?;`, [project_id]);
+    await fetchAllBoreholes();
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior='height' style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Project ' + id,
+          title: `${project_name.toUpperCase()}`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
         }}
       />
-      <Button
-        title='Clear Data'
-        onPress={() => clearData()}
-      />
       <FlatList
-        data={data}
-        keyExtractor={(block) => block.id.toString()}
+        data={boreholes}
+        keyExtractor={(borehole: Borehole) => borehole.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.block}>
-            <Text>{item.name} Block</Text>
-          </View>
+          <Pressable
+            onPress={() =>
+              router.navigate({
+                pathname: '../borehole/[id]',
+                params: { 
+                  id: item.id, 
+                  project_name: project_name, 
+                  name: item.name 
+                },
+              })
+            }
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed ? 'rgb(222, 246, 255)' : 'rgb(255, 255, 255)',
+              },
+              styles.boreholeButton
+            ]}>
+            <Text>{item.name.toUpperCase()}</Text>
+          </Pressable>
         )}
-        style={{ flexGrow: 0, width: '100%',}}
+        style={{ flexGrow: 0, width: '100%' }}
       />
       {
-        !isPressed && (
+        !isAddButtonPressed && (
           <Button
-            title='Add new block'
-            onPress={() => setIsPressed(true)}
+            title='Add new Borehole'
+            onPress={() => setIsAddButtonPressed(true)}
           />
         )
       }
       {
-        isPressed && (
-          <View style={styles.block}>
+        isAddButtonPressed && (
+          <View style={styles.borehole}>
             <TextInput
               style={{
                 height: 40,
@@ -70,25 +111,29 @@ export default function ProjectScreen() {
                 borderColor: 'gray',
                 borderWidth: 1,
               }}
-              placeholder='Block name'
-              value={text}
-              onChangeText={setText}
+              placeholder='Borehole name'
+              value={newBoreholeName}
+              onChangeText={setNewBoreholeName}
             />
             <Button
               title='Confirm'
               onPress={() => {
-                addNewBlock(text, 'ud' + text)
-                setIsPressed(false);
+                addNewBorehole()
+                setIsAddButtonPressed(false);
               }}
             />
             <Button
               title='Cancel'
-              onPress={() => setIsPressed(false)}
+              onPress={() => setIsAddButtonPressed(false)}
             />
           </View>
         )
       }
-    </View>
+      <Button
+        title='Clear Table'
+        onPress={() => clearTable()}
+      />
+    </KeyboardAvoidingView>
   );
 }
 
@@ -96,16 +141,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
+    margin: 20,
   },
-  link: {
-    paddingTop: 20,
-    fontSize: 20,
-  },
-  block: {
+  borehole: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 150,
     width: '100%',
     borderWidth: 1,
-  }
+  },
+  boreholeButton: {
+    padding: 20,
+    fontSize: 20,
+    // backgroundColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    height: 100
+  },
 });
