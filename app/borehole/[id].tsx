@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 // Local Imports
 import { SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
@@ -14,7 +14,9 @@ export default function BoreholeScreen() {
   }
   const borehole_id: number = parseInt(id, 10);
   const borehole_name: string = name;
-  const [isPressed, setIsPressed] = useState<boolean>(false);
+  const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
+  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>(false);
+  const [operationType, setOperationType] = useState<string>('Select Operation Type');
   const [data, setData] = useState<Block[]>([
     {
       id: 1, 
@@ -49,7 +51,7 @@ export default function BoreholeScreen() {
       mainIncBlows4: 6,
     },
   ]);
-  const [text, setText] = useState<string>('')
+
 
 
   const addNewBlock = async (name: string) => {
@@ -107,37 +109,73 @@ export default function BoreholeScreen() {
         style={{ flexGrow: 0, width: '100%',}}
       />
       {
-        !isPressed && (
+        !isAddNewBlockButtonPressed && (
           <Button
             title='Add new block'
-            onPress={() => setIsPressed(true)}
+            onPress={() => setIsAddNewBlockButtonPressed(true)}
           />
         )
       }
       {
-        isPressed && (
-          <View style={styles.block}>
-            <TextInput
-              style={{
-                height: 40,
-                width: 100,
-                borderColor: 'gray',
-                borderWidth: 1,
-              }}
-              placeholder='Block name'
-              value={text}
-              onChangeText={setText}
-            />
+        isAddNewBlockButtonPressed && (
+          <View style={[styles.block, { padding: 20, gap: 20 }]}>
+            <View>
+              <TouchableOpacity 
+                onPress={() => setIsSelectOperationTypePressed(!isSelectOperationTypePressed)}
+                style={{ 
+                  borderWidth: 0.5, 
+                  alignItems: 'center',
+                  padding: 5,
+                }}>
+                <Text>{operationType}</Text>
+              </TouchableOpacity>
+              {
+                isSelectOperationTypePressed && (
+                  <FlatList
+                    data={['SPT', 'UD']}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setOperationType(item)
+                          setIsSelectOperationTypePressed(false)
+                          switch (item) {
+                            case 'SPT':
+                              console.log('SPT pressed!');
+                              return;
+                            case 'UD':
+                              console.log('UD pressed!');
+                              return;
+                            default:
+                              throw new Error('Unknown block type');
+                          }
+                        }}
+                        style={{  
+                          alignItems: 'center',
+                          borderLeftWidth: 0.5,
+                          borderRightWidth: 0.5,
+                          borderBottomWidth: 0.5,
+                          padding: 5,
+                        }}>
+                        <Text>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                )
+              }
+            </View>
             <Button
               title='Confirm'
               onPress={() => {
-                addNewBlock(text)
-                setIsPressed(false);
+                addNewBlock('dummy_name')
+                setIsAddNewBlockButtonPressed(false);
               }}
             />
             <Button
               title='Cancel'
-              onPress={() => setIsPressed(false)}
+              onPress={() => {
+                setOperationType('Select Operation Type');
+                setIsAddNewBlockButtonPressed(false);
+              }}
             />
           </View>
         )
