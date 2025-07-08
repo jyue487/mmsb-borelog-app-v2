@@ -97,7 +97,10 @@ export default function ProjectScreen() {
         !isAddButtonPressed && (
           <Button
             title='Add new Borehole'
-            onPress={() => setIsAddButtonPressed(true)}
+            onPress={() => {
+              setNewBoreholeName('');
+              setIsAddButtonPressed(true);
+            }}
           />
         )
       }

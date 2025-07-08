@@ -95,7 +95,10 @@ export default function ProjectListScreen() {
         !isAddButtonPressed && (
           <Button
             title='Add Project'
-            onPress={() => setIsAddButtonPressed(true)}
+            onPress={() => {
+              setNewProjectName('');
+              setIsAddButtonPressed(true);
+            }}
           />
         )
       }

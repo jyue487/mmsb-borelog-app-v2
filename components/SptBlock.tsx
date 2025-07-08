@@ -12,7 +12,8 @@ export function SptBlockComponent({ style, sptBlock, ...otherProps }: SptBlockPr
 			<View style={{ backgroundColor: 'red', height: '100%', width: 50, paddingHorizontal: 1, alignItems: 'center'}}>
 				<Text>{sptBlock.topDepthInMetres.toFixed(2)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>D{sptBlock.block_id}/P{sptBlock.block_id}</Text>
+				<Text>D{sptBlock.block_id}</Text>
+				<Text>P{sptBlock.block_id}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{sptBlock.baseDepthInMetres.toFixed(2)}</Text>
 			</View>
