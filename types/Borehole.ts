@@ -1,5 +1,5 @@
 export interface Borehole {
     id: number;
-    project_id: number;
+    projectId: number;
     name: string;
 }

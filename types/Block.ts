@@ -10,8 +10,8 @@ export interface BlockTypes {
 
 export interface BaseBlock {
   id: number;
-  block_type_id: number;
-  borehole_id: number;
+  blockTypeId: number;
+  boreholeId: number;
 }
 
 export type Block<K extends keyof BlockTypes = keyof BlockTypes> = BaseBlock & BlockTypes[K];

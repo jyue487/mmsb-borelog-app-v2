@@ -1,11 +1,13 @@
 import { SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 
 export interface SptBlock {
-    block_id: number;
-    readonly block_type_id: typeof SPT_BLOCK_TYPE_ID;
-    block_type: 'Spt';
-    topDepthInMetres: number;
-    baseDepthInMetres: number;
+    blockId: number;
+    readonly blockTypeId: typeof SPT_BLOCK_TYPE_ID;
+    blockType: 'Spt';
+    sptIndex: number;
+    disturbedSampleIndex: number;
+    topDepth: number;
+    baseDepth: number;
     soilDescription: string;
     seatingIncBlows1: number;
     seatingIncPen1: number;
@@ -19,4 +21,5 @@ export interface SptBlock {
     mainIncPen3: number;
     mainIncBlows4: number;
     mainIncPen4: number;
+    recoveryLength: number;
 }

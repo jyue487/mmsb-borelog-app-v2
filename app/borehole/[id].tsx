@@ -1,35 +1,36 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Button, FlatList, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 // Local Imports
-import { CORING_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
-import { SptBlockComponent } from '@/components/SptBlock';
-import { CoringBlockComponent } from '@/components/CoringBlock';
-import { Block } from '@/types/Block';
-import { SptBlockDetailsInputForm } from '@/components/blockDetailsInputForms/SptBlockDetailsInputForm';
 import { CoringBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CoringBlockDetailsInputForm';
+import { SptBlockDetailsInputForm } from '@/components/blockDetailsInputForms/SptBlockDetailsInputForm';
+import { CoringBlockComponent } from '@/components/CoringBlockComponent';
+import { SptBlockComponent } from '@/components/SptBlockComponent';
+import { CORING_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
+import { Block } from '@/types/Block';
 
 export default function BoreholeScreen() {
-	const { id, project_name, name } = useLocalSearchParams();
-  if (typeof id != 'string' || typeof project_name != 'string' || typeof name != 'string') {
-    throw new Error(`Error. id: ${id}, project_name: ${project_name}, name: ${name}`);
+	const { id, projectName, name } = useLocalSearchParams();
+  if (typeof id != 'string' || typeof projectName != 'string' || typeof name != 'string') {
+    throw new Error(`Error. id: ${id}, projectName: ${projectName}, name: ${name}`);
   }
-  const borehole_id: number = parseInt(id, 10);
-  const borehole_name: string = name;
+  const boreholeId: number = parseInt(id, 10);
+  const boreholeName: string = name;
   const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
   const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>(false);
-  const [newBlock, setNewBlock] = useState<Block>();
   const [operationType, setOperationType] = useState<string>('Select Operation Type');
-  const [data, setData] = useState<Block[]>([
+  const [blocks, setBlocks] = useState<Block[]>([
     {
       id: 1, 
-      block_type_id: SPT_BLOCK_TYPE_ID,
-      block_type: 'Spt',
-      borehole_id: borehole_id, 
-      block_id: 1,
-      topDepthInMetres: 75,
-      baseDepthInMetres: 75.09,
+      blockTypeId: SPT_BLOCK_TYPE_ID,
+      blockType: 'Spt',
+      boreholeId: boreholeId, 
+      sptIndex: 1,
+      disturbedSampleIndex: 1,
+      blockId: 1,
+      topDepth: 75,
+      baseDepth: 75.45,
       soilDescription: 'Loose, light yellowish, grey silty SAND with traces of decayed wood',
       seatingIncBlows1: 1,
       seatingIncPen1: 75,
@@ -43,15 +44,18 @@ export default function BoreholeScreen() {
       mainIncPen3: 75,
       mainIncBlows4: 4,
       mainIncPen4: 75,
+      recoveryLength: 430,
     },
     {
       id: 2, 
-      block_type_id: SPT_BLOCK_TYPE_ID, 
-      block_type: 'Spt',
-      borehole_id: borehole_id, 
-      block_id: 2,
-      topDepthInMetres: 76.5,
-      baseDepthInMetres: 76.6,
+      blockTypeId: SPT_BLOCK_TYPE_ID, 
+      blockType: 'Spt',
+      boreholeId: boreholeId, 
+      sptIndex: 2,
+      disturbedSampleIndex: 2,
+      blockId: 2,
+      topDepth: 76.5,
+      baseDepth: 76.95,
       soilDescription: 'Loose, grey silty GRAVEL',
       seatingIncBlows1: 2,
       seatingIncPen1: 75,
@@ -65,13 +69,14 @@ export default function BoreholeScreen() {
       mainIncPen3: 75,
       mainIncBlows4: 6,
       mainIncPen4: 75,
+      recoveryLength: 450,
     },
     {
       id: 3,
-      block_type_id: CORING_BLOCK_TYPE_ID, 
-      block_type: 'Coring',
-      borehole_id: borehole_id, 
-      block_id: 3,
+      blockTypeId: CORING_BLOCK_TYPE_ID, 
+      blockType: 'Coring',
+      boreholeId: boreholeId, 
+      blockId: 3,
       topDepthInMetres: 78,
       baseDepthInMetres: 79.5,
       rockDescription: 'Light grey, medium grey slightly fractured to fresh good LIMESTONE',
@@ -83,11 +88,12 @@ export default function BoreholeScreen() {
 
 
   const addNewBlock = (newBlock: Block) => {
-    setData(prev => [...prev, newBlock]);
+    newBlock.id = blocks.length + 1;
+    setBlocks(prev => [...prev, newBlock]);
   };
 
   const clearData = async () => {
-    setData([]);
+    setBlocks([]);
   };
 
 
@@ -126,18 +132,8 @@ export default function BoreholeScreen() {
                     renderItem={({ item }) => (
                       <TouchableOpacity 
                         onPress={() => {
-                          setOperationType(item)
-                          setIsSelectOperationTypePressed(false)
-                          switch (item) {
-                            case 'SPT':
-                              console.log('SPT pressed!');
-                              break;
-                            case 'Coring':
-                              console.log('Coring pressed!');
-                              break;
-                            default:
-                              throw new Error('Unknown block type');
-                          }
+                          setOperationType(item);
+                          setIsSelectOperationTypePressed(false);
                         }}
                         style={{  
                           alignItems: 'center',
@@ -155,8 +151,9 @@ export default function BoreholeScreen() {
               { 
                 operationType === 'SPT' && (
                   <SptBlockDetailsInputForm 
-                    borehole_id={borehole_id}
-                    addNewBlock={addNewBlock}
+                    boreholeId={boreholeId}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
                     setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
                   />
                 )
@@ -164,7 +161,7 @@ export default function BoreholeScreen() {
               { 
                 operationType === 'Coring' && (
                   <CoringBlockDetailsInputForm 
-                    borehole_id={borehole_id}
+                    boreholeId={boreholeId}
                     addNewBlock={addNewBlock}
                     setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
                   /> 
@@ -196,17 +193,17 @@ export default function BoreholeScreen() {
       style={styles.container}>
       <Stack.Screen
         options={{
-          title: `${project_name.toUpperCase()} / ${borehole_name.toUpperCase()}`,
+          title: `${projectName.toUpperCase()} / ${boreholeName.toUpperCase()}`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
         }}
       />
       <FlatList
-        data={data}
+        data={blocks}
         keyExtractor={(block: Block) => block.id.toString()}
         renderItem={({ item }) => {
-          switch (item.block_type) {
+          switch (item.blockType) {
           case 'Spt':
             return <SptBlockComponent style={styles.block} sptBlock={item}/>;
           case 'Ud':

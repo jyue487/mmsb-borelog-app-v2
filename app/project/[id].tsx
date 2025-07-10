@@ -12,8 +12,8 @@ export default function ProjectScreen() {
   if (typeof id != 'string' || typeof name != 'string') {
     throw new Error(`Error. id: ${id}`);
   }
-  const project_id: number = parseInt(id, 10);
-  const project_name: string = name;
+  const projectId: number = parseInt(id, 10);
+  const projectName: string = name;
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
   const [newBoreholeName, setNewBoreholeName] = useState<string>('')
@@ -26,9 +26,9 @@ export default function ProjectScreen() {
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS boreholes (
           id INTEGER PRIMARY KEY,
-          project_id INTEGER,
+          projectId INTEGER,
           name TEXT NOT NULL,
-          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+          FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
         );
         `
       );
@@ -38,30 +38,35 @@ export default function ProjectScreen() {
   }, []);
 
   const addNewBorehole = async () => {
-    await db.runAsync('INSERT INTO boreholes (project_id, name) VALUES (?, ?)', [project_id, newBoreholeName]);
+    const res = await db.runAsync('INSERT INTO boreholes (projectId, name) VALUES (?, ?)', [projectId, newBoreholeName]);
+    console.log(res.lastInsertRowId);
     await fetchAllBoreholes();
   };
 
   const fetchAllBoreholes = async () => {
-    const rawBoreholes = await db.getAllAsync(`SELECT * FROM boreholes WHERE project_id = ?;`, [project_id]);
+    const rawBoreholes = await db.getAllAsync(`SELECT * FROM boreholes WHERE projectId = ?;`, [projectId]);
     const boreholes: Borehole[] = rawBoreholes.map((row: any) => ({
       id: row.id,
-      project_id: project_id,
+      projectId: projectId,
       name: row.name
     }));
     setBoreholes(boreholes);
   };
 
   const clearTable = async () => {
-    await db.runAsync(`DELETE FROM boreholes WHERE project_id = ?;`, [project_id]);
+    await db.runAsync(`DELETE FROM boreholes WHERE projectId = ?;`, [projectId]);
     await fetchAllBoreholes();
+  };
+
+  const dropTable = async () => {
+    await db.runAsync(`DROP TABLE boreholes;`);
   };
 
   return (
     <KeyboardAvoidingView behavior='height' style={styles.container}>
       <Stack.Screen
         options={{
-          title: `${project_name.toUpperCase()}`,
+          title: `${projectName.toUpperCase()}`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -77,7 +82,7 @@ export default function ProjectScreen() {
                 pathname: '../borehole/[id]',
                 params: { 
                   id: item.id, 
-                  project_name: project_name, 
+                  projectName: projectName, 
                   name: item.name 
                 },
               })
@@ -135,6 +140,10 @@ export default function ProjectScreen() {
       <Button
         title='Clear Table'
         onPress={() => clearTable()}
+      />
+      <Button
+        title='Drop Table'
+        onPress={() => dropTable()}
       />
     </KeyboardAvoidingView>
   );
