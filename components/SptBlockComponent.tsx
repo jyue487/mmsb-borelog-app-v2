@@ -29,8 +29,8 @@ export function SptBlockComponent({ style, sptBlock, ...otherProps }: SptBlockPr
 								<Text>{sptBlock.seatingIncPen1}</Text>
 							</View>
 							<View style={{ flex: 1, alignItems: 'center' }}>
-								<Text>{sptBlock.seatingIncBlows2}</Text>
-								<Text>{sptBlock.seatingIncPen2}</Text>
+								<Text>{sptBlock.seatingIncBlows1 < 25 ? sptBlock.seatingIncBlows2 : undefined}</Text>
+								<Text>{sptBlock.seatingIncBlows1 < 25 ? sptBlock.seatingIncPen2 : undefined}</Text>
 							</View>
 						</View>
 					</View>
@@ -42,28 +42,23 @@ export function SptBlockComponent({ style, sptBlock, ...otherProps }: SptBlockPr
 								<Text>{sptBlock.mainIncPen1}</Text>
 							</View>
 							<View style={{ flex: 1, alignItems: 'center' }}>
-								<Text>{sptBlock.mainIncBlows2}</Text>
-								<Text>{sptBlock.mainIncPen2}</Text>
+								<Text>{sptBlock.mainIncBlows1 < 50 ? sptBlock.mainIncBlows2 : undefined}</Text>
+								<Text>{sptBlock.mainIncBlows1 < 50 ? sptBlock.mainIncPen2 : undefined}</Text>
 							</View>
 							<View style={{ flex: 1, alignItems: 'center' }}>
-								<Text>{sptBlock.mainIncBlows3}</Text>
-								<Text>{sptBlock.mainIncPen3}</Text>
+								<Text>{sptBlock.mainIncBlows1 + sptBlock.mainIncBlows2 < 50 ? sptBlock.mainIncBlows3 : undefined}</Text>
+								<Text>{sptBlock.mainIncBlows1 + sptBlock.mainIncBlows2 < 50 ? sptBlock.mainIncPen3 : undefined}</Text>
 							</View>
 							<View style={{ flex: 1, alignItems: 'center' }}>
-								<Text>{sptBlock.mainIncBlows4}</Text>
-								<Text>{sptBlock.mainIncPen4}</Text>
+								<Text>{sptBlock.mainIncBlows1 + sptBlock.mainIncBlows2 + sptBlock.mainIncBlows3 < 50 ?  sptBlock.mainIncBlows4 : undefined}</Text>
+								<Text>{sptBlock.mainIncBlows1 + sptBlock.mainIncBlows2 + sptBlock.mainIncBlows3 < 50 ?  sptBlock.mainIncPen4 : undefined}</Text>
 							</View>
 						</View>
 					</View>
 					<View style={{ flex: 1, borderLeftWidth: 0.25, borderRightWidth: 0.25, alignItems: 'center' }}>
 						<Text>N</Text>
-						<Text>
-							{
-								sptBlock.mainIncBlows1 
-								+ sptBlock.mainIncBlows2 
-								+ sptBlock.mainIncBlows3 
-								+ sptBlock.mainIncBlows4
-							}
+						<Text>{sptBlock.sptNValue}</Text>
+						<Text>{sptBlock.sptNValue === 50 ? (sptBlock.mainIncPen1 + sptBlock.mainIncPen2 + sptBlock.mainIncPen3 + sptBlock.mainIncPen4) : undefined}
 						</Text>
 					</View>
 					<View style={{ flex: 1, borderLeftWidth: 0.25, alignItems: 'center' }}>

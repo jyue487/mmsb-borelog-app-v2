@@ -21,5 +21,6 @@ export interface SptBlock {
     mainIncPen3: number;
     mainIncBlows4: number;
     mainIncPen4: number;
+    sptNValue: number;
     recoveryLength: number;
 }

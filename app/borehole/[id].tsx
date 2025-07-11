@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 // Local Imports
 import { CoringBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CoringBlockDetailsInputForm';
@@ -44,6 +44,7 @@ export default function BoreholeScreen() {
       mainIncPen3: 75,
       mainIncBlows4: 4,
       mainIncPen4: 75,
+      sptNValue: 14,
       recoveryLength: 430,
     },
     {
@@ -69,6 +70,7 @@ export default function BoreholeScreen() {
       mainIncPen3: 75,
       mainIncBlows4: 6,
       mainIncPen4: 75,
+      sptNValue: 21,
       recoveryLength: 450,
     },
     {
@@ -221,7 +223,7 @@ export default function BoreholeScreen() {
         keyboardShouldPersistTaps="handled"
         ListFooterComponent={renderFooter}
         contentContainerStyle={{ paddingBottom: 500 }}
-        style={{ flexGrow: 1, width: '100%',}}
+        style={{ width: '100%' }}
       />
     </KeyboardAvoidingView>
   );

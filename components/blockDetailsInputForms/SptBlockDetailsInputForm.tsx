@@ -1,8 +1,15 @@
-import React from "react";
-import { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
+import React, { useState } from "react";
+import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 
 import { SPT_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
+import { Colour, COLOUR_1_LIST, COLOUR_2_LIST } from "@/constants/colour";
+import {
+	DOMINANT_SOIL_TYPE_LIST,
+	DominantSoilType,
+	OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
+	SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
+	SecondarySoilType
+} from "@/constants/soil";
 import { Block } from "@/types/Block";
 
 export type SptBlockDetailsInputFormProps = ViewProps & {
@@ -14,7 +21,6 @@ export type SptBlockDetailsInputFormProps = ViewProps & {
 
 export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: SptBlockDetailsInputFormProps) {
 	const [topDepthStr, setTopDepthStr] = useState<string>('');
-	const [soilDescription, setSoilDescription] = useState<string>('');
 	const [recoveryLengthStr, setRecoveryLengthStr] = useState<string>('');
 	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>('');
 	const [seatingIncBlows2Str, setSeatingIncBlows2Str] = useState<string>('');
@@ -40,10 +46,57 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 	const [isMainIncPen2Active, setIsMainIncPen2Active] = useState<boolean>(false);
 	const [isMainIncPen3Active, setIsMainIncPen3Active] = useState<boolean>(false);
 	const [isMainIncPen4Active, setIsMainIncPen4Active] = useState<boolean>(false);
+	const [dominantColour, setDominantColour] = useState<Colour>();
+	const [secondaryColour, setSecondaryColour] = useState<Colour>();
+	const [isSelectDominantColourPressed, setIsSelectDominantColourPressed] = useState<boolean>(false);
+	const [isSelectSecondaryColourPressed, setIsSelectSecondaryColourPressed] = useState<boolean>(false);
+	const [dominantSoilType, setDominantSoilType] = useState<DominantSoilType>();
+	const [secondarySoilType, setSecondarySoilType] = useState<SecondarySoilType>();
+	const [isSelectDominantSoilTypePressed, setIsSelectDominantSoilTypePressed] = useState<boolean>(false);
+	const [isSelectSecondarySoilTypePressed, setIsSelectSecondarySoilTypePressed] = useState<boolean>(false);
+	const [otherProperties, setOtherProperties] = useState<string>('');
+	const [isSelectOtherPropertiesPressed, setIsSelectOtherPropertiesPressed] = useState<boolean>(false);
+
+	const resetSeatingInc1 = () => {
+		setSeatingIncBlows1Str('');
+		setSeatingIncPen1Str('');
+		setIsSeatingIncBlows1Active(false);
+		setIsSeatingIncPen1Active(false);
+	};
+	const resetSeatingInc2 = () => {
+		setSeatingIncBlows2Str('');
+		setSeatingIncPen2Str('');
+		setIsSeatingIncBlows2Active(false);
+		setIsSeatingIncPen2Active(false);
+	};
+	const resetMainInc1 = () => {
+		setMainIncBlows1Str('');
+		setMainIncPen1Str('');
+		setIsMainIncBlows1Active(false);
+		setIsMainIncPen1Active(false);
+	};
+	const resetMainInc2 = () => {
+		setMainIncBlows2Str('');
+		setMainIncPen2Str('');
+		setIsMainIncBlows2Active(false);
+		setIsMainIncPen2Active(false);
+	};
+	const resetMainInc3 = () => {
+		setMainIncBlows3Str('');
+		setMainIncPen3Str('');
+		setIsMainIncBlows3Active(false);
+		setIsMainIncPen3Active(false);
+	};
+	const resetMainInc4 = () => {
+		setMainIncBlows4Str('');
+		setMainIncPen4Str('');
+		setIsMainIncBlows4Active(false);
+		setIsMainIncPen4Active(false);
+	};
 
 	return (
-		<View>
-			<View>
+		<View style={{ paddingTop: 20 }}>
+			<View style={{ gap: 20 }}>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 					<Text>Top Depth(m): </Text>
 					<TextInput
@@ -53,13 +106,208 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						keyboardType='numeric'
 					/>
 				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Soil Description: </Text>
-					<TextInput
-						value={soilDescription}
-						onChangeText={setSoilDescription}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-					/>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
+					<View style={{ flex: 1 }}>
+						<TouchableOpacity 
+							onPress={() => setIsSelectDominantColourPressed(prev => !prev)}
+							style={{
+								borderWidth: 0.5,
+								alignItems: 'center',
+								padding: 10,
+								width: '100%',
+								backgroundColor: (!dominantColour) ? 'transparent' : dominantColour.colourCode,
+							}}>
+							{
+								(!dominantColour) 
+								? <Text></Text> 
+								: <Text style={{ color: dominantColour.colourTagFontColour }}>{dominantColour.colourTag}</Text>
+							}
+						</TouchableOpacity>
+						{
+							isSelectDominantColourPressed && (
+								<FlatList
+									data={COLOUR_1_LIST}
+									keyExtractor={item => item.colourCode}
+									renderItem={({ item }) => (
+										<TouchableOpacity 
+											onPress={() => {
+												setDominantColour(item);
+												setSecondaryColour(undefined);
+												setIsSelectDominantColourPressed(false);
+											}}
+											style={{
+												borderWidth: 0.5,
+												alignItems: 'center',
+												padding: 10,
+												backgroundColor: item.colourCode
+											}}>
+											<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+										</TouchableOpacity>
+									)}
+								/>
+							)
+						}
+					</View>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ paddingVertical: 10 }}>Secondary Colour: </Text>
+					<View style={{ flex: 1 }}>
+						<TouchableOpacity 
+							onPress={() => setIsSelectSecondaryColourPressed(prev => !prev)}
+							style={{
+								borderWidth: 0.5,
+								alignItems: 'center',
+								padding: 10,
+								width: '100%',
+								backgroundColor: (!secondaryColour) ? 'transparent' : secondaryColour.colourCode,
+							}}>
+							{
+								(!secondaryColour) 
+								? <Text></Text> 
+								: <Text style={{ color: secondaryColour.colourTagFontColour }}>{secondaryColour.colourTag}</Text>
+							}
+						</TouchableOpacity>
+						{
+							isSelectSecondaryColourPressed && (
+								<FlatList
+									data={COLOUR_2_LIST.filter((colour: Colour) => dominantColour && colour.colourFamily != dominantColour.colourFamily)}
+									keyExtractor={item => item.colourCode}
+									renderItem={({ item }) => (
+										<TouchableOpacity 
+											onPress={() => {
+												setSecondaryColour(item);
+												setIsSelectSecondaryColourPressed(false);
+											}}
+											style={{
+												borderWidth: 0.5,
+												alignItems: 'center',
+												padding: 10,
+												width: '100%',
+												backgroundColor: item.colourCode
+											}}>
+											<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+										</TouchableOpacity>
+									)}
+								/>
+							)
+						}
+					</View>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ paddingVertical: 10 }}>Dominant Soil Type: </Text>
+					<View style={{ flex: 1 }}>
+						<TouchableOpacity 
+							onPress={() => setIsSelectDominantSoilTypePressed(prev => !prev)}
+							style={{
+								borderWidth: 0.5,
+								alignItems: 'center',
+								padding: 10,
+								width: '100%',
+							}}>
+							<Text>{dominantSoilType}</Text>
+						</TouchableOpacity>
+						{
+							isSelectDominantSoilTypePressed && (
+								<FlatList
+									data={DOMINANT_SOIL_TYPE_LIST}
+									keyExtractor={item => item}
+									renderItem={({ item }) => (
+										<TouchableOpacity 
+											onPress={() => {
+												setDominantSoilType(item);
+												setIsSelectDominantSoilTypePressed(false);
+												setSecondarySoilType('');
+											}}
+											style={{
+												borderWidth: 0.5,
+												alignItems: 'center',
+												padding: 10,
+												width: '100%',
+											}}>
+											<Text>{item}</Text>
+										</TouchableOpacity>
+									)}
+								/>
+							)
+						}
+					</View>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ paddingVertical: 10 }}>Secondary Soil Type: </Text>
+					<View style={{ flex: 1 }}>
+						<TouchableOpacity 
+							onPress={() => setIsSelectSecondarySoilTypePressed(prev => !prev)}
+							style={{
+								borderWidth: 0.5,
+								alignItems: 'center',
+								padding: 10,
+								width: '100%',
+							}}>
+							<Text>{secondarySoilType}</Text>
+						</TouchableOpacity>
+						{
+							isSelectSecondarySoilTypePressed && (
+								<FlatList
+									data={(!dominantSoilType) ? [] : SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[dominantSoilType]}
+									keyExtractor={item => item}
+									renderItem={({ item }) => (
+										<TouchableOpacity 
+											onPress={() => {
+												setSecondarySoilType(item);
+												setIsSelectSecondarySoilTypePressed(false);
+											}}
+											style={{
+												borderWidth: 0.5,
+												alignItems: 'center',
+												padding: 10,
+												width: '100%',
+											}}>
+											<Text>{item}</Text>
+										</TouchableOpacity>
+									)}
+								/>
+							)
+						}
+					</View>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ paddingVertical: 10 }}>Other Properties: </Text>
+					<View style={{ flex: 1 }}>
+						<TouchableOpacity 
+							onPress={() => setIsSelectOtherPropertiesPressed(prev => !prev)}
+							style={{
+								borderWidth: 0.5,
+								alignItems: 'center',
+								padding: 10,
+								width: '100%',
+							}}>
+							<Text>{otherProperties}</Text>
+						</TouchableOpacity>
+						{
+							isSelectOtherPropertiesPressed && (
+								<FlatList
+									data={(!dominantSoilType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[dominantSoilType]}
+									keyExtractor={item => item}
+									renderItem={({ item }) => (
+										<TouchableOpacity 
+											onPress={() => {
+												setOtherProperties(item);
+												setIsSelectOtherPropertiesPressed(false);
+											}}
+											style={{
+												borderWidth: 0.5,
+												alignItems: 'center',
+												padding: 10,
+												width: '100%',
+											}}>
+											<Text>{item}</Text>
+										</TouchableOpacity>
+									)}
+								/>
+							)
+						}
+					</View>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
 					<View style={{ flex: 2 }}>
@@ -70,6 +318,12 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 									value={seatingIncBlows1Str}
 									onChangeText={(text: string) => {
 										setSeatingIncBlows1Str(text);
+										resetSeatingInc2();
+										resetMainInc1();
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+
 										const seatingIncBlows1: number = parseInt(text);
 										if (isNaN(seatingIncBlows1)) {
 											setIsSeatingIncPen1Active(false);
@@ -116,6 +370,11 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 									value={seatingIncBlows2Str}
 									onChangeText={(text: string) => {
 										setSeatingIncBlows2Str(text);
+										resetMainInc1();
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+
 										const seatingIncBlows2: number = parseInt(text);
 										if (isNaN(seatingIncBlows2)) {
 											setIsSeatingIncPen2Active(false);
@@ -168,6 +427,10 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 									value={mainIncBlows1Str}
 									onChangeText={(text: string) => {
 										setMainIncBlows1Str(text);
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+
 										const mainIncBlows1: number = parseInt(text);
 										if (isNaN(mainIncBlows1)) {
 											setIsMainIncPen1Active(false);
@@ -212,6 +475,9 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 									value={mainIncBlows2Str}
 									onChangeText={(text: string) => {
 										setMainIncBlows2Str(text);
+										resetMainInc3();
+										resetMainInc4();
+
 										const mainIncBlows2: number = parseInt(text);
 										if (isNaN(mainIncBlows2)) {
 											setIsMainIncPen2Active(false);
@@ -257,6 +523,8 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 									value={mainIncBlows3Str}
 									onChangeText={(text: string) => {
 										setMainIncBlows3Str(text);
+										resetMainInc4();
+
 										const mainIncBlows3: number = parseInt(text);
 										if (isNaN(mainIncBlows3)) {
 											setIsMainIncPen3Active(false);
@@ -362,6 +630,14 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						alert('Error: Top Depth');
 						return;
 					}
+					if (!dominantColour) {
+						alert('Error: Colour 1');
+						return;
+					}
+					if (!dominantSoilType) {
+						alert('Error: Major Soil Type');
+						return;
+					}
 					if (isNaN(parseInt(seatingIncBlows1Str))) {
 						alert(`Error: seatingIncBlows1Str`);
 						return;
@@ -436,15 +712,78 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					const mainIncPen3: number = isNaN(parseInt(mainIncPen3Str)) ? 0 : parseInt(mainIncPen3Str);
 					const mainIncBlows4: number = isNaN(parseInt(mainIncBlows4Str)) ? 0 : parseInt(mainIncBlows4Str);
 					const mainIncPen4: number = isNaN(parseInt(mainIncPen4Str)) ? 0 : parseInt(mainIncPen4Str);
-					const baseDepth: number = topDepth + (
-						seatingIncPen1 + seatingIncPen2 
-						+ mainIncPen1 + mainIncPen2 + mainIncPen3 + mainIncPen4
-					) / 1000;
+					const totalPenetrationDepthInMillimetres: number = (
+						seatingIncPen1 + seatingIncPen2 + mainIncPen1 + mainIncPen2 + mainIncPen3 + mainIncPen4
+					);
+					const baseDepth: number = topDepth + totalPenetrationDepthInMillimetres / 1000;
+					const sptNValue: number = mainIncBlows1 + mainIncBlows2 + mainIncBlows3 + mainIncBlows4;
 					const recoveryLength: number = parseInt(recoveryLengthStr);
-
-					if (recoveryLength > (baseDepth - topDepth) * 1000) {
-						alert('Error: recoveryLengthStr');
+					if (recoveryLength > totalPenetrationDepthInMillimetres) {
+						alert('Error: Recovery Length');
+						console.log(`Recovery Length = ${recoveryLength}`);
+						console.log(`topDepth = ${topDepth}`);
+						console.log(`baseDepth = ${baseDepth}`);
+						console.log(`baseDepth - topDepth = ${baseDepth - topDepth}`);
+						console.log(`(baseDepth - topDepth) * 1000 = ${(baseDepth - topDepth) * 1000}`);
 						return;
+					}
+
+					let soilDescription: string = '';
+					let consistency = '';
+					if (dominantSoilType === 'SAND' || dominantSoilType === 'GRAVEL') {
+						if (sptNValue < 4) {
+							consistency = 'Very Loose';
+						} else if (sptNValue < 10) {
+							consistency = 'Loose';
+						} else if (sptNValue < 30) {
+							consistency = 'Medium Dense';
+						} else if (sptNValue < 50) {
+							consistency = 'Dense';
+						} else {
+							consistency = 'Very Dense';
+						}
+					} else {
+						if (sptNValue < 2) {
+							consistency = 'Very Soft';
+						} else if (sptNValue < 4) {
+							consistency = 'Soft';
+						} else if (sptNValue < 8) {
+							consistency = 'Firm';
+						} else if (sptNValue < 15) {
+							consistency = 'Stiff';
+						} else if (sptNValue <= 30) {
+							consistency = 'Very Stiff';
+						} else {
+							consistency = 'Hard';
+						}
+					}
+					soilDescription += ` ${consistency},`;
+
+					const totalColourLevel = dominantColour.level;
+					let colourLevel = '';
+					if (totalColourLevel <= 2) {
+						colourLevel = 'Dark';
+					} else if (totalColourLevel <= 4) {
+						colourLevel = 'Medium';
+					} else if (totalColourLevel <= 6) {
+						colourLevel = 'Light';
+					} else {
+						colourLevel = 'Pale';
+					}
+					soilDescription += ` ${colourLevel}`;
+
+					if (!secondaryColour) {
+						soilDescription += ` ${dominantColour.colourNameForSoilDescription}`;
+					} else {
+						soilDescription += ` ${secondaryColour.colourNameForSoilDescription} ${dominantColour.colourNameForSoilDescription}`;
+					}
+					if (!secondarySoilType) {
+						soilDescription += ` ${dominantSoilType}`;
+					} else {
+						soilDescription += ` ${secondarySoilType} ${dominantSoilType}`;
+					}
+					if (otherProperties) {
+						soilDescription += ` ${otherProperties}`;
 					}
 
 					const sptIndex: number = blocks.filter((block: Block) => block.blockType === 'Spt').length + 1;
@@ -473,6 +812,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						mainIncPen3: mainIncPen3,
 						mainIncBlows4: mainIncBlows4,
 						mainIncPen4: mainIncPen4,
+						sptNValue: sptNValue,
 						recoveryLength: recoveryLength,
 					};
 					setBlocks(blocks => [...blocks, newSptBlock]);
