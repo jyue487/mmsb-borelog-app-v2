@@ -12,7 +12,7 @@ export function CoringBlockComponent({ style, coringBlock, ...otherProps }: Cori
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
 				<Text>{coringBlock.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>C{coringBlock.blockId}</Text>
+				<Text>C{coringBlock.rockSampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{coringBlock.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

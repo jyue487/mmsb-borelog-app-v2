@@ -1,11 +1,13 @@
 import { SptBlock } from '@/types/SptBlock';
-import { UdBlock } from '@/types/UdBlock';
 import { CoringBlock } from './CoringBlock';
+import { CavityBlock } from './CavityBlock';
+import { UdBlock } from '@/types/UdBlock';
 
 export interface BlockTypes {
   Spt: SptBlock;
-  Ud: UdBlock;
   Coring: CoringBlock;
+  Cavity: CavityBlock;
+  Ud: UdBlock;
 }
 
 export interface BaseBlock {

@@ -9,6 +9,10 @@ import { CoringBlockComponent } from '@/components/CoringBlockComponent';
 import { SptBlockComponent } from '@/components/SptBlockComponent';
 import { CORING_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Block } from '@/types/Block';
+import { CavityBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CavityBlockDetailsInputForm';
+import { CavityBlockComponent } from '@/components/CavityBlockComponent';
+import { UdBlockComponent } from '@/components/UdBlockComponent';
+import { UdBlockDetailsInputForm } from '@/components/blockDetailsInputForms/UdBlockDetailsInputForm';
 
 export default function BoreholeScreen() {
 	const { id, projectName, name } = useLocalSearchParams();
@@ -79,6 +83,7 @@ export default function BoreholeScreen() {
       blockType: 'Coring',
       boreholeId: boreholeId, 
       blockId: 3,
+      rockSampleIndex: 1,
       topDepthInMetres: 78,
       baseDepthInMetres: 79.5,
       rockDescription: 'Light grey, medium grey slightly fractured to fresh good LIMESTONE',
@@ -129,7 +134,7 @@ export default function BoreholeScreen() {
               {
                 isSelectOperationTypePressed && (
                   <FlatList
-                    data={['SPT', 'Coring']}
+                    data={['SPT', 'Coring', 'Cavity', 'UD']}
                     keyExtractor={item => item}
                     renderItem={({ item }) => (
                       <TouchableOpacity 
@@ -137,13 +142,7 @@ export default function BoreholeScreen() {
                           setOperationType(item);
                           setIsSelectOperationTypePressed(false);
                         }}
-                        style={{  
-                          alignItems: 'center',
-                          borderLeftWidth: 0.5,
-                          borderRightWidth: 0.5,
-                          borderBottomWidth: 0.5,
-                          padding: 10,
-                        }}>
+                        style={[styles.listItem]}>
                         <Text>{item}</Text>
                       </TouchableOpacity>
                     )}
@@ -163,6 +162,26 @@ export default function BoreholeScreen() {
               { 
                 operationType === 'Coring' && (
                   <CoringBlockDetailsInputForm 
+                    boreholeId={boreholeId}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
+                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+                  /> 
+                )
+              }
+              { 
+                operationType === 'Cavity' && (
+                  <CavityBlockDetailsInputForm 
+                    boreholeId={boreholeId}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
+                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+                  /> 
+                )
+              }
+              { 
+                operationType === 'UD' && (
+                  <UdBlockDetailsInputForm 
                     boreholeId={boreholeId}
                     blocks={blocks}
                     setBlocks={setBlocks}
@@ -209,14 +228,12 @@ export default function BoreholeScreen() {
           switch (item.blockType) {
           case 'Spt':
             return <SptBlockComponent style={styles.block} sptBlock={item}/>;
-          case 'Ud':
-            return (
-              <View style={styles.block}>
-                <Text>Block {item.id}</Text>
-              </View>
-            );
           case 'Coring':
             return <CoringBlockComponent style={styles.block} coringBlock={item} />
+          case 'Cavity':
+            return <CavityBlockComponent style={styles.block} cavityBlock={item} />
+          case 'Ud':
+            return <UdBlockComponent style={styles.block} udBlock={item} />
           default:
             throw new Error('Unknown block type');
           }
@@ -242,5 +259,12 @@ const styles = StyleSheet.create({
   block: {
     width: '100%',
     borderWidth: 1,
-  }
+  },
+  listItem: {
+		borderLeftWidth: 0.25,
+		borderRightWidth: 0.25,
+		borderBottomWidth: 0.25,
+		alignItems: 'center',
+		padding: 10,
+	}
 });

@@ -4,6 +4,7 @@ export interface CoringBlock {
     blockId: number;
     readonly blockTypeId: typeof CORING_BLOCK_TYPE_ID;
     blockType: 'Coring';
+    rockSampleIndex: number;
     topDepthInMetres: number;
     baseDepthInMetres: number;
     rockDescription: string;

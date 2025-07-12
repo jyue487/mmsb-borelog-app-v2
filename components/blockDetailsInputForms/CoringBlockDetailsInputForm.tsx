@@ -29,6 +29,13 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 	const [otherProperties, setOtherProperties] = useState<string>('');
 	const [isSelectOtherPropertiesPressed, setIsSelectOtherPropertiesPressed] = useState<boolean>(false);
 
+	const resetCoreRecovery = () => {
+		setCoreRecoveryInMetresStr('');
+	};
+	const resetRqd = () => {
+		setRqdInMetresStr('');
+	};
+
 	return (
 		<GestureHandlerRootView>
 			<View style={{ paddingVertical: 20, gap: 20 }}>
@@ -45,7 +52,11 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					<Text>Core Run(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<TextInput
 						value={coreRunInMetresStr}
-						onChangeText={setCoreRunInMetresStr}
+						onChangeText={(text: string) => {
+							setCoreRunInMetresStr(text);
+							resetCoreRecovery();
+							resetRqd();
+						}}
 						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
 						keyboardType='numeric'
 					/>
@@ -54,19 +65,57 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					<Text>Core Recovery(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<TextInput
 						value={coreRecoveryInMetresStr}
-						onChangeText={setCoreRecoveryInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+						onChangeText={(text: string) => {
+							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+							if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
+								return;
+							}
+							setCoreRecoveryInMetresStr(text);
+							const coreRecoveryInMetres: number = parseFloat(parseFloat(text).toFixed(3));
+							if (isNaN(coreRecoveryInMetres)) {
+                return;
+              }
+              if (coreRecoveryInMetres > coreRunInMetres) {
+                setCoreRecoveryInMetresStr(coreRunInMetres.toString());
+              }
+						}}
+						style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
 						keyboardType='numeric'
 					/>
+					<Text>
+						{(() => {
+							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+							return (coreRunInMetres > 0) ? `   /   ${coreRunInMetres}` : undefined;
+						})()}
+					</Text>
 				</View>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 					<Text>R.Q.D.(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<TextInput
 						value={rqdInMetresStr}
-						onChangeText={setRqdInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+						onChangeText={(text: string) => {
+							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+							if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
+								return;
+							}
+							setRqdInMetresStr(text);
+							const rqdInMetres: number = parseFloat(parseFloat(text).toFixed(3));
+							if (isNaN(rqdInMetres)) {
+                return;
+              }
+              if (rqdInMetres > coreRunInMetres) {
+                setRqdInMetresStr(coreRunInMetres.toString());
+              }
+						}}
+						style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
 						keyboardType='numeric'
 					/>
+					<Text>
+						{(() => {
+							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+							return (coreRunInMetres > 0) ? `   /   ${coreRunInMetres}` : undefined;
+						})()}
+					</Text>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
@@ -286,11 +335,11 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 
 					const totalColourLevel = dominantColour.level;
 					let colourLevel = '';
-					if (totalColourLevel <= 2) {
+					if (totalColourLevel <= 1) {
 						colourLevel = 'dark';
-					} else if (totalColourLevel <= 4) {
+					} else if (totalColourLevel <= 2) {
 						colourLevel = 'medium';
-					} else if (totalColourLevel <= 6) {
+					} else if (totalColourLevel <= 3) {
 						colourLevel = 'light';
 					} else {
 						colourLevel = 'pale';
@@ -327,12 +376,15 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					}
 					rockDescription += ` ${rockTypeDescription}`;
 
+					const rockSampleIndex: number = blocks.filter((block: Block) => block.blockType === 'Coring').length + 1;
+
 					const newCoringBlock: Block = {
 						id: blocks.length + 1,
 						blockTypeId: CORING_BLOCK_TYPE_ID,
 						blockType: 'Coring',
 						boreholeId: boreholeId, 
 						blockId: 1,
+						rockSampleIndex: rockSampleIndex,
 						topDepthInMetres: topDepthInMetres,
 						baseDepthInMetres: baseDepthInMetres,
 						rockDescription: rockDescription,

@@ -636,7 +636,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 								+ parseInt((!mainIncPen3Str) ? '0' : mainIncPen3Str)
 								+ parseInt((!mainIncPen4Str) ? '0' : mainIncPen4Str)
 							);
-							if (totalPenetrationDepthInMillimetres === 0) {
+							if (isNaN(totalPenetrationDepthInMillimetres) || totalPenetrationDepthInMillimetres === 0) {
 								return;
 							}
 							setRecoveryLengthInMillimetresStr(text);
@@ -738,7 +738,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						}
 					}
 					if (isNaN(parseInt(recoveryLengthInMillimetresStr))) {
-						alert('Error: recoveryLengthStr');
+						alert('Error: Recovery Length');
 						return;
 					}
 
@@ -806,14 +806,14 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 
 					const totalColourLevel = dominantColour.level;
 					let colourLevel = '';
-					if (totalColourLevel <= 2) {
-						colourLevel = 'Dark';
-					} else if (totalColourLevel <= 4) {
-						colourLevel = 'Medium';
-					} else if (totalColourLevel <= 6) {
-						colourLevel = 'Light';
+					if (totalColourLevel <= 1) {
+						colourLevel = 'dark';
+					} else if (totalColourLevel <= 2) {
+						colourLevel = 'medium';
+					} else if (totalColourLevel <= 3) {
+						colourLevel = 'light';
 					} else {
-						colourLevel = 'Pale';
+						colourLevel = 'pale';
 					}
 					soilDescription += ` ${colourLevel}`;
 
