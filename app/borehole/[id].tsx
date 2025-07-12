@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 // Local Imports
 import { CoringBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CoringBlockDetailsInputForm';
@@ -29,8 +29,8 @@ export default function BoreholeScreen() {
       sptIndex: 1,
       disturbedSampleIndex: 1,
       blockId: 1,
-      topDepth: 75,
-      baseDepth: 75.45,
+      topDepthInMetres: 75,
+      baseDepthInMetres: 75.45,
       soilDescription: 'Loose, light yellowish, grey silty SAND with traces of decayed wood',
       seatingIncBlows1: 1,
       seatingIncPen1: 75,
@@ -45,7 +45,7 @@ export default function BoreholeScreen() {
       mainIncBlows4: 4,
       mainIncPen4: 75,
       sptNValue: 14,
-      recoveryLength: 430,
+      recoveryLengthInMillimetres: 430,
     },
     {
       id: 2, 
@@ -55,8 +55,8 @@ export default function BoreholeScreen() {
       sptIndex: 2,
       disturbedSampleIndex: 2,
       blockId: 2,
-      topDepth: 76.5,
-      baseDepth: 76.95,
+      topDepthInMetres: 76.5,
+      baseDepthInMetres: 76.95,
       soilDescription: 'Loose, grey silty GRAVEL',
       seatingIncBlows1: 2,
       seatingIncPen1: 75,
@@ -71,7 +71,7 @@ export default function BoreholeScreen() {
       mainIncBlows4: 6,
       mainIncPen4: 75,
       sptNValue: 21,
-      recoveryLength: 450,
+      recoveryLengthInMillimetres: 450,
     },
     {
       id: 3,
@@ -82,9 +82,9 @@ export default function BoreholeScreen() {
       topDepthInMetres: 78,
       baseDepthInMetres: 79.5,
       rockDescription: 'Light grey, medium grey slightly fractured to fresh good LIMESTONE',
-      coreRun: 1.5,
-      coreRecovery: 100,
-      rqd: 84,
+      coreRunInMetres: 1.5,
+      coreRecoveryInPercentage: 100,
+      rqdInPercentage: 84,
     }
   ]);
 
@@ -164,7 +164,8 @@ export default function BoreholeScreen() {
                 operationType === 'Coring' && (
                   <CoringBlockDetailsInputForm 
                     boreholeId={boreholeId}
-                    addNewBlock={addNewBlock}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
                     setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
                   /> 
                 )

@@ -7,7 +7,7 @@ export interface CoringBlock {
     topDepthInMetres: number;
     baseDepthInMetres: number;
     rockDescription: string;
-    coreRun: number;
-    coreRecovery: number;
-    rqd: number;
+    coreRunInMetres: number;
+    coreRecoveryInPercentage: number;
+    rqdInPercentage: number;
 }

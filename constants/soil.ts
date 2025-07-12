@@ -1,11 +1,11 @@
 export const DOMINANT_SOIL_TYPE_LIST = ['CLAY', 'SILT', 'PEAT', 'SAND', 'GRAVEL'] as const;
 export type DominantSoilType = typeof DOMINANT_SOIL_TYPE_LIST[number];
 
-export const SECONDARY_SOIL_TYPE_FOR_CLAY = ['', 'slightly sandy', 'sandy', 'slightly gravelly', 'gravelly', 'peaty organic', 'organic'] as const;
-export const SECONDARY_SOIL_TYPE_FOR_SILT = ['', 'slightly sandy', 'sandy', 'slightly gravelly', 'gravelly', 'peaty organic', 'organic'] as const;
+export const SECONDARY_SOIL_TYPE_FOR_CLAY = ['slightly sandy', 'sandy', 'slightly gravelly', 'gravelly', 'peaty organic', 'organic'] as const;
+export const SECONDARY_SOIL_TYPE_FOR_SILT = ['slightly sandy', 'sandy', 'slightly gravelly', 'gravelly', 'peaty organic', 'organic'] as const;
 export const SECONDARY_SOIL_TYPE_FOR_PEAT = [] as const;
-export const SECONDARY_SOIL_TYPE_FOR_SAND = ['', 'fine', 'coarse', 'slightly gravelly', 'gravelly', 'slightly silty', 'silty', 'slightly clayey', 'clayey', 'peaty organic', 'organic'] as const;
-export const SECONDARY_SOIL_TYPE_FOR_GRAVEL = ['', 'slightly sandy', 'sandy', 'slightly silty', 'silty', 'slightly clayey', 'clayey'] as const;
+export const SECONDARY_SOIL_TYPE_FOR_SAND = ['fine', 'coarse', 'slightly gravelly', 'gravelly', 'slightly silty', 'silty', 'slightly clayey', 'clayey', 'peaty organic', 'organic'] as const;
+export const SECONDARY_SOIL_TYPE_FOR_GRAVEL = ['slightly sandy', 'sandy', 'slightly silty', 'silty', 'slightly clayey', 'clayey'] as const;
 export type SecondarySoilType = (
     typeof SECONDARY_SOIL_TYPE_FOR_CLAY[number]
     | typeof SECONDARY_SOIL_TYPE_FOR_SILT[number]

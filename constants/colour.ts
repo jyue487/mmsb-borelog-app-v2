@@ -75,7 +75,7 @@ export interface Colour {
     colourFamily: string
 }
 
-export const COLOUR_1_LIST: Colour[] = [
+export const DOMINANT_COLOUR_LIST: Colour[] = [
     { level: 1, colourTag: 'Dark Yellow', colourTagFontColour: 'black', colourNameForSoilDescription: 'yellow', colourCode: DARK_YELLOW, colourFamily: 'yellow' }, 
     { level: 2, colourTag: 'Medium Yellow', colourTagFontColour: 'black', colourNameForSoilDescription: 'yellow', colourCode: MEDIUM_YELLOW, colourFamily: 'yellow' }, 
     { level: 3, colourTag: 'Light Yellow', colourTagFontColour: 'black', colourNameForSoilDescription: 'yellow', colourCode: LIGHT_YELLOW, colourFamily: 'yellow' }, 
@@ -110,7 +110,7 @@ export const COLOUR_1_LIST: Colour[] = [
     { level: 4, colourTag: 'Pale Blue', colourTagFontColour: 'black', colourNameForSoilDescription: 'blue', colourCode: PALE_BLUE, colourFamily: 'blue' },
 ] as const;
 
-export const COLOUR_2_LIST: Colour[] = [
+export const SECONDARY_COLOUR_LIST: Colour[] = [
     { level: 1, colourTag: 'Dark Yellow', colourTagFontColour: 'black', colourNameForSoilDescription: 'yellowish', colourCode: DARK_YELLOW, colourFamily: 'yellow' }, 
     { level: 2, colourTag: 'Medium Yellow', colourTagFontColour: 'black', colourNameForSoilDescription: 'yellowish', colourCode: MEDIUM_YELLOW, colourFamily: 'yellow' }, 
     { level: 3, colourTag: 'Light Yellow', colourTagFontColour: 'black', colourNameForSoilDescription: 'yellowish', colourCode: LIGHT_YELLOW, colourFamily: 'yellow' }, 

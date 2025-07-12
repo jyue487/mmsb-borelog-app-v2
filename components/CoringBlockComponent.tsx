@@ -22,15 +22,15 @@ export function CoringBlockComponent({ style, coringBlock, ...otherProps }: Cori
 				<View style={{ flexDirection: 'row' }}>
 					<View style={{ flex: 4, borderRightWidth: 0.25, alignItems: 'center' }}>
 						<Text>Core Run(m)</Text>
-						<Text>{coringBlock.coreRun.toFixed(3)}</Text>
+						<Text>{coringBlock.coreRunInMetres.toFixed(2)}</Text>
 					</View>
 					<View style={{ flex: 3, borderLeftWidth: 0.25, borderRightWidth: 0.25, alignItems: 'center' }}>
 						<Text>C.R.%</Text>
-						<Text>{coringBlock.coreRecovery}</Text>
+						<Text>{coringBlock.coreRecoveryInPercentage}</Text>
 					</View>
 					<View style={{ flex: 3, borderLeftWidth: 0.25, alignItems: 'center' }}>
 						<Text>R.Q.D%</Text>
-						<Text>{coringBlock.rqd}</Text>
+						<Text>{coringBlock.rqdInPercentage}</Text>
 					</View>
 				</View>
 			</View>

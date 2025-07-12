@@ -6,8 +6,8 @@ export interface SptBlock {
     blockType: 'Spt';
     sptIndex: number;
     disturbedSampleIndex: number;
-    topDepth: number;
-    baseDepth: number;
+    topDepthInMetres: number;
+    baseDepthInMetres: number;
     soilDescription: string;
     seatingIncBlows1: number;
     seatingIncPen1: number;
@@ -22,5 +22,5 @@ export interface SptBlock {
     mainIncBlows4: number;
     mainIncPen4: number;
     sptNValue: number;
-    recoveryLength: number;
+    recoveryLengthInMillimetres: number;
 }

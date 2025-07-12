@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { GestureHandlerRootView, FlatList } from "react-native-gesture-handler";
 
 import { SPT_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
-import { Colour, COLOUR_1_LIST, COLOUR_2_LIST } from "@/constants/colour";
+import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/constants/colour";
 import {
 	DOMINANT_SOIL_TYPE_LIST,
 	DominantSoilType,
@@ -20,8 +21,7 @@ export type SptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: SptBlockDetailsInputFormProps) {
-	const [topDepthStr, setTopDepthStr] = useState<string>('');
-	const [recoveryLengthStr, setRecoveryLengthStr] = useState<string>('');
+	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
 	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>('');
 	const [seatingIncBlows2Str, setSeatingIncBlows2Str] = useState<string>('');
 	const [seatingIncPen1Str, setSeatingIncPen1Str] = useState<string>('');
@@ -47,15 +47,16 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 	const [isMainIncPen3Active, setIsMainIncPen3Active] = useState<boolean>(false);
 	const [isMainIncPen4Active, setIsMainIncPen4Active] = useState<boolean>(false);
 	const [dominantColour, setDominantColour] = useState<Colour>();
-	const [secondaryColour, setSecondaryColour] = useState<Colour>();
 	const [isSelectDominantColourPressed, setIsSelectDominantColourPressed] = useState<boolean>(false);
+	const [secondaryColour, setSecondaryColour] = useState<Colour>();
 	const [isSelectSecondaryColourPressed, setIsSelectSecondaryColourPressed] = useState<boolean>(false);
 	const [dominantSoilType, setDominantSoilType] = useState<DominantSoilType>();
-	const [secondarySoilType, setSecondarySoilType] = useState<SecondarySoilType>();
 	const [isSelectDominantSoilTypePressed, setIsSelectDominantSoilTypePressed] = useState<boolean>(false);
+	const [secondarySoilType, setSecondarySoilType] = useState<SecondarySoilType>();
 	const [isSelectSecondarySoilTypePressed, setIsSelectSecondarySoilTypePressed] = useState<boolean>(false);
 	const [otherProperties, setOtherProperties] = useState<string>('');
 	const [isSelectOtherPropertiesPressed, setIsSelectOtherPropertiesPressed] = useState<boolean>(false);
+	const [recoveryLengthInMillimetresStr, setRecoveryLengthInMillimetresStr] = useState<string>('');
 
 	const resetSeatingInc1 = () => {
 		setSeatingIncBlows1Str('');
@@ -93,18 +94,352 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 		setIsMainIncBlows4Active(false);
 		setIsMainIncPen4Active(false);
 	};
+	const resetRecoveryLength = () => {
+		setRecoveryLengthInMillimetresStr('');
+	};
 
 	return (
-		<View style={{ paddingTop: 20 }}>
-			<View style={{ gap: 20 }}>
+		<GestureHandlerRootView>
+			<View style={{ paddingVertical: 20, gap: 20 }}>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Top Depth(m): </Text>
+					<Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<TextInput
-						value={topDepthStr}
-						onChangeText={setTopDepthStr}
+						value={topDepthInMetresStr}
+						onChangeText={setTopDepthInMetresStr}
 						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
 						keyboardType='numeric'
 					/>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<View style={{ flex: 2 }}>
+						<Text>Seating<Text style={{ color: 'red' }}>*</Text></Text>
+						<View style={{ flexDirection: 'row' }}>
+							<View style={{ flex: 1 }}>
+								<TextInput
+									value={seatingIncBlows1Str}
+									onChangeText={(text: string) => {
+										setSeatingIncBlows1Str(text);
+										resetSeatingInc2();
+										resetMainInc1();
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+
+										const seatingIncBlows1: number = parseInt(text);
+										if (isNaN(seatingIncBlows1)) {
+											setIsSeatingIncPen1Active(false);
+											setSeatingIncPen1Str('');
+											setIsSeatingIncBlows2Active(false);
+											return;
+										}
+										if (seatingIncBlows1 >= 25) {
+											setSeatingIncBlows1Str('25');
+											setSeatingIncPen1Str('');
+											setIsSeatingIncPen1Active(true);
+											setIsSeatingIncBlows2Active(false);
+											return;
+										}
+										setIsSeatingIncPen1Active(false);
+										setIsSeatingIncBlows2Active(true);
+										setSeatingIncPen1Str('75');
+									}}
+									editable={isSeatingIncBlows1Active}
+									style={(isSeatingIncBlows1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+								<TextInput
+									value={seatingIncPen1Str}
+									onChangeText={(text: string) => {
+										setSeatingIncPen1Str(text);
+										resetSeatingInc2();
+										resetMainInc1();
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+										const seatingIncPen1: number = parseInt(text);
+										if (isNaN(seatingIncPen1)) {
+											setIsMainIncBlows1Active(false);
+											return;
+										}
+										setIsMainIncBlows1Active(true);
+										if (seatingIncPen1 > 75) {
+											setSeatingIncPen1Str('75');
+										}
+									}}
+									editable={isSeatingIncPen1Active}
+									style={(isSeatingIncPen1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+							</View>
+							<View style={{ flex: 1 }}>
+								<TextInput
+									value={seatingIncBlows2Str}
+									onChangeText={(text: string) => {
+										setSeatingIncBlows2Str(text);
+										resetMainInc1();
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+
+										const seatingIncBlows2: number = parseInt(text);
+										if (isNaN(seatingIncBlows2)) {
+											setIsSeatingIncPen2Active(false);
+											setSeatingIncPen2Str('');
+											setIsMainIncBlows1Active(false);
+											return;
+										}
+										const seatingIncBlows1: number = parseInt(seatingIncBlows1Str);
+										if (seatingIncBlows1 + seatingIncBlows2 >= 25) {
+											setSeatingIncBlows2Str((25 - seatingIncBlows1).toString());
+											setSeatingIncPen2Str('');
+											setIsSeatingIncPen2Active(true);
+											setIsMainIncBlows1Active(false);
+											return;
+										}
+										setIsSeatingIncPen2Active(false);
+										setSeatingIncPen2Str('75');
+										setIsMainIncBlows1Active(true);
+									}}
+									editable={isSeatingIncBlows2Active}
+									style={(isSeatingIncBlows2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+								<TextInput
+									value={seatingIncPen2Str}
+									onChangeText={(text: string) => {
+										setSeatingIncPen2Str(text);
+										resetMainInc1();
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+										const seatingIncPen2: number = parseInt(text);
+										if (isNaN(seatingIncPen2)) {
+											setIsMainIncBlows1Active(false);
+											return;
+										}
+										setIsMainIncBlows1Active(true);
+										if (seatingIncPen2 > 75) {
+											setSeatingIncPen2Str('75');
+										}
+									}}
+									editable={isSeatingIncPen2Active}
+									style={(isSeatingIncPen2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+							</View>
+						</View>
+					</View>
+					<View style={{ flex: 4 }}>
+						<Text>Test Drive<Text style={{ color: 'red' }}>*</Text></Text>
+						<View style={{ flexDirection: 'row' }}>
+							<View style={{ flex: 1 }}>
+								<TextInput
+									value={mainIncBlows1Str}
+									onChangeText={(text: string) => {
+										setMainIncBlows1Str(text);
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+
+										const mainIncBlows1: number = parseInt(text);
+										if (isNaN(mainIncBlows1)) {
+											setIsMainIncPen1Active(false);
+											setMainIncPen1Str('');
+											setIsMainIncBlows2Active(false);
+											return;
+										}
+										if (mainIncBlows1 >= 50) {
+											setMainIncBlows1Str('50');
+											setMainIncPen1Str('');
+											setIsMainIncPen1Active(true);
+											setIsMainIncBlows2Active(false);
+											return;
+										}
+										setIsMainIncPen1Active(false);
+										setMainIncPen1Str('75');
+										setIsMainIncBlows2Active(true);
+									}}
+									editable={isMainIncBlows1Active}
+									style={(isMainIncBlows1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+								<TextInput
+									value={mainIncPen1Str}
+									onChangeText={(text: string) => {
+										setMainIncPen1Str(text);
+										resetMainInc2();
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+										const mainIncPen1: number = parseInt(text);
+										if (isNaN(mainIncPen1)) {
+											return;
+										}
+										if (mainIncPen1 > 75) {
+											setMainIncPen1Str('75');
+										}
+									}}
+									editable={isMainIncPen1Active}
+									style={(isMainIncPen1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+							</View>
+							<View style={{ flex: 1 }}>
+								<TextInput
+									value={mainIncBlows2Str}
+									onChangeText={(text: string) => {
+										setMainIncBlows2Str(text);
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+
+										const mainIncBlows2: number = parseInt(text);
+										if (isNaN(mainIncBlows2)) {
+											setIsMainIncPen2Active(false);
+											setMainIncPen2Str('');
+											setIsMainIncBlows3Active(false);
+											return;
+										}
+										const mainIncBlows1: number = parseInt(mainIncBlows1Str);
+										if (mainIncBlows1 + mainIncBlows2 >= 50) {
+											setMainIncBlows2Str((50 - mainIncBlows1).toString());
+											setMainIncPen2Str('');
+											setIsMainIncPen2Active(true);
+											setIsMainIncBlows3Active(false);
+											return;
+										}
+										setIsMainIncPen2Active(false);
+										setMainIncPen2Str('75');
+										setIsMainIncBlows3Active(true);
+									}}
+									editable={isMainIncBlows2Active}
+									style={(isMainIncBlows2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+								<TextInput
+									value={mainIncPen2Str}
+									onChangeText={(text: string) => {
+										setMainIncPen2Str(text);
+										resetMainInc3();
+										resetMainInc4();
+										resetRecoveryLength();
+										const mainIncPen2: number = parseInt(text);
+										if (isNaN(mainIncPen2)) {
+											return;
+										}
+										if (mainIncPen2 > 75) {
+											setMainIncPen2Str('75');
+										}
+									}}
+									editable={isMainIncPen2Active}
+									style={(isMainIncPen2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+							</View>
+							<View style={{ flex: 1 }}>
+								<TextInput
+									value={mainIncBlows3Str}
+									onChangeText={(text: string) => {
+										setMainIncBlows3Str(text);
+										resetMainInc4();
+										resetRecoveryLength();
+
+										const mainIncBlows3: number = parseInt(text);
+										if (isNaN(mainIncBlows3)) {
+											setIsMainIncPen3Active(false);
+											setMainIncPen3Str('');
+											setIsMainIncBlows4Active(false);
+											return;
+										}
+										const mainIncBlows1: number = parseInt(mainIncBlows1Str);
+										const mainIncBlows2: number = parseInt(mainIncBlows2Str);
+										if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 >= 50) {
+											setMainIncBlows3Str((50 - mainIncBlows1 - mainIncBlows2).toString());
+											setMainIncPen3Str('');
+											setIsMainIncPen3Active(true);
+											setIsMainIncBlows4Active(false);
+											return;
+										}
+										setIsMainIncPen3Active(false);
+										setMainIncPen3Str('75');
+										setIsMainIncBlows4Active(true);
+									}}
+									editable={isMainIncBlows3Active}
+									style={(isMainIncBlows3Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+								<TextInput
+									value={mainIncPen3Str}
+									onChangeText={(text: string) => {
+										setMainIncPen3Str(text);
+										resetMainInc4();
+										resetRecoveryLength();
+										const mainIncPen3: number = parseInt(text);
+										if (isNaN(mainIncPen3)) {
+											return;
+										}
+										if (mainIncPen3 > 75) {
+											setMainIncPen3Str('75');
+										}
+									}}
+									editable={isMainIncPen3Active}
+									style={(isMainIncPen3Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+							</View>
+							<View style={{ flex: 1 }}>
+								<TextInput
+									value={mainIncBlows4Str}
+									onChangeText={(text: string) => {
+										setMainIncBlows4Str(text);
+										resetRecoveryLength();
+										const mainIncBlows4: number = parseInt(text);
+										if (isNaN(mainIncBlows4)) {
+											setIsMainIncPen4Active(false);
+											setMainIncPen4Str('');
+											return;
+										}
+										const mainIncBlows1: number = parseInt(mainIncBlows1Str);
+										const mainIncBlows2: number = parseInt(mainIncBlows2Str);
+										const mainIncBlows3: number = parseInt(mainIncBlows3Str);
+										if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 + mainIncBlows4 >= 50) {
+											setMainIncBlows4Str((50 - mainIncBlows1 - mainIncBlows2 - mainIncBlows3).toString());
+											setMainIncPen4Str('');
+											setIsMainIncPen4Active(true);
+											return;
+										}
+										setIsMainIncPen4Active(false);
+										setMainIncPen4Str('75');
+									}}
+									editable={isMainIncBlows4Active}
+									style={(isMainIncBlows4Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+								<TextInput
+									value={mainIncPen4Str}
+									onChangeText={(text: string) => {
+										setMainIncPen4Str(text);
+										resetRecoveryLength();
+										const mainIncPen4: number = parseInt(text);
+										if (isNaN(mainIncPen4)) {
+											return;
+										}
+										if (mainIncPen4 > 75) {
+											setMainIncPen4Str('75');
+										}
+									}}
+									editable={isMainIncPen4Active}
+									style={(isMainIncPen4Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
+									keyboardType='numeric'
+								/>
+							</View>
+						</View>
+					</View>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
@@ -127,24 +462,22 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						{
 							isSelectDominantColourPressed && (
 								<FlatList
-									data={COLOUR_1_LIST}
+									data={DOMINANT_COLOUR_LIST}
 									keyExtractor={item => item.colourCode}
 									renderItem={({ item }) => (
 										<TouchableOpacity 
 											onPress={() => {
 												setDominantColour(item);
-												setSecondaryColour(undefined);
 												setIsSelectDominantColourPressed(false);
+												setSecondaryColour(undefined);
+												setIsSelectSecondaryColourPressed(false);
 											}}
-											style={{
-												borderWidth: 0.5,
-												alignItems: 'center',
-												padding: 10,
-												backgroundColor: item.colourCode
-											}}>
+											style={[styles.listItem, {backgroundColor: item.colourCode}]}>
 											<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
 										</TouchableOpacity>
 									)}
+									nestedScrollEnabled={true}
+									style={{ maxHeight: 500 }}
 								/>
 							)
 						}
@@ -171,7 +504,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						{
 							isSelectSecondaryColourPressed && (
 								<FlatList
-									data={COLOUR_2_LIST.filter((colour: Colour) => dominantColour && colour.colourFamily != dominantColour.colourFamily)}
+									data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => dominantColour && colour.colourFamily != dominantColour.colourFamily)}
 									keyExtractor={item => item.colourCode}
 									renderItem={({ item }) => (
 										<TouchableOpacity 
@@ -179,23 +512,19 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 												setSecondaryColour(item);
 												setIsSelectSecondaryColourPressed(false);
 											}}
-											style={{
-												borderWidth: 0.5,
-												alignItems: 'center',
-												padding: 10,
-												width: '100%',
-												backgroundColor: item.colourCode
-											}}>
+											style={[styles.listItem, {backgroundColor: item.colourCode}]}>
 											<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
 										</TouchableOpacity>
 									)}
+									nestedScrollEnabled={true}
+									style={{ maxHeight: 500 }}
 								/>
 							)
 						}
 					</View>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Dominant Soil Type: </Text>
+					<Text style={{ paddingVertical: 10 }}>Dominant Soil Type<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
 							onPress={() => setIsSelectDominantSoilTypePressed(prev => !prev)}
@@ -217,14 +546,9 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 											onPress={() => {
 												setDominantSoilType(item);
 												setIsSelectDominantSoilTypePressed(false);
-												setSecondarySoilType('');
+												setSecondarySoilType(undefined);
 											}}
-											style={{
-												borderWidth: 0.5,
-												alignItems: 'center',
-												padding: 10,
-												width: '100%',
-											}}>
+											style={[styles.listItem]}>
 											<Text>{item}</Text>
 										</TouchableOpacity>
 									)}
@@ -257,12 +581,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 												setSecondarySoilType(item);
 												setIsSelectSecondarySoilTypePressed(false);
 											}}
-											style={{
-												borderWidth: 0.5,
-												alignItems: 'center',
-												padding: 10,
-												width: '100%',
-											}}>
+											style={[styles.listItem]}>
 											<Text>{item}</Text>
 										</TouchableOpacity>
 									)}
@@ -295,12 +614,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 												setOtherProperties(item);
 												setIsSelectOtherPropertiesPressed(false);
 											}}
-											style={{
-												borderWidth: 0.5,
-												alignItems: 'center',
-												padding: 10,
-												width: '100%',
-											}}>
+											style={[styles.listItem]}>
 											<Text>{item}</Text>
 										</TouchableOpacity>
 									)}
@@ -309,333 +623,62 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						}
 					</View>
 				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<View style={{ flex: 2 }}>
-						<Text>Seating</Text>
-						<View style={{ flexDirection: 'row' }}>
-							<View style={{ flex: 1 }}>
-								<TextInput
-									value={seatingIncBlows1Str}
-									onChangeText={(text: string) => {
-										setSeatingIncBlows1Str(text);
-										resetSeatingInc2();
-										resetMainInc1();
-										resetMainInc2();
-										resetMainInc3();
-										resetMainInc4();
-
-										const seatingIncBlows1: number = parseInt(text);
-										if (isNaN(seatingIncBlows1)) {
-											setIsSeatingIncPen1Active(false);
-											setSeatingIncPen1Str('');
-											setIsSeatingIncBlows2Active(false);
-											return;
-										}
-										if (seatingIncBlows1 >= 25) {
-											setSeatingIncBlows1Str('25');
-											setSeatingIncPen1Str('');
-											setIsSeatingIncPen1Active(true);
-											setIsSeatingIncBlows2Active(false);
-											return;
-										}
-										setIsSeatingIncPen1Active(false);
-										setIsSeatingIncBlows2Active(true);
-										setSeatingIncPen1Str('75');
-									}}
-									editable={isSeatingIncBlows1Active}
-									style={(isSeatingIncBlows1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-								<TextInput
-									value={seatingIncPen1Str}
-									onChangeText={(text: string) => {
-										setSeatingIncPen1Str(text);
-										const seatingIncPen1: number = parseInt(text);
-										if (isNaN(seatingIncPen1)) {
-											setIsMainIncBlows1Active(false);
-											return;
-										}
-										setIsMainIncBlows1Active(true);
-										if (seatingIncPen1 > 75) {
-											setSeatingIncPen1Str('75');
-										}
-									}}
-									editable={isSeatingIncPen1Active}
-									style={(isSeatingIncPen1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-							</View>
-							<View style={{ flex: 1 }}>
-								<TextInput
-									value={seatingIncBlows2Str}
-									onChangeText={(text: string) => {
-										setSeatingIncBlows2Str(text);
-										resetMainInc1();
-										resetMainInc2();
-										resetMainInc3();
-										resetMainInc4();
-
-										const seatingIncBlows2: number = parseInt(text);
-										if (isNaN(seatingIncBlows2)) {
-											setIsSeatingIncPen2Active(false);
-											setSeatingIncPen2Str('');
-											setIsMainIncBlows1Active(false);
-											return;
-										}
-										const seatingIncBlows1: number = parseInt(seatingIncBlows1Str);
-										if (seatingIncBlows1 + seatingIncBlows2 >= 25) {
-											setSeatingIncBlows2Str((25 - seatingIncBlows1).toString());
-											setSeatingIncPen2Str('');
-											setIsSeatingIncPen2Active(true);
-											setIsMainIncBlows1Active(false);
-											return;
-										}
-										setIsSeatingIncPen2Active(false);
-										setSeatingIncPen2Str('75');
-										setIsMainIncBlows1Active(true);
-									}}
-									editable={isSeatingIncBlows2Active}
-									style={(isSeatingIncBlows2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-								<TextInput
-									value={seatingIncPen2Str}
-									onChangeText={(text: string) => {
-										setSeatingIncPen2Str(text);
-										const seatingIncPen2: number = parseInt(text);
-										if (isNaN(seatingIncPen2)) {
-											setIsMainIncBlows1Active(false);
-											return;
-										}
-										setIsMainIncBlows1Active(true);
-										if (seatingIncPen2 > 75) {
-											setSeatingIncPen2Str('75');
-										}
-									}}
-									editable={isSeatingIncPen2Active}
-									style={(isSeatingIncPen2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-							</View>
-						</View>
-					</View>
-					<View style={{ flex: 4 }}>
-						<Text>Test Drive</Text>
-						<View style={{ flexDirection: 'row' }}>
-							<View style={{ flex: 1 }}>
-								<TextInput
-									value={mainIncBlows1Str}
-									onChangeText={(text: string) => {
-										setMainIncBlows1Str(text);
-										resetMainInc2();
-										resetMainInc3();
-										resetMainInc4();
-
-										const mainIncBlows1: number = parseInt(text);
-										if (isNaN(mainIncBlows1)) {
-											setIsMainIncPen1Active(false);
-											setMainIncPen1Str('');
-											setIsMainIncBlows2Active(false);
-											return;
-										}
-										if (mainIncBlows1 >= 50) {
-											setMainIncBlows1Str('50');
-											setMainIncPen1Str('');
-											setIsMainIncPen1Active(true);
-											setIsMainIncBlows2Active(false);
-											return;
-										}
-										setIsMainIncPen1Active(false);
-										setMainIncPen1Str('75');
-										setIsMainIncBlows2Active(true);
-									}}
-									editable={isMainIncBlows1Active}
-									style={(isMainIncBlows1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-								<TextInput
-									value={mainIncPen1Str}
-									onChangeText={(text: string) => {
-										setMainIncPen1Str(text);
-										const mainIncPen1: number = parseInt(text);
-										if (isNaN(mainIncPen1)) {
-											return;
-										}
-										if (mainIncPen1 > 75) {
-											setMainIncPen1Str('75');
-										}
-									}}
-									editable={isMainIncPen1Active}
-									style={(isMainIncPen1Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-							</View>
-							<View style={{ flex: 1 }}>
-								<TextInput
-									value={mainIncBlows2Str}
-									onChangeText={(text: string) => {
-										setMainIncBlows2Str(text);
-										resetMainInc3();
-										resetMainInc4();
-
-										const mainIncBlows2: number = parseInt(text);
-										if (isNaN(mainIncBlows2)) {
-											setIsMainIncPen2Active(false);
-											setMainIncPen2Str('');
-											setIsMainIncBlows3Active(false);
-											return;
-										}
-										const mainIncBlows1: number = parseInt(mainIncBlows1Str);
-										if (mainIncBlows1 + mainIncBlows2 >= 50) {
-											setMainIncBlows2Str((50 - mainIncBlows1).toString());
-											setMainIncPen2Str('');
-											setIsMainIncPen2Active(true);
-											setIsMainIncBlows3Active(false);
-											return;
-										}
-										setIsMainIncPen2Active(false);
-										setMainIncPen2Str('75');
-										setIsMainIncBlows3Active(true);
-									}}
-									editable={isMainIncBlows2Active}
-									style={(isMainIncBlows2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-								<TextInput
-									value={mainIncPen2Str}
-									onChangeText={(text: string) => {
-										setMainIncPen2Str(text);
-										const mainIncPen2: number = parseInt(text);
-										if (isNaN(mainIncPen2)) {
-											return;
-										}
-										if (mainIncPen2 > 75) {
-											setMainIncPen2Str('75');
-										}
-									}}
-									editable={isMainIncPen2Active}
-									style={(isMainIncPen2Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-							</View>
-							<View style={{ flex: 1 }}>
-								<TextInput
-									value={mainIncBlows3Str}
-									onChangeText={(text: string) => {
-										setMainIncBlows3Str(text);
-										resetMainInc4();
-
-										const mainIncBlows3: number = parseInt(text);
-										if (isNaN(mainIncBlows3)) {
-											setIsMainIncPen3Active(false);
-											setMainIncPen3Str('');
-											setIsMainIncBlows4Active(false);
-											return;
-										}
-										const mainIncBlows1: number = parseInt(mainIncBlows1Str);
-										const mainIncBlows2: number = parseInt(mainIncBlows2Str);
-										if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 >= 50) {
-											setMainIncBlows3Str((50 - mainIncBlows1 - mainIncBlows2).toString());
-											setMainIncPen3Str('');
-											setIsMainIncPen3Active(true);
-											setIsMainIncBlows4Active(false);
-											return;
-										}
-										setIsMainIncPen3Active(false);
-										setMainIncPen3Str('75');
-										setIsMainIncBlows4Active(true);
-									}}
-									editable={isMainIncBlows3Active}
-									style={(isMainIncBlows3Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-								<TextInput
-									value={mainIncPen3Str}
-									onChangeText={(text: string) => {
-										setMainIncPen3Str(text);
-										const mainIncPen3: number = parseInt(text);
-										if (isNaN(mainIncPen3)) {
-											return;
-										}
-										if (mainIncPen3 > 75) {
-											setMainIncPen3Str('75');
-										}
-									}}
-									editable={isMainIncPen3Active}
-									style={(isMainIncPen3Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-							</View>
-							<View style={{ flex: 1 }}>
-								<TextInput
-									value={mainIncBlows4Str}
-									onChangeText={(text: string) => {
-										setMainIncBlows4Str(text);
-										const mainIncBlows4: number = parseInt(text);
-										if (isNaN(mainIncBlows4)) {
-											setIsMainIncPen4Active(false);
-											setMainIncPen4Str('');
-											return;
-										}
-										const mainIncBlows1: number = parseInt(mainIncBlows1Str);
-										const mainIncBlows2: number = parseInt(mainIncBlows2Str);
-										const mainIncBlows3: number = parseInt(mainIncBlows3Str);
-										if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 + mainIncBlows4 >= 50) {
-											setMainIncBlows4Str((50 - mainIncBlows1 - mainIncBlows2 - mainIncBlows3).toString());
-											setMainIncPen4Str('');
-											setIsMainIncPen4Active(true);
-											return;
-										}
-										setIsMainIncPen4Active(false);
-										setMainIncPen4Str('75');
-									}}
-									editable={isMainIncBlows4Active}
-									style={(isMainIncBlows4Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-								<TextInput
-									value={mainIncPen4Str}
-									onChangeText={(text: string) => {
-										setMainIncPen4Str(text);
-										const mainIncPen4: number = parseInt(text);
-										if (isNaN(mainIncPen4)) {
-											return;
-										}
-										if (mainIncPen4 > 75) {
-											setMainIncPen4Str('75');
-										}
-									}}
-									editable={isMainIncPen4Active}
-									style={(isMainIncPen4Active) ? styles.smallInputBoxActive : styles.smallInputBoxInactive}
-									keyboardType='numeric'
-								/>
-							</View>
-						</View>
-					</View>
-				</View>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Recovery(mm): </Text>
+					<Text>Recovery(mm)<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<TextInput
-						value={recoveryLengthStr}
-						onChangeText={setRecoveryLengthStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+						value={recoveryLengthInMillimetresStr}
+						onChangeText={(text: string) => {
+							const totalPenetrationDepthInMillimetres: number = (
+								parseInt((!seatingIncPen1Str) ? '0' : seatingIncPen1Str)
+								+ parseInt((!seatingIncPen2Str) ? '0' : seatingIncPen2Str)
+								+ parseInt((!mainIncPen1Str) ? '0' : mainIncPen1Str)
+								+ parseInt((!mainIncPen2Str) ? '0' : mainIncPen2Str)
+								+ parseInt((!mainIncPen3Str) ? '0' : mainIncPen3Str)
+								+ parseInt((!mainIncPen4Str) ? '0' : mainIncPen4Str)
+							);
+							if (totalPenetrationDepthInMillimetres === 0) {
+								return;
+							}
+							setRecoveryLengthInMillimetresStr(text);
+							const recoveryLength: number = parseInt(text);
+							if (isNaN(recoveryLength)) {
+								return;
+							}
+							if (recoveryLength > totalPenetrationDepthInMillimetres) {
+								setRecoveryLengthInMillimetresStr(totalPenetrationDepthInMillimetres.toString());
+							}
+						}}
+						style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
 						keyboardType='numeric'
 					/>
+					<Text>
+						{(() => {
+							const total = (
+								parseInt((!seatingIncPen1Str) ? '0' : seatingIncPen1Str)
+								+ parseInt((!seatingIncPen2Str) ? '0' : seatingIncPen2Str)
+								+ parseInt((!mainIncPen1Str) ? '0' : mainIncPen1Str)
+								+ parseInt((!mainIncPen2Str) ? '0' : mainIncPen2Str)
+								+ parseInt((!mainIncPen3Str) ? '0' : mainIncPen3Str)
+								+ parseInt((!mainIncPen4Str) ? '0' : mainIncPen4Str)
+							);
+							return (total > 0) ? `   /   ${total}` : undefined;
+						})()}
+					</Text>
 				</View>
 			</View>
 			<Button
 				title='Confirm'
 				onPress={() => {
-					if (isNaN(parseFloat(topDepthStr))) {
+					if (isNaN(parseFloat(topDepthInMetresStr))) {
 						alert('Error: Top Depth');
 						return;
 					}
 					if (!dominantColour) {
-						alert('Error: Colour 1');
+						alert('Error: Dominant Colour');
 						return;
 					}
 					if (!dominantSoilType) {
-						alert('Error: Major Soil Type');
+						alert('Error: Dominant Soil Type');
 						return;
 					}
 					if (isNaN(parseInt(seatingIncBlows1Str))) {
@@ -694,12 +737,13 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 							return;
 						}
 					}
-					if (isNaN(parseInt(recoveryLengthStr))) {
+					if (isNaN(parseInt(recoveryLengthInMillimetresStr))) {
 						alert('Error: recoveryLengthStr');
 						return;
 					}
 
-					const topDepth: number = parseFloat(topDepthStr);
+					const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
+					const topDepthInMillimetres: number = topDepthInMetres * 1000;
 					const seatingIncBlows1: number = parseInt(seatingIncBlows1Str);
 					const seatingIncPen1: number = parseInt(seatingIncPen1Str);
 					const seatingIncBlows2: number = isNaN(parseInt(seatingIncBlows2Str)) ? 0 : parseInt(seatingIncBlows2Str);
@@ -715,20 +759,21 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					const totalPenetrationDepthInMillimetres: number = (
 						seatingIncPen1 + seatingIncPen2 + mainIncPen1 + mainIncPen2 + mainIncPen3 + mainIncPen4
 					);
-					const baseDepth: number = topDepth + totalPenetrationDepthInMillimetres / 1000;
+					const baseDepthInMetres: number = (topDepthInMillimetres + totalPenetrationDepthInMillimetres) / 1000;
 					const sptNValue: number = mainIncBlows1 + mainIncBlows2 + mainIncBlows3 + mainIncBlows4;
-					const recoveryLength: number = parseInt(recoveryLengthStr);
-					if (recoveryLength > totalPenetrationDepthInMillimetres) {
+					const recoveryLengthInMillimetres: number = parseInt(recoveryLengthInMillimetresStr);
+					if (recoveryLengthInMillimetres > totalPenetrationDepthInMillimetres) {
 						alert('Error: Recovery Length');
-						console.log(`Recovery Length = ${recoveryLength}`);
-						console.log(`topDepth = ${topDepth}`);
-						console.log(`baseDepth = ${baseDepth}`);
-						console.log(`baseDepth - topDepth = ${baseDepth - topDepth}`);
-						console.log(`(baseDepth - topDepth) * 1000 = ${(baseDepth - topDepth) * 1000}`);
+						console.log(`Recovery Length = ${recoveryLengthInMillimetres}`);
+						console.log(`topDepth = ${topDepthInMetres}`);
+						console.log(`baseDepth = ${baseDepthInMetres}`);
+						console.log(`baseDepth - topDepth = ${baseDepthInMetres - topDepthInMetres}`);
+						console.log(`(baseDepth - topDepth) * 1000 = ${(baseDepthInMetres - topDepthInMetres) * 1000}`);
 						return;
 					}
 
 					let soilDescription: string = '';
+
 					let consistency = '';
 					if (dominantSoilType === 'SAND' || dominantSoilType === 'GRAVEL') {
 						if (sptNValue < 4) {
@@ -757,7 +802,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 							consistency = 'Hard';
 						}
 					}
-					soilDescription += ` ${consistency},`;
+					soilDescription += `${consistency},`;
 
 					const totalColourLevel = dominantColour.level;
 					let colourLevel = '';
@@ -772,11 +817,14 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					}
 					soilDescription += ` ${colourLevel}`;
 
+					let colourDescription = '';
 					if (!secondaryColour) {
-						soilDescription += ` ${dominantColour.colourNameForSoilDescription}`;
+						colourDescription = `${dominantColour.colourNameForSoilDescription}`;
 					} else {
-						soilDescription += ` ${secondaryColour.colourNameForSoilDescription} ${dominantColour.colourNameForSoilDescription}`;
+						colourDescription = `${secondaryColour.colourNameForSoilDescription} ${dominantColour.colourNameForSoilDescription}`;
 					}
+					soilDescription += ` ${colourDescription}`;
+
 					if (!secondarySoilType) {
 						soilDescription += ` ${dominantSoilType}`;
 					} else {
@@ -787,7 +835,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					}
 
 					const sptIndex: number = blocks.filter((block: Block) => block.blockType === 'Spt').length + 1;
-					const disturbedSampleIndex: number = (recoveryLength === 0) ? -1 : blocks.filter((block: Block) => block.blockType === 'Spt' && block.recoveryLength > 0).length + 1;
+					const disturbedSampleIndex: number = (recoveryLengthInMillimetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === 'Spt' && block.recoveryLengthInMillimetres > 0).length + 1;
 
 					const newSptBlock: Block = {
 						id: blocks.length + 1, 
@@ -797,8 +845,8 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						sptIndex: sptIndex,
 						disturbedSampleIndex: disturbedSampleIndex,
 						blockId: 1,
-						topDepth: topDepth,
-						baseDepth: baseDepth,
+						topDepthInMetres: topDepthInMetres,
+						baseDepthInMetres: baseDepthInMetres,
 						soilDescription: soilDescription,
 						seatingIncBlows1: seatingIncBlows1,
 						seatingIncPen1: seatingIncPen1,
@@ -813,13 +861,13 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						mainIncBlows4: mainIncBlows4,
 						mainIncPen4: mainIncPen4,
 						sptNValue: sptNValue,
-						recoveryLength: recoveryLength,
+						recoveryLengthInMillimetres: recoveryLengthInMillimetres,
 					};
 					setBlocks(blocks => [...blocks, newSptBlock]);
 					setIsAddNewBlockButtonPressed(false);
 				}}
 			/>
-		</View>
+		</GestureHandlerRootView>
 	);
 }
 
@@ -835,5 +883,12 @@ const styles = StyleSheet.create({
 		textAlign: 'center', 
 		paddingVertical: 10,
 		backgroundColor: 'rgba(0, 0, 0, 0.3)',
+	},
+	listItem: {
+		borderLeftWidth: 0.25,
+		borderRightWidth: 0.25,
+		borderBottomWidth: 0.25,
+		alignItems: 'center',
+		padding: 10,
 	}
 });
