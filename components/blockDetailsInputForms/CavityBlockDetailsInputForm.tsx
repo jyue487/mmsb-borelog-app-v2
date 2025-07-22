@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { CAVITY_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
@@ -43,7 +43,10 @@ export function CavityBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
           <Text style={{ paddingVertical: 10 }}>Cavity Description<Text style={{ color: 'red' }}>*</Text>: </Text>
           <View style={{ flex: 1 }}>
             <TouchableOpacity 
-              onPress={() => setIsSelectCavityDescriptionPressed(prev => !prev)}
+              onPress={() => {
+                Keyboard.dismiss();
+                setIsSelectCavityDescriptionPressed(prev => !prev);
+              }}
               style={{
                 borderWidth: 0.5,
                 alignItems: 'center',
@@ -78,11 +81,11 @@ export function CavityBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
       <Button
         title='Confirm'
         onPress={() => {
-          if (isNaN(parseFloat(topDepthInMetresStr))) {
+          if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
 						return;
 					}
-          if (isNaN(parseFloat(baseDepthInMetresStr))) {
+          if (isNaN(parseFloat(baseDepthInMetresStr)) || parseFloat(baseDepthInMetresStr) < parseFloat(topDepthInMetresStr)) {
 						alert('Error: Base Depth');
 						return;
 					}

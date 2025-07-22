@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { GestureHandlerRootView, FlatList } from "react-native-gesture-handler";
 
 import { SPT_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
@@ -445,7 +445,10 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectDominantColourPressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectDominantColourPressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -487,7 +490,10 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					<Text style={{ paddingVertical: 10 }}>Secondary Colour: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectSecondaryColourPressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectSecondaryColourPressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -527,7 +533,10 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					<Text style={{ paddingVertical: 10 }}>Dominant Soil Type<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectDominantSoilTypePressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectDominantSoilTypePressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -547,6 +556,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 												setDominantSoilType(item);
 												setIsSelectDominantSoilTypePressed(false);
 												setSecondarySoilType(undefined);
+												setIsSelectSecondarySoilTypePressed(false);
 											}}
 											style={[styles.listItem]}>
 											<Text>{item}</Text>
@@ -561,7 +571,10 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					<Text style={{ paddingVertical: 10 }}>Secondary Soil Type: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectSecondarySoilTypePressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectSecondarySoilTypePressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -594,7 +607,10 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 					<Text style={{ paddingVertical: 10 }}>Other Properties: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectOtherPropertiesPressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectOtherPropertiesPressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -669,7 +685,7 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 			<Button
 				title='Confirm'
 				onPress={() => {
-					if (isNaN(parseFloat(topDepthInMetresStr))) {
+					if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
 						return;
 					}
@@ -681,63 +697,63 @@ export function SptBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks,
 						alert('Error: Dominant Soil Type');
 						return;
 					}
-					if (isNaN(parseInt(seatingIncBlows1Str))) {
+					if (isNaN(parseInt(seatingIncBlows1Str)) || parseInt(seatingIncBlows1Str) < 0) {
 						alert(`Error: seatingIncBlows1Str`);
 						return;
 					}
-					if (isNaN(parseInt(seatingIncPen1Str))) {
+					if (isNaN(parseInt(seatingIncPen1Str)) || parseInt(seatingIncPen1Str) < 0) {
 						alert(`Error: seatingIncPen1Str`);
 						return;
 					}
 					if (parseInt(seatingIncBlows1Str) < 25) {
-						if (isNaN(parseInt(seatingIncBlows2Str))) {
+						if (isNaN(parseInt(seatingIncBlows2Str)) || parseInt(seatingIncBlows2Str) < 0) {
 							alert(`Error: seatingIncBlows2Str`);
 							return;
 						}
-						if (isNaN(parseInt(seatingIncPen2Str))) {
+						if (isNaN(parseInt(seatingIncPen2Str)) || parseInt(seatingIncPen2Str) < 0) {
 							alert(`Error: seatingIncPen2Str`);
 							return;
 						}
 					}
-					if (isNaN(parseInt(mainIncBlows1Str))) {
+					if (isNaN(parseInt(mainIncBlows1Str)) || parseInt(mainIncBlows1Str) < 0) {
 						alert(`Error: mainIncBlows1Str`);
 						return;
 					}
-					if (isNaN(parseInt(mainIncPen1Str))) {
+					if (isNaN(parseInt(mainIncPen1Str)) || parseInt(mainIncPen1Str) < 0) {
 						alert(`Error: mainIncPen1Str`);
 						return;
 					}
 					if (parseInt(mainIncBlows1Str) < 50) {
-						if (isNaN(parseInt(mainIncBlows2Str))) {
+						if (isNaN(parseInt(mainIncBlows2Str)) || parseInt(mainIncBlows2Str) < 0) {
 							alert(`Error: mainIncBlows2Str`);
 							return;
 						}
-						if (isNaN(parseInt(mainIncPen2Str))) {
+						if (isNaN(parseInt(mainIncPen2Str)) || parseInt(mainIncPen2Str) < 0) {
 							alert(`Error: mainIncPen2Str`);
 							return;
 						}
 					}
 					if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) < 50) {
-						if (isNaN(parseInt(mainIncBlows3Str))) {
+						if (isNaN(parseInt(mainIncBlows3Str)) || parseInt(mainIncBlows3Str) < 0) {
 							alert(`Error: mainIncBlows3Str`);
 							return;
 						}
-						if (isNaN(parseInt(mainIncPen3Str))) {
+						if (isNaN(parseInt(mainIncPen3Str)) || parseInt(mainIncPen3Str) < 0) {
 							alert(`Error: mainIncPen3Str`);
 							return;
 						}
 					}
 					if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) + parseInt(mainIncBlows3Str) < 50) {
-						if (isNaN(parseInt(mainIncBlows4Str))) {
+						if (isNaN(parseInt(mainIncBlows4Str)) || parseInt(mainIncBlows4Str) < 0) {
 							alert(`Error: mainIncBlows4Str`);
 							return;
 						}
-						if (isNaN(parseInt(mainIncPen4Str))) {
+						if (isNaN(parseInt(mainIncPen4Str)) || parseInt(mainIncPen4Str) < 0) {
 							alert(`Error: mainIncPen4Str`);
 							return;
 						}
 					}
-					if (isNaN(parseInt(recoveryLengthInMillimetresStr))) {
+					if (isNaN(parseInt(recoveryLengthInMillimetresStr)) || parseInt(recoveryLengthInMillimetresStr) < 0) {
 						alert('Error: Recovery Length');
 						return;
 					}

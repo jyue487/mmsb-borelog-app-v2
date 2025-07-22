@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { CORING_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
@@ -121,7 +121,10 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectDominantColourPressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectDominantColourPressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -163,7 +166,10 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					<Text style={{ paddingVertical: 10 }}>Secondary Colour: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectSecondaryColourPressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectSecondaryColourPressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -203,7 +209,10 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					<Text style={{ paddingVertical: 10 }}>Rock Type<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectRockTypePressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectRockTypePressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -249,7 +258,10 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					<Text style={{ paddingVertical: 10 }}>Other Properties: </Text>
 					<View style={{ flex: 1 }}>
 						<TouchableOpacity 
-							onPress={() => setIsSelectOtherPropertiesPressed(prev => !prev)}
+							onPress={() => {
+								Keyboard.dismiss();
+								setIsSelectOtherPropertiesPressed(prev => !prev);
+							}}
 							style={{
 								borderWidth: 0.5,
 								alignItems: 'center',
@@ -283,19 +295,19 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 			<Button
 				title='Confirm'
 				onPress={() => {
-					if (isNaN(parseFloat(topDepthInMetresStr))) {
+					if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
 						return;
 					}
-					if (isNaN(parseFloat(coreRunInMetresStr))) {
+					if (isNaN(parseFloat(coreRunInMetresStr)) || parseFloat(coreRunInMetresStr) < 0) {
 						alert('Error: Core Run');
 						return;
 					}
-					if (isNaN(parseFloat(coreRecoveryInMetresStr))) {
+					if (isNaN(parseFloat(coreRecoveryInMetresStr)) || parseFloat(coreRecoveryInMetresStr) < 0) {
 						alert('Error: Core Recovery');
 						return;
 					}
-					if (isNaN(parseFloat(rqdInMetresStr))) {
+					if (isNaN(parseFloat(rqdInMetresStr)) || parseFloat(rqdInMetresStr) < 0) {
 						alert('Error: R.Q.D.');
 						return;
 					}
@@ -376,7 +388,7 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 					}
 					rockDescription += ` ${rockTypeDescription}`;
 
-					const rockSampleIndex: number = blocks.filter((block: Block) => block.blockType === 'Coring').length + 1;
+					const rockSampleIndex: number = (coreRecoveryInMetres === 0 ) ? -1 : blocks.filter((block: Block) => block.blockType === 'Coring').length + 1;
 
 					const newCoringBlock: Block = {
 						id: blocks.length + 1,

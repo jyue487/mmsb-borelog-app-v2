@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { UD_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
+import { PS_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/constants/colour";
 import {
   DOMINANT_SOIL_TYPE_LIST,
@@ -13,14 +13,14 @@ import {
 } from "@/constants/soil";
 import { Block } from "@/types/Block";
 
-export type UdBlockDetailsInputFormProps = ViewProps & {
+export type PsBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: (isPressed: boolean) => void;
 };
 
-export function UdBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: UdBlockDetailsInputFormProps) {
+export function PsBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: PsBlockDetailsInputFormProps) {
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
   const [penetrationDepthInMetresStr, setPenetrationDepthInMetresStr] = useState<string>('');
   const [topDominantColour, setTopDominantColour] = useState<Colour>();
@@ -654,22 +654,22 @@ export function UdBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, 
             }
           }
 
-          const undisturbedSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === 'Ud' && block.recoveryLengthInMetres > 0).length + 1;
+          const pistonSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === 'Ps' && block.recoveryLengthInMetres > 0).length + 1;
 
-          const newUdBlock: Block = {
+          const newPsBlock: Block = {
             id: blocks.length + 1,
-            blockTypeId: UD_BLOCK_TYPE_ID,
-            blockType: 'Ud',
+            blockTypeId: PS_BLOCK_TYPE_ID,
+            blockType: 'Ps',
             boreholeId: boreholeId, 
             blockId: 1,
-            undisturbedSampleIndex: undisturbedSampleIndex,
+            pistonSampleIndex: pistonSampleIndex,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             topSoilDescription: topSoilDescription,
             baseSoilDescription: baseSoilDescription,
             recoveryLengthInMetres: recoveryLengthInMetres,
           };
-          setBlocks(blocks => [...blocks, newUdBlock]);
+          setBlocks(blocks => [...blocks, newPsBlock]);
           setIsAddNewBlockButtonPressed(false);
         }}
       />

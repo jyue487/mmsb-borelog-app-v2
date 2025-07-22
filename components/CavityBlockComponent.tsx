@@ -14,7 +14,7 @@ export function CavityBlockComponent({ style, cavityBlock, ...otherProps }: Cavi
 				<Text></Text>
 				<Text>{cavityBlock.baseDepthInMetres.toFixed(3)}</Text>
 			</View>
-			<View style={{ flex: 1, justifyContent: 'center' }}>
+			<View style={{ flex: 1 }}>
 				<Text>{cavityBlock.cavityDescription}</Text>
 			</View>
 		</View>

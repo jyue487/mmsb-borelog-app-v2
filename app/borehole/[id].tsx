@@ -1,18 +1,29 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import * as Print from 'expo-print';
 
 // Local Imports
 import { CoringBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CoringBlockDetailsInputForm';
 import { SptBlockDetailsInputForm } from '@/components/blockDetailsInputForms/SptBlockDetailsInputForm';
 import { CoringBlockComponent } from '@/components/CoringBlockComponent';
 import { SptBlockComponent } from '@/components/SptBlockComponent';
-import { CORING_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Block } from '@/types/Block';
 import { CavityBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CavityBlockDetailsInputForm';
 import { CavityBlockComponent } from '@/components/CavityBlockComponent';
 import { UdBlockComponent } from '@/components/UdBlockComponent';
 import { UdBlockDetailsInputForm } from '@/components/blockDetailsInputForms/UdBlockDetailsInputForm';
+import { MzBlockDetailsInputForm } from '@/components/blockDetailsInputForms/MzBlockDetailsInputForm';
+import { PsBlockDetailsInputForm } from '@/components/blockDetailsInputForms/PsBlockDetailsInputForm';
+import { MzBlockComponent } from '@/components/MzBlockComponent';
+import { PsBlockComponent } from '@/components/PsBlockComponent';
+import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
+import { 
+  SPT_BLOCK_TYPE_ID,
+  CORING_BLOCK_TYPE_ID
+} from '@/constants/BlockTypeId';
 
 export default function BoreholeScreen() {
 	const { id, projectName, name } = useLocalSearchParams();
@@ -26,84 +37,180 @@ export default function BoreholeScreen() {
   const [operationType, setOperationType] = useState<string>('Select Operation Type');
   const [blocks, setBlocks] = useState<Block[]>([
     {
-      id: 1, 
+      id: 1,
+      blockId: 1,
       blockTypeId: SPT_BLOCK_TYPE_ID,
+      boreholeId: boreholeId,
       blockType: 'Spt',
-      boreholeId: boreholeId, 
       sptIndex: 1,
       disturbedSampleIndex: 1,
-      blockId: 1,
-      topDepthInMetres: 75,
-      baseDepthInMetres: 75.45,
-      soilDescription: 'Loose, light yellowish, grey silty SAND with traces of decayed wood',
+      topDepthInMetres: 1.5,
+      baseDepthInMetres: 1.95,
+      soilDescription: 'Loose, light grey SAND',
       seatingIncBlows1: 1,
       seatingIncPen1: 75,
-      seatingIncBlows2: 2,
+      seatingIncBlows2: 1,
       seatingIncPen2: 75,
-      mainIncBlows1: 2,
+      mainIncBlows1: 1,
       mainIncPen1: 75,
-      mainIncBlows2: 4,
+      mainIncBlows2: 1,
       mainIncPen2: 75,
-      mainIncBlows3: 4,
+      mainIncBlows3: 1,
       mainIncPen3: 75,
-      mainIncBlows4: 4,
+      mainIncBlows4: 1,
       mainIncPen4: 75,
-      sptNValue: 14,
-      recoveryLengthInMillimetres: 430,
+      sptNValue: 4,
+      recoveryLengthInMillimetres: 400,
     },
     {
-      id: 2, 
-      blockTypeId: SPT_BLOCK_TYPE_ID, 
+      id: 2,
+      blockId: 2,
+      blockTypeId: SPT_BLOCK_TYPE_ID,
+      boreholeId: boreholeId,
       blockType: 'Spt',
-      boreholeId: boreholeId, 
       sptIndex: 2,
       disturbedSampleIndex: 2,
-      blockId: 2,
-      topDepthInMetres: 76.5,
-      baseDepthInMetres: 76.95,
-      soilDescription: 'Loose, grey silty GRAVEL',
-      seatingIncBlows1: 2,
+      topDepthInMetres: 3,
+      baseDepthInMetres: 3.45,
+      soilDescription: 'Loose, light grey SAND',
+      seatingIncBlows1: 1,
       seatingIncPen1: 75,
-      seatingIncBlows2: 3,
+      seatingIncBlows2: 1,
       seatingIncPen2: 75,
-      mainIncBlows1: 5,
+      mainIncBlows1: 1,
       mainIncPen1: 75,
-      mainIncBlows2: 5,
+      mainIncBlows2: 1,
       mainIncPen2: 75,
-      mainIncBlows3: 5,
+      mainIncBlows3: 1,
       mainIncPen3: 75,
-      mainIncBlows4: 6,
+      mainIncBlows4: 1,
       mainIncPen4: 75,
-      sptNValue: 21,
-      recoveryLengthInMillimetres: 450,
+      sptNValue: 4,
+      recoveryLengthInMillimetres: 400,
     },
     {
       id: 3,
-      blockTypeId: CORING_BLOCK_TYPE_ID, 
-      blockType: 'Coring',
-      boreholeId: boreholeId, 
       blockId: 3,
-      rockSampleIndex: 1,
-      topDepthInMetres: 78,
-      baseDepthInMetres: 79.5,
-      rockDescription: 'Light grey, medium grey slightly fractured to fresh good LIMESTONE',
-      coreRunInMetres: 1.5,
-      coreRecoveryInPercentage: 100,
-      rqdInPercentage: 84,
-    }
+      blockTypeId: SPT_BLOCK_TYPE_ID,
+      boreholeId: boreholeId,
+      blockType: 'Spt',
+      sptIndex: 3,
+      disturbedSampleIndex: 3,
+      topDepthInMetres: 4.5,
+      baseDepthInMetres: 4.95,
+      soilDescription: 'Loose, light grey SAND',
+      seatingIncBlows1: 1,
+      seatingIncPen1: 75,
+      seatingIncBlows2: 1,
+      seatingIncPen2: 75,
+      mainIncBlows1: 1,
+      mainIncPen1: 75,
+      mainIncBlows2: 1,
+      mainIncPen2: 75,
+      mainIncBlows3: 1,
+      mainIncPen3: 75,
+      mainIncBlows4: 1,
+      mainIncPen4: 75,
+      sptNValue: 4,
+      recoveryLengthInMillimetres: 400,
+    },
+    {
+      id: 4,
+      blockId: 4,
+      blockTypeId: SPT_BLOCK_TYPE_ID,
+      boreholeId: boreholeId,
+      blockType: 'Spt',
+      sptIndex: 4,
+      disturbedSampleIndex: 4,
+      topDepthInMetres: 6,
+      baseDepthInMetres: 6.45,
+      soilDescription: 'Loose, light grey SAND',
+      seatingIncBlows1: 1,
+      seatingIncPen1: 75,
+      seatingIncBlows2: 1,
+      seatingIncPen2: 75,
+      mainIncBlows1: 1,
+      mainIncPen1: 75,
+      mainIncBlows2: 1,
+      mainIncPen2: 75,
+      mainIncBlows3: 1,
+      mainIncPen3: 75,
+      mainIncBlows4: 1,
+      mainIncPen4: 75,
+      sptNValue: 4,
+      recoveryLengthInMillimetres: 400,
+    },
+    {
+      id: 5,
+      blockId: 5,
+      blockTypeId: SPT_BLOCK_TYPE_ID,
+      boreholeId: boreholeId,
+      blockType: 'Spt',
+      sptIndex: 5,
+      disturbedSampleIndex: 5,
+      topDepthInMetres: 7.5,
+      baseDepthInMetres: 7.95,
+      soilDescription: 'Loose, light grey SAND',
+      seatingIncBlows1: 1,
+      seatingIncPen1: 75,
+      seatingIncBlows2: 1,
+      seatingIncPen2: 75,
+      mainIncBlows1: 1,
+      mainIncPen1: 75,
+      mainIncBlows2: 1,
+      mainIncPen2: 75,
+      mainIncBlows3: 1,
+      mainIncPen3: 75,
+      mainIncBlows4: 1,
+      mainIncPen4: 75,
+      sptNValue: 4,
+      recoveryLengthInMillimetres: 400,
+    },
+    {
+      id: 6,
+      blockId: 6,
+      blockTypeId: SPT_BLOCK_TYPE_ID,
+      boreholeId: boreholeId,
+      blockType: 'Spt',
+      sptIndex: 6,
+      disturbedSampleIndex: 6,
+      topDepthInMetres: 9,
+      baseDepthInMetres: 9.45,
+      soilDescription: 'Loose, light grey SAND',
+      seatingIncBlows1: 1,
+      seatingIncPen1: 75,
+      seatingIncBlows2: 1,
+      seatingIncPen2: 75,
+      mainIncBlows1: 1,
+      mainIncPen1: 75,
+      mainIncBlows2: 1,
+      mainIncPen2: 75,
+      mainIncBlows3: 1,
+      mainIncPen3: 75,
+      mainIncBlows4: 1,
+      mainIncPen4: 75,
+      sptNValue: 4,
+      recoveryLengthInMillimetres: 400,
+    },
+    // {
+    //   id: 7,
+    //   blockId: 7,
+    //   blockTypeId: CORING_BLOCK_TYPE_ID,
+    //   boreholeId: boreholeId,
+    //   blockType: 'Coring',
+    //   rockSampleIndex: 1,
+    //   topDepthInMetres: 17,
+    //   baseDepthInMetres: 18.5,
+    //   rockDescription: 'Moderately strong, light brownish grey silty SAND with some gravel',
+    //   coreRunInMetres: 1.5,
+    //   coreRecoveryInPercentage: 93.3,
+    //   rqdInPercentage: 40,
+    // }
   ]);
-
-
-  const addNewBlock = (newBlock: Block) => {
-    newBlock.id = blocks.length + 1;
-    setBlocks(prev => [...prev, newBlock]);
-  };
 
   const clearData = async () => {
     setBlocks([]);
   };
-
-
 
   const renderFooter = () => (
     <>
@@ -134,7 +241,7 @@ export default function BoreholeScreen() {
               {
                 isSelectOperationTypePressed && (
                   <FlatList
-                    data={['SPT', 'Coring', 'Cavity', 'UD']}
+                    data={['SPT', 'Coring', 'Cavity', 'UD', 'MZ', 'PS']}
                     keyExtractor={item => item}
                     renderItem={({ item }) => (
                       <TouchableOpacity 
@@ -189,6 +296,26 @@ export default function BoreholeScreen() {
                   /> 
                 )
               }
+              { 
+                operationType === 'MZ' && (
+                  <MzBlockDetailsInputForm 
+                    boreholeId={boreholeId}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
+                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+                  /> 
+                )
+              }
+              { 
+                operationType === 'PS' && (
+                  <PsBlockDetailsInputForm 
+                    boreholeId={boreholeId}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
+                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+                  /> 
+                )
+              }
             </View>
             <Button
               title='Cancel'
@@ -203,6 +330,29 @@ export default function BoreholeScreen() {
       <Button
         title='Clear Data'
         onPress={() => clearData()}
+      />
+      <Button
+        title='Share'
+        onPress={async () => {
+          const html = await generateBorelogPdf(blocks);
+          const { uri } = await Print.printToFileAsync({
+            html,
+            base64: false,
+          });
+
+          const newFileUri = FileSystem.documentDirectory + `${projectName.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
+          await FileSystem.moveAsync({
+            from: uri,
+            to: newFileUri,
+          });
+
+          const isAvailable = await Sharing.isAvailableAsync();
+          if (isAvailable) {
+            await Sharing.shareAsync(newFileUri);
+          } else {
+            alert('Sharing is not available on this device');
+          }
+        }}
       />
     </>
   );
@@ -234,6 +384,10 @@ export default function BoreholeScreen() {
             return <CavityBlockComponent style={styles.block} cavityBlock={item} />
           case 'Ud':
             return <UdBlockComponent style={styles.block} udBlock={item} />
+          case 'Mz':
+            return <MzBlockComponent style={styles.block} mzBlock={item} />
+          case 'Ps':
+            return <PsBlockComponent style={styles.block} psBlock={item} />
           default:
             throw new Error('Unknown block type');
           }
