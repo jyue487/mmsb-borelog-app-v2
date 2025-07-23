@@ -1,6 +1,6 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { MzBlock } from '@/types/MzBlock';
+import { MzBlock } from '@/interfaces/MzBlock';
 
 export type MzBlockProps = ViewProps & {
 	mzBlock: MzBlock

@@ -1,6 +1,8 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { SptBlock } from '@/types/SptBlock';
+import { SptBlock } from '@/interfaces/SptBlock';
+import { getDateTime } from "@/utils/datetime";
+import { DAY_CONTINUE_WORK_TYPE } from "@/constants/DayStatus";
 
 export type SptBlockProps = ViewProps & {
 	sptBlock: SptBlock
@@ -18,7 +20,19 @@ export function SptBlockComponent({ style, sptBlock, ...otherProps }: SptBlockPr
 				<Text>{sptBlock.baseDepthInMetres.toFixed(3)}</Text>
 			</View>
 			<View style={{ flex: 1 }}>
-				<Text>{sptBlock.soilDescription}</Text>
+				<View style={{ flexDirection: 'row' }}>
+					<View style={{ flex: 1 }}><Text>{sptBlock.soilDescription}</Text></View>
+					{
+						(sptBlock.dayWorkStatus.dayWorkStatusType !== DAY_CONTINUE_WORK_TYPE) && (
+							<View style={{ alignItems: 'flex-end' }}>
+								<Text>{sptBlock.dayWorkStatus.dayWorkStatusType}</Text>
+								<Text>{getDateTime(sptBlock.dayWorkStatus.date, sptBlock.dayWorkStatus.time)}</Text>
+								<Text>Water Level: {sptBlock.dayWorkStatus.waterLevelInMetres}m</Text>
+								<Text>Casing Depth: {sptBlock.dayWorkStatus.casingDepthInMetres}m</Text>
+							</View>
+						)
+					}
+				</View>
 				<Text></Text>
 				<View style={{ flexDirection: 'row' }}>
 					<View style={{ flex: 2, borderRightWidth: 0.25, alignItems: 'center' }}>

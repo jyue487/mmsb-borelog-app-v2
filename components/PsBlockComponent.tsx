@@ -1,6 +1,6 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { PsBlock } from '@/types/PsBlock';
+import { PsBlock } from '@/interfaces/PsBlock';
 
 export type PsBlockProps = ViewProps & {
 	psBlock: PsBlock

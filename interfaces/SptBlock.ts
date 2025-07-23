@@ -1,4 +1,5 @@
 import { SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
+import { DayWorkStatus } from '@/constants/DayStatus';
 
 export interface SptBlock {
     blockId: number;
@@ -6,6 +7,7 @@ export interface SptBlock {
     blockType: 'Spt';
     sptIndex: number;
     disturbedSampleIndex: number;
+    dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;
     baseDepthInMetres: number;
     soilDescription: string;

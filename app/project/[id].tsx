@@ -1,10 +1,10 @@
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Link, Stack, useLocalSearchParams, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Pressable, FlatList } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 // Local Imports
-import { Borehole } from '@/types/Borehole';
+import { Borehole } from '@/interfaces/Borehole';
 
 export default function ProjectScreen() {
   const db = useSQLiteContext()

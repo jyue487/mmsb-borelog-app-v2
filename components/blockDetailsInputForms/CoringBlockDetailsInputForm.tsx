@@ -2,19 +2,30 @@ import React, { useState } from "react";
 import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { DayWorkStatusInputQuestion } from '@/components/inputQuestions/DayWorkStatusInputQuestion';
 import { CORING_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/constants/colour";
 import { OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE, ROCK_TYPE_LIST, RockType } from "@/constants/rock";
-import { Block } from "@/types/Block";
+import { Block } from "@/interfaces/Block";
+import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 
 export type CoringBlockDetailsInputFormProps = ViewProps & {
 	boreholeId: number;
 	blocks: Block[];
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-	setIsAddNewBlockButtonPressed: (isPressed: boolean) => void;
+	setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: CoringBlockDetailsInputFormProps) {
+	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(DAY_CONTINUE_WORK_TYPE);
+	const [isSelectDayWorkStatusPressed, setIsSelectDayWorkStatusPressed] = useState<boolean>(false);
+	const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>(new Date());
+	const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>(new Date());
+	const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>(new Date());
+	const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>(new Date());
+	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>('');
+	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>('');
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
 	const [coreRunInMetresStr, setCoreRunInMetresStr] = useState<string>('');
 	const [coreRecoveryInMetresStr, setCoreRecoveryInMetresStr] = useState<string>('');
@@ -37,264 +48,284 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 	};
 
 	return (
-		<GestureHandlerRootView>
-			<View style={{ paddingVertical: 20, gap: 20 }}>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<TextInput
-						value={topDepthInMetresStr}
-						onChangeText={setTopDepthInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-						keyboardType='numeric'
-					/>
-				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Core Run(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<TextInput
-						value={coreRunInMetresStr}
-						onChangeText={(text: string) => {
-							setCoreRunInMetresStr(text);
-							resetCoreRecovery();
-							resetRqd();
+		<GestureHandlerRootView style={{ gap: 20 }}>
+			<DayWorkStatusInputQuestion 
+				dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
+				isSelectDayWorkStatusPressed={isSelectDayWorkStatusPressed} setIsSelectDayWorkStatusPressed={setIsSelectDayWorkStatusPressed}
+				dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
+				dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
+				dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
+				dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
+				waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
+				casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+			/>
+			<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+				<Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+				<TextInput
+					value={topDepthInMetresStr}
+					onChangeText={setTopDepthInMetresStr}
+					style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+					keyboardType='numeric'
+				/>
+			</View>
+			<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+				<Text>Core Run(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+				<TextInput
+					value={coreRunInMetresStr}
+					onChangeText={(text: string) => {
+						setCoreRunInMetresStr(text);
+						resetCoreRecovery();
+						resetRqd();
+					}}
+					style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+					keyboardType='numeric'
+				/>
+			</View>
+			<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+				<Text>Core Recovery(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+				<TextInput
+					value={coreRecoveryInMetresStr}
+					onChangeText={(text: string) => {
+						const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+						if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
+							return;
+						}
+						setCoreRecoveryInMetresStr(text);
+						const coreRecoveryInMetres: number = parseFloat(parseFloat(text).toFixed(3));
+						if (isNaN(coreRecoveryInMetres)) {
+							return;
+						}
+						if (coreRecoveryInMetres > coreRunInMetres) {
+							setCoreRecoveryInMetresStr(coreRunInMetres.toString());
+						}
+					}}
+					style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
+					keyboardType='numeric'
+				/>
+				<Text>
+					{(() => {
+						const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+						return (coreRunInMetres > 0) ? `   /   ${coreRunInMetres}` : undefined;
+					})()}
+				</Text>
+			</View>
+			<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+				<Text>R.Q.D.(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+				<TextInput
+					value={rqdInMetresStr}
+					onChangeText={(text: string) => {
+						const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+						if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
+							return;
+						}
+						setRqdInMetresStr(text);
+						const rqdInMetres: number = parseFloat(parseFloat(text).toFixed(3));
+						if (isNaN(rqdInMetres)) {
+							return;
+						}
+						if (rqdInMetres > coreRunInMetres) {
+							setRqdInMetresStr(coreRunInMetres.toString());
+						}
+					}}
+					style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
+					keyboardType='numeric'
+				/>
+				<Text>
+					{(() => {
+						const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
+						return (coreRunInMetres > 0) ? `   /   ${coreRunInMetres}` : undefined;
+					})()}
+				</Text>
+			</View>
+			<View style={{ flexDirection: 'row' }}>
+				<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
+				<View style={{ flex: 1 }}>
+					<TouchableOpacity 
+						onPress={() => {
+							Keyboard.dismiss();
+							setIsSelectDominantColourPressed(prev => !prev);
 						}}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-						keyboardType='numeric'
-					/>
+						style={{
+							borderWidth: 0.5,
+							alignItems: 'center',
+							padding: 10,
+							width: '100%',
+							backgroundColor: (!dominantColour) ? 'transparent' : dominantColour.colourCode,
+						}}>
+						{
+							(!dominantColour) 
+							? <Text></Text> 
+							: <Text style={{ color: dominantColour.colourTagFontColour }}>{dominantColour.colourTag}</Text>
+						}
+					</TouchableOpacity>
+					{
+						isSelectDominantColourPressed && (
+							<FlatList
+								data={DOMINANT_COLOUR_LIST}
+								keyExtractor={item => item.colourCode}
+								renderItem={({ item }) => (
+									<TouchableOpacity 
+										onPress={() => {
+											setDominantColour(item);
+											setIsSelectDominantColourPressed(false);
+											setSecondaryColour(undefined);
+											setIsSelectSecondaryColourPressed(false);
+										}}
+										style={[styles.listItem, { backgroundColor: item.colourCode }]}>
+										<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+									</TouchableOpacity>
+								)}
+								nestedScrollEnabled={true}
+								style={{ maxHeight: 500 }}
+							/>
+						)
+					}
 				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Core Recovery(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<TextInput
-						value={coreRecoveryInMetresStr}
-						onChangeText={(text: string) => {
-							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
-							if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
-								return;
-							}
-							setCoreRecoveryInMetresStr(text);
-							const coreRecoveryInMetres: number = parseFloat(parseFloat(text).toFixed(3));
-							if (isNaN(coreRecoveryInMetres)) {
-                return;
-              }
-              if (coreRecoveryInMetres > coreRunInMetres) {
-                setCoreRecoveryInMetresStr(coreRunInMetres.toString());
-              }
+			</View>
+			<View style={{ flexDirection: 'row' }}>
+				<Text style={{ paddingVertical: 10 }}>Secondary Colour: </Text>
+				<View style={{ flex: 1 }}>
+					<TouchableOpacity 
+						onPress={() => {
+							Keyboard.dismiss();
+							setIsSelectSecondaryColourPressed(prev => !prev);
 						}}
-						style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
-						keyboardType='numeric'
-					/>
-					<Text>
-						{(() => {
-							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
-							return (coreRunInMetres > 0) ? `   /   ${coreRunInMetres}` : undefined;
-						})()}
-					</Text>
+						style={{
+							borderWidth: 0.5,
+							alignItems: 'center',
+							padding: 10,
+							width: '100%',
+							backgroundColor: (!secondaryColour) ? 'transparent' : secondaryColour.colourCode,
+						}}>
+						{
+							(!secondaryColour) 
+							? <Text></Text> 
+							: <Text style={{ color: secondaryColour.colourTagFontColour }}>{secondaryColour.colourTag}</Text>
+						}
+					</TouchableOpacity>
+					{
+						isSelectSecondaryColourPressed && (
+							<FlatList
+								data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => dominantColour && colour.colourFamily != dominantColour.colourFamily)}
+								keyExtractor={item => item.colourCode}
+								renderItem={({ item }) => (
+									<TouchableOpacity 
+										onPress={() => {
+											setSecondaryColour(item);
+											setIsSelectSecondaryColourPressed(false);
+										}}
+										style={[styles.listItem, { backgroundColor: item.colourCode }]}>
+										<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+									</TouchableOpacity>
+								)}
+								nestedScrollEnabled={true}
+								style={{ maxHeight: 500 }}
+							/>
+						)
+					}
 				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>R.Q.D.(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<TextInput
-						value={rqdInMetresStr}
-						onChangeText={(text: string) => {
-							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
-							if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
-								return;
-							}
-							setRqdInMetresStr(text);
-							const rqdInMetres: number = parseFloat(parseFloat(text).toFixed(3));
-							if (isNaN(rqdInMetres)) {
-                return;
-              }
-              if (rqdInMetres > coreRunInMetres) {
-                setRqdInMetresStr(coreRunInMetres.toString());
-              }
+			</View>
+			<View style={{ flexDirection: 'row' }}>
+				<Text style={{ paddingVertical: 10 }}>Rock Type<Text style={{ color: 'red' }}>*</Text>: </Text>
+				<View style={{ flex: 1 }}>
+					<TouchableOpacity 
+						onPress={() => {
+							Keyboard.dismiss();
+							setIsSelectRockTypePressed(prev => !prev);
 						}}
-						style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
-						keyboardType='numeric'
-					/>
-					<Text>
-						{(() => {
-							const coreRunInMetres: number = parseFloat(parseFloat(coreRunInMetresStr).toFixed(3));
-							return (coreRunInMetres > 0) ? `   /   ${coreRunInMetres}` : undefined;
-						})()}
-					</Text>
+						style={{
+							borderWidth: 0.5,
+							alignItems: 'center',
+							padding: 10,
+							width: '100%',
+						}}>
+						<Text>{rockType}</Text>
+					</TouchableOpacity>
+					{
+						isSelectRockTypePressed && (
+							<FlatList
+								data={ROCK_TYPE_LIST}
+								keyExtractor={item => item}
+								renderItem={({ item }) => (
+									<TouchableOpacity 
+										onPress={() => {
+											setRockType(item);
+											setIsSelectRockTypePressed(false);
+											setOtherRockType('');
+										}}
+										style={[styles.listItem]}>
+										<Text>{item}</Text>
+									</TouchableOpacity>
+								)}
+								style={{ maxHeight: 500 }}
+							/>
+						)
+					}
+					{
+						rockType === 'OTHERS' && (
+							<TextInput
+								value={otherRockType}
+								onChangeText={(text: string) => {
+									setOtherRockType(text.toUpperCase());
+								}}
+								style={{ borderWidth: 0.5, padding: 10, textAlign: 'center' }}
+							/>
+						)
+					}
 				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<View style={{ flex: 1 }}>
-						<TouchableOpacity 
-							onPress={() => {
-								Keyboard.dismiss();
-								setIsSelectDominantColourPressed(prev => !prev);
-							}}
-							style={{
-								borderWidth: 0.5,
-								alignItems: 'center',
-								padding: 10,
-								width: '100%',
-								backgroundColor: (!dominantColour) ? 'transparent' : dominantColour.colourCode,
-							}}>
-							{
-								(!dominantColour) 
-								? <Text></Text> 
-								: <Text style={{ color: dominantColour.colourTagFontColour }}>{dominantColour.colourTag}</Text>
-							}
-						</TouchableOpacity>
-						{
-							isSelectDominantColourPressed && (
-								<FlatList
-									data={DOMINANT_COLOUR_LIST}
-									keyExtractor={item => item.colourCode}
-									renderItem={({ item }) => (
-										<TouchableOpacity 
-											onPress={() => {
-												setDominantColour(item);
-												setIsSelectDominantColourPressed(false);
-												setSecondaryColour(undefined);
-												setIsSelectSecondaryColourPressed(false);
-											}}
-											style={[styles.listItem, { backgroundColor: item.colourCode }]}>
-											<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
-										</TouchableOpacity>
-									)}
-									nestedScrollEnabled={true}
-									style={{ maxHeight: 500 }}
-								/>
-							)
-						}
-					</View>
-				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Secondary Colour: </Text>
-					<View style={{ flex: 1 }}>
-						<TouchableOpacity 
-							onPress={() => {
-								Keyboard.dismiss();
-								setIsSelectSecondaryColourPressed(prev => !prev);
-							}}
-							style={{
-								borderWidth: 0.5,
-								alignItems: 'center',
-								padding: 10,
-								width: '100%',
-								backgroundColor: (!secondaryColour) ? 'transparent' : secondaryColour.colourCode,
-							}}>
-							{
-								(!secondaryColour) 
-								? <Text></Text> 
-								: <Text style={{ color: secondaryColour.colourTagFontColour }}>{secondaryColour.colourTag}</Text>
-							}
-						</TouchableOpacity>
-						{
-							isSelectSecondaryColourPressed && (
-								<FlatList
-									data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => dominantColour && colour.colourFamily != dominantColour.colourFamily)}
-									keyExtractor={item => item.colourCode}
-									renderItem={({ item }) => (
-										<TouchableOpacity 
-											onPress={() => {
-												setSecondaryColour(item);
-												setIsSelectSecondaryColourPressed(false);
-											}}
-											style={[styles.listItem, { backgroundColor: item.colourCode }]}>
-											<Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
-										</TouchableOpacity>
-									)}
-									nestedScrollEnabled={true}
-									style={{ maxHeight: 500 }}
-								/>
-							)
-						}
-					</View>
-				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Rock Type<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<View style={{ flex: 1 }}>
-						<TouchableOpacity 
-							onPress={() => {
-								Keyboard.dismiss();
-								setIsSelectRockTypePressed(prev => !prev);
-							}}
-							style={{
-								borderWidth: 0.5,
-								alignItems: 'center',
-								padding: 10,
-								width: '100%',
-							}}>
-							<Text>{rockType}</Text>
-						</TouchableOpacity>
-						{
-							isSelectRockTypePressed && (
-								<FlatList
-									data={ROCK_TYPE_LIST}
-									keyExtractor={item => item}
-									renderItem={({ item }) => (
-										<TouchableOpacity 
-											onPress={() => {
-												setRockType(item);
-												setIsSelectRockTypePressed(false);
-												setOtherRockType('');
-											}}
-											style={[styles.listItem]}>
-											<Text>{item}</Text>
-										</TouchableOpacity>
-									)}
-									style={{ maxHeight: 500 }}
-								/>
-							)
-						}
-						{
-							rockType === 'OTHERS' && (
-								<TextInput
-									value={otherRockType}
-									onChangeText={(text: string) => {
-										setOtherRockType(text.toUpperCase());
-									}}
-									style={{ borderWidth: 0.5, padding: 10, textAlign: 'center' }}
-								/>
-							)
-						}
-					</View>
-				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Other Properties: </Text>
-					<View style={{ flex: 1 }}>
-						<TouchableOpacity 
-							onPress={() => {
-								Keyboard.dismiss();
-								setIsSelectOtherPropertiesPressed(prev => !prev);
-							}}
-							style={{
-								borderWidth: 0.5,
-								alignItems: 'center',
-								padding: 10,
-								width: '100%',
-							}}>
-							<Text>{otherProperties}</Text>
-						</TouchableOpacity>
-						{
-							isSelectOtherPropertiesPressed && (
-								<FlatList
-									data={(!rockType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE[rockType]}
-									keyExtractor={item => item}
-									renderItem={({ item }) => (
-										<TouchableOpacity 
-											onPress={() => {
-												setOtherProperties(item);
-												setIsSelectOtherPropertiesPressed(false);
-											}}
-											style={[styles.listItem]}>
-											<Text>{item}</Text>
-										</TouchableOpacity>
-									)}
-									style={{ maxHeight: 500 }}
-								/>
-							)
-						}
-					</View>
+			</View>
+			<View style={{ flexDirection: 'row' }}>
+				<Text style={{ paddingVertical: 10 }}>Other Properties: </Text>
+				<View style={{ flex: 1 }}>
+					<TouchableOpacity 
+						onPress={() => {
+							Keyboard.dismiss();
+							setIsSelectOtherPropertiesPressed(prev => !prev);
+						}}
+						style={{
+							borderWidth: 0.5,
+							alignItems: 'center',
+							padding: 10,
+							width: '100%',
+						}}>
+						<Text>{otherProperties}</Text>
+					</TouchableOpacity>
+					{
+						isSelectOtherPropertiesPressed && (
+							<FlatList
+								data={(!rockType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE[rockType]}
+								keyExtractor={item => item}
+								renderItem={({ item }) => (
+									<TouchableOpacity 
+										onPress={() => {
+											setOtherProperties(item);
+											setIsSelectOtherPropertiesPressed(false);
+										}}
+										style={[styles.listItem]}>
+										<Text>{item}</Text>
+									</TouchableOpacity>
+								)}
+								style={{ maxHeight: 500 }}
+							/>
+						)
+					}
 				</View>
 			</View>
 			<Button
 				title='Confirm'
 				onPress={() => {
+					const dayWorkStatus: DayWorkStatus | undefined = checkAndReturnDayWorkStatus(
+						dayWorkStatusType,
+						dayStartWorkDate,
+						dayStartWorkTime,
+						dayEndWorkDate,
+						dayEndWorkTime,
+						waterLevelInMetresStr,
+						casingDepthInMetresStr,
+					);
+					if (!dayWorkStatus) {
+						return;
+					}
 					if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
 						return;
@@ -397,6 +428,7 @@ export function CoringBlockDetailsInputForm({ style, boreholeId, blocks, setBloc
 						boreholeId: boreholeId, 
 						blockId: 1,
 						rockSampleIndex: rockSampleIndex,
+						dayWorkStatus: dayWorkStatus,
 						topDepthInMetres: topDepthInMetres,
 						baseDepthInMetres: baseDepthInMetres,
 						rockDescription: rockDescription,

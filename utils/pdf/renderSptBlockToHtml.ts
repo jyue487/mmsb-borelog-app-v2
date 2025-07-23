@@ -1,16 +1,22 @@
-import { SptBlock } from "@/types/SptBlock";
+import { SptBlock } from "@/interfaces/SptBlock";
 import { renderScaleTicks } from "@/utils/pdf/renderScaleTicks";
+import { getDayOfMonth, getHours, getMinutes, getMonth, getYear } from "../datetime";
+import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE } from "@/constants/DayStatus";
 
 export function renderSptBlockToHtml(block: SptBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr style="height: ${numberOfTicksToRender * 6}px;">
-            <td colspan="1" style="vertical-align:>
-                <div style="display: flex; flex-direction: row;">
-                    <div style="display: flex; flex: 1%; flex-direction: column; align-items: center; justify-content: flex-end;">
-                        <div class="date-time"></div>
+            <td colspan="1" style="vertical-align: ${(block.dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE) ? 'top' : (block.dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE) ? 'bottom' : 'middle'};">
+                ${(block.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : 
+                    `
+                    <div style="display: flex; flex: 1; flex-direction: column; align-items: center;">
+                        <div>${getYear(block.dayWorkStatus.date)}</div>
+                        <div>${getMonth(block.dayWorkStatus.date) + '/' + getDayOfMonth(block.dayWorkStatus.date)}</div>
+                        <div>${getHours(block.dayWorkStatus.time) + ':' + getMinutes(block.dayWorkStatus.time)}</div>
                     </div>
-                </div>
+                    `
+                }
             </td>
             <td>
                 <div>P${block.sptIndex}</div>

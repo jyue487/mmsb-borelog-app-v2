@@ -1,4 +1,4 @@
-import { Block } from '@/types/Block';
+import { Block } from '@/interfaces/Block';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 

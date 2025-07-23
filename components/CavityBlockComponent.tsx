@@ -1,6 +1,6 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { CavityBlock } from '@/types/CavityBlock';
+import { CavityBlock } from '@/interfaces/CavityBlock';
 
 export type CavityBlockProps = ViewProps & {
 	cavityBlock: CavityBlock

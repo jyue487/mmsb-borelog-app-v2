@@ -1,8 +1,8 @@
-import { Block } from "@/types/Block";
+import { Block } from "@/interfaces/Block";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
 import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
-import { renderHeaderToHtml } from "./renderHeaderToHtml";
 import { renderFooterToHtml } from "./renderFooterToHtml";
+import { renderHeaderToHtml } from "./renderHeaderToHtml";
 
 export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
@@ -42,6 +42,10 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
             }
             
             ++blockIndex;
+        }
+        if (blockIndex === blocks.length) {
+            const numberOfTicksToRender: number = pageIndex * 90 - scaleTickIndexWrapper[0];
+            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
         }
         return result;
     };

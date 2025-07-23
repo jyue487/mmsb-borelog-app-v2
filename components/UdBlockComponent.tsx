@@ -1,6 +1,6 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { UdBlock } from '@/types/UdBlock';
+import { UdBlock } from '@/interfaces/UdBlock';
 
 export type UdBlockProps = ViewProps & {
 	udBlock: UdBlock

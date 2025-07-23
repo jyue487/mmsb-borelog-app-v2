@@ -1,29 +1,24 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import * as Sharing from 'expo-sharing';
+import { useState } from 'react';
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 // Local Imports
-import { CoringBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CoringBlockDetailsInputForm';
-import { SptBlockDetailsInputForm } from '@/components/blockDetailsInputForms/SptBlockDetailsInputForm';
-import { CoringBlockComponent } from '@/components/CoringBlockComponent';
-import { SptBlockComponent } from '@/components/SptBlockComponent';
-import { Block } from '@/types/Block';
-import { CavityBlockDetailsInputForm } from '@/components/blockDetailsInputForms/CavityBlockDetailsInputForm';
 import { CavityBlockComponent } from '@/components/CavityBlockComponent';
-import { UdBlockComponent } from '@/components/UdBlockComponent';
-import { UdBlockDetailsInputForm } from '@/components/blockDetailsInputForms/UdBlockDetailsInputForm';
-import { MzBlockDetailsInputForm } from '@/components/blockDetailsInputForms/MzBlockDetailsInputForm';
-import { PsBlockDetailsInputForm } from '@/components/blockDetailsInputForms/PsBlockDetailsInputForm';
+import { CoringBlockComponent } from '@/components/CoringBlockComponent';
 import { MzBlockComponent } from '@/components/MzBlockComponent';
 import { PsBlockComponent } from '@/components/PsBlockComponent';
-import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
-import { 
-  SPT_BLOCK_TYPE_ID,
-  CORING_BLOCK_TYPE_ID
+import { SptBlockComponent } from '@/components/SptBlockComponent';
+import { UdBlockComponent } from '@/components/UdBlockComponent';
+import {
+  SPT_BLOCK_TYPE_ID
 } from '@/constants/BlockTypeId';
+import { Block } from '@/interfaces/Block';
+import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
+import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE } from '@/constants/DayStatus';
+import { NewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/NewBlockDetailsInputForm';
 
 export default function BoreholeScreen() {
 	const { id, projectName, name } = useLocalSearchParams();
@@ -33,8 +28,6 @@ export default function BoreholeScreen() {
   const boreholeId: number = parseInt(id, 10);
   const boreholeName: string = name;
   const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
-  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>(false);
-  const [operationType, setOperationType] = useState<string>('Select Operation Type');
   const [blocks, setBlocks] = useState<Block[]>([
     {
       id: 1,
@@ -44,6 +37,7 @@ export default function BoreholeScreen() {
       blockType: 'Spt',
       sptIndex: 1,
       disturbedSampleIndex: 1,
+      dayWorkStatus: { dayWorkStatusType: DAY_START_WORK_TYPE, date: new Date(), time: new Date(), waterLevelInMetres: 1.5, casingDepthInMetres: 1.5 },
       topDepthInMetres: 1.5,
       baseDepthInMetres: 1.95,
       soilDescription: 'Loose, light grey SAND',
@@ -70,6 +64,7 @@ export default function BoreholeScreen() {
       blockType: 'Spt',
       sptIndex: 2,
       disturbedSampleIndex: 2,
+      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
       topDepthInMetres: 3,
       baseDepthInMetres: 3.45,
       soilDescription: 'Loose, light grey SAND',
@@ -96,6 +91,7 @@ export default function BoreholeScreen() {
       blockType: 'Spt',
       sptIndex: 3,
       disturbedSampleIndex: 3,
+      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
       topDepthInMetres: 4.5,
       baseDepthInMetres: 4.95,
       soilDescription: 'Loose, light grey SAND',
@@ -122,6 +118,7 @@ export default function BoreholeScreen() {
       blockType: 'Spt',
       sptIndex: 4,
       disturbedSampleIndex: 4,
+      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
       topDepthInMetres: 6,
       baseDepthInMetres: 6.45,
       soilDescription: 'Loose, light grey SAND',
@@ -148,6 +145,7 @@ export default function BoreholeScreen() {
       blockType: 'Spt',
       sptIndex: 5,
       disturbedSampleIndex: 5,
+      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
       topDepthInMetres: 7.5,
       baseDepthInMetres: 7.95,
       soilDescription: 'Loose, light grey SAND',
@@ -174,6 +172,7 @@ export default function BoreholeScreen() {
       blockType: 'Spt',
       sptIndex: 6,
       disturbedSampleIndex: 6,
+      dayWorkStatus: { dayWorkStatusType: DAY_END_WORK_TYPE, date: new Date(), time: new Date(), waterLevelInMetres: 9, casingDepthInMetres: 9 },
       topDepthInMetres: 9,
       baseDepthInMetres: 9.45,
       soilDescription: 'Loose, light grey SAND',
@@ -219,7 +218,6 @@ export default function BoreholeScreen() {
           <Button
             title='Add new block'
             onPress={() => {
-              setOperationType('Select Operation Type');
               setIsAddNewBlockButtonPressed(true);
             }}
           />
@@ -227,100 +225,16 @@ export default function BoreholeScreen() {
       }
       {
         isAddNewBlockButtonPressed && (
-          <View style={[styles.block, { padding: 20, gap: 20 }]}>
-            <View>
-              <TouchableOpacity 
-                onPress={() => setIsSelectOperationTypePressed(prev => !prev)}
-                style={{ 
-                  borderWidth: 0.5, 
-                  alignItems: 'center',
-                  padding: 10,
-                }}>
-                <Text>{operationType}</Text>
-              </TouchableOpacity>
-              {
-                isSelectOperationTypePressed && (
-                  <FlatList
-                    data={['SPT', 'Coring', 'Cavity', 'UD', 'MZ', 'PS']}
-                    keyExtractor={item => item}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity 
-                        onPress={() => {
-                          setOperationType(item);
-                          setIsSelectOperationTypePressed(false);
-                        }}
-                        style={[styles.listItem]}>
-                        <Text>{item}</Text>
-                      </TouchableOpacity>
-                    )}
-                  />
-                )
-              }
-              { 
-                operationType === 'SPT' && (
-                  <SptBlockDetailsInputForm 
-                    boreholeId={boreholeId}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-                  />
-                )
-              }
-              { 
-                operationType === 'Coring' && (
-                  <CoringBlockDetailsInputForm 
-                    boreholeId={boreholeId}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-                  /> 
-                )
-              }
-              { 
-                operationType === 'Cavity' && (
-                  <CavityBlockDetailsInputForm 
-                    boreholeId={boreholeId}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-                  /> 
-                )
-              }
-              { 
-                operationType === 'UD' && (
-                  <UdBlockDetailsInputForm 
-                    boreholeId={boreholeId}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-                  /> 
-                )
-              }
-              { 
-                operationType === 'MZ' && (
-                  <MzBlockDetailsInputForm 
-                    boreholeId={boreholeId}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-                  /> 
-                )
-              }
-              { 
-                operationType === 'PS' && (
-                  <PsBlockDetailsInputForm 
-                    boreholeId={boreholeId}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-                  /> 
-                )
-              }
-            </View>
+          <View style={[styles.block, { padding: 20, gap: 20}]}>
+            <NewBlockDetailsInputForm 
+              boreholeId={boreholeId}
+              blocks={blocks}
+              setBlocks={setBlocks}
+              setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+            />
             <Button
               title='Cancel'
               onPress={() => {
-                setIsSelectOperationTypePressed(false);
                 setIsAddNewBlockButtonPressed(false);
               }}
             />

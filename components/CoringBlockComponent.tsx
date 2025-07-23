@@ -1,6 +1,6 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { CoringBlock } from '@/types/CoringBlock';
+import { CoringBlock } from '@/interfaces/CoringBlock';
 
 export type CoringBlockProps = ViewProps & {
 	coringBlock: CoringBlock

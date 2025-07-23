@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { DayWorkStatusInputQuestion } from '@/components/inputQuestions/DayWorkStatusInputQuestion';
 import { UD_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/constants/colour";
 import {
   DOMINANT_SOIL_TYPE_LIST,
@@ -11,16 +13,26 @@ import {
   SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
   SecondarySoilType
 } from "@/constants/soil";
-import { Block } from "@/types/Block";
+import { Block } from "@/interfaces/Block";
+import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { checkNonNegativeFloat } from "@/utils/numbers";
 
 export type UdBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-  setIsAddNewBlockButtonPressed: (isPressed: boolean) => void;
+  setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function UdBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: UdBlockDetailsInputFormProps) {
+  const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(DAY_CONTINUE_WORK_TYPE);
+  const [isSelectDayWorkStatusPressed, setIsSelectDayWorkStatusPressed] = useState<boolean>(false);
+  const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>(new Date());
+  const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>(new Date());
+  const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>(new Date());
+  const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>(new Date());
+  const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>('');
+  const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>('');
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
   const [penetrationDepthInMetresStr, setPenetrationDepthInMetresStr] = useState<string>('');
   const [topDominantColour, setTopDominantColour] = useState<Colour>();
@@ -52,504 +64,524 @@ export function UdBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, 
 	};
 
   return (
-    <GestureHandlerRootView>
-      <View style={{ paddingVertical: 20, gap: 20 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-          <TextInput
-            value={topDepthInMetresStr}
-            onChangeText={setTopDepthInMetresStr}
-            style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-            keyboardType='numeric'
-          />
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text>Penetration Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-          <TextInput
-            value={penetrationDepthInMetresStr}
-            onChangeText={(text: string) => {
-              setPenetrationDepthInMetresStr(text);
-              resetRecoveryLength();
+    <GestureHandlerRootView style={{ gap: 20 }}>
+      <DayWorkStatusInputQuestion 
+        dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
+        isSelectDayWorkStatusPressed={isSelectDayWorkStatusPressed} setIsSelectDayWorkStatusPressed={setIsSelectDayWorkStatusPressed}
+        dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
+        dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
+        dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
+        dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
+        waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
+        casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+      />
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <TextInput
+          value={topDepthInMetresStr}
+          onChangeText={setTopDepthInMetresStr}
+          style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+          keyboardType='numeric'
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text>Penetration Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <TextInput
+          value={penetrationDepthInMetresStr}
+          onChangeText={(text: string) => {
+            setPenetrationDepthInMetresStr(text);
+            resetRecoveryLength();
+          }}
+          style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+          keyboardType='numeric'
+        />
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Top Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectTopDominantColourPressed(prev => !prev);
             }}
-            style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-            keyboardType='numeric'
-          />
-        </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ paddingVertical: 10 }}>Top Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity 
-              onPress={() => {
-                Keyboard.dismiss();
-                setIsSelectTopDominantColourPressed(prev => !prev);
-              }}
-              style={{
-                borderWidth: 0.5,
-                alignItems: 'center',
-                padding: 10,
-                width: '100%',
-                backgroundColor: (!topDominantColour) ? 'transparent' : topDominantColour.colourCode,
-              }}>
-              {
-                (!topDominantColour) 
-                ? <Text></Text> 
-                : <Text style={{ color: topDominantColour.colourTagFontColour }}>{topDominantColour.colourTag}</Text>
-              }
-            </TouchableOpacity>
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+              backgroundColor: (!topDominantColour) ? 'transparent' : topDominantColour.colourCode,
+            }}>
             {
-              isSelectTopDominantColourPressed && (
-                <FlatList
-                  data={DOMINANT_COLOUR_LIST}
-                  keyExtractor={item => item.colourCode}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setTopDominantColour(item);
-                        setIsSelectTopDominantColourPressed(false);
-                        setTopSecondaryColour(undefined);
-                        setIsSelectTopSecondaryColourPressed(false);
-                      }}
-                      style={[styles.listItem, {backgroundColor: item.colourCode}]}>
-                      <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
-                    </TouchableOpacity>
-                  )}
-                  nestedScrollEnabled={true}
-                  style={{ maxHeight: 500 }}
-                />
-              )
+              (!topDominantColour) 
+              ? <Text></Text> 
+              : <Text style={{ color: topDominantColour.colourTagFontColour }}>{topDominantColour.colourTag}</Text>
             }
-          </View>
+          </TouchableOpacity>
+          {
+            isSelectTopDominantColourPressed && (
+              <FlatList
+                data={DOMINANT_COLOUR_LIST}
+                keyExtractor={item => item.colourCode}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setTopDominantColour(item);
+                      setIsSelectTopDominantColourPressed(false);
+                      setTopSecondaryColour(undefined);
+                      setIsSelectTopSecondaryColourPressed(false);
+                    }}
+                    style={[styles.listItem, {backgroundColor: item.colourCode}]}>
+                    <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+                  </TouchableOpacity>
+                )}
+                nestedScrollEnabled={true}
+                style={{ maxHeight: 500 }}
+              />
+            )
+          }
         </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ paddingVertical: 10 }}>Top Secondary Colour: </Text>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity 
-              onPress={() => {
-                Keyboard.dismiss();
-                setIsSelectTopSecondaryColourPressed(prev => !prev);
-              }}
-              style={{
-                borderWidth: 0.5,
-                alignItems: 'center',
-                padding: 10,
-                width: '100%',
-                backgroundColor: (!topSecondaryColour) ? 'transparent' : topSecondaryColour.colourCode,
-              }}>
-              {
-                (!topSecondaryColour) 
-                ? <Text></Text> 
-                : <Text style={{ color: topSecondaryColour.colourTagFontColour }}>{topSecondaryColour.colourTag}</Text>
-              }
-            </TouchableOpacity>
-            {
-              isSelectTopSecondaryColourPressed && (
-                <FlatList
-                  data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => topDominantColour && colour.colourFamily != topDominantColour.colourFamily)}
-                  keyExtractor={item => item.colourCode}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setTopSecondaryColour(item);
-                        setIsSelectTopSecondaryColourPressed(false);
-                      }}
-                      style={[styles.listItem, {backgroundColor: item.colourCode}]}>
-                      <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
-                    </TouchableOpacity>
-                  )}
-                  nestedScrollEnabled={true}
-                  style={{ maxHeight: 500 }}
-                />
-              )
-            }
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ paddingVertical: 10 }}>Top Dominant Soil Type<Text style={{ color: 'red' }}>*</Text>: </Text>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity 
-              onPress={() => {
-                Keyboard.dismiss();
-                setIsSelectTopDominantSoilTypePressed(prev => !prev);
-              }}
-              style={{
-                borderWidth: 0.5,
-                alignItems: 'center',
-                padding: 10,
-                width: '100%',
-              }}>
-              <Text>{topDominantSoilType}</Text>
-            </TouchableOpacity>
-            {
-              isSelectTopDominantSoilTypePressed && (
-                <FlatList
-                  data={DOMINANT_SOIL_TYPE_LIST}
-                  keyExtractor={item => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setTopDominantSoilType(item);
-                        setIsSelectTopDominantSoilTypePressed(false);
-                        setTopSecondarySoilType(undefined);
-                        setIsSelectTopSecondarySoilTypePressed(false);
-                      }}
-                      style={[styles.listItem]}>
-                      <Text>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              )
-            }
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ paddingVertical: 10 }}>Top Secondary Soil Type: </Text>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity 
-              onPress={() => {
-                Keyboard.dismiss();
-                setIsSelectTopSecondarySoilTypePressed(prev => !prev);
-              }}
-              style={{
-                borderWidth: 0.5,
-                alignItems: 'center',
-                padding: 10,
-                width: '100%',
-              }}>
-              <Text>{topSecondarySoilType}</Text>
-            </TouchableOpacity>
-            {
-              isSelectTopSecondarySoilTypePressed && (
-                <FlatList
-                  data={(!topDominantSoilType) ? [] : SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[topDominantSoilType]}
-                  keyExtractor={item => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setTopSecondarySoilType(item);
-                        setIsSelectTopSecondarySoilTypePressed(false);
-                      }}
-                      style={[styles.listItem]}>
-                      <Text>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              )
-            }
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ paddingVertical: 10 }}>Top Other Properties: </Text>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity 
-              onPress={() => {
-                Keyboard.dismiss();
-                setIsSelectTopOtherPropertiesPressed(prev => !prev)
-              }}
-              style={{
-                borderWidth: 0.5,
-                alignItems: 'center',
-                padding: 10,
-                width: '100%',
-              }}>
-              <Text>{topOtherProperties}</Text>
-            </TouchableOpacity>
-            {
-              isSelectTopOtherPropertiesPressed && (
-                <FlatList
-                  data={(!topDominantSoilType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[topDominantSoilType]}
-                  keyExtractor={item => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setTopOtherProperties(item);
-                        setIsSelectTopOtherPropertiesPressed(false);
-                      }}
-                      style={[styles.listItem]}>
-                      <Text>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              )
-            }
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ paddingVertical: 10 }}>Bottom Ditto?<Text style={{ color: 'red' }}>*</Text>: </Text>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity 
-              onPress={() => {
-                Keyboard.dismiss();
-                setIsSelectBaseDitto(prev => !prev);
-              }}
-              style={{
-                borderWidth: 0.5,
-                alignItems: 'center',
-                padding: 10,
-                width: '100%',
-              }}>
-              <Text>{baseDitto ? 'YES' : 'NO'}</Text>
-            </TouchableOpacity>
-            {
-              isSelectBaseDitto && (
-                <FlatList
-                  data={['YES', 'NO']}
-                  keyExtractor={item => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setBaseDitto((item === 'YES') ? true : false);
-                        setIsSelectBaseDitto(false);
-                      }}
-                      style={[styles.listItem]}>
-                      <Text>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              )
-            }
-          </View>
-        </View>
-        {
-          !baseDitto && (
-            <>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ paddingVertical: 10 }}>Bottom Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
-              <View style={{ flex: 1 }}>
-                <TouchableOpacity 
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setIsSelectBaseDominantColourPressed(prev => !prev);
-                  }}
-                  style={{
-                    borderWidth: 0.5,
-                    alignItems: 'center',
-                    padding: 10,
-                    width: '100%',
-                    backgroundColor: (!baseDominantColour) ? 'transparent' : baseDominantColour.colourCode,
-                  }}>
-                  {
-                    (!baseDominantColour) 
-                    ? <Text></Text> 
-                    : <Text style={{ color: baseDominantColour.colourTagFontColour }}>{baseDominantColour.colourTag}</Text>
-                  }
-                </TouchableOpacity>
-                {
-                  isSelectBaseDominantColour && (
-                    <FlatList
-                      data={DOMINANT_COLOUR_LIST}
-                      keyExtractor={item => item.colourCode}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setBaseDominantColour(item);
-                            setIsSelectBaseDominantColourPressed(false);
-                            setBaseSecondaryColour(undefined);
-                            setIsSelectBaseSecondaryColourPressed(false);
-                          }}
-                          style={[styles.listItem, {backgroundColor: item.colourCode}]}>
-                          <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
-                        </TouchableOpacity>
-                      )}
-                      nestedScrollEnabled={true}
-                      style={{ maxHeight: 500 }}
-                    />
-                  )
-                }
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ paddingVertical: 10 }}>Bottom Secondary Colour: </Text>
-              <View style={{ flex: 1 }}>
-                <TouchableOpacity 
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setIsSelectBaseSecondaryColourPressed(prev => !prev);
-                  }}
-                  style={{
-                    borderWidth: 0.5,
-                    alignItems: 'center',
-                    padding: 10,
-                    width: '100%',
-                    backgroundColor: (!baseSecondaryColour) ? 'transparent' : baseSecondaryColour.colourCode,
-                  }}>
-                  {
-                    (!baseSecondaryColour) 
-                    ? <Text></Text> 
-                    : <Text style={{ color: baseSecondaryColour.colourTagFontColour }}>{baseSecondaryColour.colourTag}</Text>
-                  }
-                </TouchableOpacity>
-                {
-                  isSelectBaseSecondaryColourPressed && (
-                    <FlatList
-                      data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => baseDominantColour && colour.colourFamily != baseDominantColour.colourFamily)}
-                      keyExtractor={item => item.colourCode}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setBaseSecondaryColour(item);
-                            setIsSelectBaseSecondaryColourPressed(false);
-                          }}
-                          style={[styles.listItem, {backgroundColor: item.colourCode}]}>
-                          <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
-                        </TouchableOpacity>
-                      )}
-                      nestedScrollEnabled={true}
-                      style={{ maxHeight: 500 }}
-                    />
-                  )
-                }
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ paddingVertical: 10 }}>Bottom Dominant Soil Type<Text style={{ color: 'red' }}>*</Text>: </Text>
-              <View style={{ flex: 1 }}>
-                <TouchableOpacity 
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setIsSelectBaseDominantSoilTypePressed(prev => !prev);
-                  }}
-                  style={{
-                    borderWidth: 0.5,
-                    alignItems: 'center',
-                    padding: 10,
-                    width: '100%',
-                  }}>
-                  <Text>{baseDominantSoilType}</Text>
-                </TouchableOpacity>
-                {
-                  isSelectBaseDominantSoilTypePressed && (
-                    <FlatList
-                      data={DOMINANT_SOIL_TYPE_LIST}
-                      keyExtractor={item => item}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setBaseDominantSoilType(item);
-                            setIsSelectBaseDominantSoilTypePressed(false);
-                            setBaseSecondarySoilType(undefined);
-                            setIsSelectBaseSecondarySoilTypePressed(false);
-                          }}
-                          style={[styles.listItem]}>
-                          <Text>{item}</Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  )
-                }
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ paddingVertical: 10 }}>Bottom Secondary Soil Type: </Text>
-              <View style={{ flex: 1 }}>
-                <TouchableOpacity 
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setIsSelectBaseSecondarySoilTypePressed(prev => !prev);
-                  }}
-                  style={{
-                    borderWidth: 0.5,
-                    alignItems: 'center',
-                    padding: 10,
-                    width: '100%',
-                  }}>
-                  <Text>{baseSecondarySoilType}</Text>
-                </TouchableOpacity>
-                {
-                  isSelectBaseSecondarySoilTypePressed && (
-                    <FlatList
-                      data={(!baseDominantSoilType) ? [] : SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[baseDominantSoilType]}
-                      keyExtractor={item => item}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setBaseSecondarySoilType(item);
-                            setIsSelectBaseSecondarySoilTypePressed(false);
-                          }}
-                          style={[styles.listItem]}>
-                          <Text>{item}</Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  )
-                }
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ paddingVertical: 10 }}>Bottom Other Properties: </Text>
-              <View style={{ flex: 1 }}>
-                <TouchableOpacity 
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setIsSelectBaseOtherPropertiesPressed(prev => !prev);
-                  }}
-                  style={{
-                    borderWidth: 0.5,
-                    alignItems: 'center',
-                    padding: 10,
-                    width: '100%',
-                  }}>
-                  <Text>{baseOtherProperties}</Text>
-                </TouchableOpacity>
-                {
-                  isSelectBaseOtherPropertiesPressed && (
-                    <FlatList
-                      data={(!baseDominantSoilType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[baseDominantSoilType]}
-                      keyExtractor={item => item}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setBaseOtherProperties(item);
-                            setIsSelectBaseOtherPropertiesPressed(false);
-                          }}
-                          style={[styles.listItem]}>
-                          <Text>{item}</Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  )
-                }
-              </View>
-            </View>
-            </>
-          )
-        }
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text>Recovery(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-          <TextInput
-            value={recoveryLengthInMetresStr}
-            onChangeText={(text: string) => {
-              const penetrationDepthInMetres: number = parseFloat(parseFloat(penetrationDepthInMetresStr).toFixed(3));
-              if (isNaN(penetrationDepthInMetres)) {
-                return;
-              }
-              setRecoveryLengthInMetresStr(text);
-              const recoveryLengthInMetres: number = parseFloat(parseFloat(text).toFixed(3));
-              if (isNaN(recoveryLengthInMetres)) {
-                return;
-              }
-              if (recoveryLengthInMetres > penetrationDepthInMetres) {
-                setRecoveryLengthInMetresStr(penetrationDepthInMetres.toString());
-              }
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Top Secondary Colour: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectTopSecondaryColourPressed(prev => !prev);
             }}
-            style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
-            keyboardType='numeric'
-          />
-          <Text>
-            {(() => {
-              const penetrationDepthInMetres: number = parseFloat(parseFloat(penetrationDepthInMetresStr).toFixed(3));
-              return (penetrationDepthInMetres > 0) ? `   /   ${penetrationDepthInMetres}` : undefined;
-            })()}
-          </Text>
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+              backgroundColor: (!topSecondaryColour) ? 'transparent' : topSecondaryColour.colourCode,
+            }}>
+            {
+              (!topSecondaryColour) 
+              ? <Text></Text> 
+              : <Text style={{ color: topSecondaryColour.colourTagFontColour }}>{topSecondaryColour.colourTag}</Text>
+            }
+          </TouchableOpacity>
+          {
+            isSelectTopSecondaryColourPressed && (
+              <FlatList
+                data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => topDominantColour && colour.colourFamily != topDominantColour.colourFamily)}
+                keyExtractor={item => item.colourCode}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setTopSecondaryColour(item);
+                      setIsSelectTopSecondaryColourPressed(false);
+                    }}
+                    style={[styles.listItem, {backgroundColor: item.colourCode}]}>
+                    <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+                  </TouchableOpacity>
+                )}
+                nestedScrollEnabled={true}
+                style={{ maxHeight: 500 }}
+              />
+            )
+          }
         </View>
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Top Dominant Soil Type<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectTopDominantSoilTypePressed(prev => !prev);
+            }}
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+            }}>
+            <Text>{topDominantSoilType}</Text>
+          </TouchableOpacity>
+          {
+            isSelectTopDominantSoilTypePressed && (
+              <FlatList
+                data={DOMINANT_SOIL_TYPE_LIST}
+                keyExtractor={item => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setTopDominantSoilType(item);
+                      setIsSelectTopDominantSoilTypePressed(false);
+                      setTopSecondarySoilType(undefined);
+                      setIsSelectTopSecondarySoilTypePressed(false);
+                    }}
+                    style={[styles.listItem]}>
+                    <Text>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )
+          }
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Top Secondary Soil Type: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectTopSecondarySoilTypePressed(prev => !prev);
+            }}
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+            }}>
+            <Text>{topSecondarySoilType}</Text>
+          </TouchableOpacity>
+          {
+            isSelectTopSecondarySoilTypePressed && (
+              <FlatList
+                data={(!topDominantSoilType) ? [] : SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[topDominantSoilType]}
+                keyExtractor={item => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setTopSecondarySoilType(item);
+                      setIsSelectTopSecondarySoilTypePressed(false);
+                    }}
+                    style={[styles.listItem]}>
+                    <Text>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )
+          }
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Top Other Properties: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectTopOtherPropertiesPressed(prev => !prev)
+            }}
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+            }}>
+            <Text>{topOtherProperties}</Text>
+          </TouchableOpacity>
+          {
+            isSelectTopOtherPropertiesPressed && (
+              <FlatList
+                data={(!topDominantSoilType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[topDominantSoilType]}
+                keyExtractor={item => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setTopOtherProperties(item);
+                      setIsSelectTopOtherPropertiesPressed(false);
+                    }}
+                    style={[styles.listItem]}>
+                    <Text>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )
+          }
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Bottom Ditto?<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectBaseDitto(prev => !prev);
+            }}
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+            }}>
+            <Text>{baseDitto ? 'YES' : 'NO'}</Text>
+          </TouchableOpacity>
+          {
+            isSelectBaseDitto && (
+              <FlatList
+                data={['YES', 'NO']}
+                keyExtractor={item => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setBaseDitto((item === 'YES') ? true : false);
+                      setIsSelectBaseDitto(false);
+                    }}
+                    style={[styles.listItem]}>
+                    <Text>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )
+          }
+        </View>
+      </View>
+      {
+        !baseDitto && (
+          <>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ paddingVertical: 10 }}>Bottom Dominant Colour<Text style={{ color: 'red' }}>*</Text>: </Text>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity 
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsSelectBaseDominantColourPressed(prev => !prev);
+                }}
+                style={{
+                  borderWidth: 0.5,
+                  alignItems: 'center',
+                  padding: 10,
+                  width: '100%',
+                  backgroundColor: (!baseDominantColour) ? 'transparent' : baseDominantColour.colourCode,
+                }}>
+                {
+                  (!baseDominantColour) 
+                  ? <Text></Text> 
+                  : <Text style={{ color: baseDominantColour.colourTagFontColour }}>{baseDominantColour.colourTag}</Text>
+                }
+              </TouchableOpacity>
+              {
+                isSelectBaseDominantColour && (
+                  <FlatList
+                    data={DOMINANT_COLOUR_LIST}
+                    keyExtractor={item => item.colourCode}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setBaseDominantColour(item);
+                          setIsSelectBaseDominantColourPressed(false);
+                          setBaseSecondaryColour(undefined);
+                          setIsSelectBaseSecondaryColourPressed(false);
+                        }}
+                        style={[styles.listItem, {backgroundColor: item.colourCode}]}>
+                        <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+                      </TouchableOpacity>
+                    )}
+                    nestedScrollEnabled={true}
+                    style={{ maxHeight: 500 }}
+                  />
+                )
+              }
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ paddingVertical: 10 }}>Bottom Secondary Colour: </Text>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity 
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsSelectBaseSecondaryColourPressed(prev => !prev);
+                }}
+                style={{
+                  borderWidth: 0.5,
+                  alignItems: 'center',
+                  padding: 10,
+                  width: '100%',
+                  backgroundColor: (!baseSecondaryColour) ? 'transparent' : baseSecondaryColour.colourCode,
+                }}>
+                {
+                  (!baseSecondaryColour) 
+                  ? <Text></Text> 
+                  : <Text style={{ color: baseSecondaryColour.colourTagFontColour }}>{baseSecondaryColour.colourTag}</Text>
+                }
+              </TouchableOpacity>
+              {
+                isSelectBaseSecondaryColourPressed && (
+                  <FlatList
+                    data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => baseDominantColour && colour.colourFamily != baseDominantColour.colourFamily)}
+                    keyExtractor={item => item.colourCode}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setBaseSecondaryColour(item);
+                          setIsSelectBaseSecondaryColourPressed(false);
+                        }}
+                        style={[styles.listItem, {backgroundColor: item.colourCode}]}>
+                        <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+                      </TouchableOpacity>
+                    )}
+                    nestedScrollEnabled={true}
+                    style={{ maxHeight: 500 }}
+                  />
+                )
+              }
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ paddingVertical: 10 }}>Bottom Dominant Soil Type<Text style={{ color: 'red' }}>*</Text>: </Text>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity 
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsSelectBaseDominantSoilTypePressed(prev => !prev);
+                }}
+                style={{
+                  borderWidth: 0.5,
+                  alignItems: 'center',
+                  padding: 10,
+                  width: '100%',
+                }}>
+                <Text>{baseDominantSoilType}</Text>
+              </TouchableOpacity>
+              {
+                isSelectBaseDominantSoilTypePressed && (
+                  <FlatList
+                    data={DOMINANT_SOIL_TYPE_LIST}
+                    keyExtractor={item => item}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setBaseDominantSoilType(item);
+                          setIsSelectBaseDominantSoilTypePressed(false);
+                          setBaseSecondarySoilType(undefined);
+                          setIsSelectBaseSecondarySoilTypePressed(false);
+                        }}
+                        style={[styles.listItem]}>
+                        <Text>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                )
+              }
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ paddingVertical: 10 }}>Bottom Secondary Soil Type: </Text>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity 
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsSelectBaseSecondarySoilTypePressed(prev => !prev);
+                }}
+                style={{
+                  borderWidth: 0.5,
+                  alignItems: 'center',
+                  padding: 10,
+                  width: '100%',
+                }}>
+                <Text>{baseSecondarySoilType}</Text>
+              </TouchableOpacity>
+              {
+                isSelectBaseSecondarySoilTypePressed && (
+                  <FlatList
+                    data={(!baseDominantSoilType) ? [] : SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[baseDominantSoilType]}
+                    keyExtractor={item => item}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setBaseSecondarySoilType(item);
+                          setIsSelectBaseSecondarySoilTypePressed(false);
+                        }}
+                        style={[styles.listItem]}>
+                        <Text>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                )
+              }
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ paddingVertical: 10 }}>Bottom Other Properties: </Text>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity 
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsSelectBaseOtherPropertiesPressed(prev => !prev);
+                }}
+                style={{
+                  borderWidth: 0.5,
+                  alignItems: 'center',
+                  padding: 10,
+                  width: '100%',
+                }}>
+                <Text>{baseOtherProperties}</Text>
+              </TouchableOpacity>
+              {
+                isSelectBaseOtherPropertiesPressed && (
+                  <FlatList
+                    data={(!baseDominantSoilType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[baseDominantSoilType]}
+                    keyExtractor={item => item}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setBaseOtherProperties(item);
+                          setIsSelectBaseOtherPropertiesPressed(false);
+                        }}
+                        style={[styles.listItem]}>
+                        <Text>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                )
+              }
+            </View>
+          </View>
+          </>
+        )
+      }
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text>Recovery(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <TextInput
+          value={recoveryLengthInMetresStr}
+          onChangeText={(text: string) => {
+            const penetrationDepthInMetres: number = parseFloat(parseFloat(penetrationDepthInMetresStr).toFixed(3));
+            if (isNaN(penetrationDepthInMetres)) {
+              return;
+            }
+            setRecoveryLengthInMetresStr(text);
+            const recoveryLengthInMetres: number = parseFloat(parseFloat(text).toFixed(3));
+            if (isNaN(recoveryLengthInMetres)) {
+              return;
+            }
+            if (recoveryLengthInMetres > penetrationDepthInMetres) {
+              setRecoveryLengthInMetresStr(penetrationDepthInMetres.toString());
+            }
+          }}
+          style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}
+          keyboardType='numeric'
+        />
+        <Text>
+          {(() => {
+            const penetrationDepthInMetres: number = parseFloat(parseFloat(penetrationDepthInMetresStr).toFixed(3));
+            return (penetrationDepthInMetres > 0) ? `   /   ${penetrationDepthInMetres}` : undefined;
+          })()}
+        </Text>
       </View>
       <Button
         title='Confirm'
         onPress={() => {
-          if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
+          const dayWorkStatus: DayWorkStatus | undefined = checkAndReturnDayWorkStatus(
+            dayWorkStatusType,
+            dayStartWorkDate,
+            dayStartWorkTime,
+            dayEndWorkDate,
+            dayEndWorkTime,
+            waterLevelInMetresStr,
+            casingDepthInMetresStr,
+          );
+          if (!dayWorkStatus) {
+            return;
+          }
+          if (!checkNonNegativeFloat(topDepthInMetresStr)) {
 						alert('Error: Top Depth');
 						return;
 					}
-          if (isNaN(parseFloat(penetrationDepthInMetresStr)) || parseFloat(penetrationDepthInMetresStr) < 0) {
+          if (!checkNonNegativeFloat(penetrationDepthInMetresStr)) {
 						alert('Error: Penetration Depth');
 						return;
 					}
@@ -571,7 +603,7 @@ export function UdBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, 
               return;
             }
           }
-          if (isNaN(parseFloat(recoveryLengthInMetresStr)) || parseFloat(recoveryLengthInMetresStr) < 0) {
+          if (!checkNonNegativeFloat(recoveryLengthInMetresStr)) {
 						alert('Error: Recovery Length');
 						return;
 					}
@@ -663,6 +695,7 @@ export function UdBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, 
             boreholeId: boreholeId, 
             blockId: 1,
             undisturbedSampleIndex: undisturbedSampleIndex,
+            dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             topSoilDescription: topSoilDescription,

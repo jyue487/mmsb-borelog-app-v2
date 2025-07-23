@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Link, Stack, router } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
-import { Button, KeyboardAvoidingView, View, Text, TextInput, FlatList, Pressable, StyleSheet } from "react-native";
+import { Stack, router } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useEffect, useState } from 'react';
+import { Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 // Local imports
-import { Project } from '@/types/Project';
+import { Project } from '@/interfaces/Project';
 
 export default function ProjectListScreen() {
   const db = useSQLiteContext()
