@@ -1,83 +1,68 @@
+import { BaseBlock } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
-import { renderScaleTicks } from "@/utils/pdf/renderScaleTicks";
-import { getDayOfMonth, getHours, getMinutes, getMonth, getYear } from "../datetime";
-import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE } from "@/constants/DayStatus";
+import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
+import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
+import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
+import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
+import { DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/constants/symbol";
+import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
 
-export function renderSptBlockToHtml(block: SptBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderSptBlockToHtml(block: BaseBlock & SptBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
     return (
         `
-        <tr style="height: ${numberOfTicksToRender * 6}px;">
-            <td colspan="1" style="vertical-align: ${(block.dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE) ? 'top' : (block.dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE) ? 'bottom' : 'middle'};">
-                ${(block.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : 
-                    `
-                    <div style="display: flex; flex: 1; flex-direction: column; align-items: center;">
-                        <div>${getYear(block.dayWorkStatus.date)}</div>
-                        <div>${getMonth(block.dayWorkStatus.date) + '/' + getDayOfMonth(block.dayWorkStatus.date)}</div>
-                        <div>${getHours(block.dayWorkStatus.time) + ':' + getMinutes(block.dayWorkStatus.time)}</div>
-                    </div>
-                    `
-                }
-            </td>
+        <tr>
+            ${renderDayWorkStatusToHtml(block.dayWorkStatus)}
             <td>
-                <div>P${block.sptIndex}</div>
-                <div>D${block.disturbedSampleIndex}</div>
+                <div>${SPT_SYMBOL}${block.sptIndex}/${DISTURBED_SAMPLE_SYMBOL}${(block.recoveryInPercentage === 0) ? '*' : block.disturbedSampleIndex}</div>
             </td>
-            <td>
-                ${block.topDepthInMetres.toFixed(3)}<br>to<br>${block.baseDepthInMetres.toFixed(3)}
-            </td>
-            <td></td>
-            <td class="description-cell">
-                ${block.soilDescription}
-            </td>
+            ${renderDepthInfoToHtml(block)}
+            ${renderWaterLevelToHtml(block.dayWorkStatus)}
+            ${renderDescriptionToHtml(block.soilDescription)}
             <td></td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
-                    <div>${(!block.seatingIncBlows1) ? '' : block.seatingIncBlows1}</div>
-                    <div style="border-top: 1px solid black;">${block.seatingIncBlows1 && block.seatingIncBlows1 === 25 ? block.seatingIncPen1 + 'mm' : ''}</div>
+                    <div>${block.seatingIncBlows1}</div>
+                    <div style="border-top: 1px solid black;">${(block.seatingIncBlows1 === 25) ? block.seatingIncPen1 + 'mm' : ''}</div>
                 </div>
             </td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
-                    <div>${(!block.seatingIncBlows2) ? '' : block.seatingIncBlows2}</div>
-                    <div style="border-top: 1px solid black;">${block.seatingIncBlows2 && block.seatingIncBlows1 + block.seatingIncBlows2 === 25 ? block.seatingIncPen2 + 'mm' : ''}</div>
+                    <div>${block.seatingIncBlows2 ?? ''}</div>
+                    <div style="border-top: 1px solid black;">${(block.seatingIncBlows2 !== null) && (block.seatingIncBlows1 + block.seatingIncBlows2 === 25) ? block.seatingIncPen2 + 'mm' : ''}</div>
                 </div>
             </td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
-                    <div>${!(block.mainIncBlows1) ? '' : block.mainIncBlows1}</div>
-                    <div style="border-top: 1px solid black;">${block.mainIncBlows1 && block.mainIncBlows1 === 50 ? block.mainIncPen1 + 'mm' : ''}</div>
+                    <div>${block.mainIncBlows1}</div>
+                    <div style="border-top: 1px solid black;">${(block.mainIncBlows1 === 50) ? block.mainIncPen1 + 'mm' : ''}</div>
                 </div>
             </td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
-                    <div>${!(block.mainIncBlows2) ? '' : block.mainIncBlows2}</div>
-                    <div style="border-top: 1px solid black;">${block.mainIncBlows2 && block.mainIncBlows1 + block.mainIncBlows2 === 50 ? block.mainIncPen2 + 'mm' : ''}</div>
+                    <div>${block.mainIncBlows2 ?? ''}</div>
+                    <div style="border-top: 1px solid black;">${(block.mainIncBlows2 !== null) && (block.mainIncBlows1 + block.mainIncBlows2 === 50) ? block.mainIncPen2 + 'mm' : ''}</div>
                 </div>
             </td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
-                    <div>${!(block.mainIncBlows3) ? '' : block.mainIncBlows3}</div>
-                    <div style="border-top: 1px solid black;">${block.mainIncBlows3 && block.mainIncBlows1 + block.mainIncBlows2 + block.mainIncBlows3 === 50 ? block.mainIncPen3 + 'mm' : ''}</div>
+                    <div>${block.mainIncBlows3 ?? ''}</div>
+                    <div style="border-top: 1px solid black;">${(block.mainIncBlows2 !== null && block.mainIncBlows3 !== null) && (block.mainIncBlows1 + block.mainIncBlows2 + block.mainIncBlows3 === 50) ? block.mainIncPen3 + 'mm' : ''}</div>
                 </div>
             </td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
-                    <div>${!(block.mainIncBlows4) ? '' : block.mainIncBlows4}</div>
-                    <div style="border-top: 1px solid black;">${block.mainIncBlows4 && block.mainIncBlows1 + block.mainIncBlows2 + block.mainIncBlows3 + block.mainIncBlows4 === 50 ? block.mainIncPen4 + 'mm' : ''}</div>
+                    <div>${block.mainIncBlows4 ?? ''}</div>
+                    <div style="border-top: 1px solid black;">${(block.mainIncBlows2 !== null && block.mainIncBlows3 !== null && block.mainIncBlows4 !== null) && (block.mainIncBlows1 + block.mainIncBlows2 + block.mainIncBlows3 + block.mainIncBlows4 === 50) ? block.mainIncPen4 + 'mm' : ''}</div>
                 </div>
             </td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
                     <div>${block.sptNValue}</div>
-                    <div style="border-top: 1px solid black;">${block.sptNValue === 50 ? (block.mainIncPen1 + block.mainIncPen2 + block.mainIncPen3 + block.mainIncPen4) + 'mm' : ''}</div>
+                    <div style="border-top: 1px solid black;">${block.sptNValue === 50 ? block.totalMainPenetrationInMillimetres + 'mm' : ''}</div>
                 </div>
             </td>
-            <td>${(block.recoveryLengthInMillimetres / (block.baseDepthInMetres - block.topDepthInMetres) / 10).toFixed(0)}</td>
-            <td class="scale">
-                <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    ${renderScaleTicks(numberOfTicksToRender, scaleTickIndexWrapper)}
-                </div>
-            </td>
+            <td>${block.recoveryInPercentage.toFixed(1)}</td>
+            ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `
     )

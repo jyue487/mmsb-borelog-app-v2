@@ -3,22 +3,22 @@ import * as Print from 'expo-print';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 
 // Local Imports
-import { CavityBlockComponent } from '@/components/CavityBlockComponent';
-import { CoringBlockComponent } from '@/components/CoringBlockComponent';
-import { MzBlockComponent } from '@/components/MzBlockComponent';
-import { PsBlockComponent } from '@/components/PsBlockComponent';
-import { SptBlockComponent } from '@/components/SptBlockComponent';
-import { UdBlockComponent } from '@/components/UdBlockComponent';
-import {
-  SPT_BLOCK_TYPE_ID
-} from '@/constants/BlockTypeId';
-import { Block } from '@/interfaces/Block';
+import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
+import { ConcretePremixBlockComponent } from '@/components/blockComponents/ConcretePremixBlockComponent';
+import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
+import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
+import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
+import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
+import { PsBlockComponent } from '@/components/blockComponents/PsBlockComponent';
+import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponent';
+import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
+import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
+import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
+import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from '@/interfaces/Block';
 import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
-import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE } from '@/constants/DayStatus';
-import { NewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/NewBlockDetailsInputForm';
 
 export default function BoreholeScreen() {
 	const { id, projectName, name } = useLocalSearchParams();
@@ -28,187 +28,10 @@ export default function BoreholeScreen() {
   const boreholeId: number = parseInt(id, 10);
   const boreholeName: string = name;
   const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
-  const [blocks, setBlocks] = useState<Block[]>([
-    {
-      id: 1,
-      blockId: 1,
-      blockTypeId: SPT_BLOCK_TYPE_ID,
-      boreholeId: boreholeId,
-      blockType: 'Spt',
-      sptIndex: 1,
-      disturbedSampleIndex: 1,
-      dayWorkStatus: { dayWorkStatusType: DAY_START_WORK_TYPE, date: new Date(), time: new Date(), waterLevelInMetres: 1.5, casingDepthInMetres: 1.5 },
-      topDepthInMetres: 1.5,
-      baseDepthInMetres: 1.95,
-      soilDescription: 'Loose, light grey SAND',
-      seatingIncBlows1: 1,
-      seatingIncPen1: 75,
-      seatingIncBlows2: 1,
-      seatingIncPen2: 75,
-      mainIncBlows1: 1,
-      mainIncPen1: 75,
-      mainIncBlows2: 1,
-      mainIncPen2: 75,
-      mainIncBlows3: 1,
-      mainIncPen3: 75,
-      mainIncBlows4: 1,
-      mainIncPen4: 75,
-      sptNValue: 4,
-      recoveryLengthInMillimetres: 400,
-    },
-    {
-      id: 2,
-      blockId: 2,
-      blockTypeId: SPT_BLOCK_TYPE_ID,
-      boreholeId: boreholeId,
-      blockType: 'Spt',
-      sptIndex: 2,
-      disturbedSampleIndex: 2,
-      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
-      topDepthInMetres: 3,
-      baseDepthInMetres: 3.45,
-      soilDescription: 'Loose, light grey SAND',
-      seatingIncBlows1: 1,
-      seatingIncPen1: 75,
-      seatingIncBlows2: 1,
-      seatingIncPen2: 75,
-      mainIncBlows1: 1,
-      mainIncPen1: 75,
-      mainIncBlows2: 1,
-      mainIncPen2: 75,
-      mainIncBlows3: 1,
-      mainIncPen3: 75,
-      mainIncBlows4: 1,
-      mainIncPen4: 75,
-      sptNValue: 4,
-      recoveryLengthInMillimetres: 400,
-    },
-    {
-      id: 3,
-      blockId: 3,
-      blockTypeId: SPT_BLOCK_TYPE_ID,
-      boreholeId: boreholeId,
-      blockType: 'Spt',
-      sptIndex: 3,
-      disturbedSampleIndex: 3,
-      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
-      topDepthInMetres: 4.5,
-      baseDepthInMetres: 4.95,
-      soilDescription: 'Loose, light grey SAND',
-      seatingIncBlows1: 1,
-      seatingIncPen1: 75,
-      seatingIncBlows2: 1,
-      seatingIncPen2: 75,
-      mainIncBlows1: 1,
-      mainIncPen1: 75,
-      mainIncBlows2: 1,
-      mainIncPen2: 75,
-      mainIncBlows3: 1,
-      mainIncPen3: 75,
-      mainIncBlows4: 1,
-      mainIncPen4: 75,
-      sptNValue: 4,
-      recoveryLengthInMillimetres: 400,
-    },
-    {
-      id: 4,
-      blockId: 4,
-      blockTypeId: SPT_BLOCK_TYPE_ID,
-      boreholeId: boreholeId,
-      blockType: 'Spt',
-      sptIndex: 4,
-      disturbedSampleIndex: 4,
-      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
-      topDepthInMetres: 6,
-      baseDepthInMetres: 6.45,
-      soilDescription: 'Loose, light grey SAND',
-      seatingIncBlows1: 1,
-      seatingIncPen1: 75,
-      seatingIncBlows2: 1,
-      seatingIncPen2: 75,
-      mainIncBlows1: 1,
-      mainIncPen1: 75,
-      mainIncBlows2: 1,
-      mainIncPen2: 75,
-      mainIncBlows3: 1,
-      mainIncPen3: 75,
-      mainIncBlows4: 1,
-      mainIncPen4: 75,
-      sptNValue: 4,
-      recoveryLengthInMillimetres: 400,
-    },
-    {
-      id: 5,
-      blockId: 5,
-      blockTypeId: SPT_BLOCK_TYPE_ID,
-      boreholeId: boreholeId,
-      blockType: 'Spt',
-      sptIndex: 5,
-      disturbedSampleIndex: 5,
-      dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
-      topDepthInMetres: 7.5,
-      baseDepthInMetres: 7.95,
-      soilDescription: 'Loose, light grey SAND',
-      seatingIncBlows1: 1,
-      seatingIncPen1: 75,
-      seatingIncBlows2: 1,
-      seatingIncPen2: 75,
-      mainIncBlows1: 1,
-      mainIncPen1: 75,
-      mainIncBlows2: 1,
-      mainIncPen2: 75,
-      mainIncBlows3: 1,
-      mainIncPen3: 75,
-      mainIncBlows4: 1,
-      mainIncPen4: 75,
-      sptNValue: 4,
-      recoveryLengthInMillimetres: 400,
-    },
-    {
-      id: 6,
-      blockId: 6,
-      blockTypeId: SPT_BLOCK_TYPE_ID,
-      boreholeId: boreholeId,
-      blockType: 'Spt',
-      sptIndex: 6,
-      disturbedSampleIndex: 6,
-      dayWorkStatus: { dayWorkStatusType: DAY_END_WORK_TYPE, date: new Date(), time: new Date(), waterLevelInMetres: 9, casingDepthInMetres: 9 },
-      topDepthInMetres: 9,
-      baseDepthInMetres: 9.45,
-      soilDescription: 'Loose, light grey SAND',
-      seatingIncBlows1: 1,
-      seatingIncPen1: 75,
-      seatingIncBlows2: 1,
-      seatingIncPen2: 75,
-      mainIncBlows1: 1,
-      mainIncPen1: 75,
-      mainIncBlows2: 1,
-      mainIncPen2: 75,
-      mainIncBlows3: 1,
-      mainIncPen3: 75,
-      mainIncBlows4: 1,
-      mainIncPen4: 75,
-      sptNValue: 4,
-      recoveryLengthInMillimetres: 400,
-    },
-    // {
-    //   id: 7,
-    //   blockId: 7,
-    //   blockTypeId: CORING_BLOCK_TYPE_ID,
-    //   boreholeId: boreholeId,
-    //   blockType: 'Coring',
-    //   rockSampleIndex: 1,
-    //   topDepthInMetres: 17,
-    //   baseDepthInMetres: 18.5,
-    //   rockDescription: 'Moderately strong, light brownish grey silty SAND with some gravel',
-    //   coreRunInMetres: 1.5,
-    //   coreRecoveryInPercentage: 93.3,
-    //   rqdInPercentage: 40,
-    // }
-  ]);
+  const [blocks, setBlocks] = useState<Block[]>([]);
 
-  const clearData = async () => {
-    setBlocks([]);
+  const removeLastBlock = async () => {
+    setBlocks((blocks) => blocks.slice(0, -1));
   };
 
   const renderFooter = () => (
@@ -225,25 +48,17 @@ export default function BoreholeScreen() {
       }
       {
         isAddNewBlockButtonPressed && (
-          <View style={[styles.block, { padding: 20, gap: 20}]}>
-            <NewBlockDetailsInputForm 
-              boreholeId={boreholeId}
-              blocks={blocks}
-              setBlocks={setBlocks}
-              setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-            />
-            <Button
-              title='Cancel'
-              onPress={() => {
-                setIsAddNewBlockButtonPressed(false);
-              }}
-            />
-          </View>
+          <AddNewBlockDetailsInputForm
+            blocks={blocks}
+            setBlocks={setBlocks}
+            boreholeId={boreholeId}
+            setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+          />
         )
       }
       <Button
-        title='Clear Data'
-        onPress={() => clearData()}
+        title='Remove Last BLock'
+        onPress={removeLastBlock}
       />
       <Button
         title='Share'
@@ -290,18 +105,26 @@ export default function BoreholeScreen() {
         keyExtractor={(block: Block) => block.id.toString()}
         renderItem={({ item }) => {
           switch (item.blockType) {
-          case 'Spt':
-            return <SptBlockComponent style={styles.block} sptBlock={item}/>;
-          case 'Coring':
-            return <CoringBlockComponent style={styles.block} coringBlock={item} />
-          case 'Cavity':
-            return <CavityBlockComponent style={styles.block} cavityBlock={item} />
-          case 'Ud':
-            return <UdBlockComponent style={styles.block} udBlock={item} />
-          case 'Mz':
-            return <MzBlockComponent style={styles.block} mzBlock={item} />
-          case 'Ps':
-            return <PsBlockComponent style={styles.block} psBlock={item} />
+          case SPT_BLOCK_TYPE:
+            return <SptBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />;
+          case CORING_BLOCK_TYPE:
+            return <CoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case CAVITY_BLOCK_TYPE:
+            return <CavityBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case UD_BLOCK_TYPE:
+            return <UdBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case MZ_BLOCK_TYPE:
+            return <MzBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case PS_BLOCK_TYPE:
+            return <PsBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case HA_BLOCK_TYPE:
+            return <HaBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case WASH_BORING_BLOCK_TYPE:
+            return <WashBoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case CONCRETE_SLAB_BLOCK_TYPE:
+            return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case CONCRETE_PREMIX_BLOCK_TYPE:
+            return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
           default:
             throw new Error('Unknown block type');
           }

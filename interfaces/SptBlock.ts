@@ -1,10 +1,13 @@
 import { SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
+import { Colour } from '@/constants/colour';
 import { DayWorkStatus } from '@/constants/DayStatus';
+import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
+import { SPT_BLOCK_TYPE } from '@/interfaces/Block';
 
 export interface SptBlock {
     blockId: number;
     readonly blockTypeId: typeof SPT_BLOCK_TYPE_ID;
-    blockType: 'Spt';
+    blockType: typeof SPT_BLOCK_TYPE;
     sptIndex: number;
     disturbedSampleIndex: number;
     dayWorkStatus: DayWorkStatus;
@@ -13,16 +16,35 @@ export interface SptBlock {
     soilDescription: string;
     seatingIncBlows1: number;
     seatingIncPen1: number;
-    seatingIncBlows2: number;
-    seatingIncPen2: number;
+    seatingIncBlows2: number | null;
+    seatingIncPen2: number | null;
     mainIncBlows1: number;
     mainIncPen1: number;
-    mainIncBlows2: number;
-    mainIncPen2: number;
-    mainIncBlows3: number;
-    mainIncPen3: number;
-    mainIncBlows4: number;
-    mainIncPen4: number;
+    mainIncBlows2: number | null;
+    mainIncPen2: number | null;
+    mainIncBlows3: number | null;
+    mainIncPen3: number | null;
+    mainIncBlows4: number | null;
+    mainIncPen4: number | null;
     sptNValue: number;
+    totalMainPenetrationInMillimetres: number;
+    recoveryInPercentage: number;
     recoveryLengthInMillimetres: number;
+    dominantColour: Colour | null;
+    secondaryColour: Colour | null;
+    dominantSoilType: DominantSoilType | null;
+    secondarySoilType: SecondarySoilType | null;
+    otherProperties: string;
+    isSeatingIncBlows1Active: boolean;
+    isSeatingIncBlows2Active: boolean;
+    isMainIncBlows1Active: boolean;
+    isMainIncBlows2Active: boolean;
+    isMainIncBlows3Active: boolean;
+    isMainIncBlows4Active: boolean;
+    isSeatingIncPen1Active: boolean;
+    isSeatingIncPen2Active: boolean;
+    isMainIncPen1Active: boolean;
+    isMainIncPen2Active: boolean;
+    isMainIncPen3Active: boolean;
+    isMainIncPen4Active: boolean;
 }

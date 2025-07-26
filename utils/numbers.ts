@@ -1,9 +1,8 @@
-export function checkNonNegativeInteger(numStr: string) {
+export function isNonNegativeInteger(numStr: string) {
     return !isNaN(parseInt(numStr)) && parseInt(numStr) >= 0;
 }
 
-export function checkNonNegativeFloat(numStr: string) {
-    console.log(numStr);
+export function isNonNegativeFloat(numStr: string) {
     return !isNaN(parseFloat(numStr)) && parseFloat(numStr) >= 0;
 }
 

@@ -1,30 +1,40 @@
 import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { checkNonNegativeFloat, stringToDecimalPoint } from "../numbers";
+import { isNonNegativeFloat, stringToDecimalPoint } from "../numbers";
 
-export function checkAndReturnDayWorkStatus(
-    dayWorkStatusType: DayWorkStatusType,
-    dayStartWorkDate: Date | undefined,
-    dayStartWorkTime: Date | undefined,
-    dayEndWorkDate: Date | undefined,
-    dayEndWorkTime: Date | undefined,
-    waterLevelInMetresStr: string,
-    casingDepthInMetresStr: string,
-): DayWorkStatus | undefined {
+type Params = {
+    dayWorkStatusType: DayWorkStatusType;
+    dayStartWorkDate: Date | undefined;
+    dayStartWorkTime: Date | undefined;
+    dayEndWorkDate: Date | undefined;
+    dayEndWorkTime: Date | undefined;
+    waterLevelInMetresStr: string;
+    casingDepthInMetresStr: string;
+};
+
+export function checkAndReturnDayWorkStatus({
+    dayWorkStatusType,
+    dayStartWorkDate,
+    dayStartWorkTime,
+    dayEndWorkDate,
+    dayEndWorkTime,
+    waterLevelInMetresStr,
+    casingDepthInMetresStr,
+}: Params): DayWorkStatus | undefined {
 
     if (dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) {
         return { dayWorkStatusType: dayWorkStatusType };
     }
 
-    if (!checkNonNegativeFloat(waterLevelInMetresStr)) {
+    if (waterLevelInMetresStr.length > 0 && !isNonNegativeFloat(waterLevelInMetresStr)) {
         alert('Error: Water Level');
         return;
     }
-    if (!checkNonNegativeFloat(casingDepthInMetresStr)) {
+    if (casingDepthInMetresStr.length > 0 && !isNonNegativeFloat(casingDepthInMetresStr)) {
         alert('Error: Casing Depth');
         return;
     }
-    const waterLevelInMetres: number = stringToDecimalPoint(waterLevelInMetresStr, 3);
-    const casingDepthInMetres: number = stringToDecimalPoint(casingDepthInMetresStr, 3);
+    const waterLevelInMetres: number | undefined = (!waterLevelInMetresStr) ? undefined : stringToDecimalPoint(waterLevelInMetresStr, 3);
+    const casingDepthInMetres: number | undefined = (!casingDepthInMetresStr) ? undefined : stringToDecimalPoint(casingDepthInMetresStr, 3);
 
     if (dayWorkStatusType === DAY_START_WORK_TYPE) {
         if (!dayStartWorkDate) {

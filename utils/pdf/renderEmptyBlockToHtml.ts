@@ -1,4 +1,4 @@
-import { renderScaleTicks } from "@/utils/pdf/renderScaleTicks";
+import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
 
 export function renderEmptyBlockToHtml(numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     if (numberOfTicksToRender === 0) {
@@ -6,14 +6,8 @@ export function renderEmptyBlockToHtml(numberOfTicksToRender: number, scaleTickI
     }
     return (
         `
-        <tr style="height: ${numberOfTicksToRender * 6}px;">
-            <td colspan="1" style="vertical-align: bottom;">
-                <div style="display: flex; flex-direction: row;">
-                    <div style="display: flex; flex: 1%; flex-direction: column; align-items: center; justify-content: flex-end;">
-                        <div class="date-time"></div>
-                    </div>
-                </div>
-            </td>
+        <tr>
+            <td></td>
             <td></td>
             <td></td>
             <td></td>
@@ -27,11 +21,7 @@ export function renderEmptyBlockToHtml(numberOfTicksToRender: number, scaleTickI
             <td></td>
             <td></td>
             <td></td>
-            <td class="scale">
-                <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    ${renderScaleTicks(numberOfTicksToRender, scaleTickIndexWrapper)}
-                </div>
-            </td>
+            ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `
     )

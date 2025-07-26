@@ -13,8 +13,8 @@ export interface DayStartWork {
   dayWorkStatusType: typeof DAY_START_WORK_TYPE;
   date: Date;
   time: Date;
-  waterLevelInMetres: number;
-  casingDepthInMetres: number;
+  waterLevelInMetres: number | undefined;
+  casingDepthInMetres: number | undefined;
 }
 
 export interface DayContinueWork {
@@ -25,8 +25,8 @@ export interface DayEndWork {
   dayWorkStatusType: typeof DAY_END_WORK_TYPE;
   date: Date;
   time: Date;
-  waterLevelInMetres: number;
-  casingDepthInMetres: number;
+  waterLevelInMetres: number | undefined;
+  casingDepthInMetres: number | undefined;
 }
 
 export interface DayWorkStatuses {

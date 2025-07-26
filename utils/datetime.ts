@@ -18,6 +18,14 @@ export function getMinutes(date: Date): string {
     return (date.getMinutes()).toString().padStart(2, '0');
 }
 
+export function getDate(date: Date): string {
+    return `${getYear(date)}/${getMonth(date)}/${getDayOfMonth(date)}`;
+}
+
+export function getTime(time: Date): string {
+    return `${getHours(time)}:${getMinutes(time)}`;
+}
+
 export function getDateTime(date: Date, time: Date): string {
-    return `${getYear(date)}/${getMonth(date)}/${getDayOfMonth(date)} ${getHours(time)}:${getMinutes(time)}`;
+    return `${getDate(date)} ${getTime(time)}`;
 }

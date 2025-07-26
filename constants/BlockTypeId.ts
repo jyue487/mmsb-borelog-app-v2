@@ -4,3 +4,7 @@ export const CAVITY_BLOCK_TYPE_ID = 3 as const;
 export const UD_BLOCK_TYPE_ID = 4 as const;
 export const MZ_BLOCK_TYPE_ID = 5 as const;
 export const PS_BLOCK_TYPE_ID = 6 as const;
+export const HA_BLOCK_TYPE_ID = 7 as const;
+export const WASH_BORING_BLOCK_TYPE_ID = 8 as const;
+export const CONCRETE_SLAB_BLOCK_TYPE_ID = 9 as const;
+export const CONCRETE_PREMIX_BLOCK_TYPE_ID = 10 as const;

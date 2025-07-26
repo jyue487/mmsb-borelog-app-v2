@@ -3,7 +3,7 @@ export function renderFooterToHtml() {
         `
         <div class="footer-info">
             <div style="display: flex; flex: 1; flex-direction: column;">
-                <div style="display: flex; align-items: center; justify-content: center; height: 2em; border-bottom: 1px solid #000;">NOTES: </div>
+                <div style="display: flex; align-items: center; justify-content: center; height: 2em; border-bottom: 0.5pt solid #000;">NOTES: </div>
                 <div style="display: flex; flex-direction: row; padding: 5px;">
                     <div style="text-align: right;">
                         <div style="white-space: pre;">P </div>
@@ -17,7 +17,7 @@ export function renderFooterToHtml() {
                     </div>
                     <div>
                         <div>= Standard Penetration Test (SPT)</div>
-                        <div>= 50 mm dia. undisturbed sample</div>
+                        <div>= 50mm dia. undisturbed sample</div>
                         <div>= Piston Sample</div>
                         <div>= Mazier Sample</div>
                         <div>= Disturbed Sample</div>
@@ -27,8 +27,8 @@ export function renderFooterToHtml() {
                     </div>
                 </div>
             </div>
-            <div style="display: flex; flex: 0.8; flex-direction: column; border-left: 1px solid #000">
-                <div style="display: flex; align-items: center; justify-content: center; height: 2em; border-bottom: 1px solid #000;">Cohesive Soil (N)</div>
+            <div style="display: flex; flex: 0.8; flex-direction: column; border-left: 0.5pt solid #000">
+                <div style="display: flex; align-items: center; justify-content: center; height: 2em; border-bottom: 0.5pt solid #000;">Cohesive Soil (N)</div>
                 <div style="display: flex; flex-direction: row; padding: 5px;">
                     <div style="text-align: right;">
                         <div style="white-space: pre;"> 0</div>
@@ -63,8 +63,8 @@ export function renderFooterToHtml() {
                     </div>
                 </div>
             </div>
-            <div style="display: flex; flex: 0.8; flex-direction: column; border-left: 1px solid #000">
-                <div style="display: flex; align-items: center; justify-content: center; height: 2em; border-bottom: 1px solid #000;">Non Cohesive Soil (N)</div>
+            <div style="display: flex; flex: 0.8; flex-direction: column; border-left: 0.5pt solid #000">
+                <div style="display: flex; align-items: center; justify-content: center; height: 2em; border-bottom: 0.5pt solid #000;">Non Cohesive Soil (N)</div>
                 <div style="display: flex; flex-direction: row; padding: 5px;">
                     <div style="text-align: right;">
                         <div style="white-space: pre;"> 0</div>
@@ -95,12 +95,12 @@ export function renderFooterToHtml() {
                     </div>
                 </div>
             </div>
-            <div style="display: flex; flex: 1; flex-direction: column; border-left: 1px solid #000; padding: 5px;">
+            <div style="display: flex; flex: 1; flex-direction: column; border-left: 0.5pt solid #000; padding: 5px;">
                 <div style="display: flex; flex-direction: column; flex: 1;">Contractor: </div>
                 <div style="display: flex; flex-direction: column; flex: 1;">Date Started: </div>
                 <div style="display: flex; flex-direction: column; flex: 1;">Date Finished: </div>
             </div>
-            <div style="display: flex; flex: 1; flex-direction: column; border-left: 1px solid #000; padding: 5px;">
+            <div style="display: flex; flex: 1; flex-direction: column; border-left: 0.5pt solid #000; padding: 5px;">
                 <div style="display: flex; flex-direction: column; flex: 1;">Logged by: </div>
                 <div style="display: flex; flex-direction: column; flex: 1;">Checked by: </div>
                 <div style="display: flex; flex-direction: column; flex: 1;">Date: </div>

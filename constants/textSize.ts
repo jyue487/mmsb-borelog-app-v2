@@ -1,0 +1,1 @@
+export const TEXT_SIZE = '8pt' as const;

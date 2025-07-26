@@ -1,8 +1,17 @@
-import { Block } from "@/interfaces/Block";
+import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from "@/interfaces/Block";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
 import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
 import { renderFooterToHtml } from "./renderFooterToHtml";
 import { renderHeaderToHtml } from "./renderHeaderToHtml";
+import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
+import { renderCoringBlockToHtml } from "./renderCoringBlockToHtml";
+import { renderCavityBlockToHtml } from "./renderCavityBlockToHtml";
+import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
+import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
+import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
+import { renderHaBlockToHtml } from "./renderHaBlockToHtml";
+import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
+import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
 
 export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
@@ -34,11 +43,39 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
             }
             
             switch (block.blockType) {
-            case 'Spt':
+            case SPT_BLOCK_TYPE:
                 result += renderSptBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case CORING_BLOCK_TYPE:
+                result += renderCoringBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case CAVITY_BLOCK_TYPE:
+                result += renderCavityBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case UD_BLOCK_TYPE:
+                result += renderUdBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case MZ_BLOCK_TYPE:
+                result += renderMzBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case PS_BLOCK_TYPE:
+                result += renderPsBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case HA_BLOCK_TYPE:
+                result += renderHaBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case WASH_BORING_BLOCK_TYPE:
+                result += renderWashBoringBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case CONCRETE_SLAB_BLOCK_TYPE:
+                result += renderConcreteSlabBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case CONCRETE_PREMIX_BLOCK_TYPE:
+                result += renderConcretePremixBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             default:
                 break;
+
             }
             
             ++blockIndex;
@@ -62,15 +99,15 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
                             <th rowspan="4" style="width: 5%;">
                                 <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">DATE & TIME</div>
                             </th>
-                            <th rowspan="4" style="width: 5%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
-                            <th rowspan="3" style="width: 7%;">
+                            <th rowspan="4" style="width: 7%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
+                            <th rowspan="3" style="width: 10%;">
                                 <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
                                     DEPTH
                                 </div>
                             </th>
-                            <th rowspan="4" style="width: 5%;">
+                            <th rowspan="3" style="width: 5%;">
                                 <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                    WATER LEVEL
+                                    WATER LVL
                                 </div>
                             </th>
                             <th rowspan="4">DESCRIPTION</th>
@@ -104,6 +141,7 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
                         <tr>
                             <th>m</th>
                             <th>m</th>
+                            <th>m</th>
                             <th colspan="2">m</th>
                             <th colspan="2">%</th>
                             <th colspan="2">%</th>
@@ -125,4 +163,5 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
 
     return pages;
 }
+
 
