@@ -10,17 +10,19 @@ import { EditProjectInputForm } from './EditProjectInputForm';
 type ProjectComponentProps = {
   project: Project
   editProject: (projectId: number, newProjectName: string) => void;
+  deleteProject: (projectId: number) => void;
 };
 
 export function ProjectComponent({
   project,
-  editProject
+  editProject,
+  deleteProject,
 }: ProjectComponentProps) {
 
   const [isEditState, setIsEditState] = useState<boolean>(false);
     
   if (isEditState) {
-    return <EditProjectInputForm oldProject={project} editProject={editProject} setIsEditState={setIsEditState} />
+    return <EditProjectInputForm oldProject={project} editProject={editProject} deleteProject={deleteProject} setIsEditState={setIsEditState} />
   }
 
   return (
@@ -41,7 +43,7 @@ export function ProjectComponent({
         },
         styles.projectButton
       ]}>
-      <Text>PROJECT {project.id}: {project.name.toUpperCase()}</Text>
+      <Text>{project.name.toUpperCase()}</Text>
     </Pressable>
   );
 }

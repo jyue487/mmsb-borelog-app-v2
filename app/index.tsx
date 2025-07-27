@@ -75,7 +75,7 @@ export default function ProjectListScreen() {
       <FlatList
         data={projects}
         keyExtractor={(project: Project) => project.id.toString()}
-        renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} />}
+        renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
         style={{ flexGrow: 0, width: '100%' }}
       />
       {

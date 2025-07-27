@@ -1,24 +1,27 @@
 import { BaseBlock } from "@/interfaces/Block";
-import { CavityBlock } from "@/interfaces/CavityBlock";
+import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
 import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
 
-export function renderCavityBlockToHtml(block: BaseBlock & CavityBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderEndOfBoreholeBlockToHtml(block: BaseBlock & EndOfBoreholeBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>
-            ${renderDayWorkStatusToHtml(block.dayWorkStatus)}
             <td></td>
-            ${renderDepthInfoToHtml(block)}
-            ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(numberOfTicksToRender, block.cavityDescription)}
             <td></td>
-            <td colspan="2"></td>
-            <td colspan="2"></td>
-            <td colspan="2"></td>
+            <td></td>
+            <td></td>
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
             <td></td>
             <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}

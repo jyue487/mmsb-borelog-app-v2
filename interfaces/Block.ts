@@ -8,6 +8,7 @@ import { WashBoringBlock } from './WashBoringBlock';
 import { HaBlock } from './HaBlock';
 import { ConcreteSlabBlock } from './ConcreteSlabBlock';
 import { ConcretePremixBlock } from './ConcretePremixBlock';
+import { EndOfBoreholeBlock } from './EndOfBoreholeBlock';
 
 export const SPT_BLOCK_TYPE = 'Spt' as const;
 export const CORING_BLOCK_TYPE = 'Coring' as const;
@@ -19,6 +20,7 @@ export const HA_BLOCK_TYPE = 'Ha' as const;
 export const WASH_BORING_BLOCK_TYPE = 'Wash Boring' as const;
 export const CONCRETE_SLAB_BLOCK_TYPE = 'Concrete Slab' as const;
 export const CONCRETE_PREMIX_BLOCK_TYPE = 'Concrete Premix' as const;
+export const END_OF_BOREHOLE_BLOCK_TYPE = 'End of Borehole' as const;
 
 export const BLOCK_TYPE_LIST = [
   SPT_BLOCK_TYPE,
@@ -31,6 +33,7 @@ export const BLOCK_TYPE_LIST = [
   WASH_BORING_BLOCK_TYPE,
   CONCRETE_SLAB_BLOCK_TYPE,
   CONCRETE_PREMIX_BLOCK_TYPE,
+  END_OF_BOREHOLE_BLOCK_TYPE,
 ] as const;
 export type BlockType = typeof BLOCK_TYPE_LIST[number];
 
@@ -45,6 +48,7 @@ export interface Blocks {
   WashBoring: WashBoringBlock;
   ConcreteSlab: ConcreteSlabBlock;
   ConcretePremix: ConcretePremixBlock;
+  EndOfBorehole: EndOfBoreholeBlock;
 }
 
 export interface BaseBlock {

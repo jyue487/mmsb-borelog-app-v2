@@ -3,16 +3,19 @@ import { Button, TextInput, View } from "react-native";
 
 // Local imports
 import { styles } from '@/constants/styles';
+import { Borehole } from '@/interfaces/Borehole';
 
-type AddBoreholeInputFormProps = {
-  addBorehole: (boreholeName: string) => void;
-  setIsAddButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
+type EditBoreholeInputFormProps = {
+  oldBorehole: Borehole;
+  editBorehole: (boreholeId: number, boreholeName: string) => void;
+  setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function AddBoreholeInputForm ({
-  addBorehole,
-  setIsAddButtonPressed
-}: AddBoreholeInputFormProps) {
+export function EditBoreholeInputForm ({
+  oldBorehole,
+  editBorehole,
+  setIsEditState
+}: EditBoreholeInputFormProps) {
 
   const [newBoreholeName, setNewBoreholeName] = useState<string>('');
 
@@ -37,13 +40,13 @@ export function AddBoreholeInputForm ({
             alert("Error: Borehole Name Should not be empty");
             return;
           }
-          addBorehole(newBoreholeName.trim())
-          setIsAddButtonPressed(false);
+          editBorehole(oldBorehole.id, newBoreholeName.trim())
+          setIsEditState(false);
         }}
       />
       <Button
         title='Cancel'
-        onPress={() => setIsAddButtonPressed(false)}
+        onPress={() => setIsEditState(false)}
       />
     </View>
   );

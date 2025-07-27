@@ -17,8 +17,9 @@ import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponen
 import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
-import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from '@/interfaces/Block';
+import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, END_OF_BOREHOLE_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from '@/interfaces/Block';
 import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
+import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent copy';
 
 export default function BoreholeScreen() {
 	const { id, projectName, name } = useLocalSearchParams();
@@ -57,7 +58,7 @@ export default function BoreholeScreen() {
         )
       }
       <Button
-        title='Remove Last BLock'
+        title='Remove Last Block'
         onPress={removeLastBlock}
       />
       <Button
@@ -125,6 +126,8 @@ export default function BoreholeScreen() {
             return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
           case CONCRETE_PREMIX_BLOCK_TYPE:
             return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case END_OF_BOREHOLE_BLOCK_TYPE:
+            return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
           default:
             throw new Error('Unknown block type');
           }

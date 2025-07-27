@@ -8,3 +8,4 @@ export const HA_BLOCK_TYPE_ID = 7 as const;
 export const WASH_BORING_BLOCK_TYPE_ID = 8 as const;
 export const CONCRETE_SLAB_BLOCK_TYPE_ID = 9 as const;
 export const CONCRETE_PREMIX_BLOCK_TYPE_ID = 10 as const;
+export const END_OF_BOREHOLE_BLOCK_TYPE_ID = 16 as const;

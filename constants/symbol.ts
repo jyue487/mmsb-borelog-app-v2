@@ -5,3 +5,6 @@ export const UD_SYMBOL = 'UD' as const;
 export const MZ_SYMBOL = 'MZ' as const;
 export const PS_SYMBOL = 'PS' as const;
 export const HA_SYMBOL = 'HA' as const;
+export const FALLING_HEAD_PERMEABILITY_TEST_SYMBOL = 'FHPT' as const;
+export const RISING_HEAD_PERMEABILITY_TEST_SYMBOL = 'RHPT' as const;
+export const CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL = 'CHPT' as const;

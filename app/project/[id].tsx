@@ -26,9 +26,18 @@ export default function ProjectScreen() {
     initDb();
   }, []);
 
-  const addBorehole = async (projectId: number, newBoreholeName: string) => {
+  const addBorehole = async (newBoreholeName: string) => {
     const result = await db.runAsync('INSERT INTO boreholes (projectId, name) VALUES (?, ?)', [projectId, newBoreholeName]);
     setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, { id: result.lastInsertRowId, projectId: projectId, name: newBoreholeName }]);
+  };
+
+  const editBorehole = async (boreholeId: number, newBoreholeName: string) => {
+    await db.runAsync('UPDATE boreholes SET name = ? WHERE id = ?', newBoreholeName, boreholeId);
+    setBoreholes((prevBoreholes: Borehole[]) =>
+      prevBoreholes.map((bh: Borehole) =>
+        (bh.id === boreholeId) ? { ...bh, name: newBoreholeName } : bh
+      )
+    );
   };
 
   const fetchAllBoreholes = async () => {
@@ -63,7 +72,7 @@ export default function ProjectScreen() {
       <FlatList
         data={boreholes}
         keyExtractor={(borehole: Borehole) => borehole.id.toString()}
-        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} />}
+        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} />}
         style={{ flexGrow: 0, width: '100%' }}
       />
       {
@@ -77,7 +86,7 @@ export default function ProjectScreen() {
         )
       }
       {
-        isAddButtonPressed && <AddBoreholeInputForm projectId={projectId} addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
+        isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
       }
       <Button
         title='Clear Table'

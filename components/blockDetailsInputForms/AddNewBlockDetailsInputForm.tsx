@@ -8,6 +8,8 @@ import { AddSptBlockDetailsInputForm } from '@/components/blockDetailsInputForms
 import { UndisturbedSampleInputForm } from '@/components/blockDetailsInputForms/undisturbedSample/UndisturbedSampleInputForm';
 import { styles } from "@/constants/styles";
 import { Block } from "@/interfaces/Block";
+import { RequiredInsituTestsInputForm } from "./requiredInsituTests/RequiredInsituTestsInputForm";
+import { AddEndOfBoreholeBlockDetailsInputForm } from "./endOfBorehole/AddEndOfBoreholeBlockDetailsInputForm";
 
 export type AddNewBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -40,7 +42,14 @@ export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, borehole
         {
           isSelectOperationTypePressed && (
             <FlatList
-              data={['SPT', 'Coring & Cavity', 'Undisturbed Sample', 'Others']}
+              data={[
+                'SPT', 
+                'Coring & Cavity', 
+                'Undisturbed Sample', 
+                'Required In-situ Tests', 
+                'End of Borehole', 
+                'Others'
+              ]}
               keyExtractor={item => item}
               renderItem={({ item }) => (
                 <TouchableOpacity 
@@ -80,6 +89,26 @@ export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, borehole
       { 
         operationType === 'Undisturbed Sample' && (
           <UndisturbedSampleInputForm
+            boreholeId={boreholeId}
+            blocks={blocks}
+            setBlocks={setBlocks}
+            setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+          /> 
+        )
+      }
+      { 
+        operationType === 'Required In-situ Tests' && (
+          <RequiredInsituTestsInputForm
+            boreholeId={boreholeId}
+            blocks={blocks}
+            setBlocks={setBlocks}
+            setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+          /> 
+        )
+      }
+      { 
+        operationType === 'End of Borehole' && (
+          <AddEndOfBoreholeBlockDetailsInputForm
             boreholeId={boreholeId}
             blocks={blocks}
             setBlocks={setBlocks}

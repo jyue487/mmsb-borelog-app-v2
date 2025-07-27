@@ -1,4 +1,4 @@
-import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from "@/interfaces/Block";
+import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, END_OF_BOREHOLE_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from "@/interfaces/Block";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
 import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
 import { renderFooterToHtml } from "./renderFooterToHtml";
@@ -12,6 +12,7 @@ import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
 import { renderHaBlockToHtml } from "./renderHaBlockToHtml";
 import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
 import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
+import { renderEndOfBoreholeBlockToHtml } from "./renderEndOfBoreholeBlockToHtml";
 
 export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
@@ -72,6 +73,9 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
                 break;
             case CONCRETE_PREMIX_BLOCK_TYPE:
                 result += renderConcretePremixBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case END_OF_BOREHOLE_BLOCK_TYPE:
+                result += renderEndOfBoreholeBlockToHtml(block, pageIndex * 90 - scaleTickIndexWrapper[0], scaleTickIndexWrapper);
                 break;
             default:
                 break;

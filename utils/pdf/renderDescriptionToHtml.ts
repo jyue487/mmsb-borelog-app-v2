@@ -5,7 +5,7 @@ export function renderDescriptionToHtml(numberOfTicksToRender: number, descripti
         if (numberOfTicksToRender <= 5) {
             return '4pt';
         }
-        if (numberOfTicksToRender <= 10) {
+        if (numberOfTicksToRender < 10) {
             return TEXT_SIZE_SMALL;
         }
         return description.length < 80 ? TEXT_SIZE : description.length < 160 ? TEXT_SIZE_SMALL : TEXT_SIZE_SMALLER;

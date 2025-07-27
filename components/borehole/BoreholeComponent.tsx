@@ -5,21 +5,24 @@ import { Pressable, Text } from "react-native";
 // Local imports
 import { styles } from '@/constants/styles';
 import { Borehole } from '@/interfaces/Borehole';
+import { EditBoreholeInputForm } from './EditBoreholeInputForm';
 
 type BoreholeComponentProps = {
   projectName: string,
   borehole: Borehole,
+  editBorehole: (boreholeId: number, newBoreholeName: string) => void;
 };
 
 export function BoreholeComponent({
   projectName,
   borehole,
+  editBorehole
 }: BoreholeComponentProps) {
 
   const [isEditState, setIsEditState] = useState<boolean>(false);
     
   if (isEditState) {
-    return <></>;
+    return <EditBoreholeInputForm oldBorehole={borehole} editBorehole={editBorehole} setIsEditState={setIsEditState} />;
   }
 
   return (
@@ -34,6 +37,7 @@ export function BoreholeComponent({
           },
         })
       }
+      onLongPress={() => setIsEditState(true)}
       style={({ pressed }) => [
         {
           backgroundColor: pressed ? 'rgb(222, 246, 255)' : 'rgb(255, 255, 255)',
