@@ -5,6 +5,8 @@ import { Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, Te
 
 // Local Imports
 import { Borehole } from '@/interfaces/Borehole';
+import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
+import { AddBoreholeInputForm } from '@/components/borehole/AddBoreholeInputForm';
 
 export default function ProjectScreen() {
   const db = useSQLiteContext()
@@ -16,31 +18,17 @@ export default function ProjectScreen() {
   const projectName: string = name;
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
-  const [newBoreholeName, setNewBoreholeName] = useState<string>('')
 
   useEffect(() => {
     const initDb = async () => {
-      await db.execAsync(
-        `
-        PRAGMA foreign_keys = ON;
-        PRAGMA journal_mode = WAL;
-        CREATE TABLE IF NOT EXISTS boreholes (
-          id INTEGER PRIMARY KEY,
-          projectId INTEGER,
-          name TEXT NOT NULL,
-          FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
-        );
-        `
-      );
       await fetchAllBoreholes();
     };
     initDb();
   }, []);
 
-  const addNewBorehole = async () => {
-    const res = await db.runAsync('INSERT INTO boreholes (projectId, name) VALUES (?, ?)', [projectId, newBoreholeName]);
-    console.log(res.lastInsertRowId);
-    await fetchAllBoreholes();
+  const addBorehole = async (projectId: number, newBoreholeName: string) => {
+    const result = await db.runAsync('INSERT INTO boreholes (projectId, name) VALUES (?, ?)', [projectId, newBoreholeName]);
+    setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, { id: result.lastInsertRowId, projectId: projectId, name: newBoreholeName }]);
   };
 
   const fetchAllBoreholes = async () => {
@@ -66,7 +54,7 @@ export default function ProjectScreen() {
     <KeyboardAvoidingView behavior='height' style={styles.container}>
       <Stack.Screen
         options={{
-          title: `${projectName.toUpperCase()}`,
+          title: (projectName.length < 10) ? projectName : `${projectName.slice(0, 10)}...`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -75,27 +63,7 @@ export default function ProjectScreen() {
       <FlatList
         data={boreholes}
         keyExtractor={(borehole: Borehole) => borehole.id.toString()}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              router.navigate({
-                pathname: '../borehole/[id]',
-                params: { 
-                  id: item.id, 
-                  projectName: projectName, 
-                  name: item.name 
-                },
-              })
-            }
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? 'rgb(222, 246, 255)' : 'rgb(255, 255, 255)',
-              },
-              styles.boreholeButton
-            ]}>
-            <Text>{item.name.toUpperCase()}</Text>
-          </Pressable>
-        )}
+        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} />}
         style={{ flexGrow: 0, width: '100%' }}
       />
       {
@@ -103,39 +71,13 @@ export default function ProjectScreen() {
           <Button
             title='Add new Borehole'
             onPress={() => {
-              setNewBoreholeName('');
               setIsAddButtonPressed(true);
             }}
           />
         )
       }
       {
-        isAddButtonPressed && (
-          <View style={styles.borehole}>
-            <TextInput
-              style={{
-                height: 40,
-                width: 100,
-                borderColor: 'gray',
-                borderWidth: 1,
-              }}
-              placeholder='Borehole name'
-              value={newBoreholeName}
-              onChangeText={setNewBoreholeName}
-            />
-            <Button
-              title='Confirm'
-              onPress={() => {
-                addNewBorehole()
-                setIsAddButtonPressed(false);
-              }}
-            />
-            <Button
-              title='Cancel'
-              onPress={() => setIsAddButtonPressed(false)}
-            />
-          </View>
-        )
+        isAddButtonPressed && <AddBoreholeInputForm projectId={projectId} addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
       }
       <Button
         title='Clear Table'
@@ -154,21 +96,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     margin: 20,
-  },
-  borehole: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 150,
-    width: '100%',
-    borderWidth: 1,
-  },
-  boreholeButton: {
-    padding: 20,
-    fontSize: 20,
-    // backgroundColor: 'red',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    height: 100
   },
 });

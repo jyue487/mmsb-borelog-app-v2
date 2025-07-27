@@ -8,11 +8,11 @@ import {
 	DominantSoilType,
 	SecondarySoilType
 } from "@/constants/soil";
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block, SPT_BLOCK_TYPE } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
 import { SptInputQuestions } from "../../inputQuestions/SptInputQuestions";
-import { styles } from "@/constants/styles";
 
 export type EditSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -30,15 +30,15 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
 	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
-	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>(oldBlock.seatingIncBlows1?.toString() ?? '');
+	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>(oldBlock.seatingIncBlows1.toString() ?? '');
 	const [seatingIncBlows2Str, setSeatingIncBlows2Str] = useState<string>(oldBlock.seatingIncBlows2?.toString() ?? '');
-	const [seatingIncPen1Str, setSeatingIncPen1Str] = useState<string>(oldBlock.seatingIncPen1?.toString() ?? '');
+	const [seatingIncPen1Str, setSeatingIncPen1Str] = useState<string>(oldBlock.seatingIncPen1.toString() ?? '');
 	const [seatingIncPen2Str, setSeatingIncPen2Str] = useState<string>(oldBlock.seatingIncPen2?.toString() ?? '');
-	const [mainIncBlows1Str, setMainIncBlows1Str] = useState<string>(oldBlock.mainIncBlows1?.toString() ?? '');
+	const [mainIncBlows1Str, setMainIncBlows1Str] = useState<string>(oldBlock.mainIncBlows1.toString() ?? '');
 	const [mainIncBlows2Str, setMainIncBlows2Str] = useState<string>(oldBlock.mainIncBlows2?.toString() ?? '');
 	const [mainIncBlows3Str, setMainIncBlows3Str] = useState<string>(oldBlock.mainIncBlows3?.toString() ?? '');
 	const [mainIncBlows4Str, setMainIncBlows4Str] = useState<string>(oldBlock.mainIncBlows4?.toString() ?? '');
-	const [mainIncPen1Str, setMainIncPen1Str] = useState<string>(oldBlock.mainIncPen1?.toString() ?? '');
+	const [mainIncPen1Str, setMainIncPen1Str] = useState<string>(oldBlock.mainIncPen1.toString() ?? '');
 	const [mainIncPen2Str, setMainIncPen2Str] = useState<string>(oldBlock.mainIncPen2?.toString() ?? '');
 	const [mainIncPen3Str, setMainIncPen3Str] = useState<string>(oldBlock.mainIncPen3?.toString() ?? '');
 	const [mainIncPen4Str, setMainIncPen4Str] = useState<string>(oldBlock.mainIncPen4?.toString() ?? '');
@@ -62,7 +62,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [otherProperties, setOtherProperties] = useState<string>(oldBlock.otherProperties);
 
 	return (
-		<GestureHandlerRootView style={styles.inputForm}>
+		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
 			<SptInputQuestions 
 				dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
 				dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}

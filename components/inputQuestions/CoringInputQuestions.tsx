@@ -134,8 +134,8 @@ export function CoringInputQuestions({
           <TextInput
             value={rqdInMetresStr}
             onChangeText={(text: string) => {
-              const coreRunInMetres: number = stringToDecimalPoint(coreRunInMetresStr, 3);
-              if (isNaN(coreRunInMetres) || coreRunInMetres <= 0) {
+              const coreRecoveryInMetres: number = stringToDecimalPoint(coreRecoveryInMetresStr, 3);
+              if (isNaN(coreRecoveryInMetres) || coreRecoveryInMetres <= 0) {
                 return;
               }
               setRqdInMetresStr(text);
@@ -143,8 +143,8 @@ export function CoringInputQuestions({
               if (isNaN(rqdInMetres)) {
                 return;
               }
-              if (rqdInMetres > coreRunInMetres) {
-                setRqdInMetresStr(coreRunInMetres.toString());
+              if (rqdInMetres > coreRecoveryInMetres) {
+                setRqdInMetresStr(coreRecoveryInMetres.toString());
               }
             }}
             style={{ borderWidth: 0.5, textAlign: 'center', padding: 10, width: 70 }}

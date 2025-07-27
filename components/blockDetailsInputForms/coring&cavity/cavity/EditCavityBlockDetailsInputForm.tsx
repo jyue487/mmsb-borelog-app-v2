@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
 import { CAVITY_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { BaseBlock, Block, CAVITY_BLOCK_TYPE } from "@/interfaces/Block";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { CavityBlock } from "@/interfaces/CavityBlock";
 import { styles } from "@/constants/styles";
+import { BaseBlock, Block, CAVITY_BLOCK_TYPE } from "@/interfaces/Block";
+import { CavityBlock } from "@/interfaces/CavityBlock";
+import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { roundToDecimalPoint } from "@/utils/numbers";
 
 export type EditCavityBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -25,13 +26,13 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
   const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
   const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
   const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
-  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
-  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(oldBlock.baseDepthInMetres.toFixed(3));
+  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.topDepthInMetres, 3).toString());
+  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.baseDepthInMetres, 3).toString());
   const [cavityDescription, setCavityDescription] = useState<string>(oldBlock.cavityDescription); 
   const [isSelectCavityDescriptionPressed, setIsSelectCavityDescriptionPressed] = useState<boolean>(false);
 
   return (
-    <GestureHandlerRootView style={styles.inputForm}>
+    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
       <DayWorkStatusInputQuestions 
         dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
         dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}

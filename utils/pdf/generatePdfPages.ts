@@ -31,9 +31,9 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
             }
             const i: number = blockIndex;
             const block: Block = blocks[i];
-            const nextBlock: Block | undefined = (i + 1 < blocks.length) ? blocks[i + 1] : undefined;
+            const nextBlock: Block | null = (i + 1 < blocks.length) ? blocks[i + 1] : null;
 
-            const blockHeightInTicks: number = (!nextBlock) ? 10 : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const blockHeightInTicks: number = (!nextBlock) ? Math.max(10, Math.round((block.baseDepthInMetres - block.topDepthInMetres) * 10)) : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
             const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
 
             // If remaining space too small (less than half of actual block height), then pad with empty block
@@ -100,14 +100,14 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
                                 <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">DATE & TIME</div>
                             </th>
                             <th rowspan="4" style="width: 7%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
-                            <th rowspan="3" style="width: 10%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+                            <th rowspan="3" style="width: 12%;">
+                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; white-space: nowrap;">
                                     DEPTH
                                 </div>
                             </th>
                             <th rowspan="3" style="width: 5%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                    WATER LVL
+                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; white-space: nowrap;">
+                                    WL
                                 </div>
                             </th>
                             <th rowspan="4">DESCRIPTION</th>
@@ -117,9 +117,9 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
                                 </div>
                             </th>
                             <th colspan="6" style="width: 24%;">SPT</th>
-                            <th rowspan="4" style="width: 4%;">SPT<br>(N)</th>
-                            <th rowspan="3" style="width: 5%;">R/r</th>
-                            <th rowspan="3" style="width: 4%;">
+                            <th rowspan="4" style="width: 5.5%;">SPT<br>(N)</th>
+                            <th rowspan="3" style="width: 4%;">R/r</th>
+                            <th rowspan="3" style="width: 3%;">
                                 <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
                                     SCALE
                                 </div>

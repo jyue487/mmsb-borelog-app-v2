@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Button, FlatList, Keyboard, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, FlatList, Keyboard, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { AddSptBlockDetailsInputForm } from '@/components/blockDetailsInputForms/spt/AddSptBlockDetailsInputForm';
 import { CoringAndCavityBlockDetailsInputForm } from '@/components/blockDetailsInputForms/coring&cavity/CoringAndCavityBlockDetailsInputForm';
 import { OthersInputForm } from "@/components/blockDetailsInputForms/others/OthersInputForm";
+import { AddSptBlockDetailsInputForm } from '@/components/blockDetailsInputForms/spt/AddSptBlockDetailsInputForm';
 import { UndisturbedSampleInputForm } from '@/components/blockDetailsInputForms/undisturbedSample/UndisturbedSampleInputForm';
-import { Block } from "@/interfaces/Block";
 import { styles } from "@/constants/styles";
+import { Block } from "@/interfaces/Block";
 
 export type AddNewBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -22,7 +22,7 @@ export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, borehole
   const [operationType, setOperationType] = useState<string>('Select Operation Type');
 
   return (
-    <GestureHandlerRootView style={styles.inputForm}>
+    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
       <View>
         <TouchableOpacity 
           onPress={() => {

@@ -17,7 +17,7 @@ export function renderHaBlockToHtml(block: BaseBlock & HaBlock, numberOfTicksToR
             </td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(block.description)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
             <td></td>
             <td></td>
             <td></td>

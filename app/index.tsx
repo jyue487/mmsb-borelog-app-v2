@@ -1,10 +1,12 @@
-import { Stack, router } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
 
 // Local imports
+import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
+import { ProjectComponent } from '@/components/project/ProjectComponent';
 import { Project } from '@/interfaces/Project';
 
 export default function ProjectListScreen() {
@@ -12,28 +14,32 @@ export default function ProjectListScreen() {
   // const db = SQLite.openDatabaseSync('mmsb.db');
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [newProjectName, setNewProjectName] = useState<string>('')
 
   useEffect(() => {
     const initDb = async () => {
-      await db.execAsync(
-        `
-        PRAGMA journal_mode = WAL;
-        CREATE TABLE IF NOT EXISTS projects (
-          id INTEGER PRIMARY KEY, 
-          name TEXT NOT NULL
-        );
-        `
-      );
       await fetchAllProjects();
     };
     initDb();
   }, []);
 
   // TODO: How to make it safe from SQL injections?
-  const addNewProject = async () => {
-    await db.runAsync('INSERT INTO projects (name) VALUES (?)', newProjectName);
-    await fetchAllProjects();
+  const addProject = async (newProjectName: string) => {
+    const result: SQLite.SQLiteRunResult = await db.runAsync('INSERT INTO projects (name) VALUES (?)', newProjectName);
+    setProjects((prevProjects: Project[]) => [...prevProjects, { id: result.lastInsertRowId, name: newProjectName }]);
+  };
+
+  const deleteProject = async (projectId: number) => {
+    await db.runAsync('DELETE FROM projects WHERE id = ?', projectId);
+    setProjects((prevProjects: Project[]) => prevProjects.filter((p: Project) => p.id !== projectId));
+  };
+
+  const editProject = async (projectId: number, newProjectName: string) => {
+    await db.runAsync('UPDATE projects SET name = ? WHERE id = ?', newProjectName, projectId);
+    setProjects((prevProjects: Project[]) =>
+      prevProjects.map((p: Project) =>
+        (p.id === projectId) ? { ...p, name: newProjectName } : p
+      )
+    );
   };
 
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
@@ -69,26 +75,7 @@ export default function ProjectListScreen() {
       <FlatList
         data={projects}
         keyExtractor={(project: Project) => project.id.toString()}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              router.navigate({
-                pathname: '/project/[id]',
-                params: { 
-                  id: item.id,
-                  name: item.name
-                },
-              })
-            }
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? 'rgb(222, 246, 255)' : 'rgb(255, 255, 255)',
-              },
-              styles.projectButton
-            ]}>
-            <Text>PROJECT {item.id}: {item.name.toUpperCase()}</Text>
-          </Pressable>
-        )}
+        renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} />}
         style={{ flexGrow: 0, width: '100%' }}
       />
       {
@@ -96,7 +83,6 @@ export default function ProjectListScreen() {
           <Button
             title='Add Project'
             onPress={() => {
-              setNewProjectName('');
               setIsAddButtonPressed(true);
             }}
           />
@@ -104,30 +90,10 @@ export default function ProjectListScreen() {
       }
       {
         isAddButtonPressed && (
-          <View style={styles.project}>
-            <TextInput
-              style={{
-                height: 40,
-                width: 100,
-                borderColor: 'gray',
-                borderWidth: 1,
-              }}
-              placeholder='Project name'
-              value={newProjectName}
-              onChangeText={setNewProjectName}
-            />
-            <Button
-              title='Confirm'
-              onPress={() => {
-                addNewProject()
-                setIsAddButtonPressed(false);
-              }}
-            />
-            <Button
-              title='Cancel'
-              onPress={() => setIsAddButtonPressed(false)}
-            />
-          </View>
+          <AddProjectInputForm 
+            addProject={addProject}
+            setIsAddButtonPressed={setIsAddButtonPressed}
+          />
         )
       }
       <Button
@@ -148,17 +114,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 20,
   },
-  project: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 150,
-    width: '100%',
-    borderWidth: 1,
-  },
   projectButton: {
     padding: 20,
     fontSize: 20,
-    // backgroundColor: 'red',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

@@ -5,10 +5,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
 import { CONCRETE_PREMIX_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { BaseBlock, Block, CONCRETE_PREMIX_BLOCK_TYPE } from "@/interfaces/Block";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { ConcretePremixBlock } from "@/interfaces/ConcretePremixBlock";
 import { styles } from "@/constants/styles";
+import { BaseBlock, Block, CONCRETE_PREMIX_BLOCK_TYPE } from "@/interfaces/Block";
+import { ConcretePremixBlock } from "@/interfaces/ConcretePremixBlock";
+import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 
 export type EditConcretePremixBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -29,7 +29,7 @@ export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBloc
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(oldBlock.baseDepthInMetres.toFixed(3));
 
   return (
-    <GestureHandlerRootView style={styles.inputForm}>
+    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
       <DayWorkStatusInputQuestions 
         dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
         dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}

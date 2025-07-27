@@ -1,18 +1,16 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, type ViewProps } from "react-native";
+import { Button, type ViewProps } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { CORING_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour } from "@/constants/colour";
 import { RockType } from "@/constants/rock";
-import { BaseBlock, Block, CORING_BLOCK_TYPE } from "@/interfaces/Block";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { stringToDecimalPoint } from "@/utils/numbers";
-import { CoringInputQuestions } from "../../../inputQuestions/CoringInputQuestions";
-import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
-import { CoringBlock } from "@/interfaces/CoringBlock";
 import { styles } from "@/constants/styles";
+import { BaseBlock, Block, CORING_BLOCK_TYPE } from "@/interfaces/Block";
+import { CoringBlock } from "@/interfaces/CoringBlock";
+import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
+import { roundToDecimalPoint } from "@/utils/numbers";
+import { CoringInputQuestions } from "../../../inputQuestions/CoringInputQuestions";
 
 export type EditCoringBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -27,12 +25,12 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 	const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
 	const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
 	const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
-	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
+	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(2) ?? '');
+	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(2) ?? '');
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
-	const [coreRunInMetresStr, setCoreRunInMetresStr] = useState<string>(oldBlock.coreRunInMetres.toFixed(3));
-	const [coreRecoveryInMetresStr, setCoreRecoveryInMetresStr] = useState<string>(oldBlock.coreRecoveryInMetres.toFixed(3));
-	const [rqdInMetresStr, setRqdInMetresStr] = useState<string>(oldBlock.rqdInMetres.toFixed(3));
+	const [coreRunInMetresStr, setCoreRunInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.coreRunInMetres, 3).toString());
+	const [coreRecoveryInMetresStr, setCoreRecoveryInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.coreRecoveryInMetres, 3).toString());
+	const [rqdInMetresStr, setRqdInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.rqdInMetres, 3).toString());
 	const [dominantColour, setDominantColour] = useState<Colour | null>(oldBlock.dominantColour);
 	const [isSelectDominantColourPressed, setIsSelectDominantColourPressed] = useState<boolean>(false);
 	const [secondaryColour, setSecondaryColour] = useState<Colour | null>(oldBlock.secondaryColour);
@@ -44,7 +42,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 	const [isSelectOtherPropertiesPressed, setIsSelectOtherPropertiesPressed] = useState<boolean>(false);
 
 	return (
-		<GestureHandlerRootView style={styles.inputForm}>
+		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
 			<CoringInputQuestions 
 				dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
 				dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}

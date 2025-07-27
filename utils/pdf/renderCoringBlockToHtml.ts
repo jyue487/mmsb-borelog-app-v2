@@ -17,7 +17,7 @@ export function renderCoringBlockToHtml(block: BaseBlock & CoringBlock, numberOf
             </td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(block.rockDescription)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.rockDescription)}
             <td></td>
             <td colspan="2">
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">

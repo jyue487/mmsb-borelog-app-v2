@@ -18,7 +18,7 @@ export function renderUdBlockToHtml(block: BaseBlock & UdBlock, numberOfTicksToR
             </td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(block.soilDescription)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.soilDescription)}
             <td></td>
             <td></td>
             <td></td>

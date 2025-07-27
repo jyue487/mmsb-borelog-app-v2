@@ -88,6 +88,7 @@ export function checkAndReturnCoringBlock({
     
     let rockDescription: string = '';
     let rqdInPercentage: number = 0;
+    let rqdInMetres: number = 0;
     if (coreRecoveryInPercentage === 0) {
         rockDescription = 'No recovery';
         rqdInPercentage = 0;
@@ -96,7 +97,7 @@ export function checkAndReturnCoringBlock({
             alert('Error: R.Q.D.');
             return null;
         }
-        const rqdInMetres: number = parseFloat(parseFloat(rqdInMetresStr).toFixed(3));
+        rqdInMetres = parseFloat(parseFloat(rqdInMetresStr).toFixed(3));
         const rqdInMillimetres: number = rqdInMetres * 1000;
         rqdInPercentage = parseFloat((rqdInMillimetres / coreRunInMillimetres * 100).toFixed(1));
 
@@ -155,7 +156,11 @@ export function checkAndReturnCoringBlock({
 
         let rockTypeDescription = '';
         if (rockType === 'OTHERS') {
-            rockTypeDescription = otherRockType;
+            if (!otherRockType.trim()) {
+                alert('Error: Other Rock Type');
+                return null;
+            }
+            rockTypeDescription = otherRockType.trim();
         } else {
             rockTypeDescription = rockType;
         }
@@ -166,7 +171,7 @@ export function checkAndReturnCoringBlock({
         }
     }
 
-    const rockSampleIndex: number = (coreRecoveryInMetres === 0 ) ? -1 : blocks.filter((block: Block) => block.blockType === CORING_BLOCK_TYPE).length + 1;
+    const rockSampleIndex: number = (coreRecoveryInMetres === 0 ) ? -1 : blocks.filter((block: Block) => block.blockType === CORING_BLOCK_TYPE && block.coreRecoveryInPercentage > 0).length + 1;
 
     const newCoringBlock: Block = {
         id: blocks.length + 1,
@@ -182,6 +187,13 @@ export function checkAndReturnCoringBlock({
         coreRunInMetres: coreRunInMetres,
         coreRecoveryInPercentage: coreRecoveryInPercentage,
         rqdInPercentage: rqdInPercentage,
+        coreRecoveryInMetres: coreRecoveryInMetres,
+        rqdInMetres: rqdInMetres,
+        dominantColour: dominantColour,
+        secondaryColour: secondaryColour,
+        rockType: rockType,
+        otherRockType: otherRockType,
+        otherProperties: otherProperties,
     };
     return newCoringBlock;
 }

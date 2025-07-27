@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
@@ -10,13 +10,13 @@ import {
   DominantSoilType,
   SecondarySoilType
 } from "@/constants/soil";
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block, UD_BLOCK_TYPE } from "@/interfaces/Block";
+import { UdBlock } from "@/interfaces/UdBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { isNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
+import { isNonNegativeFloat, roundToDecimalPoint, stringToDecimalPoint } from "@/utils/numbers";
 import { constructUndisturbedSampleSoilDescription } from "@/utils/undisturbedSampleSoilDescription";
 import { BOTTOM_SOIL_POSITION_TYPE, SoilPropertiesInputQuestions, TOP_SOIL_POSITION_TYPE } from "../../../inputQuestions/SoilPropertiesInputQuestions";
-import { UdBlock } from "@/interfaces/UdBlock";
-import { styles } from "@/constants/styles";
 
 export type EditUdBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -34,7 +34,8 @@ export function EditUdBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
   const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
   const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
-  const [penetrationDepthInMetresStr, setPenetrationDepthInMetresStr] = useState<string>(oldBlock.penetrationDepthInMetres.toFixed(3));
+  const [penetrationDepthInMetresStr, setPenetrationDepthInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.penetrationDepthInMetres, 3).toString());
+  const [recoveryLengthInMetresStr, setRecoveryLengthInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.recoveryLengthInMetres, 3).toString());
   const [topDominantColour, setTopDominantColour] = useState<Colour | null>(oldBlock.topDominantColour);
   const [topSecondaryColour, setTopSecondaryColour] = useState<Colour | null>(oldBlock.topSecondaryColour);
   const [topDominantSoilType, setTopDominantSoilType] = useState<DominantSoilType | null>(oldBlock.topDominantSoilType);
@@ -47,14 +48,13 @@ export function EditUdBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
   const [baseDominantSoilType, setBaseDominantSoilType] = useState<DominantSoilType | null>(oldBlock.baseDominantSoilType);
   const [baseSecondarySoilType, setBaseSecondarySoilType] = useState<SecondarySoilType | null>(oldBlock.baseSecondarySoilType);
   const [baseOtherProperties, setBaseOtherProperties] = useState<string>(oldBlock.baseOtherProperties);
-  const [recoveryLengthInMetresStr, setRecoveryLengthInMetresStr] = useState<string>(oldBlock.recoveryLengthInMetres.toFixed(3));
 
   const resetRecoveryLength = () => {
 		setRecoveryLengthInMetresStr('');
 	};
 
   return (
-    <GestureHandlerRootView style={styles.inputForm}>
+    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
       <DayWorkStatusInputQuestions 
         dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
         dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}

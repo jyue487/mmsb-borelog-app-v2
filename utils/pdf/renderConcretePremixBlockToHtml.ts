@@ -14,7 +14,7 @@ export function renderConcretePremixBlockToHtml(block: BaseBlock & ConcretePremi
             <td></td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(block.description)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
             <td></td>
             <td></td>
             <td></td>

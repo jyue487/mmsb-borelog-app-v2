@@ -17,7 +17,7 @@ export function renderSptBlockToHtml(block: BaseBlock & SptBlock, numberOfTicksT
             </td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(block.soilDescription)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.soilDescription)}
             <td></td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">

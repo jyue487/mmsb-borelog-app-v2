@@ -14,7 +14,7 @@ export function renderCavityBlockToHtml(block: BaseBlock & CavityBlock, numberOf
             <td></td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(block.cavityDescription)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.cavityDescription)}
             <td></td>
             <td></td>
             <td></td>

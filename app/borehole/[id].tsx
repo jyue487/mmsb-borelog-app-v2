@@ -94,7 +94,7 @@ export default function BoreholeScreen() {
       style={styles.container}>
       <Stack.Screen
         options={{
-          title: `${projectName.toUpperCase()} / ${boreholeName.toUpperCase()}`,
+          title: `${(projectName.length < 10) ? projectName : projectName.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
