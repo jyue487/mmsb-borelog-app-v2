@@ -1,13 +1,14 @@
 import { Stack } from 'expo-router';
-import * as SQLite from 'expo-sqlite';
-import { useSQLiteContext } from 'expo-sqlite';
+import { SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
 
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
 import { ProjectComponent } from '@/components/project/ProjectComponent';
-import { Project } from '@/interfaces/Project';
+import { addProjectDb } from '@/db/project/addProjectDb';
+import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
+import { editProjectDb } from '@/db/project/editProjectDb';
 
 export default function ProjectListScreen() {
   const db = useSQLiteContext()
@@ -23,45 +24,10 @@ export default function ProjectListScreen() {
   }, []);
 
   // TODO: How to make it safe from SQL injections?
-  const addProject = async (
-    code: string, 
-    title: string,
-    location: string,
-    client: string,
-    consultant: string,
-  ) => {
+  const addProject = async (addProjectParams: AddProjectParams) => {
     try {
-      const result: SQLite.SQLiteRunResult = await db.runAsync(
-        `
-        INSERT INTO projects (
-          code,
-          title,
-          location,
-          client,
-          consultant
-        ) VALUES (
-          $code,
-          $title,
-          $location,
-          $client,
-          $consultant
-        )
-        `, {
-          $code: code,
-          $title: title,
-          $location: location,
-          $client: client,
-          $consultant: consultant
-        }
-      );
-      setProjects((prevProjects: Project[]) => [...prevProjects, { 
-        id: result.lastInsertRowId, 
-        code: code,
-        title: title,
-        location: location,
-        client: client,
-        consultant: consultant
-      }]);
+      const project: Project = await addProjectDb(db, addProjectParams);
+      setProjects((prevProjects: Project[]) => [...prevProjects, project]);
     } catch (err) {
       const errMsg = `Error: Duplicate project code/title. ${err}`;
       alert(errMsg);
@@ -80,42 +46,15 @@ export default function ProjectListScreen() {
     }
   };
 
-  const editProject = async (
-    projectId: number,
-    title: string,
-    location: string,
-    client: string,
-    consultant: string,
-  ) => {
+  const editProject = async (editProjectParams: EditProjectParams) => {
     try {
-      await db.runAsync(
-        `
-        UPDATE 
-          projects 
-        SET 
-          title = $title,
-          location = $location,
-          client = $client,
-          consultant = $consultant
-        WHERE 
-          id = $id
-        `, {
-          $title: title,
-          $location: location,
-          $client: client,
-          $consultant: consultant,
-          $id: projectId
-        }
-      );
+      const result: SQLiteRunResult = await editProjectDb(db, editProjectParams);
       setProjects((prevProjects: Project[]) =>
         prevProjects.map((p: Project) =>
-          (p.id === projectId) 
+          (p.id === editProjectParams.id)
           ? { 
             ...p,
-            title: title,
-            location: location,
-            client: client,
-            consultant: consultant,
+            ...editProjectParams
           } 
           : p
         )
@@ -179,7 +118,7 @@ export default function ProjectListScreen() {
       {
         isAddButtonPressed && (
           <AddProjectInputForm 
-            addProject={addProject}
+            addProject={addProject} 
             setIsAddButtonPressed={setIsAddButtonPressed}
           />
         )

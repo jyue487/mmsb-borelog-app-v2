@@ -3,15 +3,10 @@ import { Button, TextInput, View } from "react-native";
 
 // Local imports
 import { styles } from '@/constants/styles';
+import { AddProjectParams } from '@/interfaces/Project';
 
 type AddProjectInputFormProps = {
-  addProject: (
-    code: string,
-    title: string,
-    location: string,
-    client: string,
-    consultant: string,
-  ) => void;
+  addProject: (projectParams: AddProjectParams) => void;
   setIsAddButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -20,8 +15,8 @@ export function AddProjectInputForm ({
   setIsAddButtonPressed
 }: AddProjectInputFormProps) {
 
-  const [newProjectCode, setNewProjectCode] = useState<string>('');
-  const [newProjectTitle, setNewProjectTitle] = useState<string>('');
+  const [projectCode, setProjectCode] = useState<string>('');
+  const [projectTitle, setProjectTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [client, setClient] = useState<string>('');
   const [consultant, setConsultant] = useState<string>('');
@@ -38,8 +33,8 @@ export function AddProjectInputForm ({
         }}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT CODE'
-        value={newProjectCode}
-        onChangeText={text => setNewProjectCode(text.toUpperCase())}
+        value={projectCode}
+        onChangeText={text => setProjectCode(text.toUpperCase())}
       />
       <TextInput
         style={{
@@ -51,8 +46,8 @@ export function AddProjectInputForm ({
         }}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT NAME'
-        value={newProjectTitle}
-        onChangeText={text => setNewProjectTitle(text.toUpperCase())}
+        value={projectTitle}
+        onChangeText={text => setProjectTitle(text.toUpperCase())}
       />
       <TextInput
         style={{
@@ -96,21 +91,21 @@ export function AddProjectInputForm ({
       <Button
         title='Confirm'
         onPress={() => {
-          if (!newProjectCode.trim()) {
+          if (!projectCode.trim()) {
             alert("Error: Project Code Should not be empty");
             return;
           }
-          if (!newProjectTitle.trim()) {
+          if (!projectTitle.trim()) {
             alert("Error: Project Name Should not be empty");
             return;
           }
-          addProject(
-            newProjectCode.trim(), 
-            newProjectTitle.trim(),
-            location.trim(),
-            client.trim(),
-            consultant.trim(),
-          );
+          addProject({
+            code: projectCode.trim(), 
+            title: projectTitle.trim(),
+            location: location.trim(),
+            client: client.trim(),
+            consultant: consultant.trim(),
+          });
           setIsAddButtonPressed(false);
         }}
       />

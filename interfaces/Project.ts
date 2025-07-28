@@ -6,3 +6,6 @@ export interface Project {
     client: string;
     consultant: string;
 }
+
+export type AddProjectParams = Omit<Project, 'id'>;
+export type EditProjectParams = Omit<Project, 'code'>;

@@ -6,18 +6,12 @@ import { Alert, Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, T
 import { MaterialIcons } from '@expo/vector-icons';
 
 // Local imports
-import { Project } from '@/interfaces/Project';
+import { EditProjectParams, Project } from '@/interfaces/Project';
 import { styles } from '@/constants/styles';
 
 type EditProjectInputFormProps = {
   oldProject: Project;
-  editProject: (
-    projectId: number, 
-    projectTitle: string,
-    location: string,
-    client: string,
-    consultant: string,
-  ) => void;
+  editProject: (editProjectParams: EditProjectParams) => void;
   deleteProject: (projectId: number) => void;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -29,8 +23,8 @@ export function EditProjectInputForm ({
   setIsEditState
 }: EditProjectInputFormProps) {
 
-  const [newProjectCode, setNewProjectCode] = useState<string>(oldProject.code);
-  const [newProjectTitle, setNewProjectTitle] = useState<string>(oldProject.title);
+  const [projectCode, setProjectCode] = useState<string>(oldProject.code);
+  const [projectTitle, setProjectTitle] = useState<string>(oldProject.title);
   const [location, setLocation] = useState<string>(oldProject.location);
   const [client, setClient] = useState<string>(oldProject.client);
   const [consultant, setConsultant] = useState<string>(oldProject.consultant);
@@ -47,7 +41,7 @@ export function EditProjectInputForm ({
         }}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT CODE'
-        value={newProjectCode}
+        value={projectCode}
         editable={false}
         selectTextOnFocus={false}
       />
@@ -61,8 +55,8 @@ export function EditProjectInputForm ({
         }}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT NAME'
-        value={newProjectTitle}
-        onChangeText={text => setNewProjectTitle(text.toUpperCase())}
+        value={projectTitle}
+        onChangeText={text => setProjectTitle(text.toUpperCase())}
       />
       <TextInput
         style={{
@@ -106,21 +100,21 @@ export function EditProjectInputForm ({
       <Button
         title='Confirm'
         onPress={() => {
-          if (!newProjectCode.trim()) {
+          if (!projectCode.trim()) {
             alert("Error: Project Code Should not be empty");
             return;
           }
-          if (!newProjectTitle.trim()) {
+          if (!projectTitle.trim()) {
             alert("Error: Project Name Should not be empty");
             return;
           }
-          editProject(
-            oldProject.id,
-            newProjectTitle.trim(),
-            location.trim(),
-            client.trim(),
-            consultant.trim(),
-          )
+          editProject({
+            id: oldProject.id,
+            title: projectTitle.trim(),
+            location: location.trim(),
+            client: client.trim(),
+            consultant: consultant.trim(),
+          })
           setIsEditState(false);
         }}
       />

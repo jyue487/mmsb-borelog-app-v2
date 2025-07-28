@@ -4,21 +4,13 @@ import { Pressable, Text } from "react-native";
 
 // Local imports
 import { styles } from '@/constants/styles';
-import { Borehole } from '@/interfaces/Borehole';
+import { Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { EditBoreholeInputForm } from './EditBoreholeInputForm';
 
 type BoreholeComponentProps = {
   projectName: string,
   borehole: Borehole,
-  editBorehole: (
-    boreholeId: number, 
-    newBoreholeName: string,
-    typeOfBoring: string,
-    diameterOfBoring: string,
-    eastingInMetres: number | null,
-    northingInMetres: number | null,
-    reducedLevelInMetres: number | null,
-  ) => void;
+  editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
   deleteBorehole: (boreholeId: number) => void;
 };
 

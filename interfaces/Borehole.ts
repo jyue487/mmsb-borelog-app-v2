@@ -8,3 +8,6 @@ export interface Borehole {
     northingInMetres: number | null,
     reducedLevelInMetres: number | null,
 }
+
+export type AddBoreholeParams = Omit<Borehole, 'id' | 'projectId'>;
+export type EditBoreholeParams = Omit<Borehole, 'projectId'>;

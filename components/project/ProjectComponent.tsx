@@ -4,18 +4,12 @@ import { Pressable, Text } from "react-native";
 
 // Local imports
 import { styles } from '@/constants/styles';
-import { Project } from '@/interfaces/Project';
+import { EditProjectParams, Project } from '@/interfaces/Project';
 import { EditProjectInputForm } from './EditProjectInputForm';
 
 type ProjectComponentProps = {
   project: Project
-  editProject: (
-    projectId: number, 
-    newProjectTitle: string,
-    location: string,
-    client: string,
-    consultant: string,
-  ) => void;
+  editProject: (editProjectParams: EditProjectParams) => void;
   deleteProject: (projectId: number) => void;
 };
 

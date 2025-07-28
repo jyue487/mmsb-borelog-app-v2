@@ -3,21 +3,13 @@ import { Alert, Button, TextInput, TouchableOpacity, View } from "react-native";
 
 // Local imports
 import { styles } from '@/constants/styles';
-import { Borehole } from '@/interfaces/Borehole';
+import { Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { MaterialIcons } from '@expo/vector-icons';
 import { isNonNegativeFloat, stringToDecimalPoint } from '@/utils/numbers';
 
 type EditBoreholeInputFormProps = {
   oldBorehole: Borehole;
-  editBorehole: (
-    boreholeId: number, 
-    newBoreholeName: string,
-    typeOfBoring: string,
-    diameterOfBoring: string,
-    eastingInMetres: number | null,
-    northingInMetres: number | null,
-    reducedLevelInMetres: number | null,
-  ) => void;
+  editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
   deleteBorehole: (boreholeId: number) => void;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -146,15 +138,15 @@ export function EditBoreholeInputForm ({
           const northingInMetres: number | null = (northingInMetresStr.length > 0) ? stringToDecimalPoint(northingInMetresStr, 3) : null;
           const reducedLevelInMetres: number | null = (reducedLevelInMetresStr.length > 0) ? stringToDecimalPoint(reducedLevelInMetresStr, 3) : null;
           
-          editBorehole(
-            oldBorehole.id, 
-            newBoreholeName.trim(),
-            typeOfBoring,
-            diameterOfBoring,
-            eastingInMetres,
-            northingInMetres,
-            reducedLevelInMetres,
-          )
+          editBorehole({
+            id: oldBorehole.id, 
+            name: newBoreholeName.trim(),
+            typeOfBoring: typeOfBoring.trim(),
+            diameterOfBoring: diameterOfBoring.trim(),
+            eastingInMetres: eastingInMetres,
+            northingInMetres: northingInMetres,
+            reducedLevelInMetres: reducedLevelInMetres,
+          })
           setIsEditState(false);
         }}
       />

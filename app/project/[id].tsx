@@ -1,12 +1,14 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 // Local Imports
-import { Borehole } from '@/interfaces/Borehole';
+import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
 import { AddBoreholeInputForm } from '@/components/borehole/AddBoreholeInputForm';
+import { addBoreholeDb } from '@/db/borehole/addBoreholeDb';
+import { editBoreholeDb } from '@/db/borehole/editBoreholeDb';
 
 export default function ProjectScreen() {
   const db = useSQLiteContext()
@@ -26,54 +28,10 @@ export default function ProjectScreen() {
     initDb();
   }, []);
 
-  const addBorehole = async (
-    name: string,
-    typeOfBoring: string,
-    diameterOfBoring: string,
-    eastingInMetres: number | null,
-    northingInMetres: number | null,
-    reducedLevelInMetres: number | null,
-  ) => {
+  const addBorehole = async (addBoreholeParams: AddBoreholeParams) => {
     try {
-      const result = await db.runAsync(
-        `
-        INSERT INTO boreholes (
-          projectId,
-          name,
-          typeOfBoring,
-          diameterOfBoring,
-          eastingInMetres,
-          northingInMetres,
-          reducedLevelInMetres
-        ) VALUES (
-          $projectId,
-          $name,
-          $typeOfBoring,
-          $diameterOfBoring,
-          $eastingInMetres,
-          $northingInMetres,
-          $reducedLevelInMetres
-        )
-        `, {
-          $projectId: projectId,
-          $name: name,
-          $typeOfBoring: typeOfBoring,
-          $diameterOfBoring: diameterOfBoring,
-          $eastingInMetres: eastingInMetres,
-          $northingInMetres: northingInMetres,
-          $reducedLevelInMetres: reducedLevelInMetres
-        }
-      );
-      setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, { 
-        id: result.lastInsertRowId, 
-        projectId: projectId, 
-        name: name,
-        typeOfBoring: typeOfBoring,
-        diameterOfBoring: diameterOfBoring,
-        eastingInMetres: eastingInMetres,
-        northingInMetres: northingInMetres,
-        reducedLevelInMetres: reducedLevelInMetres
-      }]);
+      const borehole: Borehole = await addBoreholeDb(db, projectId, addBoreholeParams);
+      setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, borehole]);
     } catch (err) {
       const errMsg = `Error: ${err}`;
       alert(errMsg);
@@ -92,42 +50,17 @@ export default function ProjectScreen() {
     }
   };
 
-  const editBorehole = async (
-    boreholeId: number, 
-    newBoreholeName: string,
-    typeOfBoring: string,
-    diameterOfBoring: string,
-    eastingInMetres: number | null,
-    northingInMetres: number | null,
-    reducedLevelInMetres: number | null,
-  ) => {
+  const editBorehole = async (editBoreholeParams: EditBoreholeParams) => {
     try {
-      await db.runAsync(
-        `
-        UPDATE 
-          boreholes 
-        SET 
-          name = $name,
-          typeOfBoring = $typeOfBoring,
-          diameterOfBoring = $diameterOfBoring,
-          eastingInMetres = $eastingInMetres,
-          northingInMetres = $northingInMetres,
-          reducedLevelInMetres = $reducedLevelInMetres
-        WHERE 
-          id = $id
-        `, {
-          $name: newBoreholeName,
-          $typeOfBoring: typeOfBoring,
-          $diameterOfBoring: diameterOfBoring,
-          $eastingInMetres: eastingInMetres,
-          $northingInMetres: northingInMetres,
-          $reducedLevelInMetres: reducedLevelInMetres,
-          $id: boreholeId,
-        }
-      );
+      const result: SQLiteRunResult = await editBoreholeDb(db, editBoreholeParams);
       setBoreholes((prevBoreholes: Borehole[]) =>
         prevBoreholes.map((bh: Borehole) =>
-          (bh.id === boreholeId) ? { ...bh, name: newBoreholeName } : bh
+          (bh.id === editBoreholeParams.id)
+          ? { 
+            ...bh, 
+            ...editBoreholeParams 
+          } 
+          : bh
         )
       );
     } catch (err) {

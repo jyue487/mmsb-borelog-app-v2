@@ -4,16 +4,10 @@ import { Button, TextInput, View } from "react-native";
 // Local imports
 import { styles } from '@/constants/styles';
 import { isNonNegativeFloat, stringToDecimalPoint } from '@/utils/numbers';
+import { AddBoreholeParams } from '@/interfaces/Borehole';
 
 type AddBoreholeInputFormProps = {
-  addBorehole: (
-    boreholeName: string,
-    typeOfBoring: string,
-    diameterOfBoring: string,
-    eastingInMetres: number | null,
-    northingInMetres: number | null,
-    reducedLevelInMetres: number | null,
-  ) => void;
+  addBorehole: (addBoreholeParams: AddBoreholeParams) => void;
   setIsAddButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -139,14 +133,14 @@ export function AddBoreholeInputForm ({
           const northingInMetres: number | null = (northingInMetresStr.length > 0) ? stringToDecimalPoint(northingInMetresStr, 3) : null;
           const reducedLevelInMetres: number | null = (reducedLevelInMetresStr.length > 0) ? stringToDecimalPoint(reducedLevelInMetresStr, 3) : null;
 
-          addBorehole(
-            newBoreholeName.trim(),
-            typeOfBoring,
-            diameterOfBoring,
-            eastingInMetres,
-            northingInMetres,
-            reducedLevelInMetres,
-          )
+          addBorehole({
+            name: newBoreholeName.trim(),
+            typeOfBoring: typeOfBoring.trim(),
+            diameterOfBoring: diameterOfBoring.trim(),
+            eastingInMetres: eastingInMetres,
+            northingInMetres: northingInMetres,
+            reducedLevelInMetres: reducedLevelInMetres,
+          });
           setIsAddButtonPressed(false);
         }}
       />
