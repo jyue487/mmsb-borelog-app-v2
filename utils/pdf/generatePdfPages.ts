@@ -1,18 +1,18 @@
-import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, END_OF_BOREHOLE_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from "@/interfaces/Block";
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
-import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
-import { renderFooterToHtml } from "./renderFooterToHtml";
-import { renderHeaderToHtml } from "./renderHeaderToHtml";
-import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
-import { renderCoringBlockToHtml } from "./renderCoringBlockToHtml";
 import { renderCavityBlockToHtml } from "./renderCavityBlockToHtml";
+import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
+import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
+import { renderCoringBlockToHtml } from "./renderCoringBlockToHtml";
+import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
+import { renderEndOfBoreholeBlockToHtml } from "./renderEndOfBoreholeBlockToHtml";
+import { renderFooterToHtml } from "./renderFooterToHtml";
+import { renderHaBlockToHtml } from "./renderHaBlockToHtml";
+import { renderHeaderToHtml } from "./renderHeaderToHtml";
 import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
 import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
+import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
 import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
-import { renderHaBlockToHtml } from "./renderHaBlockToHtml";
-import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
-import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
-import { renderEndOfBoreholeBlockToHtml } from "./renderEndOfBoreholeBlockToHtml";
 
 export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
@@ -43,38 +43,38 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
                 continue;
             }
             
-            switch (block.blockType) {
-            case SPT_BLOCK_TYPE:
+            switch (block.blockTypeId) {
+            case SPT_BLOCK_TYPE_ID:
                 result += renderSptBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case CORING_BLOCK_TYPE:
+            case CORING_BLOCK_TYPE_ID:
                 result += renderCoringBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case CAVITY_BLOCK_TYPE:
+            case CAVITY_BLOCK_TYPE_ID:
                 result += renderCavityBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case UD_BLOCK_TYPE:
+            case UD_BLOCK_TYPE_ID:
                 result += renderUdBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case MZ_BLOCK_TYPE:
+            case MZ_BLOCK_TYPE_ID:
                 result += renderMzBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case PS_BLOCK_TYPE:
+            case PS_BLOCK_TYPE_ID:
                 result += renderPsBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case HA_BLOCK_TYPE:
+            case HA_BLOCK_TYPE_ID:
                 result += renderHaBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case WASH_BORING_BLOCK_TYPE:
+            case WASH_BORING_BLOCK_TYPE_ID:
                 result += renderWashBoringBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case CONCRETE_SLAB_BLOCK_TYPE:
+            case CONCRETE_SLAB_BLOCK_TYPE_ID:
                 result += renderConcreteSlabBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case CONCRETE_PREMIX_BLOCK_TYPE:
+            case CONCRETE_PREMIX_BLOCK_TYPE_ID:
                 result += renderConcretePremixBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case END_OF_BOREHOLE_BLOCK_TYPE:
+            case END_OF_BOREHOLE_BLOCK_TYPE_ID:
                 result += renderEndOfBoreholeBlockToHtml(block, pageIndex * 90 - scaleTickIndexWrapper[0], scaleTickIndexWrapper);
                 break;
             default:

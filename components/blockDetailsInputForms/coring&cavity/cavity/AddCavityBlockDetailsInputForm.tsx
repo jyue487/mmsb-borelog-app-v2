@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { CAVITY_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { Block, CAVITY_BLOCK_TYPE } from "@/interfaces/Block";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { styles } from "@/constants/styles";
+import { Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 
 export type AddCavityBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -131,7 +130,6 @@ export function AddCavityBlockDetailsInputForm({ style, boreholeId, blocks, setB
         const newBlock: Block = {
           id: blocks.length + 1,
           blockTypeId: CAVITY_BLOCK_TYPE_ID,
-          blockType: CAVITY_BLOCK_TYPE,
           boreholeId: boreholeId, 
           blockId: 1,
           dayWorkStatus: dayWorkStatus,

@@ -26,18 +26,115 @@ export default function ProjectScreen() {
     initDb();
   }, []);
 
-  const addBorehole = async (newBoreholeName: string) => {
-    const result = await db.runAsync('INSERT INTO boreholes (projectId, name) VALUES (?, ?)', [projectId, newBoreholeName]);
-    setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, { id: result.lastInsertRowId, projectId: projectId, name: newBoreholeName }]);
+  const addBorehole = async (
+    name: string,
+    typeOfBoring: string,
+    diameterOfBoring: string,
+    eastingInMetres: number | null,
+    northingInMetres: number | null,
+    reducedLevelInMetres: number | null,
+  ) => {
+    try {
+      const result = await db.runAsync(
+        `
+        INSERT INTO boreholes (
+          projectId,
+          name,
+          typeOfBoring,
+          diameterOfBoring,
+          eastingInMetres,
+          northingInMetres,
+          reducedLevelInMetres
+        ) VALUES (
+          $projectId,
+          $name,
+          $typeOfBoring,
+          $diameterOfBoring,
+          $eastingInMetres,
+          $northingInMetres,
+          $reducedLevelInMetres
+        )
+        `, {
+          $projectId: projectId,
+          $name: name,
+          $typeOfBoring: typeOfBoring,
+          $diameterOfBoring: diameterOfBoring,
+          $eastingInMetres: eastingInMetres,
+          $northingInMetres: northingInMetres,
+          $reducedLevelInMetres: reducedLevelInMetres
+        }
+      );
+      setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, { 
+        id: result.lastInsertRowId, 
+        projectId: projectId, 
+        name: name,
+        typeOfBoring: typeOfBoring,
+        diameterOfBoring: diameterOfBoring,
+        eastingInMetres: eastingInMetres,
+        northingInMetres: northingInMetres,
+        reducedLevelInMetres: reducedLevelInMetres
+      }]);
+    } catch (err) {
+      const errMsg = `Error: ${err}`;
+      alert(errMsg);
+      console.log(errMsg);
+    }
   };
 
-  const editBorehole = async (boreholeId: number, newBoreholeName: string) => {
-    await db.runAsync('UPDATE boreholes SET name = ? WHERE id = ?', newBoreholeName, boreholeId);
-    setBoreholes((prevBoreholes: Borehole[]) =>
-      prevBoreholes.map((bh: Borehole) =>
-        (bh.id === boreholeId) ? { ...bh, name: newBoreholeName } : bh
-      )
-    );
+  const deleteBorehole = async (boreholeId: number) => {
+    try {
+      await db.runAsync('DELETE FROM boreholes WHERE id = ?', boreholeId);
+      setBoreholes((prevBoreholes: Borehole[]) => prevBoreholes.filter((bh: Borehole) => bh.id !== boreholeId));
+    } catch (err) {
+      const errMsg = `Error: ${err}`;
+      alert(errMsg);
+      console.log(errMsg);
+    }
+  };
+
+  const editBorehole = async (
+    boreholeId: number, 
+    newBoreholeName: string,
+    typeOfBoring: string,
+    diameterOfBoring: string,
+    eastingInMetres: number | null,
+    northingInMetres: number | null,
+    reducedLevelInMetres: number | null,
+  ) => {
+    try {
+      await db.runAsync(
+        `
+        UPDATE 
+          boreholes 
+        SET 
+          name = $name,
+          typeOfBoring = $typeOfBoring,
+          diameterOfBoring = $diameterOfBoring,
+          eastingInMetres = $eastingInMetres,
+          northingInMetres = $northingInMetres,
+          reducedLevelInMetres = $reducedLevelInMetres
+        WHERE 
+          id = $id
+        `, {
+          $name: newBoreholeName,
+          $typeOfBoring: typeOfBoring,
+          $diameterOfBoring: diameterOfBoring,
+          $eastingInMetres: eastingInMetres,
+          $northingInMetres: northingInMetres,
+          $reducedLevelInMetres: reducedLevelInMetres,
+          $id: boreholeId,
+        }
+      );
+      setBoreholes((prevBoreholes: Borehole[]) =>
+        prevBoreholes.map((bh: Borehole) =>
+          (bh.id === boreholeId) ? { ...bh, name: newBoreholeName } : bh
+        )
+      );
+    } catch (err) {
+      const errMsg = `Error: ${err}`;
+      alert(errMsg);
+      console.log(errMsg);
+    }
   };
 
   const fetchAllBoreholes = async () => {
@@ -45,9 +142,16 @@ export default function ProjectScreen() {
     const boreholes: Borehole[] = rawBoreholes.map((row: any) => ({
       id: row.id,
       projectId: projectId,
-      name: row.name
+      name: row.name,
+      typeOfBoring: row.typeOfBoring,
+      diameterOfBoring: row.diameterOfBoring,
+      eastingInMetres: row.eastingInMetres,
+      northingInMetres: row.northingInMetres,
+      reducedLevelInMetres: row.reducedLevelInMetres,
     }));
     setBoreholes(boreholes);
+    const test = await db.getAllAsync(`SELECT * FROM boreholes;`);
+    console.log(test);
   };
 
   const clearTable = async () => {
@@ -72,7 +176,7 @@ export default function ProjectScreen() {
       <FlatList
         data={boreholes}
         keyExtractor={(borehole: Borehole) => borehole.id.toString()}
-        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} />}
+        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
         style={{ flexGrow: 0, width: '100%' }}
       />
       {

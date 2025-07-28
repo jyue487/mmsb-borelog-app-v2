@@ -1,21 +1,20 @@
 import React, { useState } from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { PS_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour } from "@/constants/colour";
 import {
   DominantSoilType,
   SecondarySoilType
 } from "@/constants/soil";
-import { Block, PS_BLOCK_TYPE } from "@/interfaces/Block";
+import { styles } from "@/constants/styles";
+import { Block, PS_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { isNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
 import { constructUndisturbedSampleSoilDescription } from "@/utils/undisturbedSampleSoilDescription";
 import { BOTTOM_SOIL_POSITION_TYPE, SoilPropertiesInputQuestions, TOP_SOIL_POSITION_TYPE } from "../../../inputQuestions/SoilPropertiesInputQuestions";
-import { styles } from "@/constants/styles";
 
 export type AddPsBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -238,12 +237,11 @@ export function AddPsBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
             return;
           }
 
-          const pistonSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === PS_BLOCK_TYPE && block.recoveryInPercentage > 0).length + 1;
+          const pistonSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === PS_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
           const newBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: PS_BLOCK_TYPE_ID,
-            blockType: PS_BLOCK_TYPE,
             boreholeId: boreholeId,
             blockId: 1,
             pistonSampleIndex: pistonSampleIndex,

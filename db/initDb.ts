@@ -1,6 +1,7 @@
 import { SQLiteDatabase } from "expo-sqlite";
+import { runMigrations } from "./runMigrations";
 
-export async function initDb(db: SQLiteDatabase) {
+export async function initDb(db: SQLiteDatabase): Promise<void> {
     // Set journal mode
     await db.execAsync('PRAGMA journal_mode = WAL;');
 
@@ -13,25 +14,17 @@ export async function initDb(db: SQLiteDatabase) {
     console.log('Journal mode:', journal); // should be 'wal'
     console.log('Foreign keys enabled:', fk); // should be 1
 
-    await db.execAsync(
-        `
-        CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY, 
-            name TEXT NOT NULL
-        );
-        `
-    );
+    let currentDbVersionResult = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version');
+    console.log('currentDbVersion:', currentDbVersionResult);
+    
+    console.log('Started running database migration...');
 
-    await db.execAsync(
-        `
-        CREATE TABLE IF NOT EXISTS boreholes (
-            id INTEGER PRIMARY KEY,
-            projectId INTEGER,
-            name TEXT NOT NULL,
-            FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
-        );
-        `
-    );
+    runMigrations(db, currentDbVersionResult?.user_version ?? 0);
+
+    console.log('Finished running database migration...');
+
+    currentDbVersionResult = await db.getFirstAsync('PRAGMA user_version');
+    console.log('currentDbVersionResult:', currentDbVersionResult);
 
     return;
 }

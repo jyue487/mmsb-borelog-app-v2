@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { WASH_BORING_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { Block, WASH_BORING_BLOCK_TYPE } from "@/interfaces/Block";
+import { Block, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 
 export type AddWashBoringBlockDetailsInputFormProps = ViewProps & {
@@ -85,7 +83,6 @@ export function AddWashBoringBlockDetailsInputForm({ style, boreholeId, blocks, 
           const newWashBoringBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: WASH_BORING_BLOCK_TYPE_ID,
-            blockType: WASH_BORING_BLOCK_TYPE,
             boreholeId: boreholeId, 
             blockId: 1,
             dayWorkStatus: dayWorkStatus,

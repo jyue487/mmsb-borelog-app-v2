@@ -1,15 +1,11 @@
-import React, { useState } from "react";
-import { Button, StyleSheet, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { CORING_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
+import { DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour } from "@/constants/colour";
 import { RockType } from "@/constants/rock";
-import { BaseBlock, Block, CORING_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, CORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { CoringBlock } from "@/interfaces/CoringBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { stringToDecimalPoint } from "@/utils/numbers";
-import { CoringBlock } from "@/interfaces/CoringBlock";
 
 type Params = {
     blocks: Block[];
@@ -171,12 +167,11 @@ export function checkAndReturnCoringBlock({
         }
     }
 
-    const rockSampleIndex: number = (coreRecoveryInMetres === 0 ) ? -1 : blocks.filter((block: Block) => block.blockType === CORING_BLOCK_TYPE && block.coreRecoveryInPercentage > 0).length + 1;
+    const rockSampleIndex: number = (coreRecoveryInMetres === 0 ) ? -1 : blocks.filter((block: Block) => block.blockTypeId === CORING_BLOCK_TYPE_ID && block.coreRecoveryInPercentage > 0).length + 1;
 
     const newCoringBlock: Block = {
         id: blocks.length + 1,
         blockTypeId: CORING_BLOCK_TYPE_ID,
-        blockType: CORING_BLOCK_TYPE,
         boreholeId: boreholeId, 
         blockId: 1,
         rockSampleIndex: rockSampleIndex,

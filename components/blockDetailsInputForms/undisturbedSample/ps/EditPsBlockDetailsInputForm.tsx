@@ -3,7 +3,6 @@ import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewPro
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { PS_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour } from "@/constants/colour";
 import {
@@ -11,7 +10,7 @@ import {
   SecondarySoilType
 } from "@/constants/soil";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, PS_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, PS_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { PsBlock } from "@/interfaces/PsBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { isNonNegativeFloat, roundToDecimalPoint, stringToDecimalPoint } from "@/utils/numbers";
@@ -239,12 +238,11 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
             return;
           }
 
-          const pistonSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === PS_BLOCK_TYPE && block.recoveryInPercentage > 0).length + 1;
+          const pistonSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === PS_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
           const newBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: PS_BLOCK_TYPE_ID,
-            blockType: PS_BLOCK_TYPE,
             boreholeId: oldBlock.boreholeId,
             blockId: 1,
             pistonSampleIndex: pistonSampleIndex,
@@ -271,7 +269,7 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
           setBlocks((blocks: Block[]) => {
             let pistonSampleIndex: number = 1;
             return blocks.map((b: Block) => {
-              if (b.blockType !== PS_BLOCK_TYPE) {
+              if (b.blockTypeId !== PS_BLOCK_TYPE_ID) {
                 return b;
               }
               const updatedBlock: Block = (b === oldBlock) ? { ...newBlock } : { ...b };

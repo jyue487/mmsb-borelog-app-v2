@@ -11,7 +11,13 @@ import { styles } from '@/constants/styles';
 
 type EditProjectInputFormProps = {
   oldProject: Project;
-  editProject: (projectId: number, projectName: string) => void;
+  editProject: (
+    projectId: number, 
+    projectTitle: string,
+    location: string,
+    client: string,
+    consultant: string,
+  ) => void;
   deleteProject: (projectId: number) => void;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -23,7 +29,11 @@ export function EditProjectInputForm ({
   setIsEditState
 }: EditProjectInputFormProps) {
 
-  const [newProjectName, setNewProjectName] = useState<string>(oldProject.name);
+  const [newProjectCode, setNewProjectCode] = useState<string>(oldProject.code);
+  const [newProjectTitle, setNewProjectTitle] = useState<string>(oldProject.title);
+  const [location, setLocation] = useState<string>(oldProject.location);
+  const [client, setClient] = useState<string>(oldProject.client);
+  const [consultant, setConsultant] = useState<string>(oldProject.consultant);
 
   return (
     <View style={styles.projectInputForm}>
@@ -35,18 +45,82 @@ export function EditProjectInputForm ({
           borderColor: 'gray',
           borderWidth: 1,
         }}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='PROJECT CODE'
+        value={newProjectCode}
+        editable={false}
+        selectTextOnFocus={false}
+      />
+      <TextInput
+        style={{
+          padding: 10,
+          height: 40,
+          width: '60%',
+          borderColor: 'gray',
+          borderWidth: 1,
+        }}
+        placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT NAME'
-        value={newProjectName}
-        onChangeText={text => setNewProjectName(text.toUpperCase())}
+        value={newProjectTitle}
+        onChangeText={text => setNewProjectTitle(text.toUpperCase())}
+      />
+      <TextInput
+        style={{
+          padding: 10,
+          height: 40,
+          width: '60%',
+          borderColor: 'gray',
+          borderWidth: 1,
+        }}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Location'
+        value={location}
+        onChangeText={setLocation}
+      />
+      <TextInput
+        style={{
+          padding: 10,
+          height: 40,
+          width: '60%',
+          borderColor: 'gray',
+          borderWidth: 1,
+        }}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Client'
+        value={client}
+        onChangeText={setClient}
+      />
+      <TextInput
+        style={{
+          padding: 10,
+          height: 40,
+          width: '60%',
+          borderColor: 'gray',
+          borderWidth: 1,
+        }}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Consultant'
+        value={consultant}
+        onChangeText={setConsultant}
       />
       <Button
         title='Confirm'
         onPress={() => {
-          if (!newProjectName.trim()) {
+          if (!newProjectCode.trim()) {
+            alert("Error: Project Code Should not be empty");
+            return;
+          }
+          if (!newProjectTitle.trim()) {
             alert("Error: Project Name Should not be empty");
             return;
           }
-          editProject(oldProject.id, newProjectName.trim())
+          editProject(
+            oldProject.id,
+            newProjectTitle.trim(),
+            location.trim(),
+            client.trim(),
+            consultant.trim(),
+          )
           setIsEditState(false);
         }}
       />
@@ -58,7 +132,7 @@ export function EditProjectInputForm ({
         onPress={() => {
           Alert.alert(
             "Delete Project",
-            `Are you sure you want to delete project ${oldProject.name}?`,
+            `Are you sure you want to delete project ${oldProject.title}?`,
             [
               { text: 'No, go back', style: 'cancel' },
               { text: 'Delete', style: 'destructive', onPress: () => deleteProject(oldProject.id) },

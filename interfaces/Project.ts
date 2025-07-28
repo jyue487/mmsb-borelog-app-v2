@@ -1,4 +1,8 @@
 export interface Project {
-    id: number;
-    name: string;
+    id: number; // must
+    code: string; // must
+    title: string; //must
+    location: string;
+    client: string;
+    consultant: string;
 }

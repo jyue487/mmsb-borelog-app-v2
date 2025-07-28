@@ -3,13 +3,14 @@ import * as Print from 'expo-print';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 
 // Local Imports
 import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
 import { ConcretePremixBlockComponent } from '@/components/blockComponents/ConcretePremixBlockComponent';
 import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
 import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
+import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent copy';
 import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
 import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
 import { PsBlockComponent } from '@/components/blockComponents/PsBlockComponent';
@@ -17,9 +18,8 @@ import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponen
 import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
-import { Block, CAVITY_BLOCK_TYPE, CONCRETE_PREMIX_BLOCK_TYPE, CONCRETE_SLAB_BLOCK_TYPE, CORING_BLOCK_TYPE, END_OF_BOREHOLE_BLOCK_TYPE, HA_BLOCK_TYPE, MZ_BLOCK_TYPE, PS_BLOCK_TYPE, SPT_BLOCK_TYPE, UD_BLOCK_TYPE, WASH_BORING_BLOCK_TYPE } from '@/interfaces/Block';
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
-import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent copy';
 
 export default function BoreholeScreen() {
 	const { id, projectName, name } = useLocalSearchParams();
@@ -105,28 +105,28 @@ export default function BoreholeScreen() {
         data={blocks}
         keyExtractor={(block: Block) => block.id.toString()}
         renderItem={({ item }) => {
-          switch (item.blockType) {
-          case SPT_BLOCK_TYPE:
+          switch (item.blockTypeId) {
+          case SPT_BLOCK_TYPE_ID:
             return <SptBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />;
-          case CORING_BLOCK_TYPE:
+          case CORING_BLOCK_TYPE_ID:
             return <CoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CAVITY_BLOCK_TYPE:
+          case CAVITY_BLOCK_TYPE_ID:
             return <CavityBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case UD_BLOCK_TYPE:
+          case UD_BLOCK_TYPE_ID:
             return <UdBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case MZ_BLOCK_TYPE:
+          case MZ_BLOCK_TYPE_ID:
             return <MzBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case PS_BLOCK_TYPE:
+          case PS_BLOCK_TYPE_ID:
             return <PsBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case HA_BLOCK_TYPE:
+          case HA_BLOCK_TYPE_ID:
             return <HaBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case WASH_BORING_BLOCK_TYPE:
+          case WASH_BORING_BLOCK_TYPE_ID:
             return <WashBoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CONCRETE_SLAB_BLOCK_TYPE:
+          case CONCRETE_SLAB_BLOCK_TYPE_ID:
             return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CONCRETE_PREMIX_BLOCK_TYPE:
+          case CONCRETE_PREMIX_BLOCK_TYPE_ID:
             return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case END_OF_BOREHOLE_BLOCK_TYPE:
+          case END_OF_BOREHOLE_BLOCK_TYPE_ID:
             return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
           default:
             throw new Error('Unknown block type');

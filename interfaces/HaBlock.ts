@@ -1,13 +1,11 @@
-import { HA_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Colour } from '@/constants/colour';
 import { DayWorkStatus } from '@/constants/DayStatus';
 import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
-import { HA_BLOCK_TYPE } from '@/interfaces/Block';
+import { HA_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface HaBlock {
     blockId: number;
-    readonly blockTypeId: typeof HA_BLOCK_TYPE_ID;
-    blockType: typeof HA_BLOCK_TYPE;
+    blockTypeId: typeof HA_BLOCK_TYPE_ID;
     haSampleIndex: number;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;

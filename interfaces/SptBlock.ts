@@ -1,13 +1,11 @@
-import { SPT_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Colour } from '@/constants/colour';
 import { DayWorkStatus } from '@/constants/DayStatus';
 import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
-import { SPT_BLOCK_TYPE } from '@/interfaces/Block';
+import { SPT_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface SptBlock {
     blockId: number;
-    readonly blockTypeId: typeof SPT_BLOCK_TYPE_ID;
-    blockType: typeof SPT_BLOCK_TYPE;
+    blockTypeId: typeof SPT_BLOCK_TYPE_ID;
     sptIndex: number;
     disturbedSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

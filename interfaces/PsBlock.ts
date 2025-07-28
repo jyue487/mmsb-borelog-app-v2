@@ -1,13 +1,11 @@
-import { PS_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { DayWorkStatus } from '@/constants/DayStatus';
 import { Colour } from '@/constants/colour';
 import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
-import { PS_BLOCK_TYPE } from '@/interfaces/Block';
+import { PS_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface PsBlock {
     blockId: number;
-    readonly blockTypeId: typeof PS_BLOCK_TYPE_ID;
-    blockType: typeof PS_BLOCK_TYPE;
+    blockTypeId: typeof PS_BLOCK_TYPE_ID;
     pistonSampleIndex: number;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;

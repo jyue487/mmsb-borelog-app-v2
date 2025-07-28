@@ -9,7 +9,13 @@ import { EditProjectInputForm } from './EditProjectInputForm';
 
 type ProjectComponentProps = {
   project: Project
-  editProject: (projectId: number, newProjectName: string) => void;
+  editProject: (
+    projectId: number, 
+    newProjectTitle: string,
+    location: string,
+    client: string,
+    consultant: string,
+  ) => void;
   deleteProject: (projectId: number) => void;
 };
 
@@ -32,7 +38,7 @@ export function ProjectComponent({
           pathname: '/project/[id]',
           params: { 
             id: project.id,
-            name: project.name
+            name: project.title
           },
         })
       }
@@ -43,7 +49,7 @@ export function ProjectComponent({
         },
         styles.projectButton
       ]}>
-      <Text>{project.name.toUpperCase()}</Text>
+      <Text>{project.title.toUpperCase()}</Text>
     </Pressable>
   );
 }

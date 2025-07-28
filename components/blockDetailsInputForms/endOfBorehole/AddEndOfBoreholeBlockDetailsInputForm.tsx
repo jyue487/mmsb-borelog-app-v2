@@ -1,7 +1,6 @@
-import { END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE } from "@/constants/DayStatus";
 import { styles } from "@/constants/styles";
-import { Block, END_OF_BOREHOLE_BLOCK_TYPE } from "@/interfaces/Block";
+import { Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { isNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
 import { useState } from "react";
 import { Button, FlatList, Keyboard, Text, TextInput, TouchableOpacity, View, ViewProps } from "react-native";
@@ -137,7 +136,6 @@ export function AddEndOfBoreholeBlockDetailsInputForm({
           blockId: blocks.length + 1,
           boreholeId: boreholeId,
           blockTypeId: END_OF_BOREHOLE_BLOCK_TYPE_ID,
-          blockType: END_OF_BOREHOLE_BLOCK_TYPE,
           dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
           topDepthInMetres: endOfBoreholeDepthInMetres,
           baseDepthInMetres: endOfBoreholeDepthInMetres,

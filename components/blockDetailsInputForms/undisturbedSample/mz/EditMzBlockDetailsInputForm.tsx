@@ -3,7 +3,6 @@ import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewPro
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { MZ_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour } from "@/constants/colour";
 import {
@@ -11,7 +10,7 @@ import {
   SecondarySoilType
 } from "@/constants/soil";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, MZ_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, MZ_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { MzBlock } from "@/interfaces/MzBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { isNonNegativeFloat, roundToDecimalPoint, stringToDecimalPoint } from "@/utils/numbers";
@@ -239,12 +238,11 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
             return;
           }
 
-          const mazierSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === MZ_BLOCK_TYPE && block.recoveryInPercentage > 0).length + 1;
+          const mazierSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === MZ_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
           const newBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: MZ_BLOCK_TYPE_ID,
-            blockType: MZ_BLOCK_TYPE,
             boreholeId: oldBlock.boreholeId, 
             blockId: 1,
             mazierSampleIndex: mazierSampleIndex,
@@ -271,7 +269,7 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
           setBlocks((blocks: Block[]) => {
             let mazierSampleIndex: number = 1;
             return blocks.map((b: Block) => {
-              if (b.blockType !== MZ_BLOCK_TYPE) {
+              if (b.blockTypeId !== MZ_BLOCK_TYPE_ID) {
                 return b;
               }
               const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};

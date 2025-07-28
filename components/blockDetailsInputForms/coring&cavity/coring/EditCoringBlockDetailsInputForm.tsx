@@ -6,7 +6,7 @@ import { DAY_CONTINUE_WORK_TYPE, DayWorkStatusType } from "@/constants/DayStatus
 import { Colour } from "@/constants/colour";
 import { RockType } from "@/constants/rock";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CORING_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, CORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { CoringBlock } from "@/interfaces/CoringBlock";
 import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
 import { roundToDecimalPoint } from "@/utils/numbers";
@@ -95,7 +95,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 					setBlocks((blocks: Block[]) => {
 						let rockSampleIndex: number = 1;
 						return blocks.map((b: Block) => {
-							if (b.blockType !== CORING_BLOCK_TYPE) {
+							if (b.blockTypeId !== CORING_BLOCK_TYPE_ID) {
 								return b;
 							}
 							const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};

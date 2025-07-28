@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { CONCRETE_PREMIX_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { Block, CONCRETE_PREMIX_BLOCK_TYPE } from "@/interfaces/Block";
+import { Block, CONCRETE_PREMIX_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 
 export type AddConcretePremixBlockDetailsInputFormProps = ViewProps & {
@@ -85,7 +83,6 @@ export function AddConcretePremixBlockDetailsInputForm({ style, boreholeId, bloc
           const newConcretePremixBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: CONCRETE_PREMIX_BLOCK_TYPE_ID,
-            blockType: CONCRETE_PREMIX_BLOCK_TYPE,
             boreholeId: boreholeId, 
             blockId: 1,
             dayWorkStatus: dayWorkStatus,

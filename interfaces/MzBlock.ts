@@ -1,13 +1,11 @@
-import { MZ_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Colour } from '@/constants/colour';
 import { DayWorkStatus } from '@/constants/DayStatus';
 import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
-import { MZ_BLOCK_TYPE } from '@/interfaces/Block';
+import { MZ_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface MzBlock {
     blockId: number;
-    readonly blockTypeId: typeof MZ_BLOCK_TYPE_ID;
-    blockType: typeof MZ_BLOCK_TYPE;
+    blockTypeId: typeof MZ_BLOCK_TYPE_ID;
     mazierSampleIndex: number;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;

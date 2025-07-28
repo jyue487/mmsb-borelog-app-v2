@@ -1,11 +1,9 @@
-import { WASH_BORING_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { DayWorkStatus } from '@/constants/DayStatus';
-import { WASH_BORING_BLOCK_TYPE } from '@/interfaces/Block';
+import { WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface WashBoringBlock {
     blockId: number;
-    readonly blockTypeId: typeof WASH_BORING_BLOCK_TYPE_ID;
-    blockType: typeof WASH_BORING_BLOCK_TYPE;
+    blockTypeId: typeof WASH_BORING_BLOCK_TYPE_ID;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;
     baseDepthInMetres: number;

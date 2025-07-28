@@ -3,12 +3,11 @@ import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewPro
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { HA_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { Colour } from "@/constants/colour";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { DominantSoilType, SecondarySoilType } from "@/constants/soil";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, HA_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, HA_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { HaBlock } from "@/interfaces/HaBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { DEFAULT_SOIL_POSITION_TYPE, SoilPropertiesInputQuestions } from "../../../inputQuestions/SoilPropertiesInputQuestions";
@@ -182,12 +181,11 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
           const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
-          const haSampleIndex: number = blocks.filter((block: Block) => block.blockType === HA_BLOCK_TYPE).length + 1;
+          const haSampleIndex: number = blocks.filter((block: Block) => block.blockTypeId === HA_BLOCK_TYPE_ID).length + 1;
 
           const newBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: HA_BLOCK_TYPE_ID,
-            blockType: HA_BLOCK_TYPE,
             boreholeId: oldBlock.boreholeId, 
             blockId: 1,
             haSampleIndex: haSampleIndex,

@@ -1,13 +1,11 @@
-import { CORING_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Colour } from '@/constants/colour';
 import { DayWorkStatus } from '@/constants/DayStatus';
 import { RockType } from '@/constants/rock';
-import { CORING_BLOCK_TYPE } from '@/interfaces/Block';
+import { CORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface CoringBlock {
     blockId: number;
-    readonly blockTypeId: typeof CORING_BLOCK_TYPE_ID;
-    blockType: typeof CORING_BLOCK_TYPE;
+    blockTypeId: typeof CORING_BLOCK_TYPE_ID;
     rockSampleIndex: number;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;

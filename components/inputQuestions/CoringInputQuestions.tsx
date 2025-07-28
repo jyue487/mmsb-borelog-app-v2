@@ -1,16 +1,13 @@
-import React, { useState } from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import React from "react";
+import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { CORING_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
+import { DayWorkStatusType } from "@/constants/DayStatus";
 import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/constants/colour";
 import { OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE, ROCK_TYPE_LIST, RockType } from "@/constants/rock";
-import { Block, CORING_BLOCK_TYPE } from "@/interfaces/Block";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { stringToDecimalPoint } from "@/utils/numbers";
 import { styles } from "@/constants/styles";
+import { stringToDecimalPoint } from "@/utils/numbers";
 
 type CoringInputQuestionsProps = {
   dayWorkStatusType: DayWorkStatusType; setDayWorkStatusType: React.Dispatch<React.SetStateAction<DayWorkStatusType>>;

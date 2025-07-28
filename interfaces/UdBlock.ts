@@ -1,13 +1,11 @@
-import { UD_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { Colour } from '@/constants/colour';
 import { DayWorkStatus } from '@/constants/DayStatus';
 import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
-import { UD_BLOCK_TYPE } from '@/interfaces/Block';
+import { UD_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface UdBlock {
     blockId: number;
-    readonly blockTypeId: typeof UD_BLOCK_TYPE_ID;
-    blockType: typeof UD_BLOCK_TYPE;
+    blockTypeId: typeof UD_BLOCK_TYPE_ID;
     undisturbedSampleIndex: number;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;

@@ -1,14 +1,14 @@
-import { SPT_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
+
 import { Colour } from "@/constants/colour";
 import { DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import {
-	DominantSoilType,
-	SecondarySoilType
+    DominantSoilType,
+    SecondarySoilType
 } from "@/constants/soil";
-import { BaseBlock, Block, SPT_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnDayWorkStatus } from '@/utils/checkFunctions/checkAndReturnDayWorkStatus';
 import { isNonNegativeFloat, isNonNegativeInteger, stringToDecimalPoint } from '@/utils/numbers';
-import { SptBlock } from "@/interfaces/SptBlock";
 
 type Params = {
     blocks: Block[],
@@ -274,14 +274,13 @@ export function checkAndReturnSptBlock({
         }
     }
 
-    const sptIndex: number = blocks.filter((block: Block) => block.blockType === SPT_BLOCK_TYPE).length + 1;
-    const disturbedSampleIndex: number = (recoveryLengthInMillimetres === 0) ? -1 : blocks.filter((block: Block) => block.blockType === SPT_BLOCK_TYPE && block.recoveryInPercentage > 0).length + 1;
+    const sptIndex: number = blocks.filter((block: Block) => block.blockTypeId === SPT_BLOCK_TYPE_ID).length + 1;
+    const disturbedSampleIndex: number = (recoveryLengthInMillimetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === SPT_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
     const newSptBlock: Block = {
         id: blocks.length + 1, 
         blockId: blocks.length + 1,
         blockTypeId: SPT_BLOCK_TYPE_ID,
-        blockType: SPT_BLOCK_TYPE,
         boreholeId: boreholeId,
         sptIndex: sptIndex,
         disturbedSampleIndex: disturbedSampleIndex,

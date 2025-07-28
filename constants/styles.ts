@@ -18,8 +18,9 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        height: 150,
         borderWidth: 1,
+        gap: 20,
+        padding: 20,
     },
     projectButton: {
         padding: 20,
@@ -32,9 +33,10 @@ export const styles = StyleSheet.create({
     boreholeInputForm: {
         justifyContent: 'center',
         alignItems: 'center',
-        height: 150,
         width: '100%',
         borderWidth: 1,
+        gap: 20,
+        padding: 20,
     },
     boreholeButton: {
         padding: 20,

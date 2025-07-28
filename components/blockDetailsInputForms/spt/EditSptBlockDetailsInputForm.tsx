@@ -9,7 +9,7 @@ import {
 	SecondarySoilType
 } from "@/constants/soil";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, SPT_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
 import { SptInputQuestions } from "../../inputQuestions/SptInputQuestions";
@@ -156,7 +156,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 						let sptIndex: number = 1;
 						let disturbedSampleIndex: number = 1;
 						return blocks.map((b: Block) => {
-							if (b.blockType !== SPT_BLOCK_TYPE) {
+							if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
 								return b;
 							}
 							const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};

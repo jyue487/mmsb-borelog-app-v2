@@ -10,19 +10,29 @@ import { EditBoreholeInputForm } from './EditBoreholeInputForm';
 type BoreholeComponentProps = {
   projectName: string,
   borehole: Borehole,
-  editBorehole: (boreholeId: number, newBoreholeName: string) => void;
+  editBorehole: (
+    boreholeId: number, 
+    newBoreholeName: string,
+    typeOfBoring: string,
+    diameterOfBoring: string,
+    eastingInMetres: number | null,
+    northingInMetres: number | null,
+    reducedLevelInMetres: number | null,
+  ) => void;
+  deleteBorehole: (boreholeId: number) => void;
 };
 
 export function BoreholeComponent({
   projectName,
   borehole,
-  editBorehole
+  editBorehole,
+  deleteBorehole,
 }: BoreholeComponentProps) {
 
   const [isEditState, setIsEditState] = useState<boolean>(false);
     
   if (isEditState) {
-    return <EditBoreholeInputForm oldBorehole={borehole} editBorehole={editBorehole} setIsEditState={setIsEditState} />;
+    return <EditBoreholeInputForm oldBorehole={borehole} editBorehole={editBorehole} deleteBorehole={deleteBorehole} setIsEditState={setIsEditState} />;
   }
 
   return (

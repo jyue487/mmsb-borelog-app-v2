@@ -23,23 +23,108 @@ export default function ProjectListScreen() {
   }, []);
 
   // TODO: How to make it safe from SQL injections?
-  const addProject = async (newProjectName: string) => {
-    const result: SQLite.SQLiteRunResult = await db.runAsync('INSERT INTO projects (name) VALUES (?)', newProjectName);
-    setProjects((prevProjects: Project[]) => [...prevProjects, { id: result.lastInsertRowId, name: newProjectName }]);
+  const addProject = async (
+    code: string, 
+    title: string,
+    location: string,
+    client: string,
+    consultant: string,
+  ) => {
+    try {
+      const result: SQLite.SQLiteRunResult = await db.runAsync(
+        `
+        INSERT INTO projects (
+          code,
+          title,
+          location,
+          client,
+          consultant
+        ) VALUES (
+          $code,
+          $title,
+          $location,
+          $client,
+          $consultant
+        )
+        `, {
+          $code: code,
+          $title: title,
+          $location: location,
+          $client: client,
+          $consultant: consultant
+        }
+      );
+      setProjects((prevProjects: Project[]) => [...prevProjects, { 
+        id: result.lastInsertRowId, 
+        code: code,
+        title: title,
+        location: location,
+        client: client,
+        consultant: consultant
+      }]);
+    } catch (err) {
+      const errMsg = `Error: Duplicate project code/title. ${err}`;
+      alert(errMsg);
+      console.log(errMsg);
+    }
   };
 
   const deleteProject = async (projectId: number) => {
-    await db.runAsync('DELETE FROM projects WHERE id = ?', projectId);
-    setProjects((prevProjects: Project[]) => prevProjects.filter((p: Project) => p.id !== projectId));
+    try {
+      await db.runAsync('DELETE FROM projects WHERE id = ?', projectId);
+      setProjects((prevProjects: Project[]) => prevProjects.filter((p: Project) => p.id !== projectId));
+    } catch (err) {
+      const errMsg = `Error: Duplicate title ${err}`;
+      alert(errMsg);
+      console.log(errMsg);
+    }
   };
 
-  const editProject = async (projectId: number, newProjectName: string) => {
-    await db.runAsync('UPDATE projects SET name = ? WHERE id = ?', newProjectName, projectId);
-    setProjects((prevProjects: Project[]) =>
-      prevProjects.map((p: Project) =>
-        (p.id === projectId) ? { ...p, name: newProjectName } : p
-      )
-    );
+  const editProject = async (
+    projectId: number,
+    title: string,
+    location: string,
+    client: string,
+    consultant: string,
+  ) => {
+    try {
+      await db.runAsync(
+        `
+        UPDATE 
+          projects 
+        SET 
+          title = $title,
+          location = $location,
+          client = $client,
+          consultant = $consultant
+        WHERE 
+          id = $id
+        `, {
+          $title: title,
+          $location: location,
+          $client: client,
+          $consultant: consultant,
+          $id: projectId
+        }
+      );
+      setProjects((prevProjects: Project[]) =>
+        prevProjects.map((p: Project) =>
+          (p.id === projectId) 
+          ? { 
+            ...p,
+            title: title,
+            location: location,
+            client: client,
+            consultant: consultant,
+          } 
+          : p
+        )
+      );
+    } catch (err) {
+      const errMsg = `Error: Duplicate title ${err}`;
+      alert(errMsg);
+      console.log(errMsg);
+    }
   };
 
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
@@ -47,7 +132,11 @@ export default function ProjectListScreen() {
     const rawProjects = await db.getAllAsync('SELECT * FROM projects');
     const projects: Project[] = rawProjects.map((row: any) => ({
       id: row.id,
-      name: row.name
+      code: row.code,
+      title: row.title,
+      location: row.location,
+      client: row.client,
+      consultant: row.consultant,
     }));
     setProjects(projects);
   };
@@ -59,7 +148,6 @@ export default function ProjectListScreen() {
 
   const clearDatabase = async () => {
     await db.runAsync('DROP TABLE projects');
-    await SQLite.deleteDatabaseAsync('test.db');
   };
 
   return (

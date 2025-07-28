@@ -1,7 +1,6 @@
-import { END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE } from "@/constants/DayStatus";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { isNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
 import { useState } from "react";
@@ -139,7 +138,6 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
             blockId: blocks.length + 1,
             boreholeId: oldBlock.boreholeId,
             blockTypeId: END_OF_BOREHOLE_BLOCK_TYPE_ID,
-            blockType: END_OF_BOREHOLE_BLOCK_TYPE,
             dayWorkStatus: { dayWorkStatusType: DAY_CONTINUE_WORK_TYPE },
             topDepthInMetres: endOfBoreholeDepthInMetres,
             baseDepthInMetres: endOfBoreholeDepthInMetres,

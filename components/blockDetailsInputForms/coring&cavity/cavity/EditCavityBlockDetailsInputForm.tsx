@@ -3,10 +3,9 @@ import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewPro
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { CAVITY_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CAVITY_BLOCK_TYPE } from "@/interfaces/Block";
+import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { CavityBlock } from "@/interfaces/CavityBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { roundToDecimalPoint } from "@/utils/numbers";
@@ -133,7 +132,6 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
           const newBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: CAVITY_BLOCK_TYPE_ID,
-            blockType: CAVITY_BLOCK_TYPE,
             boreholeId: oldBlock.boreholeId, 
             blockId: 1,
             dayWorkStatus: dayWorkStatus,

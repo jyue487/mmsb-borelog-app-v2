@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { HA_BLOCK_TYPE_ID } from "@/constants/BlockTypeId";
 import { Colour } from "@/constants/colour";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
 import { DominantSoilType, SecondarySoilType } from "@/constants/soil";
-import { Block, HA_BLOCK_TYPE } from "@/interfaces/Block";
+import { styles } from "@/constants/styles";
+import { Block, HA_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { DEFAULT_SOIL_POSITION_TYPE, SoilPropertiesInputQuestions } from "../../../inputQuestions/SoilPropertiesInputQuestions";
-import { styles } from "@/constants/styles";
 
 export type AddHaBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -181,12 +180,11 @@ export function AddHaBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
           const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
-          const haSampleIndex: number = blocks.filter((block: Block) => block.blockType === HA_BLOCK_TYPE).length + 1;
+          const haSampleIndex: number = blocks.filter((block: Block) => block.blockTypeId === HA_BLOCK_TYPE_ID).length + 1;
 
           const newHaBlock: Block = {
             id: blocks.length + 1,
             blockTypeId: HA_BLOCK_TYPE_ID,
-            blockType: HA_BLOCK_TYPE,
             boreholeId: boreholeId, 
             blockId: 1,
             haSampleIndex: haSampleIndex,

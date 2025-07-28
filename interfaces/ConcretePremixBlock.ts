@@ -1,11 +1,9 @@
-import { CONCRETE_PREMIX_BLOCK_TYPE_ID } from '@/constants/BlockTypeId';
 import { DayWorkStatus } from '@/constants/DayStatus';
-import { CONCRETE_PREMIX_BLOCK_TYPE } from '@/interfaces/Block';
+import { CONCRETE_PREMIX_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface ConcretePremixBlock {
     blockId: number;
-    readonly blockTypeId: typeof CONCRETE_PREMIX_BLOCK_TYPE_ID;
-    blockType: typeof CONCRETE_PREMIX_BLOCK_TYPE;
+    blockTypeId: typeof CONCRETE_PREMIX_BLOCK_TYPE_ID;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;
     baseDepthInMetres: number;

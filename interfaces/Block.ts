@@ -1,41 +1,41 @@
+import { CavityBlock } from '@/interfaces/CavityBlock';
+import { CoringBlock } from '@/interfaces/CoringBlock';
 import { MzBlock } from '@/interfaces/MzBlock';
 import { PsBlock } from '@/interfaces/PsBlock';
 import { SptBlock } from '@/interfaces/SptBlock';
 import { UdBlock } from '@/interfaces/UdBlock';
-import { CavityBlock } from '@/interfaces/CavityBlock';
-import { CoringBlock } from '@/interfaces/CoringBlock';
-import { WashBoringBlock } from './WashBoringBlock';
-import { HaBlock } from './HaBlock';
-import { ConcreteSlabBlock } from './ConcreteSlabBlock';
-import { ConcretePremixBlock } from './ConcretePremixBlock';
-import { EndOfBoreholeBlock } from './EndOfBoreholeBlock';
+import { ConcretePremixBlock } from '@/interfaces/ConcretePremixBlock';
+import { ConcreteSlabBlock } from '@/interfaces/ConcreteSlabBlock';
+import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
+import { HaBlock } from '@/interfaces/HaBlock';
+import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
 
-export const SPT_BLOCK_TYPE = 'Spt' as const;
-export const CORING_BLOCK_TYPE = 'Coring' as const;
-export const CAVITY_BLOCK_TYPE = 'Cavity' as const;
-export const UD_BLOCK_TYPE = 'Ud' as const;
-export const MZ_BLOCK_TYPE = 'Mz' as const;
-export const PS_BLOCK_TYPE = 'Ps' as const;
-export const HA_BLOCK_TYPE = 'Ha' as const;
-export const WASH_BORING_BLOCK_TYPE = 'Wash Boring' as const;
-export const CONCRETE_SLAB_BLOCK_TYPE = 'Concrete Slab' as const;
-export const CONCRETE_PREMIX_BLOCK_TYPE = 'Concrete Premix' as const;
-export const END_OF_BOREHOLE_BLOCK_TYPE = 'End of Borehole' as const;
+export const SPT_BLOCK_TYPE_ID = 1 as const;
+export const CORING_BLOCK_TYPE_ID = 2 as const;
+export const CAVITY_BLOCK_TYPE_ID = 3 as const;
+export const UD_BLOCK_TYPE_ID = 4 as const;
+export const MZ_BLOCK_TYPE_ID = 5 as const;
+export const PS_BLOCK_TYPE_ID = 6 as const;
+export const HA_BLOCK_TYPE_ID = 7 as const;
+export const WASH_BORING_BLOCK_TYPE_ID = 8 as const;
+export const CONCRETE_SLAB_BLOCK_TYPE_ID = 9 as const;
+export const CONCRETE_PREMIX_BLOCK_TYPE_ID = 10 as const;
+export const END_OF_BOREHOLE_BLOCK_TYPE_ID = 11 as const;
 
-export const BLOCK_TYPE_LIST = [
-  SPT_BLOCK_TYPE,
-  CORING_BLOCK_TYPE,
-  CAVITY_BLOCK_TYPE,
-  UD_BLOCK_TYPE,
-  MZ_BLOCK_TYPE,
-  PS_BLOCK_TYPE,
-  HA_BLOCK_TYPE,
-  WASH_BORING_BLOCK_TYPE,
-  CONCRETE_SLAB_BLOCK_TYPE,
-  CONCRETE_PREMIX_BLOCK_TYPE,
-  END_OF_BOREHOLE_BLOCK_TYPE,
+export const BLOCK_TYPE_ID_LIST = [
+  SPT_BLOCK_TYPE_ID,
+  CORING_BLOCK_TYPE_ID,
+  CAVITY_BLOCK_TYPE_ID,
+  UD_BLOCK_TYPE_ID,
+  MZ_BLOCK_TYPE_ID,
+  PS_BLOCK_TYPE_ID,
+  HA_BLOCK_TYPE_ID,
+  WASH_BORING_BLOCK_TYPE_ID,
+  CONCRETE_SLAB_BLOCK_TYPE_ID,
+  CONCRETE_PREMIX_BLOCK_TYPE_ID,
+  END_OF_BOREHOLE_BLOCK_TYPE_ID,
 ] as const;
-export type BlockType = typeof BLOCK_TYPE_LIST[number];
+export type BlockTypeId = typeof BLOCK_TYPE_ID_LIST[number];
 
 export interface Blocks {
   Spt: SptBlock;
