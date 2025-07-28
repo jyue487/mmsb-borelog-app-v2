@@ -1,13 +1,13 @@
 import { CavityBlock } from '@/interfaces/CavityBlock';
+import { ConcretePremixBlock } from '@/interfaces/ConcretePremixBlock';
+import { ConcreteSlabBlock } from '@/interfaces/ConcreteSlabBlock';
 import { CoringBlock } from '@/interfaces/CoringBlock';
+import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
+import { HaBlock } from '@/interfaces/HaBlock';
 import { MzBlock } from '@/interfaces/MzBlock';
 import { PsBlock } from '@/interfaces/PsBlock';
 import { SptBlock } from '@/interfaces/SptBlock';
 import { UdBlock } from '@/interfaces/UdBlock';
-import { ConcretePremixBlock } from '@/interfaces/ConcretePremixBlock';
-import { ConcreteSlabBlock } from '@/interfaces/ConcreteSlabBlock';
-import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
-import { HaBlock } from '@/interfaces/HaBlock';
 import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
 
 export const SPT_BLOCK_TYPE_ID = 1 as const;
@@ -52,7 +52,7 @@ export interface Blocks {
 }
 
 export interface BaseBlock {
-  id: number;
+  blockId: number;
   boreholeId: number;
 }
 

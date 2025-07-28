@@ -4,7 +4,7 @@ import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
 import { MZ_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface MzBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof MZ_BLOCK_TYPE_ID;
     mazierSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

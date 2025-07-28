@@ -82,9 +82,9 @@ export function AddConcreteSlabBlockDetailsInputForm({ style, boreholeId, blocks
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: CONCRETE_SLAB_BLOCK_TYPE_ID,
             boreholeId: boreholeId, 
-            blockId: 1,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,

@@ -4,7 +4,7 @@ import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
 import { SPT_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface SptBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof SPT_BLOCK_TYPE_ID;
     sptIndex: number;
     disturbedSampleIndex: number;

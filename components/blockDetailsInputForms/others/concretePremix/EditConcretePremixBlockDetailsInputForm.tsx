@@ -85,9 +85,9 @@ export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBloc
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: CONCRETE_PREMIX_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
-            blockId: 1,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,

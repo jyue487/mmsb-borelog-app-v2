@@ -242,9 +242,9 @@ export function EditUdBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: UD_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
-            blockId: 1,
             undisturbedSampleIndex: undisturbedSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
@@ -274,6 +274,7 @@ export function EditUdBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
               }
               const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
               updatedBlock.id = b.id;
+              updatedBlock.blockId = b.blockId;
               updatedBlock.undisturbedSampleIndex = (updatedBlock.recoveryInPercentage === 0) ? -1 : undisturbedSampleIndex++;
               return updatedBlock;
             });

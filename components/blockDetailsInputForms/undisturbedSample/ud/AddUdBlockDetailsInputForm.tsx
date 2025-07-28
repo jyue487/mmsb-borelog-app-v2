@@ -241,9 +241,9 @@ export function AddUdBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
 
         const newBlock: Block = {
           id: blocks.length + 1,
+          blockId: blocks.length + 1,
           blockTypeId: UD_BLOCK_TYPE_ID,
           boreholeId: boreholeId, 
-          blockId: 1,
           undisturbedSampleIndex: undisturbedSampleIndex,
           dayWorkStatus: dayWorkStatus,
           topDepthInMetres: topDepthInMetres,

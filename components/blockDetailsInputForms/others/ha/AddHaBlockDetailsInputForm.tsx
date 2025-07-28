@@ -184,9 +184,9 @@ export function AddHaBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
 
           const newHaBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: HA_BLOCK_TYPE_ID,
             boreholeId: boreholeId, 
-            blockId: 1,
             haSampleIndex: haSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,

@@ -278,7 +278,7 @@ export function checkAndReturnSptBlock({
     const disturbedSampleIndex: number = (recoveryLengthInMillimetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === SPT_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
     const newSptBlock: Block = {
-        id: blocks.length + 1, 
+        id: blocks.length + 1,
         blockId: blocks.length + 1,
         blockTypeId: SPT_BLOCK_TYPE_ID,
         boreholeId: boreholeId,

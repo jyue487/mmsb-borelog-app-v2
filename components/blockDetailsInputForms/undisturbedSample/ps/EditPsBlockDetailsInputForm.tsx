@@ -242,9 +242,9 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: PS_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId,
-            blockId: 1,
             pistonSampleIndex: pistonSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
@@ -274,6 +274,7 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
               }
               const updatedBlock: Block = (b === oldBlock) ? { ...newBlock } : { ...b };
               updatedBlock.id = b.id;
+              updatedBlock.blockId = b.blockId;
               updatedBlock.pistonSampleIndex = (updatedBlock.recoveryInPercentage === 0) ? -1 : pistonSampleIndex++;
               return updatedBlock;
             });

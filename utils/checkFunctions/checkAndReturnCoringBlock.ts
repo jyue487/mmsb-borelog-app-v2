@@ -171,9 +171,9 @@ export function checkAndReturnCoringBlock({
 
     const newCoringBlock: Block = {
         id: blocks.length + 1,
+        blockId: blocks.length + 1,
         blockTypeId: CORING_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
-        blockId: 1,
         rockSampleIndex: rockSampleIndex,
         dayWorkStatus: dayWorkStatus,
         topDepthInMetres: topDepthInMetres,

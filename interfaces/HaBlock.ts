@@ -4,7 +4,7 @@ import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
 import { HA_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface HaBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof HA_BLOCK_TYPE_ID;
     haSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

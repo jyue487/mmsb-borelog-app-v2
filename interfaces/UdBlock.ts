@@ -4,7 +4,7 @@ import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
 import { UD_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface UdBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof UD_BLOCK_TYPE_ID;
     undisturbedSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

@@ -241,9 +241,9 @@ export function AddMzBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: MZ_BLOCK_TYPE_ID,
             boreholeId: boreholeId,
-            blockId: 1,
             mazierSampleIndex: mazierSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,

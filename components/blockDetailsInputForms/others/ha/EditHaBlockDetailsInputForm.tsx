@@ -185,9 +185,9 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: HA_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
-            blockId: 1,
             haSampleIndex: haSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,

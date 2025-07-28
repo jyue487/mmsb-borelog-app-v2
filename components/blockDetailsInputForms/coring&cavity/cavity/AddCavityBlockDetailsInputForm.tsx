@@ -129,9 +129,9 @@ export function AddCavityBlockDetailsInputForm({ style, boreholeId, blocks, setB
 
         const newBlock: Block = {
           id: blocks.length + 1,
+          blockId: blocks.length + 1,
           blockTypeId: CAVITY_BLOCK_TYPE_ID,
           boreholeId: boreholeId, 
-          blockId: 1,
           dayWorkStatus: dayWorkStatus,
           topDepthInMetres: topDepthInMetres,
           baseDepthInMetres: baseDepthInMetres,

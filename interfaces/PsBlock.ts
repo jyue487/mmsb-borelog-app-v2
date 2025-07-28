@@ -4,7 +4,7 @@ import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
 import { PS_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface PsBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof PS_BLOCK_TYPE_ID;
     pistonSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

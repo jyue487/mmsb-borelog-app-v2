@@ -4,7 +4,7 @@ import { RockType } from '@/constants/rock';
 import { CORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface CoringBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof CORING_BLOCK_TYPE_ID;
     rockSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

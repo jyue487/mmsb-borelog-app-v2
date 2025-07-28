@@ -241,9 +241,9 @@ export function AddPsBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: PS_BLOCK_TYPE_ID,
             boreholeId: boreholeId,
-            blockId: 1,
             pistonSampleIndex: pistonSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,

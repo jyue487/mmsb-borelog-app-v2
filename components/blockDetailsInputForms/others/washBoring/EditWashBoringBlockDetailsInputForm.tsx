@@ -85,9 +85,9 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: WASH_BORING_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
-            blockId: 1,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,

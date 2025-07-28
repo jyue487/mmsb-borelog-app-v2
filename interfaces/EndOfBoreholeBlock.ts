@@ -2,7 +2,7 @@ import { DayWorkStatus } from '@/constants/DayStatus';
 import { END_OF_BOREHOLE_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface EndOfBoreholeBlock {
-    blockId: number;
+    id: number;
     blockTypeId: typeof END_OF_BOREHOLE_BLOCK_TYPE_ID;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;

@@ -242,9 +242,9 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
 
           const newBlock: Block = {
             id: blocks.length + 1,
+            blockId: blocks.length + 1,
             blockTypeId: MZ_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
-            blockId: 1,
             mazierSampleIndex: mazierSampleIndex,
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
@@ -274,6 +274,7 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
               }
               const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
               updatedBlock.id = b.id;
+              updatedBlock.blockId = b.blockId;
               updatedBlock.mazierSampleIndex = (updatedBlock.recoveryInPercentage === 0) ? -1 : mazierSampleIndex++;
               return updatedBlock;
             });
