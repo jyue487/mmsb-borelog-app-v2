@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
 import { UD_SYMBOL } from "@/constants/symbol";
-import { UdBlock } from '@/interfaces/UdBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { UdBlock } from '@/interfaces/UdBlock';
 import { useState } from "react";
 import { EditUdBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/ud/EditUdBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 
 export type UdBlockProps = ViewProps & {
 	block: BaseBlock & UdBlock;
@@ -37,7 +37,7 @@ export function UdBlockComponent({ style, block, blocks, setBlocks, ...otherProp
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>{UD_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.undisturbedSampleIndex}</Text>
+				<Text>{UD_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

@@ -3,7 +3,7 @@ import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, CONCRETE_PREMIX_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { ConcretePremixBlock } from "@/interfaces/ConcretePremixBlock";
@@ -17,27 +17,13 @@ export type EditConcretePremixBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock, setIsEditState, ...otherProps }: EditConcretePremixBlockDetailsInputFormProps) {
-  const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(oldBlock.dayWorkStatus.dayWorkStatusType);
-  const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
-  const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-  const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
-  const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-  const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
-  const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
+  const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(oldBlock.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(oldBlock.baseDepthInMetres.toFixed(3));
 
   return (
     <GestureHandlerRootView style={styles.blockDetailsInputForm}>
-      <DayWorkStatusInputQuestions 
-        dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
-        dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
-        dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
-        dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
-        dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
-        waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
-        casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
-      />
+      <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
         <TextInput
@@ -59,18 +45,9 @@ export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBloc
       <Button
         title='Confirm'
         onPress={() => {
-          const dayWorkStatus: DayWorkStatus | undefined = checkAndReturnDayWorkStatus({
-            dayWorkStatusType: dayWorkStatusType,
-            dayStartWorkDate: dayStartWorkDate,
-            dayStartWorkTime: dayStartWorkTime,
-            dayEndWorkDate: dayEndWorkDate,
-            dayEndWorkTime: dayEndWorkTime,
-            waterLevelInMetresStr: waterLevelInMetresStr,
-            casingDepthInMetresStr: casingDepthInMetresStr,
-          });
-          if (!dayWorkStatus) {
-            return;
-          }
+
+          checkAndReturnDayWorkStatus(dayWorkStatus);
+
           if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
 						return;

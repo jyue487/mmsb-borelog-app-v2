@@ -3,6 +3,7 @@ export interface Borehole {
     projectId: number, // must
     name: string, // must
     typeOfBoring: string,
+    typeOfRig: string,
     diameterOfBoring: string,
     eastingInMetres: number | null,
     northingInMetres: number | null,

@@ -6,9 +6,9 @@ import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
 import { ProjectComponent } from '@/components/project/ProjectComponent';
-import { addProjectDb } from '@/db/project/addProjectDb';
+import { addProjectDbAsync } from '@/db/project/addProjectDbAsync';
+import { editProjectDbAsync } from '@/db/project/editProjectDbAsync';
 import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
-import { editProjectDb } from '@/db/project/editProjectDb';
 
 export default function ProjectListScreen() {
   const db = useSQLiteContext()
@@ -26,7 +26,7 @@ export default function ProjectListScreen() {
   // TODO: How to make it safe from SQL injections?
   const addProject = async (addProjectParams: AddProjectParams) => {
     try {
-      const project: Project = await addProjectDb(db, addProjectParams);
+      const project: Project = await addProjectDbAsync(db, addProjectParams);
       setProjects((prevProjects: Project[]) => [...prevProjects, project]);
     } catch (err) {
       const errMsg = `Error: Duplicate project code/title. ${err}`;
@@ -48,7 +48,7 @@ export default function ProjectListScreen() {
 
   const editProject = async (editProjectParams: EditProjectParams) => {
     try {
-      const result: SQLiteRunResult = await editProjectDb(db, editProjectParams);
+      const result: SQLiteRunResult = await editProjectDbAsync(db, editProjectParams);
       setProjects((prevProjects: Project[]) =>
         prevProjects.map((p: Project) =>
           (p.id === editProjectParams.id)
@@ -89,22 +89,9 @@ export default function ProjectListScreen() {
     await db.runAsync('DROP TABLE projects');
   };
 
-  return (
-    <KeyboardAvoidingView behavior='height' style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: 'MMSB Project List',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <FlatList
-        data={projects}
-        keyExtractor={(project: Project) => project.id.toString()}
-        renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
-        style={{ flexGrow: 0, width: '100%' }}
-      />
+  const renderFooter = () => {
+    return (
+      <>
       {
         !isAddButtonPressed && (
           <Button
@@ -130,6 +117,29 @@ export default function ProjectListScreen() {
       <Button
         title='Clear Database'
         onPress={clearDatabase}
+      />
+      </>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView behavior='height' style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: 'MMSB Project List',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <FlatList
+        data={projects}
+        keyExtractor={(project: Project) => project.id.toString()}
+        renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
+        keyboardShouldPersistTaps="handled"
+        ListFooterComponent={renderFooter()}
+        contentContainerStyle={{ paddingBottom: 500 }}
+        style={{ flexGrow: 0, width: '100%' }}
       />
     </KeyboardAvoidingView>
   );

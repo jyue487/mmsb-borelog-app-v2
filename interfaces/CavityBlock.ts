@@ -1,4 +1,4 @@
-import { DayWorkStatus } from '@/constants/DayStatus';
+import { DayWorkStatus } from '@/constants/DayWorkStatus';
 import { CAVITY_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface CavityBlock {
@@ -7,5 +7,5 @@ export interface CavityBlock {
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;
     baseDepthInMetres: number;
-    cavityDescription: string;
+    description: string;
 }

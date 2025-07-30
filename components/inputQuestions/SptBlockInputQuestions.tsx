@@ -1,26 +1,15 @@
-import React, { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import React from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { Colour } from "@/constants/colour";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatusType } from "@/constants/DayStatus";
-import {
-	DominantSoilType,
-	SecondarySoilType
-} from "@/constants/soil";
-import { Block } from "@/interfaces/Block";
-import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
-import { DEFAULT_SOIL_POSITION_TYPE, SoilPropertiesInputQuestions } from "../inputQuestions/SoilPropertiesInputQuestions";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
+import { SoilPropertiesInputQuestions } from "./SoilPropertiesInputQuestions";
+import { SoilProperties } from "@/interfaces/SoilProperties";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { ColourPropertiesInputQuestions } from "./ColourPropertiesInputQuestions";
 
-type SptInputQuestionsProps = {
-  dayWorkStatusType: DayWorkStatusType; setDayWorkStatusType: React.Dispatch<React.SetStateAction<DayWorkStatusType>>;
-  dayStartWorkDate: Date; setDayStartWorkDate: React.Dispatch<React.SetStateAction<Date>>;
-  dayStartWorkTime: Date; setDayStartWorkTime: React.Dispatch<React.SetStateAction<Date>>;
-  dayEndWorkDate: Date; setDayEndWorkDate: React.Dispatch<React.SetStateAction<Date>>;
-  dayEndWorkTime: Date; setDayEndWorkTime: React.Dispatch<React.SetStateAction<Date>>;
-  waterLevelInMetresStr: string; setWaterLevelInMetresStr: React.Dispatch<React.SetStateAction<string>>;
-  casingDepthInMetresStr: string; setCasingDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
+type SptBlockInputQuestionsProps = {
+  dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
   topDepthInMetresStr: string; setTopDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
   seatingIncBlows1Str: string; setSeatingIncBlows1Str: React.Dispatch<React.SetStateAction<string>>;
   seatingIncBlows2Str: string; setSeatingIncBlows2Str: React.Dispatch<React.SetStateAction<string>>;
@@ -47,21 +36,12 @@ type SptInputQuestionsProps = {
   isMainIncPen3Active: boolean; setIsMainIncPen3Active: React.Dispatch<React.SetStateAction<boolean>>;
   isMainIncPen4Active: boolean; setIsMainIncPen4Active: React.Dispatch<React.SetStateAction<boolean>>;
   recoveryLengthInMillimetresStr: string; setRecoveryLengthInMillimetresStr: React.Dispatch<React.SetStateAction<string>>;
-  dominantColour: Colour | null; setDominantColour: React.Dispatch<React.SetStateAction<Colour | null>>;
-  secondaryColour: Colour | null; setSecondaryColour: React.Dispatch<React.SetStateAction<Colour | null>>;
-  dominantSoilType: DominantSoilType | null; setDominantSoilType: React.Dispatch<React.SetStateAction<DominantSoilType | null>>;
-  secondarySoilType: SecondarySoilType | null; setSecondarySoilType: React.Dispatch<React.SetStateAction<SecondarySoilType | null>>;
-  otherProperties: string; setOtherProperties: React.Dispatch<React.SetStateAction<string>>;
+  colourProperties: ColourProperties; setColourProperties: React.Dispatch<React.SetStateAction<ColourProperties>>;
+  soilProperties: SoilProperties; setSoilProperties: React.Dispatch<React.SetStateAction<SoilProperties>>;
 };
 
-export function SptInputQuestions({
-  dayWorkStatusType, setDayWorkStatusType,
-  dayStartWorkDate, setDayStartWorkDate,
-  dayStartWorkTime, setDayStartWorkTime,
-  dayEndWorkDate, setDayEndWorkDate,
-  dayEndWorkTime, setDayEndWorkTime,
-  waterLevelInMetresStr, setWaterLevelInMetresStr,
-  casingDepthInMetresStr, setCasingDepthInMetresStr,
+export function SptBlockInputQuestions({
+  dayWorkStatus, setDayWorkStatus,
   topDepthInMetresStr, setTopDepthInMetresStr,
   seatingIncBlows1Str, setSeatingIncBlows1Str,
   seatingIncBlows2Str, setSeatingIncBlows2Str,
@@ -88,12 +68,9 @@ export function SptInputQuestions({
   isMainIncPen3Active, setIsMainIncPen3Active,
   isMainIncPen4Active, setIsMainIncPen4Active,
   recoveryLengthInMillimetresStr, setRecoveryLengthInMillimetresStr,
-  dominantColour, setDominantColour,
-  secondaryColour, setSecondaryColour,
-  dominantSoilType, setDominantSoilType,
-  secondarySoilType, setSecondarySoilType,
-  otherProperties, setOtherProperties,
-}: SptInputQuestionsProps) {
+  colourProperties, setColourProperties,
+  soilProperties, setSoilProperties,
+}: SptBlockInputQuestionsProps) {
 
   const resetSeatingInc1 = () => {
     setSeatingIncBlows1Str('');
@@ -138,13 +115,7 @@ export function SptInputQuestions({
   return (
     <>
     <DayWorkStatusInputQuestions 
-      dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
-      dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
-      dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
-      dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
-      dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
-      waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
-      casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+      dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
     />
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
@@ -528,15 +499,14 @@ export function SptInputQuestions({
         })()}
       </Text>
     </View>
-    <SoilPropertiesInputQuestions 
-      recovery={parseInt(recoveryLengthInMillimetresStr)}
-      soilPositionType={DEFAULT_SOIL_POSITION_TYPE}
-      dominantColour={dominantColour} setDominantColour={setDominantColour} 
-      secondaryColour={secondaryColour} setSecondaryColour={setSecondaryColour} 
-      dominantSoilType={dominantSoilType} setDominantSoilType={setDominantSoilType} 
-      secondarySoilType={secondarySoilType} setSecondarySoilType={setSecondarySoilType} 
-      otherProperties={otherProperties} setOtherProperties={setOtherProperties} 
-    />
+    {
+      parseInt(recoveryLengthInMillimetresStr) > 0 && (
+        <>
+        <ColourPropertiesInputQuestions questionPrefix="" colourProperties={colourProperties} setColourProperties={setColourProperties} />
+        <SoilPropertiesInputQuestions questionPrefix="" soilProperties={soilProperties} setSoilProperties={setSoilProperties} />
+        </>
+      )
+    }
     </>
   );
 }

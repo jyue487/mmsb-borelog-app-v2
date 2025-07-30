@@ -1,7 +1,7 @@
-import { Colour } from '@/constants/colour';
-import { DayWorkStatus } from '@/constants/DayStatus';
-import { DominantSoilType, SecondarySoilType } from '@/constants/soil';
+import { DayWorkStatus } from '@/constants/DayWorkStatus';
 import { HA_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { ColourProperties } from './ColourProperties';
+import { SoilProperties } from './SoilProperties';
 
 export interface HaBlock {
     id: number;
@@ -12,9 +12,6 @@ export interface HaBlock {
     baseDepthInMetres: number;
     description: string;
     requireSample: boolean;
-    dominantColour: Colour | null;
-    secondaryColour: Colour | null;
-    dominantSoilType: DominantSoilType | null;
-    secondarySoilType: SecondarySoilType | null;
-    otherProperties: string;
+    colourProperties: ColourProperties;
+    soilProperties: SoilProperties;
 }

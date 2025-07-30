@@ -1,4 +1,4 @@
-import { DayWorkStatus } from '@/constants/DayStatus';
+import { DayWorkStatus } from '@/constants/DayWorkStatus';
 import { WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface WashBoringBlock {

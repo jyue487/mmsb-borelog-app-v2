@@ -1,68 +1,52 @@
 
-import { Colour } from "@/constants/colour";
-import { DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import {
-    DominantSoilType,
-    SecondarySoilType
-} from "@/constants/soil";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { SoilProperties } from "@/interfaces/SoilProperties";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnDayWorkStatus } from '@/utils/checkFunctions/checkAndReturnDayWorkStatus';
-import { isNonNegativeFloat, isNonNegativeInteger, stringToDecimalPoint } from '@/utils/numbers';
+import { stringIsNonNegativeFloat, stringIsNonNegativeInteger, stringToDecimalPoint } from '@/utils/numbers';
+import { throwError } from "../error/throwError";
+import { checkAndReturnSptBlockDescription } from "./checkAndReturnSptBlockDescription";
 
 type Params = {
-    blocks: Block[],
-    boreholeId: number,
-    dayWorkStatusType: DayWorkStatusType,
-    dayStartWorkDate: Date,
-    dayStartWorkTime: Date,
-    dayEndWorkDate: Date,
-    dayEndWorkTime: Date,
-    waterLevelInMetresStr: string,
-    casingDepthInMetresStr: string,
-    topDepthInMetresStr: string,
-    seatingIncBlows1Str: string,
-    seatingIncBlows2Str: string,
-    seatingIncPen1Str: string,
-    seatingIncPen2Str: string,
-    mainIncBlows1Str: string,
-    mainIncBlows2Str: string,
-    mainIncBlows3Str: string,
-    mainIncBlows4Str: string,
-    mainIncPen1Str: string,
-    mainIncPen2Str: string,
-    mainIncPen3Str: string,
-    mainIncPen4Str: string,
-    recoveryLengthInMillimetresStr: string,
-    dominantColour: Colour | null,
-    secondaryColour: Colour | null,
-    dominantSoilType: DominantSoilType | null,
-    secondarySoilType: SecondarySoilType | null,
-    otherProperties: string,
-    isSeatingIncBlows1Active: boolean,
-    isSeatingIncBlows2Active: boolean,
-    isMainIncBlows1Active: boolean,
-    isMainIncBlows2Active: boolean,
-    isMainIncBlows3Active: boolean,
-    isMainIncBlows4Active: boolean,
-    isSeatingIncPen1Active: boolean,
-    isSeatingIncPen2Active: boolean,
-    isMainIncPen1Active: boolean,
-    isMainIncPen2Active: boolean,
-    isMainIncPen3Active: boolean,
-    isMainIncPen4Active: boolean,
+    blocks: Block[];
+    boreholeId: number;
+    dayWorkStatus: DayWorkStatus;
+    topDepthInMetresStr: string;
+    seatingIncBlows1Str: string;
+    seatingIncBlows2Str: string;
+    seatingIncPen1Str: string;
+    seatingIncPen2Str: string;
+    mainIncBlows1Str: string;
+    mainIncBlows2Str: string;
+    mainIncBlows3Str: string;
+    mainIncBlows4Str: string;
+    mainIncPen1Str: string;
+    mainIncPen2Str: string;
+    mainIncPen3Str: string;
+    mainIncPen4Str: string;
+    recoveryLengthInMillimetresStr: string;
+    colourProperties: ColourProperties;
+    soilProperties: SoilProperties;
+    isSeatingIncBlows1Active: boolean;
+    isSeatingIncBlows2Active: boolean;
+    isMainIncBlows1Active: boolean;
+    isMainIncBlows2Active: boolean;
+    isMainIncBlows3Active: boolean;
+    isMainIncBlows4Active: boolean;
+    isSeatingIncPen1Active: boolean;
+    isSeatingIncPen2Active: boolean;
+    isMainIncPen1Active: boolean;
+    isMainIncPen2Active: boolean;
+    isMainIncPen3Active: boolean;
+    isMainIncPen4Active: boolean;
 };
 
 export function checkAndReturnSptBlock({
     blocks,
     boreholeId,
-    dayWorkStatusType,
-    dayStartWorkDate,
-    dayStartWorkTime,
-    dayEndWorkDate,
-    dayEndWorkTime,
-    waterLevelInMetresStr,
-    casingDepthInMetresStr,
+    dayWorkStatus,
     topDepthInMetresStr,
     seatingIncBlows1Str,
     seatingIncBlows2Str,
@@ -77,11 +61,8 @@ export function checkAndReturnSptBlock({
     mainIncPen3Str,
     mainIncPen4Str,
     recoveryLengthInMillimetresStr,
-    dominantColour,
-    secondaryColour,
-    dominantSoilType,
-    secondarySoilType,
-    otherProperties,
+    colourProperties,
+    soilProperties,
     isSeatingIncBlows1Active,
     isSeatingIncBlows2Active,
     isMainIncBlows1Active,
@@ -94,82 +75,59 @@ export function checkAndReturnSptBlock({
     isMainIncPen2Active,
     isMainIncPen3Active,
     isMainIncPen4Active,
-}: Params): BaseBlock & SptBlock | null {
-    const dayWorkStatus: DayWorkStatus | undefined = checkAndReturnDayWorkStatus({
-        dayWorkStatusType: dayWorkStatusType,
-        dayStartWorkDate: dayStartWorkDate,
-        dayStartWorkTime: dayStartWorkTime,
-        dayEndWorkDate: dayEndWorkDate,
-        dayEndWorkTime: dayEndWorkTime,
-        waterLevelInMetresStr: waterLevelInMetresStr,
-        casingDepthInMetresStr: casingDepthInMetresStr,
-    });
-    if (!dayWorkStatus) {
-        return null;
+}: Params): BaseBlock & SptBlock {
+
+    dayWorkStatus = checkAndReturnDayWorkStatus(dayWorkStatus);
+
+    if (!stringIsNonNegativeFloat(topDepthInMetresStr)) {
+        throwError('Error: Top Depth');
     }
-    if (!isNonNegativeFloat(topDepthInMetresStr)) {
-        alert('Error: Top Depth');
-        return null;
+    if (!stringIsNonNegativeInteger(seatingIncBlows1Str)) {
+        throwError(`Error: seatingIncBlows1Str`);
     }
-    if (!isNonNegativeInteger(seatingIncBlows1Str)) {
-        alert(`Error: seatingIncBlows1Str`);
-        return null;
-    }
-    if (!isNonNegativeInteger(seatingIncPen1Str)) {
-        alert(`Error: seatingIncPen1Str`);
-        return null;
+    if (!stringIsNonNegativeInteger(seatingIncPen1Str)) {
+        throwError(`Error: seatingIncPen1Str`);
     }
     if (parseInt(seatingIncBlows1Str) < 25) {
-        if (!isNonNegativeInteger(seatingIncBlows2Str)) {
-            alert(`Error: seatingIncBlows2Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(seatingIncBlows2Str)) {
+            throwError(`Error: seatingIncBlows2Str`);
         }
-        if (!isNonNegativeInteger(seatingIncPen2Str)) {
-            alert(`Error: seatingIncPen2Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(seatingIncPen2Str)) {
+            throwError(`Error: seatingIncPen2Str`);
         }
     }
-    if (!isNonNegativeInteger(mainIncBlows1Str)) {
-        alert(`Error: mainIncBlows1Str`);
-        return null;
+    if (!stringIsNonNegativeInteger(mainIncBlows1Str)) {
+        throwError(`Error: mainIncBlows1Str`);
     }
-    if (!isNonNegativeInteger(mainIncPen1Str)) {
-        alert(`Error: mainIncPen1Str`);
-        return null;
+    if (!stringIsNonNegativeInteger(mainIncPen1Str)) {
+        throwError(`Error: mainIncPen1Str`);
     }
     if (parseInt(mainIncBlows1Str) < 50) {
-        if (!isNonNegativeInteger(mainIncBlows2Str)) {
-            alert(`Error: mainIncBlows2Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(mainIncBlows2Str)) {
+            throwError(`Error: mainIncBlows2Str`);
         }
-        if (!isNonNegativeInteger(mainIncPen2Str)) {
-            alert(`Error: mainIncPen2Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(mainIncPen2Str)) {
+            throwError(`Error: mainIncPen2Str`);
         }
     }
     if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) < 50) {
-        if (!isNonNegativeInteger(mainIncBlows3Str)) {
-            alert(`Error: mainIncBlows3Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(mainIncBlows3Str)) {
+            throwError(`Error: mainIncBlows3Str`);
         }
-        if (!isNonNegativeInteger(mainIncPen3Str)) {
-            alert(`Error: mainIncPen3Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(mainIncPen3Str)) {
+            throwError(`Error: mainIncPen3Str`);
         }
     }
     if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) + parseInt(mainIncBlows3Str) < 50) {
-        if (!isNonNegativeInteger(mainIncBlows4Str)) {
-            alert(`Error: mainIncBlows4Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(mainIncBlows4Str)) {
+            throwError(`Error: mainIncBlows4Str`);
         }
-        if (!isNonNegativeInteger(mainIncPen4Str)) {
-            alert(`Error: mainIncPen4Str`);
-            return null;
+        if (!stringIsNonNegativeInteger(mainIncPen4Str)) {
+            throwError(`Error: mainIncPen4Str`);
         }
     }
-    if (!isNonNegativeInteger(recoveryLengthInMillimetresStr)) {
-        alert('Error: Recovery Length');
-        return null;
+    if (!stringIsNonNegativeInteger(recoveryLengthInMillimetresStr)) {
+        throwError('Error: Recovery Length');
     }
 
     const topDepthInMetres: number = stringToDecimalPoint(topDepthInMetresStr, 3);
@@ -196,88 +154,21 @@ export function checkAndReturnSptBlock({
     const sptNValue: number = mainIncBlows1 + (mainIncBlows2 ?? 0) + (mainIncBlows3 ?? 0) + (mainIncBlows4 ?? 0);
     const recoveryLengthInMillimetres: number = parseInt(recoveryLengthInMillimetresStr);
     if (recoveryLengthInMillimetres > totalPenetrationInMillimetres) {
-        alert('Error: Recovery Length');
-        return null;
+        throwError('Error: Recovery Length');
     }
     const recoveryInPercentage: number = parseFloat((recoveryLengthInMillimetres / totalPenetrationInMillimetres * 100).toFixed(1));
 
-    let soilDescription: string = '';
-    if (recoveryLengthInMillimetres === 0) {
-        soilDescription = 'No recovery';
-    } else {
-        if (!dominantColour) {
-            alert('Error: Dominant Colour');
-            return null;
-        }
-        if (!dominantSoilType) {
-            alert('Error: Dominant Soil Type');
-            return null;
-        }
-        let consistency = '';
-        if (dominantSoilType === 'SAND' || dominantSoilType === 'GRAVEL') {
-            if (sptNValue < 4) {
-                consistency = 'Very Loose';
-            } else if (sptNValue < 10) {
-                consistency = 'Loose';
-            } else if (sptNValue < 30) {
-                consistency = 'Medium Dense';
-            } else if (sptNValue < 50) {
-                consistency = 'Dense';
-            } else {
-                consistency = 'Very Dense';
-            }
-        } else {
-            if (sptNValue < 2) {
-                consistency = 'Very Soft';
-            } else if (sptNValue < 4) {
-                consistency = 'Soft';
-            } else if (sptNValue < 8) {
-                consistency = 'Firm';
-            } else if (sptNValue < 15) {
-                consistency = 'Stiff';
-            } else if (sptNValue <= 30) {
-                consistency = 'Very Stiff';
-            } else {
-                consistency = 'Hard';
-            }
-        }
-        soilDescription += `${consistency},`;
-
-        const totalColourLevel = dominantColour.level;
-        let colourLevel = '';
-        if (totalColourLevel <= 1) {
-            colourLevel = 'dark';
-        } else if (totalColourLevel <= 2) {
-            colourLevel = 'medium';
-        } else if (totalColourLevel <= 3) {
-            colourLevel = 'light';
-        } else {
-            colourLevel = 'pale';
-        }
-        soilDescription += ` ${colourLevel}`;
-
-        let colourDescription = '';
-        if (!secondaryColour) {
-            colourDescription = `${dominantColour.colourNameForSoilDescription}`;
-        } else {
-            colourDescription = `${secondaryColour.colourNameForSoilDescription} ${dominantColour.colourNameForSoilDescription}`;
-        }
-        soilDescription += ` ${colourDescription}`;
-
-        if (!secondarySoilType) {
-            soilDescription += ` ${dominantSoilType}`;
-        } else {
-            soilDescription += ` ${secondarySoilType} ${dominantSoilType}`;
-        }
-        if (otherProperties) {
-            soilDescription += ` ${otherProperties}`;
-        }
-    }
+    const description: string = checkAndReturnSptBlockDescription(    
+        recoveryLengthInMillimetres,
+        colourProperties,
+        soilProperties,
+        sptNValue,
+    );
 
     const sptIndex: number = blocks.filter((block: Block) => block.blockTypeId === SPT_BLOCK_TYPE_ID).length + 1;
     const disturbedSampleIndex: number = (recoveryLengthInMillimetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === SPT_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
-    const newSptBlock: Block = {
+    const newBlock: Block = {
         id: blocks.length + 1,
         blockId: blocks.length + 1,
         blockTypeId: SPT_BLOCK_TYPE_ID,
@@ -287,7 +178,7 @@ export function checkAndReturnSptBlock({
         dayWorkStatus: dayWorkStatus,
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
-        soilDescription: soilDescription,
+        description: description,
         seatingIncBlows1: seatingIncBlows1,
         seatingIncPen1: seatingIncPen1,
         seatingIncBlows2: seatingIncBlows2,
@@ -304,11 +195,8 @@ export function checkAndReturnSptBlock({
         totalMainPenetrationInMillimetres: totalMainPenetrationInMillimetres,
         recoveryInPercentage: recoveryInPercentage,
         recoveryLengthInMillimetres: recoveryLengthInMillimetres,
-        dominantColour: dominantColour,
-        secondaryColour: secondaryColour,
-        dominantSoilType: dominantSoilType,
-        secondarySoilType: secondarySoilType,
-        otherProperties: otherProperties,
+        colourProperties: colourProperties,
+        soilProperties: soilProperties,
         isSeatingIncBlows1Active: isSeatingIncBlows1Active,
         isSeatingIncBlows2Active: isSeatingIncBlows2Active,
         isMainIncBlows1Active: isMainIncBlows1Active,
@@ -322,5 +210,5 @@ export function checkAndReturnSptBlock({
         isMainIncPen3Active: isMainIncPen3Active,
         isMainIncPen4Active: isMainIncPen4Active,
     };
-    return newSptBlock;
+    return newBlock;
 }

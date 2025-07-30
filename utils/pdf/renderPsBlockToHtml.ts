@@ -1,19 +1,19 @@
+import { PS_SYMBOL } from "@/constants/symbol";
 import { BaseBlock } from "@/interfaces/Block";
 import { PsBlock } from "@/interfaces/PsBlock";
 import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
-import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
-import { PS_SYMBOL } from "@/constants/symbol";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
+import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 
-export function renderPsBlockToHtml(block: BaseBlock & PsBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderPsBlockToHtml(block: BaseBlock & PsBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>
             ${renderDayWorkStatusToHtml(block.dayWorkStatus)}
             <td>
-                <div>${PS_SYMBOL}${(block.recoveryInPercentage === 0) ? '*' : block.pistonSampleIndex}</div>
+                <div>${PS_SYMBOL}${(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</div>
             </td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}

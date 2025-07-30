@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Button, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatusType } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { Colour } from "@/constants/colour";
 import { RockType } from "@/constants/rock";
 import { Block } from "@/interfaces/Block";
 import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
-import { CoringInputQuestions } from "../../../inputQuestions/CoringInputQuestions";
+import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { RockProperties } from "@/interfaces/RockProperties";
 
 export type AddCoringBlockDetailsInputFormProps = ViewProps & {
 	boreholeId: number;
@@ -17,77 +18,52 @@ export type AddCoringBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: AddCoringBlockDetailsInputFormProps) {
-	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(DAY_CONTINUE_WORK_TYPE);
-	const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>(new Date());
-	const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>(new Date());
-	const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>(new Date());
-	const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>(new Date());
-	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>('');
-	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>('');
+	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>({
+		dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
+		date: new Date(),
+		time: new Date(),
+		waterLevelInMetres: null,
+		casingDepthInMetres: null,
+	});
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
 	const [coreRunInMetresStr, setCoreRunInMetresStr] = useState<string>('');
 	const [coreRecoveryInMetresStr, setCoreRecoveryInMetresStr] = useState<string>('');
 	const [rqdInMetresStr, setRqdInMetresStr] = useState<string>('');
-	const [dominantColour, setDominantColour] = useState<Colour | null>(null);
-	const [isSelectDominantColourPressed, setIsSelectDominantColourPressed] = useState<boolean>(false);
-	const [secondaryColour, setSecondaryColour] = useState<Colour | null>(null);
-	const [isSelectSecondaryColourPressed, setIsSelectSecondaryColourPressed] = useState<boolean>(false);
-	const [rockType, setRockType] = useState<RockType | null>(null);
-	const [isSelectRockTypePressed, setIsSelectRockTypePressed] = useState<boolean>(false);
-	const [otherRockType, setOtherRockType] = useState<string>('');
-	const [otherProperties, setOtherProperties] = useState<string>('');
-	const [isSelectOtherPropertiesPressed, setIsSelectOtherPropertiesPressed] = useState<boolean>(false);
+	const [colourProperties, setColourProperties] = useState<ColourProperties>({
+		dominantColour: null,
+		secondaryColour: null,
+	});
+	const [rockProperties, setRockProperties] = useState<RockProperties>({
+		rockType: null,
+		otherRockType: '',
+		otherProperties: '',
+	});
 
 	return (
 		<>
-		<CoringInputQuestions 
-			dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
-			dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
-			dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
-			dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
-			dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
-			waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
-			casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+		<CoringBlockInputQuestions 
+			dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 			topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
 			coreRunInMetresStr={coreRunInMetresStr} setCoreRunInMetresStr={setCoreRunInMetresStr}
 			coreRecoveryInMetresStr={coreRecoveryInMetresStr} setCoreRecoveryInMetresStr={setCoreRecoveryInMetresStr}
 			rqdInMetresStr={rqdInMetresStr} setRqdInMetresStr={setRqdInMetresStr}
-			dominantColour={dominantColour} setDominantColour={setDominantColour}
-			isSelectDominantColourPressed={isSelectDominantColourPressed} setIsSelectDominantColourPressed={setIsSelectDominantColourPressed}
-			secondaryColour={secondaryColour} setSecondaryColour={setSecondaryColour}
-			isSelectSecondaryColourPressed={isSelectSecondaryColourPressed} setIsSelectSecondaryColourPressed={setIsSelectSecondaryColourPressed}
-			rockType={rockType} setRockType={setRockType}
-			isSelectRockTypePressed={isSelectRockTypePressed} setIsSelectRockTypePressed={setIsSelectRockTypePressed}
-			otherRockType={otherRockType} setOtherRockType={setOtherRockType}
-			otherProperties={otherProperties} setOtherProperties={setOtherProperties}
-			isSelectOtherPropertiesPressed={isSelectOtherPropertiesPressed} setIsSelectOtherPropertiesPressed={setIsSelectOtherPropertiesPressed}
+			colourProperties={colourProperties} setColourProperties={setColourProperties}
+			rockProperties={rockProperties} setRockProperties={setRockProperties}
 		/>
 		<Button
 			title='Confirm'
 			onPress={() => {
-				const newBlock: Block | null = checkAndReturnCoringBlock({
+				const newBlock: Block = checkAndReturnCoringBlock({
 					blocks: blocks,
 					boreholeId: boreholeId,
-					dayWorkStatusType: dayWorkStatusType,
-					dayStartWorkDate: dayStartWorkDate,
-					dayStartWorkTime: dayStartWorkTime,
-					dayEndWorkDate: dayEndWorkDate,
-					dayEndWorkTime: dayEndWorkTime,
-					waterLevelInMetresStr: waterLevelInMetresStr,
-					casingDepthInMetresStr: casingDepthInMetresStr,
+					dayWorkStatus: dayWorkStatus,
 					topDepthInMetresStr: topDepthInMetresStr,
 					coreRunInMetresStr: coreRunInMetresStr,
 					coreRecoveryInMetresStr: coreRecoveryInMetresStr,
 					rqdInMetresStr: rqdInMetresStr,
-					dominantColour: dominantColour,
-					secondaryColour: secondaryColour,
-					rockType: rockType,
-					otherRockType: otherRockType,
-					otherProperties: otherProperties,
+					colourProperties: colourProperties,
+					rockProperties: rockProperties,
 				});
-				if (!newBlock) {
-					return;
-				}
 				setBlocks(blocks => [...blocks, newBlock]);
 				setIsAddNewBlockButtonPressed(false);
 			}}

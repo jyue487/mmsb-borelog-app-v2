@@ -3,16 +3,18 @@ import { Button, type ViewProps } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { Colour } from "@/constants/colour";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatusType } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import {
-	DominantSoilType,
-	SecondarySoilType
+  DominantSoilType,
+  SecondarySoilType
 } from "@/constants/soil";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
-import { SptInputQuestions } from "../../inputQuestions/SptInputQuestions";
+import { SptBlockInputQuestions } from "../../inputQuestions/SptBlockInputQuestions";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { SoilProperties } from "@/interfaces/SoilProperties";
 
 export type EditSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -22,13 +24,7 @@ export type EditSptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock, setIsEditState, ...otherProps }: EditSptBlockDetailsInputFormProps) {
-	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(oldBlock.dayWorkStatus.dayWorkStatusType);
-	const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
-	const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-	const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
-	const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
-	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
+	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(oldBlock.dayWorkStatus);
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
 	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>(oldBlock.seatingIncBlows1.toString() ?? '');
 	const [seatingIncBlows2Str, setSeatingIncBlows2Str] = useState<string>(oldBlock.seatingIncBlows2?.toString() ?? '');
@@ -55,22 +51,13 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [isMainIncPen3Active, setIsMainIncPen3Active] = useState<boolean>(oldBlock.isMainIncPen3Active);
 	const [isMainIncPen4Active, setIsMainIncPen4Active] = useState<boolean>(oldBlock.isMainIncPen4Active);
 	const [recoveryLengthInMillimetresStr, setRecoveryLengthInMillimetresStr] = useState<string>(oldBlock.recoveryLengthInMillimetres.toString());
-	const [dominantColour, setDominantColour] = useState<Colour | null>(oldBlock.dominantColour);
-	const [secondaryColour, setSecondaryColour] = useState<Colour | null>(oldBlock.secondaryColour);
-	const [dominantSoilType, setDominantSoilType] = useState<DominantSoilType | null>(oldBlock.dominantSoilType);
-	const [secondarySoilType, setSecondarySoilType] = useState<SecondarySoilType | null>(oldBlock.secondarySoilType);
-	const [otherProperties, setOtherProperties] = useState<string>(oldBlock.otherProperties);
+	const [colourProperties, setColourProperties] = useState<ColourProperties>(oldBlock.colourProperties);
+	const [soilProperties, setSoilProperties] = useState<SoilProperties>(oldBlock.soilProperties);
 
 	return (
 		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
-			<SptInputQuestions 
-				dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
-				dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
-				dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
-				dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
-				dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
-				waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
-				casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+			<SptBlockInputQuestions 
+				dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 				topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
 				seatingIncBlows1Str={seatingIncBlows1Str} setSeatingIncBlows1Str={setSeatingIncBlows1Str}
 				seatingIncBlows2Str={seatingIncBlows2Str} setSeatingIncBlows2Str={setSeatingIncBlows2Str}
@@ -97,25 +84,16 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 				isMainIncPen3Active={isMainIncPen3Active} setIsMainIncPen3Active={setIsMainIncPen3Active}
 				isMainIncPen4Active={isMainIncPen4Active} setIsMainIncPen4Active={setIsMainIncPen4Active}
 				recoveryLengthInMillimetresStr={recoveryLengthInMillimetresStr} setRecoveryLengthInMillimetresStr={setRecoveryLengthInMillimetresStr}
-				dominantColour={dominantColour} setDominantColour={setDominantColour}
-				secondaryColour={secondaryColour} setSecondaryColour={setSecondaryColour}
-				dominantSoilType={dominantSoilType} setDominantSoilType={setDominantSoilType}
-				secondarySoilType={secondarySoilType} setSecondarySoilType={setSecondarySoilType}
-				otherProperties={otherProperties} setOtherProperties={setOtherProperties}
+				colourProperties={colourProperties} setColourProperties={setColourProperties}
+				soilProperties={soilProperties} setSoilProperties={setSoilProperties}
 			/>
 			<Button
 				title='Confirm'
 				onPress={() => {
-					const newBlock: Block | null = checkAndReturnSptBlock({
+					const newBlock: Block = checkAndReturnSptBlock({
 						blocks: blocks,
 						boreholeId: oldBlock.boreholeId,
-						dayWorkStatusType: dayWorkStatusType,
-						dayStartWorkDate: dayStartWorkDate,
-						dayStartWorkTime: dayStartWorkTime,
-						dayEndWorkDate: dayEndWorkDate,
-						dayEndWorkTime: dayEndWorkTime,
-						waterLevelInMetresStr: waterLevelInMetresStr,
-						casingDepthInMetresStr: casingDepthInMetresStr,
+						dayWorkStatus: dayWorkStatus,
 						topDepthInMetresStr: topDepthInMetresStr,
 						seatingIncBlows1Str: seatingIncBlows1Str,
 						seatingIncBlows2Str: seatingIncBlows2Str,
@@ -130,11 +108,8 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 						mainIncPen3Str: mainIncPen3Str,
 						mainIncPen4Str: mainIncPen4Str,
 						recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
-						dominantColour: dominantColour,
-						secondaryColour: secondaryColour,
-						dominantSoilType: dominantSoilType,
-						secondarySoilType: secondarySoilType,
-						otherProperties: otherProperties,
+						colourProperties: colourProperties,
+						soilProperties: soilProperties,
 						isSeatingIncBlows1Active: isSeatingIncBlows1Active,
 						isSeatingIncBlows2Active: isSeatingIncBlows2Active,
 						isMainIncBlows1Active: isMainIncBlows1Active,
@@ -148,10 +123,6 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 						isMainIncPen3Active: isMainIncPen3Active,
 						isMainIncPen4Active: isMainIncPen4Active,
 					});
-					if (!newBlock) {
-						return;
-					}
-
 					setBlocks((blocks: Block[]) => {
 						let sptIndex: number = 1;
 						let disturbedSampleIndex: number = 1;

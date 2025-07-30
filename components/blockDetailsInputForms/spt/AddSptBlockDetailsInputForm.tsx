@@ -1,16 +1,12 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, type ViewProps } from "react-native";
 
-import { Colour } from "@/constants/colour";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatusType } from "@/constants/DayStatus";
-import {
-	DominantSoilType,
-	SecondarySoilType
-} from "@/constants/soil";
+import { SptBlockInputQuestions } from "@/components/inputQuestions/SptBlockInputQuestions";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block } from "@/interfaces/Block";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
-import { SptInputQuestions } from "@/components/inputQuestions/SptInputQuestions";
 
 export type AddSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -20,13 +16,13 @@ export type AddSptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, setIsAddNewBlockButtonPressed, ...otherProps }: AddSptBlockDetailsInputFormProps) {
-	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(DAY_CONTINUE_WORK_TYPE);
-	const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>(new Date());
-	const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>(new Date());
-	const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>(new Date());
-	const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>(new Date());
-	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>('');
-	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>('');
+	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>({
+		dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
+		date: new Date(),
+		time: new Date(),
+		waterLevelInMetres: null,
+		casingDepthInMetres: null,
+	});
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
 	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>('');
 	const [seatingIncBlows2Str, setSeatingIncBlows2Str] = useState<string>('');
@@ -53,22 +49,21 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 	const [isMainIncPen3Active, setIsMainIncPen3Active] = useState<boolean>(false);
 	const [isMainIncPen4Active, setIsMainIncPen4Active] = useState<boolean>(false);
 	const [recoveryLengthInMillimetresStr, setRecoveryLengthInMillimetresStr] = useState<string>('');
-	const [dominantColour, setDominantColour] = useState<Colour | null>(null);
-	const [secondaryColour, setSecondaryColour] = useState<Colour | null>(null);
-	const [dominantSoilType, setDominantSoilType] = useState<DominantSoilType | null>(null);
-	const [secondarySoilType, setSecondarySoilType] = useState<SecondarySoilType | null>(null);
-	const [otherProperties, setOtherProperties] = useState<string>('');
+	const [colourProperties, setColourProperties] = useState<ColourProperties>({
+		dominantColour: null,
+		secondaryColour: null,
+	});
+	const [soilProperties, setSoilProperties] = useState<SoilProperties>({
+		dominantSoilType: null,
+		secondarySoilType: null,
+		otherProperties: '',
+		customOtherProperties: '',
+	});
 
 	return (
 		<>
-		<SptInputQuestions 
-			dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
-			dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
-			dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
-			dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
-			dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
-			waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
-			casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+		<SptBlockInputQuestions 
+			dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 			topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
 			seatingIncBlows1Str={seatingIncBlows1Str} setSeatingIncBlows1Str={setSeatingIncBlows1Str}
 			seatingIncBlows2Str={seatingIncBlows2Str} setSeatingIncBlows2Str={setSeatingIncBlows2Str}
@@ -95,25 +90,16 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 			isMainIncPen3Active={isMainIncPen3Active} setIsMainIncPen3Active={setIsMainIncPen3Active}
 			isMainIncPen4Active={isMainIncPen4Active} setIsMainIncPen4Active={setIsMainIncPen4Active}
 			recoveryLengthInMillimetresStr={recoveryLengthInMillimetresStr} setRecoveryLengthInMillimetresStr={setRecoveryLengthInMillimetresStr}
-			dominantColour={dominantColour} setDominantColour={setDominantColour}
-			secondaryColour={secondaryColour} setSecondaryColour={setSecondaryColour}
-			dominantSoilType={dominantSoilType} setDominantSoilType={setDominantSoilType}
-			secondarySoilType={secondarySoilType} setSecondarySoilType={setSecondarySoilType}
-			otherProperties={otherProperties} setOtherProperties={setOtherProperties}
+			colourProperties={colourProperties} setColourProperties={setColourProperties}
+			soilProperties={soilProperties} setSoilProperties={setSoilProperties}
 		/>
 		<Button
 			title='Confirm'
 			onPress={() => {
-				const newBlock: Block | null = checkAndReturnSptBlock({
+				const newBlock: Block = checkAndReturnSptBlock({
 					blocks: blocks,
 					boreholeId: boreholeId,
-					dayWorkStatusType: dayWorkStatusType,
-					dayStartWorkDate: dayStartWorkDate,
-					dayStartWorkTime: dayStartWorkTime,
-					dayEndWorkDate: dayEndWorkDate,
-					dayEndWorkTime: dayEndWorkTime,
-					waterLevelInMetresStr: waterLevelInMetresStr,
-					casingDepthInMetresStr: casingDepthInMetresStr,
+					dayWorkStatus: dayWorkStatus,
 					topDepthInMetresStr: topDepthInMetresStr,
 					seatingIncBlows1Str: seatingIncBlows1Str,
 					seatingIncBlows2Str: seatingIncBlows2Str,
@@ -128,11 +114,8 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 					mainIncPen3Str: mainIncPen3Str,
 					mainIncPen4Str: mainIncPen4Str,
 					recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
-					dominantColour: dominantColour,
-					secondaryColour: secondaryColour,
-					dominantSoilType: dominantSoilType,
-					secondarySoilType: secondarySoilType,
-					otherProperties: otherProperties,
+					colourProperties: colourProperties,
+					soilProperties: soilProperties,
 					isSeatingIncBlows1Active: isSeatingIncBlows1Active,
 					isSeatingIncBlows2Active: isSeatingIncBlows2Active,
 					isMainIncBlows1Active: isMainIncBlows1Active,
@@ -146,9 +129,6 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 					isMainIncPen3Active: isMainIncPen3Active,
 					isMainIncPen4Active: isMainIncPen4Active,
 				});
-				if (!newBlock) {
-					return;
-				}
 				setBlocks(blocks => [...blocks, newBlock]);
 				setIsAddNewBlockButtonPressed(false);
 			}}

@@ -9,6 +9,7 @@ import { PsBlock } from '@/interfaces/PsBlock';
 import { SptBlock } from '@/interfaces/SptBlock';
 import { UdBlock } from '@/interfaces/UdBlock';
 import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
+import { CustomBlock } from './CustomBlock';
 
 export const SPT_BLOCK_TYPE_ID = 1 as const;
 export const CORING_BLOCK_TYPE_ID = 2 as const;
@@ -21,6 +22,7 @@ export const WASH_BORING_BLOCK_TYPE_ID = 8 as const;
 export const CONCRETE_SLAB_BLOCK_TYPE_ID = 9 as const;
 export const CONCRETE_PREMIX_BLOCK_TYPE_ID = 10 as const;
 export const END_OF_BOREHOLE_BLOCK_TYPE_ID = 11 as const;
+export const CUSTOM_BLOCK_TYPE_ID = 12 as const;
 
 export const BLOCK_TYPE_ID_LIST = [
   SPT_BLOCK_TYPE_ID,
@@ -34,6 +36,7 @@ export const BLOCK_TYPE_ID_LIST = [
   CONCRETE_SLAB_BLOCK_TYPE_ID,
   CONCRETE_PREMIX_BLOCK_TYPE_ID,
   END_OF_BOREHOLE_BLOCK_TYPE_ID,
+  CUSTOM_BLOCK_TYPE_ID,
 ] as const;
 export type BlockTypeId = typeof BLOCK_TYPE_ID_LIST[number];
 
@@ -49,6 +52,7 @@ export interface Blocks {
   ConcreteSlab: ConcreteSlabBlock;
   ConcretePremix: ConcretePremixBlock;
   EndOfBorehole: EndOfBoreholeBlock;
+  Custom: CustomBlock
 }
 
 export interface BaseBlock {

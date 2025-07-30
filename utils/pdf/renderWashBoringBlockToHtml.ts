@@ -6,7 +6,7 @@ import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
 import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
 
-export function renderWashBoringBlockToHtml(block: BaseBlock & WashBoringBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderWashBoringBlockToHtml(block: BaseBlock & WashBoringBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>

@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { getDateTime } from "@/utils/datetime";
 
 export type DayWorkStatusProps = {

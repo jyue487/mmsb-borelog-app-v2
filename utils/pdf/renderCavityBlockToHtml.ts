@@ -3,10 +3,10 @@ import { CavityBlock } from "@/interfaces/CavityBlock";
 import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
-import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
+import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 
-export function renderCavityBlockToHtml(block: BaseBlock & CavityBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderCavityBlockToHtml(block: BaseBlock & CavityBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>
@@ -14,7 +14,7 @@ export function renderCavityBlockToHtml(block: BaseBlock & CavityBlock, numberOf
             <td></td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(numberOfTicksToRender, block.cavityDescription)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
             <td></td>
             <td colspan="2"></td>
             <td colspan="2"></td>

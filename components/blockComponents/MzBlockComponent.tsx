@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
 import { MZ_SYMBOL } from "@/constants/symbol";
-import { MzBlock } from '@/interfaces/MzBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { MzBlock } from '@/interfaces/MzBlock';
 import { useState } from "react";
 import { EditMzBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/mz/EditMzBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 
 export type MzBlockProps = ViewProps & {
 	block: BaseBlock & MzBlock;
@@ -37,7 +37,7 @@ export function MzBlockComponent({ style, block, blocks, setBlocks, ...otherProp
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>{MZ_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.mazierSampleIndex}</Text>
+				<Text>{MZ_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

@@ -1,17 +1,17 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { SQLiteDatabase, SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
 
 // Local Imports
-import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
-import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
 import { AddBoreholeInputForm } from '@/components/borehole/AddBoreholeInputForm';
-import { addBoreholeDb } from '@/db/borehole/addBoreholeDb';
-import { editBoreholeDb } from '@/db/borehole/editBoreholeDb';
+import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
+import { addBoreholeDbAsync } from '@/db/borehole/addBoreholeDbAsync';
+import { editBoreholeDbAsync } from '@/db/borehole/editBoreholeDbAsync';
+import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 
 export default function ProjectScreen() {
-  const db = useSQLiteContext()
+  const db: SQLiteDatabase = useSQLiteContext()
   const { id, name } = useLocalSearchParams();
   if (typeof id != 'string' || typeof name != 'string') {
     throw new Error(`Error. id: ${id}`);
@@ -22,15 +22,15 @@ export default function ProjectScreen() {
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
 
   useEffect(() => {
-    const initDb = async () => {
+    const init = async () => {
       await fetchAllBoreholes();
     };
-    initDb();
+    init();
   }, []);
 
   const addBorehole = async (addBoreholeParams: AddBoreholeParams) => {
     try {
-      const borehole: Borehole = await addBoreholeDb(db, projectId, addBoreholeParams);
+      const borehole: Borehole = await addBoreholeDbAsync(db, projectId, addBoreholeParams);
       setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, borehole]);
     } catch (err) {
       const errMsg = `Error: ${err}`;
@@ -52,7 +52,7 @@ export default function ProjectScreen() {
 
   const editBorehole = async (editBoreholeParams: EditBoreholeParams) => {
     try {
-      const result: SQLiteRunResult = await editBoreholeDb(db, editBoreholeParams);
+      const result: SQLiteRunResult = await editBoreholeDbAsync(db, editBoreholeParams);
       setBoreholes((prevBoreholes: Borehole[]) =>
         prevBoreholes.map((bh: Borehole) =>
           (bh.id === editBoreholeParams.id)
@@ -77,6 +77,7 @@ export default function ProjectScreen() {
       projectId: projectId,
       name: row.name,
       typeOfBoring: row.typeOfBoring,
+      typeOfRig: row.typeOfRig,
       diameterOfBoring: row.diameterOfBoring,
       eastingInMetres: row.eastingInMetres,
       northingInMetres: row.northingInMetres,
@@ -96,22 +97,9 @@ export default function ProjectScreen() {
     await db.runAsync(`DROP TABLE boreholes;`);
   };
 
-  return (
-    <KeyboardAvoidingView behavior='height' style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: (projectName.length < 10) ? projectName : `${projectName.slice(0, 10)}...`,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <FlatList
-        data={boreholes}
-        keyExtractor={(borehole: Borehole) => borehole.id.toString()}
-        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
-        style={{ flexGrow: 0, width: '100%' }}
-      />
+  const renderFooter = () => {
+    return (
+      <>
       {
         !isAddButtonPressed && (
           <Button
@@ -132,6 +120,29 @@ export default function ProjectScreen() {
       <Button
         title='Drop Table'
         onPress={() => dropTable()}
+      />
+      </>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView behavior='height' style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: (projectName.length < 10) ? projectName : `${projectName.slice(0, 10)}...`,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <FlatList
+        data={boreholes}
+        keyExtractor={(borehole: Borehole) => borehole.id.toString()}
+        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
+        keyboardShouldPersistTaps="handled"
+        ListFooterComponent={renderFooter()}
+        contentContainerStyle={{ paddingBottom: 500 }}
+        style={{ flexGrow: 0, width: '100%' }}
       />
     </KeyboardAvoidingView>
   );

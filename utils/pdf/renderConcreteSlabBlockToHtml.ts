@@ -6,7 +6,7 @@ import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
 import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
 
-export function renderConcreteSlabBlockToHtml(block: BaseBlock & ConcreteSlabBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderConcreteSlabBlockToHtml(block: BaseBlock & ConcreteSlabBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>

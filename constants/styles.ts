@@ -46,4 +46,13 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
         height: 100
     },
+    projectAndBoreholeTextInput: {
+        padding: 10,
+        minHeight: 40,
+        width: '80%',
+        borderColor: 'gray',
+        borderWidth: 1,
+        textAlign: 'center',
+    }
+    
 });

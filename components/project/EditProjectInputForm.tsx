@@ -32,70 +32,45 @@ export function EditProjectInputForm ({
   return (
     <View style={styles.projectInputForm}>
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT CODE'
         value={projectCode}
         editable={false}
         selectTextOnFocus={false}
+        multiline={true}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='PROJECT NAME'
         value={projectTitle}
         onChangeText={text => setProjectTitle(text.toUpperCase())}
+        multiline={true}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Location'
         value={location}
         onChangeText={setLocation}
+        multiline={true}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Client'
         value={client}
         onChangeText={setClient}
+        multiline={true}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Consultant'
         value={consultant}
         onChangeText={setConsultant}
+        multiline={true}
       />
       <Button
         title='Confirm'

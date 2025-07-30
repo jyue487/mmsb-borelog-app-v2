@@ -1,13 +1,13 @@
+import { CORING_SYMBOL } from "@/constants/symbol";
 import { BaseBlock } from "@/interfaces/Block";
 import { CoringBlock } from "@/interfaces/CoringBlock";
 import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
-import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
-import { CORING_SYMBOL, DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/constants/symbol";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
+import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 
-export function renderCoringBlockToHtml(block: BaseBlock & CoringBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderCoringBlockToHtml(block: BaseBlock & CoringBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>
@@ -17,7 +17,7 @@ export function renderCoringBlockToHtml(block: BaseBlock & CoringBlock, numberOf
             </td>
             ${renderDepthInfoToHtml(block)}
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(numberOfTicksToRender, block.rockDescription)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
             <td></td>
             <td colspan="2">
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">

@@ -44,7 +44,7 @@ export function SptBlockComponent({ style, block, blocks, setBlocks, ...otherPro
 			</View>
 			<View style={{ flex: 1, gap: 20 }}>
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
-				<Text>{block.soilDescription}</Text>
+				<Text>{block.description}</Text>
 				<View style={{ flexDirection: 'row' }}>
 					<View style={{ flex: 2, borderRightWidth: 0.25, alignItems: 'center' }}>
 						<Text>Seating</Text>

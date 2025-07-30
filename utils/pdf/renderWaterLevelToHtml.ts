@@ -1,4 +1,4 @@
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 
 export function renderWaterLevelToHtml(dayWorkStatus: DayWorkStatus) {
     if (dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) {

@@ -37,6 +37,7 @@ export const MIGRATION_001: Migration = {
                 projectId INTEGER NOT NULL,
                 name TEXT NOT NULL,
                 typeOfBoring TEXT,
+                typeOfRig TEXT,
                 diameterOfBoring TEXT,
                 eastingInMetres REAL,
                 northingInMetres REAL,

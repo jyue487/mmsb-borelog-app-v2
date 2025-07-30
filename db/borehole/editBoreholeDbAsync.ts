@@ -1,7 +1,7 @@
 import { EditBoreholeParams } from "@/interfaces/Borehole";
-import { SQLiteDatabase,SQLiteRunResult } from "expo-sqlite";
+import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
 
-export async function editBoreholeDb(
+export async function editBoreholeDbAsync(
     db: SQLiteDatabase,
     editBoreholeParams: EditBoreholeParams
 ): Promise<SQLiteRunResult> {
@@ -12,6 +12,7 @@ export async function editBoreholeDb(
         SET 
             name = $name,
             typeOfBoring = $typeOfBoring,
+            typeOfRig = $typeOfRig,
             diameterOfBoring = $diameterOfBoring,
             eastingInMetres = $eastingInMetres,
             northingInMetres = $northingInMetres,
@@ -21,6 +22,7 @@ export async function editBoreholeDb(
         `, {
             $name: editBoreholeParams.name,
             $typeOfBoring: editBoreholeParams.typeOfBoring,
+            $typeOfRig: editBoreholeParams.typeOfRig,
             $diameterOfBoring: editBoreholeParams.diameterOfBoring,
             $eastingInMetres: editBoreholeParams.eastingInMetres,
             $northingInMetres: editBoreholeParams.northingInMetres,

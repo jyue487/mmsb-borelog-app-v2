@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button, TextInput, View } from "react-native";
+import { Button, KeyboardAvoidingView, TextInput } from "react-native";
 
 // Local imports
 import { styles } from '@/constants/styles';
-import { isNonNegativeFloat, stringToDecimalPoint } from '@/utils/numbers';
 import { AddBoreholeParams } from '@/interfaces/Borehole';
+import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
 
 type AddBoreholeInputFormProps = {
   addBorehole: (addBoreholeParams: AddBoreholeParams) => void;
@@ -18,93 +18,62 @@ export function AddBoreholeInputForm ({
 
   const [newBoreholeName, setNewBoreholeName] = useState<string>('');
   const [typeOfBoring, setTypeOfBoring] = useState<string>('');
+  const [typeOfRig, setTypeOfRig] = useState<string>('');
   const [diameterOfBoring, setDiameterOfBoring] = useState<string>('');
   const [eastingInMetresStr, setEastingInMetresStr] = useState<string>('');
   const [northingInMetresStr, setNorthingInMetersStr] = useState<string>('');
   const [reducedLevelInMetresStr, setReducedLevelInMetresStr] = useState<string>('');
 
   return (
-    <View style={styles.boreholeInputForm}>
+    <KeyboardAvoidingView style={styles.boreholeInputForm}>
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='BOREHOLE NAME'
         value={newBoreholeName}
         onChangeText={text => setNewBoreholeName(text.toUpperCase())}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Type of Boring'
         value={typeOfBoring}
         onChangeText={setTypeOfBoring}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Type of Rig'
+        value={typeOfRig}
+        onChangeText={setTypeOfRig}
+      />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Diameter of Boring'
         value={diameterOfBoring}
         onChangeText={setDiameterOfBoring}
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Easting(m)'
         value={eastingInMetresStr}
         onChangeText={setEastingInMetresStr}
-        keyboardType='numeric'
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Northing(m)'
         value={northingInMetresStr}
         onChangeText={setNorthingInMetersStr}
-        keyboardType='numeric'
       />
       <TextInput
-        style={{
-          padding: 10,
-          height: 40,
-          width: '60%',
-          borderColor: 'gray',
-          borderWidth: 1,
-        }}
+        style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Reduced Level(m)'
         value={reducedLevelInMetresStr}
         onChangeText={setReducedLevelInMetresStr}
-        keyboardType='numeric'
       />
       <Button
         title='Confirm'
@@ -114,17 +83,17 @@ export function AddBoreholeInputForm ({
             return;
           }
           if (eastingInMetresStr.length > 0) {
-            if (!isNonNegativeFloat(eastingInMetresStr)) {
+            if (!stringIsFloat(eastingInMetresStr)) {
               alert('Error: Easting');
             }
           }
           if (northingInMetresStr.length > 0) {
-            if (!isNonNegativeFloat(northingInMetresStr)) {
+            if (!stringIsFloat(northingInMetresStr)) {
               alert('Error: Northing');
             }
           }
           if (reducedLevelInMetresStr.length > 0) {
-            if (!isNonNegativeFloat(reducedLevelInMetresStr)) {
+            if (!stringIsFloat(reducedLevelInMetresStr)) {
               alert('Error: Reduced Level');
             }
           }
@@ -136,6 +105,7 @@ export function AddBoreholeInputForm ({
           addBorehole({
             name: newBoreholeName.trim(),
             typeOfBoring: typeOfBoring.trim(),
+            typeOfRig: typeOfRig.trim(),
             diameterOfBoring: diameterOfBoring.trim(),
             eastingInMetres: eastingInMetres,
             northingInMetres: northingInMetres,
@@ -148,6 +118,6 @@ export function AddBoreholeInputForm ({
         title='Cancel'
         onPress={() => setIsAddButtonPressed(false)}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }

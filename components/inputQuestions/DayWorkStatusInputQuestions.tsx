@@ -1,31 +1,69 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { View, Keyboard, Text, TouchableOpacity, FlatList, StyleSheet, TextInput } from "react-native";
+import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
-import { useState } from 'react';
+import { DAY_CONTINUE_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { styles } from '@/constants/styles';
+import { stringToDecimalPoint } from '@/utils/numbers';
+import { useState } from 'react';
 
 type DayWorkStatusInputQuestionsProps = {
-  dayWorkStatusType: DayWorkStatusType; setDayWorkStatusType: React.Dispatch<React.SetStateAction<DayWorkStatusType>>;
-  dayStartWorkDate: Date; setDayStartWorkDate: React.Dispatch<React.SetStateAction<Date>>;
-  dayStartWorkTime: Date; setDayStartWorkTime: React.Dispatch<React.SetStateAction<Date>>;
-  dayEndWorkDate: Date; setDayEndWorkDate: React.Dispatch<React.SetStateAction<Date>>;
-  dayEndWorkTime: Date; setDayEndWorkTime: React.Dispatch<React.SetStateAction<Date>>;
-  waterLevelInMetresStr: string; setWaterLevelInMetresStr: React.Dispatch<React.SetStateAction<string>>;
-  casingDepthInMetresStr: string; setCasingDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
+	dayWorkStatus: DayWorkStatus;
+	setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
 }
 
 export function DayWorkStatusInputQuestions({
-  dayWorkStatusType, setDayWorkStatusType,
-  dayStartWorkDate, setDayStartWorkDate,
-  dayStartWorkTime, setDayStartWorkTime,
-  dayEndWorkDate, setDayEndWorkDate,
-  dayEndWorkTime, setDayEndWorkTime,
-  waterLevelInMetresStr, setWaterLevelInMetresStr,
-  casingDepthInMetresStr, setCasingDepthInMetresStr,
+	dayWorkStatus,
+	setDayWorkStatus,
 }: DayWorkStatusInputQuestionsProps) {
   
+	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(dayWorkStatus.dayWorkStatusType);
+	const [date, setDate] = useState<Date>(dayWorkStatus.date);
+	const [time, setTime] = useState<Date>(dayWorkStatus.time);
+	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>(dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
+	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>(dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
 	const [isSelectDayWorkStatusPressed, setIsSelectDayWorkStatusPressed] = useState<boolean>(false);
+
+	const selectDayWorkStatusType = (dayWorkStatusType: DayWorkStatusType) => {
+		setDayWorkStatusType(dayWorkStatusType);
+		setIsSelectDayWorkStatusPressed(false);
+		const datetime: Date = new Date();
+		setDate(datetime);
+		setTime(datetime);
+		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
+			...dayWorkStatus,
+			dayWorkStatusType: dayWorkStatusType,
+			date: datetime,
+			time: datetime,
+		}));
+	};
+	const selectDate = (date: Date) => {
+		setDate(date);
+		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
+			...dayWorkStatus,
+			date: date,
+		}));
+	};
+	const selectTime = (time: Date) => {
+		setTime(time);
+		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
+			...dayWorkStatus,
+			time: time,
+		}));
+	};
+	const saveWaterLevelInMetresStr = (waterLevelInMetresStr: string) => {
+		setWaterLevelInMetresStr(waterLevelInMetresStr);
+		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
+			...dayWorkStatus,
+			waterLevelInMetres: stringToDecimalPoint(waterLevelInMetresStr, 3),
+		}));
+	};
+	const saveCasingDepthInMetresStr = (casingDepthInMetresStr: string) => {
+		setCasingDepthInMetresStr(casingDepthInMetresStr);
+		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
+			...dayWorkStatus,
+			casingDepthInMetres: stringToDecimalPoint(casingDepthInMetresStr, 3),
+		}));
+	};
 
   return (
     <>
@@ -54,13 +92,7 @@ export function DayWorkStatusInputQuestions({
 								<TouchableOpacity 
 									onPress={() => {
 										Keyboard.dismiss();
-										setDayWorkStatusType(item);
-										setIsSelectDayWorkStatusPressed(false);
-										const date: Date = new Date();
-										setDayStartWorkDate(date);
-										setDayStartWorkTime(date);
-										setDayEndWorkDate(date);
-										setDayEndWorkTime(date);
+										selectDayWorkStatusType(item);
 									}}
 									style={[styles.listItem]}>
 									<Text>{item}</Text>
@@ -72,28 +104,28 @@ export function DayWorkStatusInputQuestions({
 			</View>
 		</View>
 		{
-			dayWorkStatusType === DAY_START_WORK_TYPE && (
+			dayWorkStatusType !== DAY_CONTINUE_WORK_TYPE && (
 				<>
 				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Day Start Work Date<Text style={{ color: 'red' }}>*</Text>: </Text>
+					<Text style={{ paddingVertical: 10 }}>Day {(dayWorkStatusType === DAY_START_WORK_TYPE) ? 'Start' : 'End'} Work Date<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<DateTimePicker
-						value={dayStartWorkDate}
+						value={date}
 						mode={'date'}
 						is24Hour={true}
 						onChange={(event, date) => {
-							setDayStartWorkDate(date ? date : new Date());
+							selectDate(date ?? new Date());
 						}}
 						style={{ backgroundColor: 'yellow' }}
 					/>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Day Start Work Time<Text style={{ color: 'red' }}>*</Text>: </Text>
+					<Text style={{ paddingVertical: 10 }}>Day {(dayWorkStatusType === DAY_START_WORK_TYPE) ? 'Start' : 'End'} Work Time<Text style={{ color: 'red' }}>*</Text>: </Text>
 					<DateTimePicker
-						value={dayStartWorkTime}
+						value={time}
 						mode={'time'}
 						is24Hour={true}
 						onChange={(event, time) => {
-							setDayStartWorkTime(time ? time : new Date());
+							selectTime(time ?? new Date());
 						}}
 						style={{ backgroundColor: 'yellow' }}
 					/>
@@ -102,7 +134,7 @@ export function DayWorkStatusInputQuestions({
 					<Text>Water Level(m): </Text>
 					<TextInput
 						value={waterLevelInMetresStr}
-						onChangeText={setWaterLevelInMetresStr}
+						onChangeText={saveWaterLevelInMetresStr}
 						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
 						keyboardType='numeric'
 					/>
@@ -111,55 +143,7 @@ export function DayWorkStatusInputQuestions({
 					<Text>Casing Depth(m): </Text>
 					<TextInput
 						value={casingDepthInMetresStr}
-						onChangeText={setCasingDepthInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
-						keyboardType='numeric'
-					/>
-				</View>
-				</>
-			)
-		}
-		{
-			dayWorkStatusType === DAY_END_WORK_TYPE && (
-				<>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Day End Work Date<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<DateTimePicker
-						value={dayEndWorkDate}
-						mode={'date'}
-						is24Hour={true}
-						onChange={(event, date) => {
-							setDayEndWorkDate(date ? date : new Date());
-						}}
-						style={{ backgroundColor: 'yellow' }}
-					/>
-				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Day End Work Time<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<DateTimePicker
-						value={dayEndWorkTime}
-						mode={'time'}
-						is24Hour={true}
-						onChange={(event, time) => {
-							setDayEndWorkTime(time ? time : new Date());
-						}}
-						style={{ backgroundColor: 'yellow' }}
-					/>
-				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Water Level(m): </Text>
-					<TextInput
-						value={waterLevelInMetresStr}
-						onChangeText={setWaterLevelInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
-						keyboardType='numeric'
-					/>
-				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Casing Depth(m): </Text>
-					<TextInput
-						value={casingDepthInMetresStr}
-						onChangeText={setCasingDepthInMetresStr}
+						onChangeText={saveCasingDepthInMetresStr}
 						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
 						keyboardType='numeric'
 					/>

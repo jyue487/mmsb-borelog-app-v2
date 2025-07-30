@@ -1,12 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
 import { PS_SYMBOL } from "@/constants/symbol";
-import { PsBlock } from '@/interfaces/PsBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { ConcreteSlabBlock } from "@/interfaces/ConcreteSlabBlock";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { PsBlock } from '@/interfaces/PsBlock';
 import { useState } from "react";
 import { EditPsBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/ps/EditPsBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 
 export type PsBlockProps = ViewProps & {
 	block: BaseBlock & PsBlock;
@@ -38,7 +37,7 @@ export function PsBlockComponent({ style, block, blocks, setBlocks, ...otherProp
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>{PS_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.pistonSampleIndex}</Text>
+				<Text>{PS_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

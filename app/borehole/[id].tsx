@@ -2,15 +2,15 @@ import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { useEffect, useState } from 'react';
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
 
 // Local Imports
 import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
 import { ConcretePremixBlockComponent } from '@/components/blockComponents/ConcretePremixBlockComponent';
 import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
 import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
-import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent copy';
+import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent';
 import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
 import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
 import { PsBlockComponent } from '@/components/blockComponents/PsBlockComponent';
@@ -18,18 +18,52 @@ import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponen
 import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
+import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
+import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { Borehole } from '@/interfaces/Borehole';
+import { Project } from '@/interfaces/Project';
+import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
+import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
 
 export default function BoreholeScreen() {
+  const db: SQLiteDatabase = useSQLiteContext();
 	const { id, projectName, name } = useLocalSearchParams();
   if (typeof id != 'string' || typeof projectName != 'string' || typeof name != 'string') {
     throw new Error(`Error. id: ${id}, projectName: ${projectName}, name: ${name}`);
   }
   const boreholeId: number = parseInt(id, 10);
   const boreholeName: string = name;
+  const [project, setProject] = useState<Project | null>(null);
+  const [borehole, setBorehole] = useState<Borehole | null>(null);
   const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
+
+  useEffect(() => {
+    const init = async () => {
+      const borehole: Borehole | null = await fetchBoreholeByIdAsync(db, boreholeId);
+      if (!borehole) {
+        throw new Error(`Error. No such borehole.`);
+      }
+      const project: Project | null = await fetchProjectByIdAsync(db, borehole.projectId);
+      if (!project) {
+        throw new Error(`Error. No such project.`);
+      }
+      setBorehole(borehole);
+      setProject(project);
+    };
+
+    init();
+  }, [boreholeId]);
+
+  if (!borehole || !project) {
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   const removeLastBlock = async () => {
     setBlocks((blocks) => blocks.slice(0, -1));
@@ -64,7 +98,7 @@ export default function BoreholeScreen() {
       <Button
         title='Share'
         onPress={async () => {
-          const html = await generateBorelogPdf(blocks);
+          const html = await generateBorelogPdf(project, borehole, blocks);
           const { uri } = await Print.printToFileAsync({
             html,
             base64: false,
@@ -128,6 +162,8 @@ export default function BoreholeScreen() {
             return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
           case END_OF_BOREHOLE_BLOCK_TYPE_ID:
             return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+          case CUSTOM_BLOCK_TYPE_ID:
+            return <CustomBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
           default:
             throw new Error('Unknown block type');
           }

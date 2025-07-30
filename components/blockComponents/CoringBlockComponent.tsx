@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
 import { CORING_SYMBOL } from "@/constants/symbol";
-import { CoringBlock } from '@/interfaces/CoringBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { CoringBlock } from '@/interfaces/CoringBlock';
 import { useState } from "react";
 import { EditCoringBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/coring/EditCoringBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 
 export type CoringBlockProps = ViewProps & {
 	block: BaseBlock & CoringBlock;
@@ -43,7 +43,7 @@ export function CoringBlockComponent({ style, block, blocks, setBlocks, ...other
 			</View>
 			<View style={{ flex: 1, gap: 20 }}>
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
-				<Text>{block.rockDescription}</Text>
+				<Text>{block.description}</Text>
 				<View style={{ flexDirection: 'row' }}>
 					<View style={{ flex: 4, borderRightWidth: 0.25, alignItems: 'center' }}>
 						<Text>Core Run(m)</Text>

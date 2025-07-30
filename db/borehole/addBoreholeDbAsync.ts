@@ -1,7 +1,7 @@
 import { AddBoreholeParams, Borehole } from "@/interfaces/Borehole";
 import { SQLiteDatabase } from "expo-sqlite";
 
-export async function addBoreholeDb(
+export async function addBoreholeDbAsync(
     db: SQLiteDatabase,
     projectId: number,
     addBoreholeParams: AddBoreholeParams
@@ -12,6 +12,7 @@ export async function addBoreholeDb(
           projectId,
           name,
           typeOfBoring,
+          typeOfRig,
           diameterOfBoring,
           eastingInMetres,
           northingInMetres,
@@ -20,6 +21,7 @@ export async function addBoreholeDb(
           $projectId,
           $name,
           $typeOfBoring,
+          $typeOfRig,
           $diameterOfBoring,
           $eastingInMetres,
           $northingInMetres,
@@ -29,6 +31,7 @@ export async function addBoreholeDb(
           $projectId: projectId,
           $name: addBoreholeParams.name,
           $typeOfBoring: addBoreholeParams.typeOfBoring,
+          $typeOfRig: addBoreholeParams.typeOfRig,
           $diameterOfBoring: addBoreholeParams.diameterOfBoring,
           $eastingInMetres: addBoreholeParams.eastingInMetres,
           $northingInMetres: addBoreholeParams.northingInMetres,

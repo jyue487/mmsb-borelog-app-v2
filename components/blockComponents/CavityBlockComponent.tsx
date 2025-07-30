@@ -1,10 +1,10 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { BaseBlock, Block } from "@/interfaces/Block";
 import { CavityBlock } from '@/interfaces/CavityBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { useState } from "react";
 import { EditCavityBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/cavity/EditCavityBlockDetailsInputForm";
-import { BaseBlock, Block } from "@/interfaces/Block";
+import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 
 export type CavityBlockProps = ViewProps & {
 	block: BaseBlock & CavityBlock;
@@ -40,7 +40,7 @@ export function CavityBlockComponent({ style, block, blocks, setBlocks, ...other
 			</View>
 			<View style={{ flex: 1, gap: 20 }}>
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
-				<Text>{block.cavityDescription}</Text>
+				<Text>{block.description}</Text>
 			</View>
 		</Pressable>
 	);

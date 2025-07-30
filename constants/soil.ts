@@ -28,6 +28,8 @@ export const SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE: Record<
     'GRAVEL': SECONDARY_SOIL_TYPE_FOR_GRAVEL,
 } as const;
 
+export const CUSTOM_OTHER_PROPERTIES_FOR_SOIL = 'custom' as const;
+
 export const OTHER_PROPERTIES_LIST_FOR_CLAY = [
     'with some gravel',
     'with pockets of silt',
@@ -36,6 +38,7 @@ export const OTHER_PROPERTIES_LIST_FOR_CLAY = [
     'with traces of decomposed wood',
     'with traces of rootholes',
     'with traces of shells',
+    CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
 ] as const;
 export const OTHER_PROPERTIES_LIST_FOR_SILT = [
     'with some gravel',
@@ -45,6 +48,7 @@ export const OTHER_PROPERTIES_LIST_FOR_SILT = [
     'with traces of decomposed wood',
     'with traces of rootholes',
     'with traces of shells',
+    CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
 ] as const;
 export const OTHER_PROPERTIES_LIST_FOR_PEAT = [
     'with some gravel',
@@ -55,6 +59,7 @@ export const OTHER_PROPERTIES_LIST_FOR_PEAT = [
     'with traces of decomposed wood',
     'with traces of rootholes',
     'with traces of shells',
+    CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
 ] as const;
 export const OTHER_PROPERTIES_LIST_FOR_SAND = [
     'with some gravel',
@@ -64,6 +69,7 @@ export const OTHER_PROPERTIES_LIST_FOR_SAND = [
     'with traces of decomposed wood',
     'with traces of rootholes',
     'with traces of shells',
+    CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
 ] as const;
 export const OTHER_PROPERTIES_LIST_FOR_GRAVEL = [
     'with pockets of clay',
@@ -73,6 +79,7 @@ export const OTHER_PROPERTIES_LIST_FOR_GRAVEL = [
     'with traces of decomposed wood',
     'with traces of rootholes',
     'with traces of shells',
+    CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
 ] as const;
 export const OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE: Record<
     DominantSoilType,

@@ -1,7 +1,7 @@
 import { EditProjectParams } from "@/interfaces/Project";
 import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
 
-export async function editProjectDb(
+export async function editProjectDbAsync(
     db: SQLiteDatabase,
     editProjectParams: EditProjectParams,
 ): Promise<SQLiteRunResult> {

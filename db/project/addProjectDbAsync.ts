@@ -1,7 +1,7 @@
 import { AddProjectParams, Project } from "@/interfaces/Project";
 import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
 
-export async function addProjectDb(
+export async function addProjectDbAsync(
     db: SQLiteDatabase, 
     projectParams: AddProjectParams
 ): Promise<Project> {

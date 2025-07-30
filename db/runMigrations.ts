@@ -2,7 +2,6 @@ import { SQLiteDatabase } from "expo-sqlite";
 import { MIGRATIONS } from "./migrations/migrations";
 
 export async function runMigrations(db: SQLiteDatabase, currentDbVersion: number): Promise<void> {
-
     for (const m of MIGRATIONS) {
         if (currentDbVersion >= m.version) {
             continue;

@@ -7,7 +7,7 @@ import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 import { HA_SYMBOL } from "@/constants/symbol";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
 
-export function renderHaBlockToHtml(block: BaseBlock & HaBlock, numberOfTicksToRender: number,scaleTickIndexWrapper: number[]) {
+export function renderHaBlockToHtml(block: BaseBlock & HaBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>

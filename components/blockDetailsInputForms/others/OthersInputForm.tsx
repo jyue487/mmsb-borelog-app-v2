@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FlatList, Keyboard, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
+import { FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
 
 import { Block } from "@/interfaces/Block";
 import { AddWashBoringBlockDetailsInputForm } from "./washBoring/AddWashBoringBlockDetailsInputForm";
@@ -7,6 +7,7 @@ import { AddConcretePremixBlockDetailsInputForm } from "./concretePremix/AddConc
 import { AddConcreteSlabBlockDetailsInputForm } from "./concreteSlab/AddConcreteSlabBlockDetailsInputForm";
 import { AddHaBlockDetailsInputForm } from "./ha/AddHaBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
+import { AddCustomBlockDetailsInputForm } from "./custom/AddCustomBlockDetailsInputForm";
 
 export type OthersInputFormProps = ViewProps & {
   boreholeId: number;
@@ -39,10 +40,11 @@ export function OthersInputForm({ style, boreholeId, blocks, setBlocks, setIsAdd
         isSelectOperationTypePressed && (
           <FlatList
             data={[
-              'Wash Boring', 
               'Hand Auger', 
+              'Wash Boring', 
               'Concrete Slab', 
-              'Concrete Premix'
+              'Concrete Premix',
+              'Custom'
             ]}
             keyExtractor={item => item}
             renderItem={({ item }) => (
@@ -61,18 +63,18 @@ export function OthersInputForm({ style, boreholeId, blocks, setBlocks, setIsAdd
       }
     </View>
     { 
-      operationType === 'Wash Boring' && (
-        <AddWashBoringBlockDetailsInputForm 
-          boreholeId={boreholeId}
-          blocks={blocks}
-          setBlocks={setBlocks}
-          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+      operationType === 'Hand Auger' && (
+        <AddHaBlockDetailsInputForm 
+        boreholeId={boreholeId}
+        blocks={blocks}
+        setBlocks={setBlocks}
+        setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
         /> 
       )
     }
     { 
-      operationType === 'Hand Auger' && (
-        <AddHaBlockDetailsInputForm 
+      operationType === 'Wash Boring' && (
+        <AddWashBoringBlockDetailsInputForm 
           boreholeId={boreholeId}
           blocks={blocks}
           setBlocks={setBlocks}
@@ -93,6 +95,16 @@ export function OthersInputForm({ style, boreholeId, blocks, setBlocks, setIsAdd
     { 
       operationType === 'Concrete Premix' && (
         <AddConcretePremixBlockDetailsInputForm 
+          boreholeId={boreholeId}
+          blocks={blocks}
+          setBlocks={setBlocks}
+          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+        /> 
+      )
+    }
+    { 
+      operationType === 'Custom' && (
+        <AddCustomBlockDetailsInputForm 
           boreholeId={boreholeId}
           blocks={blocks}
           setBlocks={setBlocks}

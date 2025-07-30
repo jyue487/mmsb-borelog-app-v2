@@ -3,12 +3,14 @@ import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewPro
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { CavityBlock } from "@/interfaces/CavityBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { roundToDecimalPoint } from "@/utils/numbers";
+import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
+import { checkAndReturnCavityBlock } from "@/utils/checkFunctions/checkAndReturnCavityBlock";
 
 export type EditCavityBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -18,127 +20,30 @@ export type EditCavityBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock, setIsEditState, ...otherProps }: EditCavityBlockDetailsInputFormProps) {
-  const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(oldBlock.dayWorkStatus.dayWorkStatusType);
-  const [dayStartWorkDate, setDayStartWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
-  const [dayStartWorkTime, setDayStartWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-  const [dayEndWorkDate, setDayEndWorkDate] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.date);
-  const [dayEndWorkTime, setDayEndWorkTime] = useState<Date>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? new Date() : oldBlock.dayWorkStatus.time);
-  const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
-  const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>((oldBlock.dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : oldBlock.dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
+  const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(oldBlock.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.topDepthInMetres, 3).toString());
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(roundToDecimalPoint(oldBlock.baseDepthInMetres, 3).toString());
-  const [cavityDescription, setCavityDescription] = useState<string>(oldBlock.cavityDescription); 
-  const [isSelectCavityDescriptionPressed, setIsSelectCavityDescriptionPressed] = useState<boolean>(false);
+  const [description, setDescription] = useState<string>(oldBlock.description); 
 
   return (
     <GestureHandlerRootView style={styles.blockDetailsInputForm}>
-      <DayWorkStatusInputQuestions 
-        dayWorkStatusType={dayWorkStatusType} setDayWorkStatusType={setDayWorkStatusType}
-        dayStartWorkDate={dayStartWorkDate} setDayStartWorkDate={setDayStartWorkDate}
-        dayStartWorkTime={dayStartWorkTime} setDayStartWorkTime={setDayStartWorkTime}
-        dayEndWorkDate={dayEndWorkDate} setDayEndWorkDate={setDayEndWorkDate}
-        dayEndWorkTime={dayEndWorkTime} setDayEndWorkTime={setDayEndWorkTime}
-        waterLevelInMetresStr={waterLevelInMetresStr} setWaterLevelInMetresStr={setWaterLevelInMetresStr}
-        casingDepthInMetresStr={casingDepthInMetresStr} setCasingDepthInMetresStr={setCasingDepthInMetresStr}
+      <CavityBlockInputQuestions 
+        dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
+        topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
+        baseDepthInMetresStr={baseDepthInMetresStr} setBaseDepthInMetresStr={setBaseDepthInMetresStr}
+        description={description} setDescription={setDescription}
       />
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-        <TextInput
-          value={topDepthInMetresStr}
-          onChangeText={setTopDepthInMetresStr}
-          style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-          keyboardType='numeric'
-        />
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text>Base Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
-        <TextInput
-          value={baseDepthInMetresStr}
-          onChangeText={setBaseDepthInMetresStr}
-          style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
-          keyboardType='numeric'
-        />
-      </View>
-      <View style={{ flexDirection: 'row' }}>
-        <Text style={{ paddingVertical: 10 }}>Cavity Description<Text style={{ color: 'red' }}>*</Text>: </Text>
-        <View style={{ flex: 1 }}>
-          <TouchableOpacity 
-            onPress={() => {
-              Keyboard.dismiss();
-              setIsSelectCavityDescriptionPressed(prev => !prev);
-            }}
-            style={{
-              borderWidth: 0.5,
-              alignItems: 'center',
-              padding: 10,
-              width: '100%',
-            }}>
-            <Text>{cavityDescription}</Text>
-          </TouchableOpacity>
-          {
-            isSelectCavityDescriptionPressed && (
-              <FlatList
-                data={['Void Cavity', 'In-filled Cavity']}
-                keyExtractor={item => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      setCavityDescription(item);
-                      setIsSelectCavityDescriptionPressed(false);
-                    }}
-                    style={[styles.listItem]}>
-                    <Text>{item}</Text>
-                  </TouchableOpacity>
-                )}
-                nestedScrollEnabled={true}
-                style={{ maxHeight: 500 }}
-              />
-            )
-          }
-        </View>
-      </View>
       <Button
         title='Confirm'
         onPress={() => {
-          const dayWorkStatus: DayWorkStatus | undefined = checkAndReturnDayWorkStatus({
-            dayWorkStatusType: dayWorkStatusType,
-            dayStartWorkDate: dayStartWorkDate,
-            dayStartWorkTime: dayStartWorkTime,
-            dayEndWorkDate: dayEndWorkDate,
-            dayEndWorkTime: dayEndWorkTime,
-            waterLevelInMetresStr: waterLevelInMetresStr,
-            casingDepthInMetresStr: casingDepthInMetresStr,
-          });
-          if (!dayWorkStatus) {
-            return;
-          }
-          if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
-						alert('Error: Top Depth');
-						return;
-					}
-          if (isNaN(parseFloat(baseDepthInMetresStr)) || parseFloat(baseDepthInMetresStr) < parseFloat(topDepthInMetresStr)) {
-						alert('Error: Base Depth');
-						return;
-					}
-          if (!cavityDescription) {
-            alert('Error: Cavity Description');
-            return;
-          }
-
-          const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
-          const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
-
-          const newBlock: Block = {
-            id: blocks.length + 1,
-            blockId: blocks.length + 1,
-            blockTypeId: CAVITY_BLOCK_TYPE_ID,
-            boreholeId: oldBlock.boreholeId, 
+          const newBlock: Block = checkAndReturnCavityBlock({
+            blocks: blocks,
+            boreholeId: oldBlock.boreholeId,
             dayWorkStatus: dayWorkStatus,
-            topDepthInMetres: topDepthInMetres,
-            baseDepthInMetres: baseDepthInMetres,
-            cavityDescription: cavityDescription,
-          };
+            topDepthInMetresStr: topDepthInMetresStr,
+            baseDepthInMetresStr: baseDepthInMetresStr,
+            description: description,
+          });
           setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
           setIsEditState(false);
         }}

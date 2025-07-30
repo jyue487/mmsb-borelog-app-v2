@@ -1,7 +1,7 @@
-import { Colour } from '@/constants/colour';
-import { DayWorkStatus } from '@/constants/DayStatus';
-import { RockType } from '@/constants/rock';
+import { DayWorkStatus } from '@/constants/DayWorkStatus';
 import { CORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { ColourProperties } from './ColourProperties';
+import { RockProperties } from './RockProperties';
 
 export interface CoringBlock {
     id: number;
@@ -10,15 +10,12 @@ export interface CoringBlock {
     dayWorkStatus: DayWorkStatus;
     topDepthInMetres: number;
     baseDepthInMetres: number;
-    rockDescription: string;
+    description: string;
     coreRunInMetres: number;
     coreRecoveryInPercentage: number;
     rqdInPercentage: number;
     coreRecoveryInMetres: number;
     rqdInMetres: number;
-    dominantColour: Colour | null;
-    secondaryColour: Colour | null;
-    rockType: RockType | null;
-    otherRockType: string;
-    otherProperties: string;
+    colourProperties: ColourProperties;
+    rockProperties: RockProperties;
 }

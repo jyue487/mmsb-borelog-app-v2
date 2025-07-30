@@ -4,8 +4,10 @@ import * as FileSystem from 'expo-file-system';
 
 import { generatePdfPages } from './generatePdfPages';
 import { TEXT_SIZE } from '@/constants/textSize';
+import { Project } from '@/interfaces/Project';
+import { Borehole } from '@/interfaces/Borehole';
 
-export async function generateBorelogPdf(blocks: Block[]) {
+export async function generateBorelogPdf(project: Project, borehole: Borehole, blocks: Block[]) {
 	const scaleTickIndexWrapper: number[] = [0];
 	const asset = Asset.fromModule(require('@/assets/images/mmsb-logo.png'));
 	await asset.downloadAsync(); // Ensures it’s saved to a readable path
@@ -58,6 +60,7 @@ export async function generateBorelogPdf(blocks: Block[]) {
     body { font-family: Arial, sans-serif; }
     table {
       border-collapse: collapse;
+	  table-layout: fixed;
       width: 100%;
       font-size: ${TEXT_SIZE};
     }
@@ -155,7 +158,7 @@ export async function generateBorelogPdf(blocks: Block[]) {
   </style>
 </head>
 <body>
-	${generatePdfPages(blocks, scaleTickIndexWrapper, mmsbLogoBase64)}
+	${generatePdfPages(project, borehole, blocks, scaleTickIndexWrapper, mmsbLogoBase64)}
 </body>
 </html>
 

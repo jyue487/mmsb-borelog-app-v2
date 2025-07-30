@@ -1,4 +1,4 @@
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
 import { renderCavityBlockToHtml } from "./renderCavityBlockToHtml";
 import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
@@ -13,8 +13,11 @@ import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
 import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
 import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
 import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
+import { Project } from "@/interfaces/Project";
+import { Borehole } from "@/interfaces/Borehole";
+import { renderCustomBlockToHtml } from "./renderCustomBlockToHtml";
 
-export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
+export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
     let blockIndex : number = 0;
 
@@ -77,6 +80,9 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
             case END_OF_BOREHOLE_BLOCK_TYPE_ID:
                 result += renderEndOfBoreholeBlockToHtml(block, pageIndex * 90 - scaleTickIndexWrapper[0], scaleTickIndexWrapper);
                 break;
+            case CUSTOM_BLOCK_TYPE_ID:
+                result += renderCustomBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
             default:
                 break;
 
@@ -96,7 +102,7 @@ export function generatePdfPages(blocks: Block[], scaleTickIndexWrapper: number[
         const page: string = (
             `
             <div class="page">
-                ${renderHeaderToHtml(mmsbLogoBase64)}
+                ${renderHeaderToHtml(project, borehole, mmsbLogoBase64)}
                 <div>
                     <table>
                         <tr>
