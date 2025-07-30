@@ -1,0 +1,45 @@
+import { DayWorkStatus } from '@/constants/DayWorkStatus';
+import { SPT_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { ColourProperties } from './ColourProperties';
+import { SoilProperties } from './SoilProperties';
+
+export interface SptBlock {
+    id: number;
+    blockTypeId: typeof SPT_BLOCK_TYPE_ID;
+    sptIndex: number;
+    disturbedSampleIndex: number;
+    dayWorkStatus: DayWorkStatus;
+    topDepthInMetres: number;
+    baseDepthInMetres: number;
+    description: string;
+    seatingIncBlows1: number;
+    seatingIncPen1: number;
+    seatingIncBlows2: number | null;
+    seatingIncPen2: number | null;
+    mainIncBlows1: number;
+    mainIncPen1: number;
+    mainIncBlows2: number | null;
+    mainIncPen2: number | null;
+    mainIncBlows3: number | null;
+    mainIncPen3: number | null;
+    mainIncBlows4: number | null;
+    mainIncPen4: number | null;
+    sptNValue: number;
+    totalMainPenetrationInMillimetres: number;
+    recoveryInPercentage: number;
+    recoveryLengthInMillimetres: number;
+    colourProperties: ColourProperties;
+    soilProperties: SoilProperties;
+    isSeatingIncBlows1Active: boolean;
+    isSeatingIncBlows2Active: boolean;
+    isMainIncBlows1Active: boolean;
+    isMainIncBlows2Active: boolean;
+    isMainIncBlows3Active: boolean;
+    isMainIncBlows4Active: boolean;
+    isSeatingIncPen1Active: boolean;
+    isSeatingIncPen2Active: boolean;
+    isMainIncPen1Active: boolean;
+    isMainIncPen2Active: boolean;
+    isMainIncPen3Active: boolean;
+    isMainIncPen4Active: boolean;
+}
