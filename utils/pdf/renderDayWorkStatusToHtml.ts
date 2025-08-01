@@ -8,8 +8,8 @@ export function renderDayWorkStatusToHtml(dayWorkStatus: DayWorkStatus) {
             ${(dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : 
                 `
                 <div style="display: flex; flex: 1; flex-direction: column; align-items: center;">
-                    <div>${getDate(dayWorkStatus.date)}</div>
-                    <div>${getTime(dayWorkStatus.time)}</div>
+                    <div style="font-size: 6pt; transform: scale(0.67);">${getDate(dayWorkStatus.date)}</div>
+                    <div style="font-size: 6pt; transform: scale(0.67);">${getTime(dayWorkStatus.time)}</div>
                 </div>
                 `
             }

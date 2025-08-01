@@ -1,8 +1,12 @@
-import { TEXT_SIZE, TEXT_SIZE_SMALL, TEXT_SIZE_SMALLER } from "@/constants/textSize";
+import { TEXT_SIZE_ANDROID, TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@/constants/textSize';
+import { Platform } from 'react-native';
 
 export function renderDescriptionToHtml(numberOfTicksToRender: number, description: string) {
     const adjustFontSize = (): string => {
-        return Math.min(8, Math.floor(11 - description.length / numberOfTicksToRender / 10)).toString() + 'pt';
+        if (Platform.OS === 'ios') {
+            return Math.min(TEXT_SIZE_IOS, Math.floor(11 - description.length / numberOfTicksToRender / 10)).toString() + TEXT_SIZE_UNIT;
+        }
+        return Math.min(TEXT_SIZE_ANDROID, Math.floor(11 - description.length / numberOfTicksToRender / 10)).toString() + TEXT_SIZE_UNIT;
 
         // if (numberOfTicksToRender <= 5) {
         //     return '4pt';

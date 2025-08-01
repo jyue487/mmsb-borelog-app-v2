@@ -2,12 +2,12 @@ import { Block } from '@/interfaces/Block';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 
-import { generatePdfPages } from './generatePdfPages';
-import { TEXT_SIZE } from '@/constants/textSize';
-import { Project } from '@/interfaces/Project';
+import { TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@/constants/textSize';
 import { Borehole } from '@/interfaces/Borehole';
+import { Project } from '@/interfaces/Project';
+import { generatePdfPages } from './generatePdfPages';
 
-export async function generateBorelogPdf(project: Project, borehole: Borehole, blocks: Block[]) {
+export async function generateBorelogPdfIos(project: Project, borehole: Borehole, blocks: Block[]) {
 	const scaleTickIndexWrapper: number[] = [0];
 	const asset = Asset.fromModule(require('@/assets/images/mmsb-logo.png'));
 	await asset.downloadAsync(); // Ensures it’s saved to a readable path
@@ -51,6 +51,7 @@ export async function generateBorelogPdf(project: Project, borehole: Borehole, b
 
 	  .page {
 	  	page-break-after: always;
+		page-break-inside: avoid;
 		width: 210mm;
 		padding-top: 5mm;
 		padding-left: 15mm;
@@ -62,7 +63,7 @@ export async function generateBorelogPdf(project: Project, borehole: Borehole, b
       border-collapse: collapse;
 	  table-layout: fixed;
       width: 100%;
-      font-size: ${TEXT_SIZE};
+      font-size: ${TEXT_SIZE_IOS}${TEXT_SIZE_UNIT};
     }
     th {
       outline: 0.5pt solid #000;
@@ -77,8 +78,8 @@ export async function generateBorelogPdf(project: Project, borehole: Borehole, b
       vertical-align: top;
     }
 	.page {
-		display: flex;
-		flex-direction: column;
+		page-break-after: always;
+		page-break-inside: avoid;
 	}
     .header, .sub-header {
       text-align: left;
@@ -137,7 +138,7 @@ export async function generateBorelogPdf(project: Project, borehole: Borehole, b
       text-align: left;
 	  padding-left: 10pt;
 	  padding-right: 10pt;
-	  font-size: ${TEXT_SIZE};
+	  font-size: ${TEXT_SIZE_IOS}${TEXT_SIZE_UNIT};
     }
     .no-border {
       border: none;
@@ -166,3 +167,60 @@ export async function generateBorelogPdf(project: Project, borehole: Borehole, b
 		`
 	);
 }
+
+/*
+			<table>
+				<tr>
+					<th rowspan="4" style="width: 5%;">
+						<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">DATE & TIME</div>
+					</th>
+					<th rowspan="4" style="width: 5%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
+					<th rowspan="3" style="width: 7%;">
+						<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+							DEPTH
+						</div>
+					</th>
+					<th rowspan="4" style="width: 5%;">
+						<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+							WATER LEVEL
+						</div>
+					</th>
+					<th rowspan="4">DESCRIPTION</th>
+					<th rowspan="3" style="width: 4%;">
+						<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+							THICKNESS
+						</div>
+					</th>
+					<th colspan="6" style="width: 24%;">SPT</th>
+					<th rowspan="4" style="width: 4%;">SPT<br>(N)</th>
+					<th rowspan="3" style="width: 5%;">R/r</th>
+					<th rowspan="3" style="width: 4%;">
+						<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+							SCALE
+						</div>
+					</th>
+				</tr>
+				<tr>
+					<th>75mm</th>
+					<th>75mm</th>
+					<th>75mm</th>
+					<th>75mm</th>
+					<th>75mm</th>
+					<th>75mm</th>
+				</tr>
+				<tr>
+					<th colspan="2" style="transform: rotate(270deg); height: 40px;">CORE<br/>RUN</th>
+					<th colspan="2" style="transform: rotate(270deg); height: 40px;">R.Q.D.</th>
+					<th colspan="2" style="transform: rotate(270deg); height: 40px;">C.R.</th>
+				</tr>
+				<tr>
+					<th>m</th>
+					<th>m</th>
+					<th colspan="2">m</th>
+					<th colspan="2">%</th>
+					<th colspan="2">%</th>
+					<th>%</th>
+					<th>m</th>
+				</tr>
+			</table>
+ */

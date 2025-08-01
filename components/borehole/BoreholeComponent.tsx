@@ -8,14 +8,14 @@ import { Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { EditBoreholeInputForm } from './EditBoreholeInputForm';
 
 type BoreholeComponentProps = {
-  projectName: string,
+  projectTitle: string,
   borehole: Borehole,
   editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
   deleteBorehole: (boreholeId: number) => void;
 };
 
 export function BoreholeComponent({
-  projectName,
+  projectTitle,
   borehole,
   editBorehole,
   deleteBorehole,
@@ -34,7 +34,7 @@ export function BoreholeComponent({
           pathname: '../borehole/[id]',
           params: { 
             id: borehole.id, 
-            projectName: projectName, 
+            projectTitle: projectTitle, 
             name: borehole.name 
           },
         })

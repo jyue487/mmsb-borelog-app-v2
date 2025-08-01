@@ -32,7 +32,7 @@ export function renderScaleTicksToHtml(numberOfTicksToRender: number, scaleTickI
     }
     return (
         `
-        <td class="scale">
+        <td class="scale" style="padding: 0;">
             <div style="display: flex; flex-direction: column; align-items: flex-start;">
                 ${result}
             </div>

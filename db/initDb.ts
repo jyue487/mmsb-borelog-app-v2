@@ -1,5 +1,5 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import { runMigrations } from "./runMigrations";
+import { runMigrationsAsync } from "./runMigrationsAsync";
 
 export async function initDb(db: SQLiteDatabase): Promise<void> {
     // Set journal mode
@@ -7,6 +7,12 @@ export async function initDb(db: SQLiteDatabase): Promise<void> {
 
     // Enable foreign key constraints
     await db.execAsync('PRAGMA foreign_keys = ON;');
+
+    // await db.runAsync('DROP TABLE IF EXISTS projects');
+    // await db.runAsync('DROP TABLE IF EXISTS boreholes');
+    // await db.runAsync('DROP TABLE IF EXISTS blockTypes');
+    // await db.runAsync('DROP TABLE IF EXISTS blocks');
+    // await db.runAsync('PRAGMA user_version = 0;');
 
     // Optional: verify PRAGMA values
     const journal = await db.getFirstAsync('PRAGMA journal_mode;');
@@ -19,7 +25,7 @@ export async function initDb(db: SQLiteDatabase): Promise<void> {
     
     console.log('Started running database migration...');
 
-    runMigrations(db, currentDbVersionResult?.user_version ?? 0);
+    await runMigrationsAsync(db, currentDbVersionResult?.user_version ?? 0);
 
     console.log('Finished running database migration...');
 

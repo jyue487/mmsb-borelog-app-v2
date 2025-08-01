@@ -10,6 +10,7 @@ import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockCo
 import { ConcretePremixBlockComponent } from '@/components/blockComponents/ConcretePremixBlockComponent';
 import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
 import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
+import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
 import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent';
 import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
 import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
@@ -18,20 +19,19 @@ import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponen
 import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
-import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
-import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
-import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
-import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
+import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
+import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 
 export default function BoreholeScreen() {
   const db: SQLiteDatabase = useSQLiteContext();
-	const { id, projectName, name } = useLocalSearchParams();
-  if (typeof id != 'string' || typeof projectName != 'string' || typeof name != 'string') {
-    throw new Error(`Error. id: ${id}, projectName: ${projectName}, name: ${name}`);
+	const { id, projectTitle, name } = useLocalSearchParams();
+  if (typeof id != 'string' || typeof projectTitle != 'string' || typeof name != 'string') {
+    throw new Error(`Error. id: ${id}, projectTitle: ${projectTitle}, name: ${name}`);
   }
   const boreholeId: number = parseInt(id, 10);
   const boreholeName: string = name;
@@ -98,13 +98,13 @@ export default function BoreholeScreen() {
       <Button
         title='Share'
         onPress={async () => {
-          const html = await generateBorelogPdf(project, borehole, blocks);
+          const html = await generateBorelogPdfAndroid(project, borehole, blocks);
           const { uri } = await Print.printToFileAsync({
             html,
             base64: false,
           });
 
-          const newFileUri = FileSystem.documentDirectory + `${projectName.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
+          const newFileUri = FileSystem.documentDirectory + `${projectTitle.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
           await FileSystem.moveAsync({
             from: uri,
             to: newFileUri,
@@ -129,7 +129,7 @@ export default function BoreholeScreen() {
       style={styles.container}>
       <Stack.Screen
         options={{
-          title: `${(projectName.length < 10) ? projectName : projectName.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
+          title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },

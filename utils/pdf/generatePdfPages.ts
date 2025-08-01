@@ -1,9 +1,12 @@
 import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { Borehole } from "@/interfaces/Borehole";
+import { Project } from "@/interfaces/Project";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
 import { renderCavityBlockToHtml } from "./renderCavityBlockToHtml";
 import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
 import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
 import { renderCoringBlockToHtml } from "./renderCoringBlockToHtml";
+import { renderCustomBlockToHtml } from "./renderCustomBlockToHtml";
 import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
 import { renderEndOfBoreholeBlockToHtml } from "./renderEndOfBoreholeBlockToHtml";
 import { renderFooterToHtml } from "./renderFooterToHtml";
@@ -13,15 +16,13 @@ import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
 import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
 import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
 import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
-import { Project } from "@/interfaces/Project";
-import { Borehole } from "@/interfaces/Borehole";
-import { renderCustomBlockToHtml } from "./renderCustomBlockToHtml";
 
 export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
     let blockIndex : number = 0;
 
     const renderBlocksToHtml = () => {
+        console.log('calling renderBlocksToHtml');
         let result: string = ``;
 
         // Check if need to pad with empty block
@@ -30,6 +31,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
             result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
         }
         while (blockIndex < blocks.length) {
+            console.log(1);
             if (scaleTickIndexWrapper[0] === pageIndex * 90) {
                 break;
             }
@@ -87,7 +89,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                 break;
 
             }
-            
+            // console.log(result);
             ++blockIndex;
         }
         if (blockIndex === blocks.length) {
@@ -106,33 +108,29 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                 <div>
                     <table>
                         <tr>
-                            <th rowspan="4" style="width: 5%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">DATE & TIME</div>
+                            <th rowspan="4" style="width: 5%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+                                DATE & TIME
                             </th>
                             <th rowspan="4" style="width: 7%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
                             <th rowspan="3" style="width: 12%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; white-space: nowrap;">
+                                <div style="white-space: nowrap;">
                                     DEPTH
                                 </div>
                             </th>
                             <th rowspan="3" style="width: 5%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; white-space: nowrap;">
+                                <div style="white-space: nowrap;">
                                     WL
                                 </div>
                             </th>
                             <th rowspan="4">DESCRIPTION</th>
-                            <th rowspan="3" style="width: 4%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                    THICKNESS
-                                </div>
+                            <th rowspan="3" style="width: 4%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+                                THICKNESS
                             </th>
                             <th colspan="6" style="width: 24%;">SPT</th>
                             <th rowspan="4" style="width: 5.5%;">SPT<br>(N)</th>
                             <th rowspan="3" style="width: 4%;">R/r</th>
-                            <th rowspan="3" style="width: 3%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                    SCALE
-                                </div>
+                            <th rowspan="3" style="width: 3%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
+                                SCALE
                             </th>
                         </tr>
                         <tr>

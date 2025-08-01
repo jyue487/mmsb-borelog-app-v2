@@ -12,12 +12,12 @@ import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Bo
 
 export default function ProjectScreen() {
   const db: SQLiteDatabase = useSQLiteContext()
-  const { id, name } = useLocalSearchParams();
-  if (typeof id != 'string' || typeof name != 'string') {
+  const { id, title } = useLocalSearchParams();
+  if (typeof id != 'string' || typeof title != 'string') {
     throw new Error(`Error. id: ${id}`);
   }
   const projectId: number = parseInt(id, 10);
-  const projectName: string = name;
+  const projectTitle: string = title;
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
 
@@ -129,7 +129,7 @@ export default function ProjectScreen() {
     <KeyboardAvoidingView behavior='height' style={styles.container}>
       <Stack.Screen
         options={{
-          title: (projectName.length < 10) ? projectName : `${projectName.slice(0, 10)}...`,
+          title: (projectTitle.length < 10) ? projectTitle : `${projectTitle.slice(0, 10)}...`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -138,7 +138,7 @@ export default function ProjectScreen() {
       <FlatList
         data={boreholes}
         keyExtractor={(borehole: Borehole) => borehole.id.toString()}
-        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
+        renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
         keyboardShouldPersistTaps="handled"
         ListFooterComponent={renderFooter()}
         contentContainerStyle={{ paddingBottom: 500 }}
