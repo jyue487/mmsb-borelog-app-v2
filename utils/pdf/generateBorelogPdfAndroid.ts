@@ -14,7 +14,7 @@ export async function generateBorelogPdfAndroid(project: Project, borehole: Bore
 	await asset.downloadAsync(); // Ensures it’s saved to a readable path
 
 	console.log(asset.localUri);
-	const mmsbLogoBase64: string = await FileSystem.readAsStringAsync(asset.localUri!, {
+	const mmsbLogoBase64: string = await FileSystem.readAsStringAsync(asset.localUri ?? asset.uri, {
 		encoding: FileSystem.EncodingType.Base64,
 	});
 
