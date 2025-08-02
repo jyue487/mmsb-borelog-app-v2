@@ -39,7 +39,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
             const block: Block = blocks[i];
             const nextBlock: Block | null = (i + 1 < blocks.length) ? blocks[i + 1] : null;
 
-            const blockHeightInTicks: number = (!nextBlock) ? Math.max(10, Math.round((block.baseDepthInMetres - block.topDepthInMetres) * 10)) : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const blockHeightInTicks: number = (!nextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
             const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
 
             // If remaining space too small (less than half of actual block height), then pad with empty block
