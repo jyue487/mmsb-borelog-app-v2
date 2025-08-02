@@ -98,23 +98,28 @@ export default function BoreholeScreen() {
       <Button
         title='Share'
         onPress={async () => {
-          const html = await generateBorelogPdfAndroid(project, borehole, blocks);
-          const { uri } = await Print.printToFileAsync({
-            html,
-            base64: false,
-          });
+          try {
+            const html = await generateBorelogPdfAndroid(project, borehole, blocks);
+            const { uri } = await Print.printToFileAsync({
+              html,
+              base64: false,
+            });
 
-          const newFileUri = FileSystem.documentDirectory + `${projectTitle.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
-          await FileSystem.moveAsync({
-            from: uri,
-            to: newFileUri,
-          });
+            const newFileUri = FileSystem.documentDirectory + `${projectTitle.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
+            await FileSystem.moveAsync({
+              from: uri,
+              to: newFileUri,
+            });
 
-          const isAvailable = await Sharing.isAvailableAsync();
-          if (isAvailable) {
-            await Sharing.shareAsync(newFileUri);
-          } else {
-            alert('Sharing is not available on this device');
+            const isAvailable = await Sharing.isAvailableAsync();
+            if (isAvailable) {
+              await Sharing.shareAsync(newFileUri);
+            } else {
+              alert('Sharing is not available on this device');
+            }
+          } catch (error) {
+            console.error("PDF generation or sharing failed:", error);
+            alert("Error: " + error);
           }
         }}
       />
