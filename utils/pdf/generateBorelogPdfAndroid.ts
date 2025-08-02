@@ -10,10 +10,15 @@ import { generatePdfPages } from './generatePdfPages';
 
 export async function generateBorelogPdfAndroid(project: Project, borehole: Borehole, blocks: Block[]) {
 	const scaleTickIndexWrapper: number[] = [0];
-	const asset = Asset.fromModule(require('@/assets/images/mmsb-logo.png'));
-	await asset.downloadAsync(); // Ensures it’s saved to a readable path
+	const asset: Asset = await Asset.fromModule(require('@/assets/images/mmsb-logo.png')).downloadAsync(); // Ensures it’s saved to a readable path
+	alert(asset.localUri ?? asset.uri);
 
-	console.log(asset.localUri);
+	// const cachePath = `${FileSystem.cacheDirectory}${asset.name}`;
+	// await FileSystem.copyAsync({
+	// 	from: asset.localUri ?? asset.uri,
+	// 	to: cachePath,
+	// });
+
 	const mmsbLogoBase64: string = await FileSystem.readAsStringAsync(asset.localUri ?? asset.uri, {
 		encoding: FileSystem.EncodingType.Base64,
 	});
