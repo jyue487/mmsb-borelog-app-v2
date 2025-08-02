@@ -113,14 +113,14 @@ export default function ProjectScreen() {
       {
         isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
       }
-      <Button
+      {/* <Button
         title='Clear Table'
         onPress={() => clearTable()}
-      />
-      <Button
+      /> */}
+      {/* <Button
         title='Drop Table'
         onPress={() => dropTable()}
-      />
+      /> */}
       </>
     );
   };

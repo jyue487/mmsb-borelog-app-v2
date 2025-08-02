@@ -110,14 +110,14 @@ export default function ProjectListScreen() {
           />
         )
       }
-      <Button
+      {/* <Button
         title='Clear Table'
         onPress={clearTable}
-      />
-      <Button
+      /> */}
+      {/* <Button
         title='Clear Database'
         onPress={clearDatabase}
-      />
+      /> */}
       </>
     );
   };
