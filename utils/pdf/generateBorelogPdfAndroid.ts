@@ -7,114 +7,117 @@ import { TEXT_SIZE_ANDROID, TEXT_SIZE_IOS, TEXT_SIZE_SMALLER_IOS, TEXT_SIZE_UNIT
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { generatePdfPages } from './generatePdfPages';
+import { throwError } from '../error/throwError';
 
 export async function generateBorelogPdfAndroid(project: Project, borehole: Borehole, blocks: Block[]) {
 	const scaleTickIndexWrapper: number[] = [0];
 	const asset: Asset = await Asset.fromModule(require('@/assets/images/mmsb-logo.png')).downloadAsync(); // Ensures it’s saved to a readable path
-	alert(asset.localUri ?? asset.uri);
+	try {
+		const cachePath = `${FileSystem.cacheDirectory}${asset.name}`;
+		await FileSystem.copyAsync({
+			from: asset.localUri ?? asset.uri,
+			to: cachePath,
+		});
 
-	// const cachePath = `${FileSystem.cacheDirectory}${asset.name}`;
-	// await FileSystem.copyAsync({
-	// 	from: asset.localUri ?? asset.uri,
-	// 	to: cachePath,
-	// });
+		const mmsbLogoBase64: string = await FileSystem.readAsStringAsync(cachePath, {
+			encoding: FileSystem.EncodingType.Base64,
+		});
 
-	const mmsbLogoBase64: string = await FileSystem.readAsStringAsync(asset.localUri ?? asset.uri, {
-		encoding: FileSystem.EncodingType.Base64,
-	});
-
-	return (
-		`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Borehole Log</title>
-  <style>
-	@page {
-      size: A4 portrait;
-      margin: 0;
-	  padding: 0;
-    }
-
-    @media print {
-      body {
-        width: 210mm;
-        box-sizing: border-box;
+		return (
+			`
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Borehole Log</title>
+	<style>
+		@page {
+		size: A4 portrait;
 		margin: 0;
 		padding: 0;
-      }
+		}
 
-      table {
-        page-break-inside: avoid;
+		@media print {
+		body {
+			width: 210mm;
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		table {
+			page-break-inside: avoid;
+			border-collapse: collapse;
+		}
+
+		h2 {
+			text-align: center;
+		}
+
+		.page {
+			page-break-after: always;
+			page-break-inside: avoid;
+			width: 210mm;
+			margin: 0;
+			padding-top: 5mm;
+			padding-left: 10mm;
+			padding-right: 0;
+		}
+		}
+		body { 
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+		table {
 		border-collapse: collapse;
-      }
-
-      h2 {
-        text-align: center;
-      }
-
-	  .page {
-	  	page-break-after: always;
-		page-break-inside: avoid;
-		width: 210mm;
-		margin: 0;
-		padding-top: 5mm;
-		padding-left: 10mm;
-		padding-right: 0;
-	  }
-    }
-    body { 
-		font-family: Arial, sans-serif;
-		margin: 0;
+		table-layout: fixed;
+		width: 100%;
+		font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
+		}
+		th {
+		border: 0.5pt solid #000;
 		padding: 0;
-	}
-    table {
-      border-collapse: collapse;
-	  table-layout: fixed;
-      width: 100%;
-      font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
-    }
-    th {
-      border: 0.5pt solid #000;
-      padding: 0;
-      text-align: center;
-      vertical-align: middle;
-    }
-    td {
-      border: 0.5pt solid #000;
-      padding-top: 3pt;
-      text-align: center;
-      vertical-align: top;
-    }
-	.page {
-		page-break-after: always;
-		page-break-inside: avoid;
-	}
-    .header, .sub-header {
-      text-align: left;
-      font-weight: bold;
-    }
-    .description-cell {
-      text-align: left;
-	  padding-left: 10pt;
-	  padding-right: 10pt;
-	  font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
-    }
-    .no-border {
-      border: none;
-    }
-  </style>
-</head>
-<body>
-	${generatePdfPages(project, borehole, blocks, scaleTickIndexWrapper, mmsbLogoBase64)}
-</body>
-</html>
+		text-align: center;
+		vertical-align: middle;
+		}
+		td {
+		border: 0.5pt solid #000;
+		padding-top: 3pt;
+		text-align: center;
+		vertical-align: top;
+		}
+		.page {
+			page-break-after: always;
+			page-break-inside: avoid;
+		}
+		.header, .sub-header {
+		text-align: left;
+		font-weight: bold;
+		}
+		.description-cell {
+		text-align: left;
+		padding-left: 10pt;
+		padding-right: 10pt;
+		font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
+		}
+		.no-border {
+		border: none;
+		}
+	</style>
+	</head>
+	<body>
+		${generatePdfPages(project, borehole, blocks, scaleTickIndexWrapper, mmsbLogoBase64)}
+	</body>
+	</html>
 
 
-		`
-	);
+			`
+		);
+	} catch (err) {
+		throwError(`${err}. Local URI: ${asset.localUri}. URI: ${asset.uri}.`);
+	}
 }
 
 /*
