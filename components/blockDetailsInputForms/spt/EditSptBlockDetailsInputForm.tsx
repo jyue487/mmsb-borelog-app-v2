@@ -1,13 +1,7 @@
 import React, { useState } from "react";
-import { Button, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
-import { Colour } from "@/constants/colour";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import {
-  DominantSoilType,
-  SecondarySoilType
-} from "@/constants/soil";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
@@ -55,7 +49,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [soilProperties, setSoilProperties] = useState<SoilProperties>(oldBlock.soilProperties);
 
 	return (
-		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
+		<View style={styles.blockDetailsInputForm}>
 			<SptBlockInputQuestions 
 				dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 				topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -144,6 +138,6 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 				title='Cancel'
 				onPress={() => setIsEditState(false)} 
 			/>
-		</GestureHandlerRootView>
+		</View>
 	);
 }

@@ -4,6 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local Imports
 import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
@@ -70,7 +71,7 @@ export default function BoreholeScreen() {
   };
 
   const renderFooter = () => (
-    <>
+    <View style={{ gap: 20 }}>
       {
         !isAddNewBlockButtonPressed && (
           <Button
@@ -123,62 +124,64 @@ export default function BoreholeScreen() {
           }
         }}
       />
-    </>
+    </View>
   );
 
 
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <FlatList
-        data={blocks}
-        keyExtractor={(block: Block) => block.id.toString()}
-        renderItem={({ item }) => {
-          switch (item.blockTypeId) {
-          case SPT_BLOCK_TYPE_ID:
-            return <SptBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />;
-          case CORING_BLOCK_TYPE_ID:
-            return <CoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CAVITY_BLOCK_TYPE_ID:
-            return <CavityBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case UD_BLOCK_TYPE_ID:
-            return <UdBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case MZ_BLOCK_TYPE_ID:
-            return <MzBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case PS_BLOCK_TYPE_ID:
-            return <PsBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case HA_BLOCK_TYPE_ID:
-            return <HaBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case WASH_BORING_BLOCK_TYPE_ID:
-            return <WashBoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CONCRETE_SLAB_BLOCK_TYPE_ID:
-            return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CONCRETE_PREMIX_BLOCK_TYPE_ID:
-            return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-            return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CUSTOM_BLOCK_TYPE_ID:
-            return <CustomBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          default:
-            throw new Error('Unknown block type');
-          }
-        }}
-        keyboardShouldPersistTaps="handled"
-        ListFooterComponent={renderFooter}
-        contentContainerStyle={{ paddingBottom: 500 }}
-        style={{ width: '100%' }}
-      />
-    </KeyboardAvoidingView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}>
+        <Stack.Screen
+          options={{
+            title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        />
+        <FlatList
+          data={blocks}
+          keyExtractor={(block: Block) => block.id.toString()}
+          renderItem={({ item }) => {
+            switch (item.blockTypeId) {
+            case SPT_BLOCK_TYPE_ID:
+              return <SptBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />;
+            case CORING_BLOCK_TYPE_ID:
+              return <CoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CAVITY_BLOCK_TYPE_ID:
+              return <CavityBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case UD_BLOCK_TYPE_ID:
+              return <UdBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case MZ_BLOCK_TYPE_ID:
+              return <MzBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case PS_BLOCK_TYPE_ID:
+              return <PsBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case HA_BLOCK_TYPE_ID:
+              return <HaBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case WASH_BORING_BLOCK_TYPE_ID:
+              return <WashBoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CONCRETE_SLAB_BLOCK_TYPE_ID:
+              return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CONCRETE_PREMIX_BLOCK_TYPE_ID:
+              return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case END_OF_BOREHOLE_BLOCK_TYPE_ID:
+              return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CUSTOM_BLOCK_TYPE_ID:
+              return <CustomBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+            default:
+              throw new Error('Unknown block type');
+            }
+          }}
+          keyboardShouldPersistTaps="handled"
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={{ paddingBottom: 500 }}
+          style={{ width: '100%' }}
+        />
+      </KeyboardAvoidingView>
+    </GestureHandlerRootView>
   );
 }
 

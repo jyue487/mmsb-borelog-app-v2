@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
@@ -29,7 +28,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 	const [rockProperties, setRockProperties] = useState<RockProperties>(oldBlock.rockProperties);
 
 	return (
-		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
+		<View style={styles.blockDetailsInputForm}>
 			<CoringBlockInputQuestions 
 				dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 				topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -72,6 +71,6 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 				title='Cancel'
 				onPress={() => setIsEditState(false)} 
 			/>
-		</GestureHandlerRootView>
+		</View>
 	);
 }

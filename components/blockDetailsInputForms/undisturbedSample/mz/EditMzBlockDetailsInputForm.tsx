@@ -1,21 +1,11 @@
 import React, { useState } from "react";
-import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { Colour } from "@/constants/colour";
-import {
-    DominantSoilType,
-    SecondarySoilType
-} from "@/constants/soil";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, MZ_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { MzBlock } from "@/interfaces/MzBlock";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { checkAndReturnUndisturbedSampleDescription } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleDescription";
-import { roundToDecimalPoint, stringIsNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
-import { SoilPropertiesInputQuestions } from "../../../inputQuestions/SoilPropertiesInputQuestions";
+import { roundToDecimalPoint } from "@/utils/numbers";
 import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
 import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
 import { ColourProperties } from "@/interfaces/ColourProperties";
@@ -40,7 +30,7 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
   const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>(oldBlock.bottomSoilProperties);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <UndisturbedSampleInputQuestions 
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -89,6 +79,6 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

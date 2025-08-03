@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SQLiteDatabase, SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // Local Imports
 import { AddBoreholeInputForm } from '@/components/borehole/AddBoreholeInputForm';
@@ -99,7 +99,7 @@ export default function ProjectScreen() {
 
   const renderFooter = () => {
     return (
-      <>
+      <View style={{ gap: 20 }}>
       {
         !isAddButtonPressed && (
           <Button
@@ -121,7 +121,7 @@ export default function ProjectScreen() {
         title='Drop Table'
         onPress={() => dropTable()}
       /> */}
-      </>
+      </View>
     );
   };
 

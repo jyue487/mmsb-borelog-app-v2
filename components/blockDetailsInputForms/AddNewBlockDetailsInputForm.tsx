@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button, FlatList, Keyboard, Text, TouchableOpacity, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { CoringAndCavityBlockDetailsInputForm } from '@/components/blockDetailsInputForms/coring&cavity/CoringAndCavityBlockDetailsInputForm';
 import { OthersInputForm } from "@/components/blockDetailsInputForms/others/OthersInputForm";
@@ -24,7 +23,7 @@ export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, borehole
   const [operationType, setOperationType] = useState<string>('Select Operation Type');
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <View>
         <TouchableOpacity 
           onPress={() => {
@@ -132,6 +131,6 @@ export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, borehole
           setIsAddNewBlockButtonPressed(false);
         }}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

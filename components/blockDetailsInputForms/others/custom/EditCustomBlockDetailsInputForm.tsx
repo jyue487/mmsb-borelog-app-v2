@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CUSTOM_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, Block } from "@/interfaces/Block";
 import { CustomBlock } from "@/interfaces/CustomBlock";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { stringToDecimalPoint } from "@/utils/numbers";
 import { checkAndReturnCustomBlock } from "@/utils/checkFunctions/checkAndReturnCustomBlock";
 
 export type EditCustomBlockDetailsInputFormProps = ViewProps & {
@@ -25,7 +22,7 @@ export function EditCustomBlockDetailsInputForm({ style, blocks, setBlocks, oldB
   const [customOperationType, setCustomOperationType] = useState<string>(oldBlock.description);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text>Top Depth(m): </Text>
@@ -72,6 +69,6 @@ export function EditCustomBlockDetailsInputForm({ style, blocks, setBlocks, oldB
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

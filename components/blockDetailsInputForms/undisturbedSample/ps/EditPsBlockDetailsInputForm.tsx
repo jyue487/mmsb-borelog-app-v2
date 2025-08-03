@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
@@ -31,7 +30,7 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
   const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>(oldBlock.bottomSoilProperties);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <UndisturbedSampleInputQuestions 
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -80,6 +79,6 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

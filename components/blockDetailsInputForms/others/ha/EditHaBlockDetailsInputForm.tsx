@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
 import { HaBlockInputQuestions } from "@/components/inputQuestions/HaBlockInputQuestions";
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
@@ -27,7 +26,7 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
   const [soilProperties, setSoilProperties] = useState<SoilProperties>(oldBlock.soilProperties);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <HaBlockInputQuestions 
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -57,6 +56,6 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

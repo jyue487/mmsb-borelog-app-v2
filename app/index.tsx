@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
@@ -91,7 +91,7 @@ export default function ProjectListScreen() {
 
   const renderFooter = () => {
     return (
-      <>
+      <View style={{ gap: 20 }}>
       {
         !isAddButtonPressed && (
           <Button
@@ -118,7 +118,7 @@ export default function ProjectListScreen() {
         title='Clear Database'
         onPress={clearDatabase}
       /> */}
-      </>
+      </View>
     );
   };
 

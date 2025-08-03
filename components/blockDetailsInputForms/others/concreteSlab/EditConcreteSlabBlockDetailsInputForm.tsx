@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, CONCRETE_SLAB_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { ConcreteSlabBlock } from "@/interfaces/ConcreteSlabBlock";
@@ -22,7 +21,7 @@ export function EditConcreteSlabBlockDetailsInputForm({ style, blocks, setBlocks
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(oldBlock.baseDepthInMetres.toFixed(3));
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
@@ -78,6 +77,6 @@ export function EditConcreteSlabBlockDetailsInputForm({ style, blocks, setBlocks
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

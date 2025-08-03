@@ -1,13 +1,10 @@
 import React, { useState } from "react";
-import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, Block } from "@/interfaces/Block";
 import { CavityBlock } from "@/interfaces/CavityBlock";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { roundToDecimalPoint } from "@/utils/numbers";
 import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
 import { checkAndReturnCavityBlock } from "@/utils/checkFunctions/checkAndReturnCavityBlock";
@@ -26,7 +23,7 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
   const [description, setDescription] = useState<string>(oldBlock.description); 
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <CavityBlockInputQuestions 
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -52,6 +49,6 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

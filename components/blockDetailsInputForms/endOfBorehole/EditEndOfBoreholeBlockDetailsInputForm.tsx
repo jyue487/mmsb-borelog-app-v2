@@ -4,8 +4,7 @@ import { BaseBlock, Block } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { checkAndReturnEndOfBoreholeBlock } from "@/utils/checkFunctions/checkAndReturnEndOfBoreholeBlock";
 import { useState } from "react";
-import { Button, ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, ViewProps } from "react-native";
 
 export type EditEndOfBoreholeBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -27,7 +26,7 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
   const [remarks, setRemarks] = useState<string>(oldBlock.remarks);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <EndOfBoreholeInputQuestions 
         blocks={blocks}
         otherInstallations={otherInstallations} setOtherInstallations={setOtherInstallations}
@@ -50,6 +49,6 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
           setIsEditState(false);
         }}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }
