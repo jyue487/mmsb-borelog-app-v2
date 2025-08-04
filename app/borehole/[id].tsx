@@ -22,11 +22,18 @@ import { WashBoringBlockComponent } from '@/components/blockComponents/WashBorin
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
 import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
+import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
+import { FallingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/FallingHeadPermeabilityTestBlockComponent';
+import { RisingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/RisingHeadPermeabilityTestBlockComponent';
+import { ConstantHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/ConstantHeadPermeabilityTestBlockComponent';
+import { LugeonTestBlockComponent } from '@/components/blockComponents/LugeonTestBlockComponent';
+import { PressuremeterTestBlockComponent } from '@/components/blockComponents/PressuremeterTestBlockComponent';
 
 export default function BoreholeScreen() {
   const db: SQLiteDatabase = useSQLiteContext();
@@ -100,7 +107,7 @@ export default function BoreholeScreen() {
         title='Share'
         onPress={async () => {
           try {
-            const html = await generateBorelogPdfAndroid(project, borehole, blocks);
+            const html = (Platform.OS === 'ios') ? await generateBorelogPdfIos(project, borehole, blocks) : await generateBorelogPdfAndroid(project, borehole, blocks);
             const { uri } = await Print.printToFileAsync({
               html,
               base64: false,
@@ -148,29 +155,41 @@ export default function BoreholeScreen() {
           renderItem={({ item }) => {
             switch (item.blockTypeId) {
             case SPT_BLOCK_TYPE_ID:
-              return <SptBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />;
+              return <SptBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />;
             case CORING_BLOCK_TYPE_ID:
-              return <CoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <CoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case CAVITY_BLOCK_TYPE_ID:
-              return <CavityBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <CavityBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case UD_BLOCK_TYPE_ID:
-              return <UdBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <UdBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case MZ_BLOCK_TYPE_ID:
-              return <MzBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <MzBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case PS_BLOCK_TYPE_ID:
-              return <PsBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <PsBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case HA_BLOCK_TYPE_ID:
-              return <HaBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <HaBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case WASH_BORING_BLOCK_TYPE_ID:
-              return <WashBoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <WashBoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case CONCRETE_SLAB_BLOCK_TYPE_ID:
-              return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <ConcreteSlabBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case CONCRETE_PREMIX_BLOCK_TYPE_ID:
-              return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <ConcretePremixBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-              return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <EndOfBoreholeBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case CUSTOM_BLOCK_TYPE_ID:
-              return <CustomBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
+              return <CustomBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
+              return <VaneShearTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+              return <FallingHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+              return <RisingHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+              return <ConstantHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case LUGEON_TEST_BLOCK_TYPE_ID:
+              return <LugeonTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
+              return <PressuremeterTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             default:
               throw new Error('Unknown block type');
             }
@@ -194,15 +213,4 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     fontSize: 20,
   },
-  block: {
-    width: '100%',
-    borderWidth: 1,
-  },
-  listItem: {
-		borderLeftWidth: 0.25,
-		borderRightWidth: 0.25,
-		borderBottomWidth: 0.25,
-		alignItems: 'center',
-		padding: 10,
-	}
 });

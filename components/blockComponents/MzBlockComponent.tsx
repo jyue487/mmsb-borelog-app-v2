@@ -6,6 +6,7 @@ import { MzBlock } from '@/interfaces/MzBlock';
 import { useState } from "react";
 import { EditMzBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/mz/EditMzBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 
 export type MzBlockProps = ViewProps & {
 	block: BaseBlock & MzBlock;
@@ -13,7 +14,7 @@ export type MzBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function MzBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: MzBlockProps) {
+export function MzBlockComponent({ block, blocks, setBlocks, ...otherProps }: MzBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -31,7 +32,7 @@ export function MzBlockComponent({ style, block, blocks, setBlocks, ...otherProp
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

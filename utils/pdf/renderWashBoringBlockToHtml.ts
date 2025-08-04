@@ -12,7 +12,7 @@ export function renderWashBoringBlockToHtml(block: BaseBlock & WashBoringBlock, 
         <tr>
             ${renderDayWorkStatusToHtml(block.dayWorkStatus)}
             <td></td>
-            ${renderDepthInfoToHtml(block)}
+            <td>${renderDepthInfoToHtml(block)}</td>
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
             ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
             <td></td>

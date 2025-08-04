@@ -6,6 +6,7 @@ import { BaseBlock, Block } from "@/interfaces/Block";
 import { SptBlock } from '@/interfaces/SptBlock';
 import { useState } from "react";
 import { EditSptBlockDetailsInputForm } from "../blockDetailsInputForms/spt/EditSptBlockDetailsInputForm";
+import { styles } from "@/constants/styles";
 
 export type SptBlockProps = ViewProps & {
 	block: BaseBlock & SptBlock;
@@ -13,7 +14,7 @@ export type SptBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function SptBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: SptBlockProps) {
+export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: SptBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 
 	if (isEditState) {
@@ -31,7 +32,7 @@ export function SptBlockComponent({ style, block, blocks, setBlocks, ...otherPro
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
@@ -86,7 +87,7 @@ export function SptBlockComponent({ style, block, blocks, setBlocks, ...otherPro
 						<Text>{block.sptNValue === 50 ? (block.totalMainPenetrationInMillimetres) : null}
 						</Text>
 					</View>
-					<View style={{ flex: 1, borderLeftWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 1.5, borderLeftWidth: 0.25, alignItems: 'center' }}>
 						<Text>R%</Text>
 						<Text>{block.recoveryInPercentage.toFixed(1)}</Text>
 					</View>

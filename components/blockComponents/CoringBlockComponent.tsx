@@ -6,6 +6,7 @@ import { CoringBlock } from '@/interfaces/CoringBlock';
 import { useState } from "react";
 import { EditCoringBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/coring/EditCoringBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 
 export type CoringBlockProps = ViewProps & {
 	block: BaseBlock & CoringBlock;
@@ -13,7 +14,7 @@ export type CoringBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function CoringBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: CoringBlockProps) {
+export function CoringBlockComponent({ block, blocks, setBlocks, ...otherProps }: CoringBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -31,7 +32,7 @@ export function CoringBlockComponent({ style, block, blocks, setBlocks, ...other
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

@@ -5,6 +5,7 @@ import { CavityBlock } from '@/interfaces/CavityBlock';
 import { useState } from "react";
 import { EditCavityBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/cavity/EditCavityBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 
 export type CavityBlockProps = ViewProps & {
 	block: BaseBlock & CavityBlock;
@@ -12,7 +13,7 @@ export type CavityBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function CavityBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: CavityBlockProps) {
+export function CavityBlockComponent({ block, blocks, setBlocks, ...otherProps }: CavityBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -30,7 +31,7 @@ export function CavityBlockComponent({ style, block, blocks, setBlocks, ...other
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

@@ -5,6 +5,7 @@ import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { useState } from "react";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { EditConcretePremixBlockDetailsInputForm } from "../blockDetailsInputForms/others/concretePremix/EditConcretePremixBlockDetailsInputForm";
+import { styles } from "@/constants/styles";
 
 export type ConcretePremixBlockProps = ViewProps & {
 	block: BaseBlock & ConcretePremixBlock;
@@ -12,7 +13,7 @@ export type ConcretePremixBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function ConcretePremixBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: ConcretePremixBlockProps) {
+export function ConcretePremixBlockComponent({ block, blocks, setBlocks, ...otherProps }: ConcretePremixBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -30,7 +31,7 @@ export function ConcretePremixBlockComponent({ style, block, blocks, setBlocks, 
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

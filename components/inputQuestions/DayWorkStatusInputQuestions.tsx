@@ -32,14 +32,14 @@ export function DayWorkStatusInputQuestions({
 		setWaterLevelInMetresStr(waterLevelInMetresStr);
 		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
 			...dayWorkStatus,
-			waterLevelInMetres: stringToDecimalPoint(waterLevelInMetresStr, 3),
+			waterLevelInMetres: (waterLevelInMetresStr.length === 0) ? null : stringToDecimalPoint(waterLevelInMetresStr, 3),
 		}));
 	};
 	const saveCasingDepthInMetresStr = (casingDepthInMetresStr: string) => {
 		setCasingDepthInMetresStr(casingDepthInMetresStr);
 		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
 			...dayWorkStatus,
-			casingDepthInMetres: stringToDecimalPoint(casingDepthInMetresStr, 3),
+			casingDepthInMetres: (casingDepthInMetresStr.length === 0) ? null : stringToDecimalPoint(casingDepthInMetresStr, 3),
 		}));
 	};
 

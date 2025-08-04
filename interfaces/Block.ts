@@ -9,7 +9,13 @@ import { PsBlock } from '@/interfaces/PsBlock';
 import { SptBlock } from '@/interfaces/SptBlock';
 import { UdBlock } from '@/interfaces/UdBlock';
 import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
-import { CustomBlock } from './CustomBlock';
+import { CustomBlock } from '@/interfaces/CustomBlock';
+import { VaneShearTestBlock } from '@/interfaces/VaneShearTestBlock';
+import { FallingHeadPermeabilityTestBlock } from './FallingHeadPermeabilityTestBlock';
+import { RisingHeadPermeabilityTestBlock } from './RisingHeadPermeabilityTestBlock';
+import { ConstantHeadPermeabilityTestBlock } from './ConstantHeadPermeabilityTestBlock';
+import { LugeonTestBlock } from './LugeonTestBlock';
+import { PressuremeterTestBlock } from './PressuremeterTestBlock';
 
 export const SPT_BLOCK_TYPE_ID = 1 as const;
 export const CORING_BLOCK_TYPE_ID = 2 as const;
@@ -23,6 +29,13 @@ export const CONCRETE_SLAB_BLOCK_TYPE_ID = 9 as const;
 export const CONCRETE_PREMIX_BLOCK_TYPE_ID = 10 as const;
 export const END_OF_BOREHOLE_BLOCK_TYPE_ID = 11 as const;
 export const CUSTOM_BLOCK_TYPE_ID = 12 as const;
+export const VANE_SHEAR_TEST_BLOCK_TYPE_ID = 13 as const;
+export const FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID = 14 as const;
+export const RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID = 15 as const;
+export const CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID = 16 as const;
+export const LUGEON_TEST_BLOCK_TYPE_ID = 17 as const;
+export const PRESSUREMETER_TEST_BLOCK_TYPE_ID = 18 as const;
+export const CUSTOM_TEST_BLOCK_TYPE_ID = 19 as const;
 
 export const BLOCK_TYPE_ID_LIST = [
   SPT_BLOCK_TYPE_ID,
@@ -37,6 +50,13 @@ export const BLOCK_TYPE_ID_LIST = [
   CONCRETE_PREMIX_BLOCK_TYPE_ID,
   END_OF_BOREHOLE_BLOCK_TYPE_ID,
   CUSTOM_BLOCK_TYPE_ID,
+  VANE_SHEAR_TEST_BLOCK_TYPE_ID,
+  FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  LUGEON_TEST_BLOCK_TYPE_ID,
+  PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+  CUSTOM_TEST_BLOCK_TYPE_ID,
 ] as const;
 export type BlockTypeId = typeof BLOCK_TYPE_ID_LIST[number];
 
@@ -52,7 +72,14 @@ export interface Blocks {
   ConcreteSlab: ConcreteSlabBlock;
   ConcretePremix: ConcretePremixBlock;
   EndOfBorehole: EndOfBoreholeBlock;
-  Custom: CustomBlock
+  Custom: CustomBlock;
+  VaneShearTest: VaneShearTestBlock;
+  FallingHeadPermeabilityTest: FallingHeadPermeabilityTestBlock;
+  RisingHeadPermeabilityTest: RisingHeadPermeabilityTestBlock;
+  ConstantHeadPermeabilityTest: ConstantHeadPermeabilityTestBlock;
+  LugeonTest: LugeonTestBlock;
+  PressuremeterTest: PressuremeterTestBlock;
+  
 }
 
 export interface BaseBlock {

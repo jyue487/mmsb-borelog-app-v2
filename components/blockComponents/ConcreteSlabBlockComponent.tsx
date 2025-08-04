@@ -5,6 +5,7 @@ import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { useState } from "react";
 import { EditConcreteSlabBlockDetailsInputForm } from "../blockDetailsInputForms/others/concreteSlab/EditConcreteSlabBlockDetailsInputForm";
+import { styles } from "@/constants/styles";
 
 export type ConcreteSlabBlockProps = ViewProps & {
 	block: BaseBlock & ConcreteSlabBlock;
@@ -12,7 +13,7 @@ export type ConcreteSlabBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function ConcreteSlabBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: ConcreteSlabBlockProps) {
+export function ConcreteSlabBlockComponent({ block, blocks, setBlocks, ...otherProps }: ConcreteSlabBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -30,7 +31,7 @@ export function ConcreteSlabBlockComponent({ style, block, blocks, setBlocks, ..
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

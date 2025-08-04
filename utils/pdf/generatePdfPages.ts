@@ -1,4 +1,4 @@
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { Borehole } from "@/interfaces/Borehole";
 import { Project } from "@/interfaces/Project";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
@@ -16,10 +16,84 @@ import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
 import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
 import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
 import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
+import { renderVaneShearTestBlockToHtml } from "./renderVaneShearTestBlockToHtml";
+import { renderFallingHeadPermeabilityTestBlockToHtml } from "./renderFallingHeadPermeabilityTestBlockToHtml";
+import { renderRisingHeadPermeabilityTestBlockToHtml } from "./renderRisingHeadPermeabilityTestBlockToHtml";
+import { renderConstantHeadPermeabilityTestBlockToHtml } from "./renderConstantHeadPermeabilityTestBlockToHtml";
+import { renderLugeonTestBlockToHtml } from "./renderLugeonTestBlockToHtml";
+import { renderPressuremeterTestBlockToHtml } from "./renderPressuremeterTestBlockToHtml";
 
 export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
     let blockIndex : number = 0;
+
+    const checkAndReturnSptSpecialCaseResult = (block: Block, nextBlock: Block | null, nextNextBlock: Block | null): string | null => {
+        if (
+            (
+                block.blockTypeId === SPT_BLOCK_TYPE_ID
+            )
+            && (
+                nextBlock !== null
+            )
+            && (
+                nextBlock.topDepthInMetres < block.baseDepthInMetres
+            )
+            && (
+                nextBlock.blockTypeId === FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+            )
+        ) {
+            const blockHeightInTicks: number = (!nextNextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextNextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
+            return renderSptBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper, nextBlock);
+        }
+        return null;
+    };
+    const checkAndReturnUdSpecialCaseResult = (block: Block, nextBlock: Block | null, nextNextBlock: Block | null): string | null => {
+        if (
+            (
+                block.blockTypeId === UD_BLOCK_TYPE_ID
+            )
+            && (
+                nextBlock !== null
+            )
+            && (
+                nextBlock.topDepthInMetres < block.baseDepthInMetres
+            )
+            && (
+                nextBlock.blockTypeId === FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+            )
+        ) {
+            const blockHeightInTicks: number = (!nextNextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextNextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
+            return renderUdBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper, nextBlock);
+        }
+        return null;
+    };
+    const checkAndReturnCoringSpecialCaseResult = (block: Block, nextBlock: Block | null, nextNextBlock: Block | null): string | null => {
+        if (
+            (
+                block.blockTypeId === CORING_BLOCK_TYPE_ID
+            )
+            && (
+                nextBlock !== null
+            )
+            && (
+                nextBlock.topDepthInMetres < block.baseDepthInMetres
+            )
+            && (
+                nextBlock.blockTypeId === LUGEON_TEST_BLOCK_TYPE_ID
+            )
+        ) {
+            const blockHeightInTicks: number = (!nextNextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextNextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
+            return renderCoringBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper, nextBlock);
+        }
+        return null;
+    };
 
     const renderBlocksToHtml = () => {
         console.log('calling renderBlocksToHtml');
@@ -38,6 +112,27 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
             const i: number = blockIndex;
             const block: Block = blocks[i];
             const nextBlock: Block | null = (i + 1 < blocks.length) ? blocks[i + 1] : null;
+            const nextNextBlock: Block | null = (i + 2 < blocks.length) ? blocks[i + 2] : null;
+
+            const sptSpecialCaseResult: string | null = checkAndReturnSptSpecialCaseResult(block, nextBlock, nextNextBlock);
+            if (sptSpecialCaseResult !== null) {
+                result += sptSpecialCaseResult;
+                blockIndex += 2;
+                continue;
+            }
+            const udSpecialCaseResult: string | null = checkAndReturnUdSpecialCaseResult(block, nextBlock, nextNextBlock);
+            if (udSpecialCaseResult !== null) {
+                result += udSpecialCaseResult;
+                blockIndex += 2;
+                continue;
+            }
+            const coringSpecialCaseResult: string | null = checkAndReturnCoringSpecialCaseResult(block, nextBlock, nextNextBlock);
+            if (coringSpecialCaseResult !== null) {
+                result += coringSpecialCaseResult;
+                blockIndex += 2;
+                continue;
+            }
+
 
             const blockHeightInTicks: number = (!nextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
             const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
@@ -84,6 +179,24 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                 break;
             case CUSTOM_BLOCK_TYPE_ID:
                 result += renderCustomBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
+                result += renderVaneShearTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+                result += renderFallingHeadPermeabilityTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+                result += renderRisingHeadPermeabilityTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+                result += renderConstantHeadPermeabilityTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case LUGEON_TEST_BLOCK_TYPE_ID:
+                result += renderLugeonTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
+                result += renderPressuremeterTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             default:
                 break;

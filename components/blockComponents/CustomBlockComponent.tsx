@@ -5,6 +5,7 @@ import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { useState } from "react";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { EditCustomBlockDetailsInputForm } from "../blockDetailsInputForms/others/custom/EditCustomBlockDetailsInputForm";
+import { styles } from "@/constants/styles";
 
 export type CustomBlockProps = ViewProps & {
 	block: BaseBlock & CustomBlock;
@@ -12,7 +13,7 @@ export type CustomBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function CustomBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: CustomBlockProps) {
+export function CustomBlockComponent({ block, blocks, setBlocks, ...otherProps }: CustomBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -30,7 +31,7 @@ export function CustomBlockComponent({ style, block, blocks, setBlocks, ...other
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
