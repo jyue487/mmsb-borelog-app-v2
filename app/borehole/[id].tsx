@@ -107,7 +107,8 @@ export default function BoreholeScreen() {
         title='Share'
         onPress={async () => {
           try {
-            const html = (Platform.OS === 'ios') ? await generateBorelogPdfIos(project, borehole, blocks) : await generateBorelogPdfAndroid(project, borehole, blocks);
+            const sortedBlocks: Block[] = [...blocks].sort((a: Block, b: Block) => a.topDepthInMetres - b.topDepthInMetres);
+            const html = (Platform.OS === 'ios') ? await generateBorelogPdfIos(project, borehole, sortedBlocks) : await generateBorelogPdfAndroid(project, borehole, sortedBlocks);
             const { uri } = await Print.printToFileAsync({
               html,
               base64: false,
