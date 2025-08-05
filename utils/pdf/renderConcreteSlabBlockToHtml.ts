@@ -23,7 +23,6 @@ export function renderConcreteSlabBlockToHtml(block: BaseBlock & ConcreteSlabBlo
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

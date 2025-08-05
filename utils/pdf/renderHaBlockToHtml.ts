@@ -26,7 +26,6 @@ export function renderHaBlockToHtml(block: BaseBlock & HaBlock, numberOfTicksToR
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

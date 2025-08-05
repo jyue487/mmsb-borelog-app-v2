@@ -26,7 +26,6 @@ export function renderFallingHeadPermeabilityTestBlockToHtml(block: BaseBlock & 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

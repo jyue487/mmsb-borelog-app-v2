@@ -5,7 +5,7 @@ export function renderScaleTicksToHtml(numberOfTicksToRender: number, scaleTickI
         if (scaleTickIndexWrapper[0] % 10 === 0) {
             result += (
                 `
-                <div style="width: 21px; height: 7px; border-bottom: 0.7px solid #000; text-align: right; line-height: 1em; font-size: 6px;">${scaleTickIndexWrapper[0] / 10}</div>
+                <div style="width: 24px; height: 7px; border-bottom: 0.7px solid #000; text-align: right; line-height: 1em; font-size: 6px;">${scaleTickIndexWrapper[0] / 10}</div>
                 `
             );
         } else {
@@ -20,7 +20,7 @@ export function renderScaleTicksToHtml(numberOfTicksToRender: number, scaleTickI
     if (scaleTickIndexWrapper[0] % 10 === 0) {
         result += (
             `
-            <div style="width: 21px; height: 7px; text-align: right; line-height: 1em; font-size: 6px;">${scaleTickIndexWrapper[0] / 10}</div>
+            <div style="width: 24px; height: 7px; text-align: right; line-height: 1em; font-size: 6px;">${scaleTickIndexWrapper[0] / 10}</div>
             `
         );
     } else {

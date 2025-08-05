@@ -26,7 +26,6 @@ export function renderPressuremeterTestBlockToHtml(block: BaseBlock & Pressureme
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

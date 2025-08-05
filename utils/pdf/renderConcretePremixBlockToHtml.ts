@@ -23,7 +23,6 @@ export function renderConcretePremixBlockToHtml(block: BaseBlock & ConcretePremi
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

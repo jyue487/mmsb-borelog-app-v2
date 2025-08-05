@@ -22,6 +22,7 @@ import { renderRisingHeadPermeabilityTestBlockToHtml } from "./renderRisingHeadP
 import { renderConstantHeadPermeabilityTestBlockToHtml } from "./renderConstantHeadPermeabilityTestBlockToHtml";
 import { renderLugeonTestBlockToHtml } from "./renderLugeonTestBlockToHtml";
 import { renderPressuremeterTestBlockToHtml } from "./renderPressuremeterTestBlockToHtml";
+import { TEXT_SIZE_SMALL_ANDROID, TEXT_SIZE_SMALLER_ANDROID, TEXT_SIZE_UNIT } from "@/constants/textSize";
 
 export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
     let pageIndex: number = 1;
@@ -221,46 +222,30 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                 <div>
                     <table>
                         <tr>
-                            <th rowspan="4" style="width: 5%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                DATE & TIME
-                            </th>
-                            <th rowspan="4" style="width: 7%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
-                            <th rowspan="3" style="width: 12%;">
-                                <div style="white-space: nowrap;">
-                                    DEPTH
-                                </div>
-                            </th>
-                            <th rowspan="3" style="width: 5%;">
-                                <div style="white-space: nowrap;">
-                                    WL
-                                </div>
-                            </th>
+                            <th rowspan="4" style="width: 5.8%;">DATE<br>&<br>TIME</th>
+                            <th rowspan="4" style="width: 6.5%; font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">SAMPLING<br><br>TESTING<br><br>CORING</th>
+                            <th rowspan="3" style="width: 12%;">DEPTH</th>
+                            <th rowspan="3" style="width: 5%;">WL</th>
                             <th rowspan="4">DESCRIPTION</th>
-                            <th rowspan="3" style="width: 4%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                THICKNESS
-                            </th>
-                            <th colspan="6" style="width: 24%;">SPT</th>
+                            <th colspan="6" style="width: 28%;">SPT</th>
                             <th rowspan="4" style="width: 5.5%;">SPT<br>(N)</th>
-                            <th rowspan="3" style="width: 4%;">R/r</th>
-                            <th rowspan="3" style="width: 3%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                SCALE
-                            </th>
+                            <th rowspan="3" style="width: 4.2%;">R/r</th>
+                            <th rowspan="3" style="width: 3.5%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">SCALE</th>
                         </tr>
                         <tr>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
                         </tr>
                         <tr>
                             <th colspan="2" style="height: 40px;">CORE<br/>RUN</th>
+                            <th colspan="2" style="height: 40px;">T.C.R.</th>
                             <th colspan="2" style="height: 40px;">R.Q.D.</th>
-                            <th colspan="2" style="height: 40px;">C.R.</th>
                         </tr>
                         <tr>
-                            <th>m</th>
                             <th>m</th>
                             <th>m</th>
                             <th colspan="2">m</th>

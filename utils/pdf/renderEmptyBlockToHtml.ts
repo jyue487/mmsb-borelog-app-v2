@@ -20,7 +20,6 @@ export function renderEmptyBlockToHtml(numberOfTicksToRender: number, scaleTickI
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

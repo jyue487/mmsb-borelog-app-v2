@@ -26,7 +26,6 @@ export function renderRisingHeadPermeabilityTestBlockToHtml(block: BaseBlock & R
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

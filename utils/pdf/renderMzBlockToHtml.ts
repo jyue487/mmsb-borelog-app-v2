@@ -25,7 +25,6 @@ export function renderMzBlockToHtml(block: BaseBlock & MzBlock, numberOfTicksToR
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             <td>${block.recoveryInPercentage.toFixed(1)}</td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>

@@ -26,7 +26,6 @@ export function renderConstantHeadPermeabilityTestBlockToHtml(block: BaseBlock &
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

@@ -23,7 +23,6 @@ export function renderCustomBlockToHtml(block: BaseBlock & CustomBlock, numberOf
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

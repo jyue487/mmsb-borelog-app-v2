@@ -34,7 +34,6 @@ export function renderSptBlockToHtml(
             </td>
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
             ${renderDescriptionToHtml(numberOfTicksToRender, block.description + ((!testBlock) ? '' : `<br><i>${testBlock.description}</i>`))}
-            <td></td>
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
                     <div>${block.seatingIncBlows1}</div>

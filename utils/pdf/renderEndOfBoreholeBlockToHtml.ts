@@ -20,7 +20,6 @@ export function renderEndOfBoreholeBlockToHtml(block: BaseBlock & EndOfBoreholeB
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

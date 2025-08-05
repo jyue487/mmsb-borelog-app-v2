@@ -23,7 +23,6 @@ export function renderWashBoringBlockToHtml(block: BaseBlock & WashBoringBlock, 
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

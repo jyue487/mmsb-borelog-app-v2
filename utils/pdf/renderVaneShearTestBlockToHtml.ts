@@ -26,7 +26,6 @@ export function renderVaneShearTestBlockToHtml(block: BaseBlock & VaneShearTestB
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             ${renderScaleTicksToHtml(numberOfTicksToRender, scaleTickIndexWrapper)}
         </tr>
         `

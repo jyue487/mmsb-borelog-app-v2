@@ -3,10 +3,10 @@ export function renderFooterToHtml() {
         `
         <table class="footer-info" style="font-size: 4pt;">
             <tr>
-                <td style="width: 30%;">NOTES:</td>
-                <td>Cohesive Soil (N)</td>
-                <td>Non Cohesive Soil (N)</td>
-                <td rowspan="9" style="text-align: left">
+                <td style="width: 26%;">NOTES:</td>
+                <td style="width: 14%;">Cohesive Soil (N)</td>
+                <td style="width: 17%;">Non Cohesive Soil (N)</td>
+                <td rowspan="9" style="text-align: left; padding: 5pt;">
                     Contractor:
                     <br>
                     <br>
@@ -20,7 +20,7 @@ export function renderFooterToHtml() {
                     <br>
                     <br>
                 </td>
-                <td rowspan="9" style="text-align: left">
+                <td rowspan="9" style="text-align: left; padding: 5pt;">
                     Logged by:
                     <br>
                     <br>

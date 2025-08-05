@@ -71,22 +71,22 @@ export async function generateBorelogPdfAndroid(project: Project, borehole: Bore
 			padding: 0;
 		}
 		table {
-		border-collapse: collapse;
-		table-layout: fixed;
-		width: 100%;
-		font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
+			border-collapse: collapse;
+			table-layout: fixed;
+			width: 100%;
+			font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
 		}
 		th {
-		border: 0.5pt solid #000;
-		padding: 0;
-		text-align: center;
-		vertical-align: middle;
+			border: 0.5pt solid #000;
+			padding: 0;
+			text-align: center;
+			vertical-align: middle;
 		}
 		td {
-		border: 0.5pt solid #000;
-		padding-top: 3pt;
-		text-align: center;
-		vertical-align: top;
+			border: 0.5pt solid #000;
+			padding-top: 3pt;
+			text-align: center;
+			vertical-align: top;
 		}
 		.page {
 			page-break-after: always;
