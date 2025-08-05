@@ -7,33 +7,33 @@ import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, Vie
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local Imports
+import { AsphaltBlockComponent } from '@/components/blockComponents/AsphaltBlockComponent';
 import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
-import { ConcretePremixBlockComponent } from '@/components/blockComponents/ConcretePremixBlockComponent';
 import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
+import { ConstantHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/ConstantHeadPermeabilityTestBlockComponent';
 import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
 import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
 import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent';
+import { FallingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/FallingHeadPermeabilityTestBlockComponent';
 import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
+import { LugeonTestBlockComponent } from '@/components/blockComponents/LugeonTestBlockComponent';
 import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
+import { PressuremeterTestBlockComponent } from '@/components/blockComponents/PressuremeterTestBlockComponent';
 import { PsBlockComponent } from '@/components/blockComponents/PsBlockComponent';
+import { RisingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/RisingHeadPermeabilityTestBlockComponent';
 import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponent';
 import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
+import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { ASPHALT_BLOCK_TYPE_ID, Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
-import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
-import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
 import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
-import { FallingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/FallingHeadPermeabilityTestBlockComponent';
-import { RisingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/RisingHeadPermeabilityTestBlockComponent';
-import { ConstantHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/ConstantHeadPermeabilityTestBlockComponent';
-import { LugeonTestBlockComponent } from '@/components/blockComponents/LugeonTestBlockComponent';
-import { PressuremeterTestBlockComponent } from '@/components/blockComponents/PressuremeterTestBlockComponent';
+import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 
 export default function BoreholeScreen() {
   const db: SQLiteDatabase = useSQLiteContext();
@@ -172,8 +172,8 @@ export default function BoreholeScreen() {
               return <WashBoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case CONCRETE_SLAB_BLOCK_TYPE_ID:
               return <ConcreteSlabBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case CONCRETE_PREMIX_BLOCK_TYPE_ID:
-              return <ConcretePremixBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case ASPHALT_BLOCK_TYPE_ID:
+              return <AsphaltBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case END_OF_BOREHOLE_BLOCK_TYPE_ID:
               return <EndOfBoreholeBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
             case CUSTOM_BLOCK_TYPE_ID:

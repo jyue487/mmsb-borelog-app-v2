@@ -1,30 +1,30 @@
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { TEXT_SIZE_SMALLER_ANDROID, TEXT_SIZE_UNIT } from "@/constants/textSize";
+import { ASPHALT_BLOCK_TYPE_ID, Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { Borehole } from "@/interfaces/Borehole";
 import { Project } from "@/interfaces/Project";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
+import { renderAsphaltBlockToHtml } from "./renderAsphaltBlockToHtml";
 import { renderCavityBlockToHtml } from "./renderCavityBlockToHtml";
-import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
 import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
+import { renderConstantHeadPermeabilityTestBlockToHtml } from "./renderConstantHeadPermeabilityTestBlockToHtml";
 import { renderCoringBlockToHtml } from "./renderCoringBlockToHtml";
 import { renderCustomBlockToHtml } from "./renderCustomBlockToHtml";
 import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
 import { renderEndOfBoreholeBlockToHtml } from "./renderEndOfBoreholeBlockToHtml";
+import { renderFallingHeadPermeabilityTestBlockToHtml } from "./renderFallingHeadPermeabilityTestBlockToHtml";
 import { renderFooterToHtml } from "./renderFooterToHtml";
 import { renderHaBlockToHtml } from "./renderHaBlockToHtml";
 import { renderHeaderToHtml } from "./renderHeaderToHtml";
-import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
-import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
-import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
-import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
-import { renderVaneShearTestBlockToHtml } from "./renderVaneShearTestBlockToHtml";
-import { renderFallingHeadPermeabilityTestBlockToHtml } from "./renderFallingHeadPermeabilityTestBlockToHtml";
-import { renderRisingHeadPermeabilityTestBlockToHtml } from "./renderRisingHeadPermeabilityTestBlockToHtml";
-import { renderConstantHeadPermeabilityTestBlockToHtml } from "./renderConstantHeadPermeabilityTestBlockToHtml";
 import { renderLugeonTestBlockToHtml } from "./renderLugeonTestBlockToHtml";
+import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
 import { renderPressuremeterTestBlockToHtml } from "./renderPressuremeterTestBlockToHtml";
-import { TEXT_SIZE_SMALL_ANDROID, TEXT_SIZE_SMALLER_ANDROID, TEXT_SIZE_UNIT } from "@/constants/textSize";
+import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
+import { renderRisingHeadPermeabilityTestBlockToHtml } from "./renderRisingHeadPermeabilityTestBlockToHtml";
+import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
+import { renderVaneShearTestBlockToHtml } from "./renderVaneShearTestBlockToHtml";
+import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
 
-export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
+export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string): string {
     let pageIndex: number = 1;
     let blockIndex : number = 0;
 
@@ -172,8 +172,8 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
             case CONCRETE_SLAB_BLOCK_TYPE_ID:
                 result += renderConcreteSlabBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case CONCRETE_PREMIX_BLOCK_TYPE_ID:
-                result += renderConcretePremixBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+            case ASPHALT_BLOCK_TYPE_ID:
+                result += renderAsphaltBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             case END_OF_BOREHOLE_BLOCK_TYPE_ID:
                 result += renderEndOfBoreholeBlockToHtml(block, pageIndex * 90 - scaleTickIndexWrapper[0], scaleTickIndexWrapper);
@@ -213,12 +213,13 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
         return result;
     };
 
-    let pages: string = ``;
+    let pages: ((pageNumber: number, totalNumberOfPages: number) => string)[] = [];
     while (blockIndex < blocks.length) {
-        const page: string = (
+        const blocksInHtml: string = renderBlocksToHtml();
+        const page = (pageNumber: number, totalNumberOfPages: number) => (
             `
             <div class="page">
-                ${renderHeaderToHtml(project, borehole, mmsbLogoBase64)}
+                ${renderHeaderToHtml(project, borehole, mmsbLogoBase64, pageNumber, totalNumberOfPages)}
                 <div>
                     <table>
                         <tr>
@@ -255,19 +256,27 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                             <th>m</th>
                         </tr>
                         
-                        ${renderBlocksToHtml()}
+                        ${blocksInHtml}
                     </table>
                 </div>
                 ${renderFooterToHtml()}
             </div>
             `
         );
-        pages += page;
+        pages.push(page);
         scaleTickIndexWrapper[0] = pageIndex * 90;
         ++pageIndex;
     }
 
-    return pages;
+    const totalNumberOfPages: number = pages.length;
+    let result: string = ``;
+    for (let i = 0; i < pages.length; ++i) {
+        const pageNumber: number = i + 1;
+        const page = pages[i];
+        result += page(pageNumber, totalNumberOfPages);
+    }
+
+    return result;
 }
 
 

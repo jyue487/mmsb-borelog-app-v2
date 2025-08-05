@@ -45,7 +45,7 @@ export function UdBlockComponent({ block, blocks, setBlocks, ...otherProps }: Ud
 			<View style={{ flex: 1, gap: 20  }}>
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
 				<View style={{ flex: 1, flexDirection: 'row' }}>
-					<View style={{ flex: 7, borderRightWidth: 0.25 }}>
+					<View style={{ flex: 4, borderRightWidth: 0.25 }}>
 						<Text>{block.soilDescription}</Text>
 					</View>
 					<View style={{ flex: 1, borderLeftWidth: 0.25, alignItems: 'center' }}>

@@ -2,7 +2,7 @@ import { TEXT_SIZE_ANDROID, TEXT_SIZE_UNIT } from "@/constants/textSize";
 import { Borehole } from "@/interfaces/Borehole";
 import { Project } from "@/interfaces/Project";
 
-export function renderHeaderToHtml(project: Project, borehole: Borehole, mmsbLogoBase64: string) {
+export function renderHeaderToHtml(project: Project, borehole: Borehole, mmsbLogoBase64: string, pageNumber: number, totalNumberOfPages: number) {
     return (
         `
         <table 
@@ -20,14 +20,14 @@ export function renderHeaderToHtml(project: Project, borehole: Borehole, mmsbLog
 					</div>
 				</td>
 				<td style="vertical-align: middle;">
-					<div style="white-space: pre;">   SHEET         of</div>
+					<div style="white-space: pre;">SHEET   ${pageNumber}   of   ${totalNumberOfPages}</div>
 				</td>
 			</tr>
 			<tr>
 				<td class="header-left-form" style="padding: 9pt; text-align: left;">
 					<table style="font-size: ${TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};">
 						<tr>
-							<td style="border: 0; text-align: left; vertical-align: top; width: 13%;">PROJECT: </td>
+							<td style="border: 0; text-align: left; vertical-align: top; width: 13.5%;">PROJECT: </td>
 							<td style="border: 0; text-align: left; vertical-align: top; font-weight: bold; text-overflow: ellipsis;">${project.title}</td>
 						</tr>
 					</table>

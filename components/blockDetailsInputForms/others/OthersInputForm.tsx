@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
+import { FlatList, Keyboard, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
-import { Block } from "@/interfaces/Block";
-import { AddWashBoringBlockDetailsInputForm } from "./washBoring/AddWashBoringBlockDetailsInputForm";
-import { AddConcretePremixBlockDetailsInputForm } from "./concretePremix/AddConcretePremixBlockDetailsInputForm";
-import { AddConcreteSlabBlockDetailsInputForm } from "./concreteSlab/AddConcreteSlabBlockDetailsInputForm";
-import { AddHaBlockDetailsInputForm } from "./ha/AddHaBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
+import { Block } from "@/interfaces/Block";
+import { AddAsphaltBlockDetailsInputForm } from "./asphalt/AddAsphaltBlockDetailsInputForm";
+import { AddConcreteSlabBlockDetailsInputForm } from "./concreteSlab/AddConcreteSlabBlockDetailsInputForm";
 import { AddCustomBlockDetailsInputForm } from "./custom/AddCustomBlockDetailsInputForm";
+import { AddHaBlockDetailsInputForm } from "./ha/AddHaBlockDetailsInputForm";
+import { AddWashBoringBlockDetailsInputForm } from "./washBoring/AddWashBoringBlockDetailsInputForm";
 
 export type OthersInputFormProps = ViewProps & {
   boreholeId: number;
@@ -43,7 +43,7 @@ export function OthersInputForm({ style, boreholeId, blocks, setBlocks, setIsAdd
               'Hand Auger', 
               'Wash Boring', 
               'Concrete Slab', 
-              'Concrete Premix',
+              'Asphalt',
               'Custom'
             ]}
             keyExtractor={item => item}
@@ -93,8 +93,8 @@ export function OthersInputForm({ style, boreholeId, blocks, setBlocks, setIsAdd
       )
     }
     { 
-      operationType === 'Concrete Premix' && (
-        <AddConcretePremixBlockDetailsInputForm 
+      operationType === 'Asphalt' && (
+        <AddAsphaltBlockDetailsInputForm 
           boreholeId={boreholeId}
           blocks={blocks}
           setBlocks={setBlocks}

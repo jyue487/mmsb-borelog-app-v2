@@ -1,21 +1,21 @@
+import { AsphaltBlock } from '@/interfaces/AsphaltBlock';
 import { CavityBlock } from '@/interfaces/CavityBlock';
-import { ConcretePremixBlock } from '@/interfaces/ConcretePremixBlock';
 import { ConcreteSlabBlock } from '@/interfaces/ConcreteSlabBlock';
 import { CoringBlock } from '@/interfaces/CoringBlock';
+import { CustomBlock } from '@/interfaces/CustomBlock';
 import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
 import { HaBlock } from '@/interfaces/HaBlock';
 import { MzBlock } from '@/interfaces/MzBlock';
 import { PsBlock } from '@/interfaces/PsBlock';
 import { SptBlock } from '@/interfaces/SptBlock';
 import { UdBlock } from '@/interfaces/UdBlock';
-import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
-import { CustomBlock } from '@/interfaces/CustomBlock';
 import { VaneShearTestBlock } from '@/interfaces/VaneShearTestBlock';
-import { FallingHeadPermeabilityTestBlock } from './FallingHeadPermeabilityTestBlock';
-import { RisingHeadPermeabilityTestBlock } from './RisingHeadPermeabilityTestBlock';
+import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
 import { ConstantHeadPermeabilityTestBlock } from './ConstantHeadPermeabilityTestBlock';
+import { FallingHeadPermeabilityTestBlock } from './FallingHeadPermeabilityTestBlock';
 import { LugeonTestBlock } from './LugeonTestBlock';
 import { PressuremeterTestBlock } from './PressuremeterTestBlock';
+import { RisingHeadPermeabilityTestBlock } from './RisingHeadPermeabilityTestBlock';
 
 export const SPT_BLOCK_TYPE_ID = 1 as const;
 export const CORING_BLOCK_TYPE_ID = 2 as const;
@@ -26,7 +26,7 @@ export const PS_BLOCK_TYPE_ID = 6 as const;
 export const HA_BLOCK_TYPE_ID = 7 as const;
 export const WASH_BORING_BLOCK_TYPE_ID = 8 as const;
 export const CONCRETE_SLAB_BLOCK_TYPE_ID = 9 as const;
-export const CONCRETE_PREMIX_BLOCK_TYPE_ID = 10 as const;
+export const ASPHALT_BLOCK_TYPE_ID = 10 as const;
 export const END_OF_BOREHOLE_BLOCK_TYPE_ID = 11 as const;
 export const CUSTOM_BLOCK_TYPE_ID = 12 as const;
 export const VANE_SHEAR_TEST_BLOCK_TYPE_ID = 13 as const;
@@ -47,7 +47,7 @@ export const BLOCK_TYPE_ID_LIST = [
   HA_BLOCK_TYPE_ID,
   WASH_BORING_BLOCK_TYPE_ID,
   CONCRETE_SLAB_BLOCK_TYPE_ID,
-  CONCRETE_PREMIX_BLOCK_TYPE_ID,
+  ASPHALT_BLOCK_TYPE_ID,
   END_OF_BOREHOLE_BLOCK_TYPE_ID,
   CUSTOM_BLOCK_TYPE_ID,
   VANE_SHEAR_TEST_BLOCK_TYPE_ID,
@@ -70,7 +70,7 @@ export interface Blocks {
   Ha: HaBlock;
   WashBoring: WashBoringBlock;
   ConcreteSlab: ConcreteSlabBlock;
-  ConcretePremix: ConcretePremixBlock;
+  ConcretePremix: AsphaltBlock;
   EndOfBorehole: EndOfBoreholeBlock;
   Custom: CustomBlock;
   VaneShearTest: VaneShearTestBlock;

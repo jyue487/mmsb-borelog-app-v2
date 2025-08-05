@@ -1,12 +1,12 @@
+import { AsphaltBlock } from "@/interfaces/AsphaltBlock";
 import { BaseBlock } from "@/interfaces/Block";
-import { ConcretePremixBlock } from "@/interfaces/ConcretePremixBlock";
 import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
-import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
+import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
 
-export function renderConcretePremixBlockToHtml(block: BaseBlock & ConcretePremixBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
+export function renderAsphaltBlockToHtml(block: BaseBlock & AsphaltBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
     return (
         `
         <tr>

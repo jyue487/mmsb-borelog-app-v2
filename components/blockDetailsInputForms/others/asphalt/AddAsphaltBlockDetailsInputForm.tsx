@@ -2,26 +2,30 @@ import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CONCRETE_PREMIX_BLOCK_TYPE_ID } from "@/interfaces/Block";
-import { ConcretePremixBlock } from "@/interfaces/ConcretePremixBlock";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { ASPHALT_BLOCK_TYPE_ID, Block } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 
-export type EditConcretePremixBlockDetailsInputFormProps = ViewProps & {
+export type AddAsphaltBlockDetailsInputFormProps = ViewProps & {
+  boreholeId: number;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-  oldBlock: BaseBlock & ConcretePremixBlock;
-  setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock, setIsEditState, ...otherProps }: EditConcretePremixBlockDetailsInputFormProps) {
-  const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(oldBlock.dayWorkStatus);
-  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
-  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(oldBlock.baseDepthInMetres.toFixed(3));
+export function AddAsphaltBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: AddAsphaltBlockDetailsInputFormProps) {
+  const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>({
+    dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
+    date: new Date(),
+    time: new Date(),
+    waterLevelInMetres: null,
+    casingDepthInMetres: null,
+  });
+  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>('');
+  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>('');
 
   return (
-    <View style={styles.blockDetailsInputForm}>
+    <>
       <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
@@ -46,7 +50,7 @@ export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBloc
         onPress={() => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
-
+          
           if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
 						return;
@@ -59,24 +63,20 @@ export function EditConcretePremixBlockDetailsInputForm({ style, blocks, setBloc
           const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
-          const newBlock: Block = {
+          const newConcretePremixBlock: Block = {
             id: blocks.length + 1,
             blockId: blocks.length + 1,
-            blockTypeId: CONCRETE_PREMIX_BLOCK_TYPE_ID,
-            boreholeId: oldBlock.boreholeId, 
+            blockTypeId: ASPHALT_BLOCK_TYPE_ID,
+            boreholeId: boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
-            description: 'Concrete Premix',
+            description: 'Asphalt, Tar, Bituminous Material',
           };
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
-          setIsEditState(false);
+          setBlocks(blocks => [...blocks, newConcretePremixBlock]);
+          setIsAddNewBlockButtonPressed(false);
         }}
       />
-      <Button 
-        title='Cancel'
-        onPress={() => setIsEditState(false)} 
-      />
-    </View>
+    </>
   );
 }

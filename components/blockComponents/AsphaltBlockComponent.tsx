@@ -1,23 +1,23 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { ConcretePremixBlock } from '@/interfaces/ConcretePremixBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { useState } from "react";
-import { BaseBlock, Block } from "@/interfaces/Block";
-import { EditConcretePremixBlockDetailsInputForm } from "../blockDetailsInputForms/others/concretePremix/EditConcretePremixBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
+import { AsphaltBlock } from '@/interfaces/AsphaltBlock';
+import { BaseBlock, Block } from "@/interfaces/Block";
+import { useState } from "react";
+import { EditAsphaltBlockDetailsInputForm } from "../blockDetailsInputForms/others/asphalt/EditAsphaltBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 
-export type ConcretePremixBlockProps = ViewProps & {
-	block: BaseBlock & ConcretePremixBlock;
+export type AsphaltBlockProps = ViewProps & {
+	block: BaseBlock & AsphaltBlock;
 	blocks: Block[];
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function ConcretePremixBlockComponent({ block, blocks, setBlocks, ...otherProps }: ConcretePremixBlockProps) {
+export function AsphaltBlockComponent({ block, blocks, setBlocks, ...otherProps }: AsphaltBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
-		return <EditConcretePremixBlockDetailsInputForm 
+		return <EditAsphaltBlockDetailsInputForm 
 			blocks={blocks}
 			setBlocks={setBlocks}
 			oldBlock={block}
