@@ -26,6 +26,7 @@ import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent'
 import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
+import { fetchAllBlocksByBoreholeIdDbAsync } from '@/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
 import { ASPHALT_BLOCK_TYPE_ID, Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
@@ -34,6 +35,7 @@ import { Project } from '@/interfaces/Project';
 import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
 import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
 import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { deleteBlockByBlockIdDbAsync } from '@/db/blocks/deleteBlockByBlockIdDbAsync';
 
 export default function BoreholeScreen() {
   const db: SQLiteDatabase = useSQLiteContext();
@@ -51,15 +53,11 @@ export default function BoreholeScreen() {
   useEffect(() => {
     const init = async () => {
       const borehole: Borehole | null = await fetchBoreholeByIdAsync(db, boreholeId);
-      if (!borehole) {
-        throw new Error(`Error. No such borehole.`);
-      }
       const project: Project | null = await fetchProjectByIdAsync(db, borehole.projectId);
-      if (!project) {
-        throw new Error(`Error. No such project.`);
-      }
+      const blocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(db, boreholeId);
       setBorehole(borehole);
       setProject(project);
+      setBlocks(blocks);
     };
 
     init();
@@ -74,7 +72,12 @@ export default function BoreholeScreen() {
   }
 
   const removeLastBlock = async () => {
-    setBlocks((blocks) => blocks.slice(0, -1));
+    if (blocks.length === 0) {
+      return;
+    }
+    const lastBlock: Block = blocks[blocks.length - 1];
+    await deleteBlockByBlockIdDbAsync(db, lastBlock.blockId);
+    setBlocks((blocks: Block[]) => blocks.filter((b: Block) => b.blockId !== lastBlock.blockId));
   };
 
   const renderFooter = () => (

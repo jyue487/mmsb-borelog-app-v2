@@ -9,6 +9,8 @@ import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSpt
 import { SptBlockInputQuestions } from "../../inputQuestions/SptBlockInputQuestions";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
+import { editSptBlockDbAsync } from "@/db/blocks/sptBlock/editSptBlockDbAsync";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 
 export type EditSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -18,6 +20,7 @@ export type EditSptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock, setIsEditState, ...otherProps }: EditSptBlockDetailsInputFormProps) {
+	const db: SQLiteDatabase = useSQLiteContext();
 	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(oldBlock.dayWorkStatus);
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
 	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>(oldBlock.seatingIncBlows1.toString() ?? '');
@@ -47,6 +50,31 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [recoveryLengthInMillimetresStr, setRecoveryLengthInMillimetresStr] = useState<string>(oldBlock.recoveryLengthInMillimetres.toString());
 	const [colourProperties, setColourProperties] = useState<ColourProperties>(oldBlock.colourProperties);
 	const [soilProperties, setSoilProperties] = useState<SoilProperties>(oldBlock.soilProperties);
+
+	const editAndReindexSptBlocksAsync = async (blocks: Block[], oldBlock: BaseBlock & SptBlock, newBlock: BaseBlock & SptBlock): Promise<Block[]> => {
+		const updatedBlocks: Block[] = [];
+		let sptIndex: number = 1;
+		let disturbedSampleIndex: number = 1;
+		for (const b of blocks) {
+			if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
+				updatedBlocks.push(b);
+				continue;
+			}
+			const updatedBlock: BaseBlock & SptBlock = (b.blockId === oldBlock.blockId) ? {...newBlock, id: oldBlock.id, blockId: oldBlock.blockId} : {...b};
+			updatedBlock.sptIndex = sptIndex++;
+			updatedBlock.disturbedSampleIndex = (updatedBlock.recoveryLengthInMillimetres === 0) ? -1 : disturbedSampleIndex++;
+			updatedBlocks.push(updatedBlock);
+		}
+		await db.withTransactionAsync(async () => {
+			for (const b of updatedBlocks) {
+				if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
+					continue;
+				}
+				await editSptBlockDbAsync(db, b);
+			}
+		});
+		return updatedBlocks;
+	};
 
 	return (
 		<View style={styles.blockDetailsInputForm}>
@@ -83,55 +111,46 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 			/>
 			<Button
 				title='Confirm'
-				onPress={() => {
-					const newBlock: Block = checkAndReturnSptBlock({
-						blocks: blocks,
-						boreholeId: oldBlock.boreholeId,
-						dayWorkStatus: dayWorkStatus,
-						topDepthInMetresStr: topDepthInMetresStr,
-						seatingIncBlows1Str: seatingIncBlows1Str,
-						seatingIncBlows2Str: seatingIncBlows2Str,
-						seatingIncPen1Str: seatingIncPen1Str,
-						seatingIncPen2Str: seatingIncPen2Str,
-						mainIncBlows1Str: mainIncBlows1Str,
-						mainIncBlows2Str: mainIncBlows2Str,
-						mainIncBlows3Str: mainIncBlows3Str,
-						mainIncBlows4Str: mainIncBlows4Str,
-						mainIncPen1Str: mainIncPen1Str,
-						mainIncPen2Str: mainIncPen2Str,
-						mainIncPen3Str: mainIncPen3Str,
-						mainIncPen4Str: mainIncPen4Str,
-						recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
-						colourProperties: colourProperties,
-						soilProperties: soilProperties,
-						isSeatingIncBlows1Active: isSeatingIncBlows1Active,
-						isSeatingIncBlows2Active: isSeatingIncBlows2Active,
-						isMainIncBlows1Active: isMainIncBlows1Active,
-						isMainIncBlows2Active: isMainIncBlows2Active,
-						isMainIncBlows3Active: isMainIncBlows3Active,
-						isMainIncBlows4Active: isMainIncBlows4Active,
-						isSeatingIncPen1Active: isSeatingIncPen1Active,
-						isSeatingIncPen2Active: isSeatingIncPen2Active,
-						isMainIncPen1Active: isMainIncPen1Active,
-						isMainIncPen2Active: isMainIncPen2Active,
-						isMainIncPen3Active: isMainIncPen3Active,
-						isMainIncPen4Active: isMainIncPen4Active,
-					});
-					setBlocks((blocks: Block[]) => {
-						let sptIndex: number = 1;
-						let disturbedSampleIndex: number = 1;
-						return blocks.map((b: Block) => {
-							if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
-								return b;
-							}
-							const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
-							updatedBlock.id = b.id;
-							updatedBlock.sptIndex = sptIndex++;
-							updatedBlock.disturbedSampleIndex = (updatedBlock.recoveryLengthInMillimetres === 0) ? -1 : disturbedSampleIndex++;
-							return updatedBlock;
+				onPress={async () => {
+					try {
+						const newBlock: Block = checkAndReturnSptBlock({
+							blocks: blocks,
+							boreholeId: oldBlock.boreholeId,
+							dayWorkStatus: dayWorkStatus,
+							topDepthInMetresStr: topDepthInMetresStr,
+							seatingIncBlows1Str: seatingIncBlows1Str,
+							seatingIncBlows2Str: seatingIncBlows2Str,
+							seatingIncPen1Str: seatingIncPen1Str,
+							seatingIncPen2Str: seatingIncPen2Str,
+							mainIncBlows1Str: mainIncBlows1Str,
+							mainIncBlows2Str: mainIncBlows2Str,
+							mainIncBlows3Str: mainIncBlows3Str,
+							mainIncBlows4Str: mainIncBlows4Str,
+							mainIncPen1Str: mainIncPen1Str,
+							mainIncPen2Str: mainIncPen2Str,
+							mainIncPen3Str: mainIncPen3Str,
+							mainIncPen4Str: mainIncPen4Str,
+							recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
+							colourProperties: colourProperties,
+							soilProperties: soilProperties,
+							isSeatingIncBlows1Active: isSeatingIncBlows1Active,
+							isSeatingIncBlows2Active: isSeatingIncBlows2Active,
+							isMainIncBlows1Active: isMainIncBlows1Active,
+							isMainIncBlows2Active: isMainIncBlows2Active,
+							isMainIncBlows3Active: isMainIncBlows3Active,
+							isMainIncBlows4Active: isMainIncBlows4Active,
+							isSeatingIncPen1Active: isSeatingIncPen1Active,
+							isSeatingIncPen2Active: isSeatingIncPen2Active,
+							isMainIncPen1Active: isMainIncPen1Active,
+							isMainIncPen2Active: isMainIncPen2Active,
+							isMainIncPen3Active: isMainIncPen3Active,
+							isMainIncPen4Active: isMainIncPen4Active,
 						});
-					});
-					setIsEditState(false);
+						setBlocks(await editAndReindexSptBlocksAsync(blocks, oldBlock, newBlock));
+						setIsEditState(false);
+					} catch (err) {
+						console.log(err);
+					}
 				}}
 			/>
 			<Button 

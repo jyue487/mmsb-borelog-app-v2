@@ -7,7 +7,7 @@ export function renderFooterToHtml() {
                 <td style="width: 14%;">Cohesive Soil (N)</td>
                 <td style="width: 17%;">Non Cohesive Soil (N)</td>
                 <td rowspan="9" style="text-align: left; padding: 5pt;">
-                    Contractor:
+                    Driller:
                     <br>
                     <br>
                     <br>
@@ -21,7 +21,7 @@ export function renderFooterToHtml() {
                     <br>
                 </td>
                 <td rowspan="9" style="text-align: left; padding: 5pt;">
-                    Logged by:
+                    Logged by: IZWAN
                     <br>
                     <br>
                     <br>

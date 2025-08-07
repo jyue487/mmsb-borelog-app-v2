@@ -35,7 +35,6 @@ export const RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID = 15 as const;
 export const CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID = 16 as const;
 export const LUGEON_TEST_BLOCK_TYPE_ID = 17 as const;
 export const PRESSUREMETER_TEST_BLOCK_TYPE_ID = 18 as const;
-export const CUSTOM_TEST_BLOCK_TYPE_ID = 19 as const;
 
 export const BLOCK_TYPE_ID_LIST = [
   SPT_BLOCK_TYPE_ID,
@@ -56,7 +55,6 @@ export const BLOCK_TYPE_ID_LIST = [
   CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
   LUGEON_TEST_BLOCK_TYPE_ID,
   PRESSUREMETER_TEST_BLOCK_TYPE_ID,
-  CUSTOM_TEST_BLOCK_TYPE_ID,
 ] as const;
 export type BlockTypeId = typeof BLOCK_TYPE_ID_LIST[number];
 
@@ -79,7 +77,6 @@ export interface Blocks {
   ConstantHeadPermeabilityTest: ConstantHeadPermeabilityTestBlock;
   LugeonTest: LugeonTestBlock;
   PressuremeterTest: PressuremeterTestBlock;
-  
 }
 
 export interface BaseBlock {

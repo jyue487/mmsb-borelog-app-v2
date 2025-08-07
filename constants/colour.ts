@@ -72,7 +72,7 @@ export interface Colour {
     colourTagFontColour: string;
     colourNameForSoilDescription: string;
     colourCode: ColourCode;
-    colourFamily: string
+    colourFamily: string;
 }
 
 export const DOMINANT_COLOUR_LIST: Colour[] = [

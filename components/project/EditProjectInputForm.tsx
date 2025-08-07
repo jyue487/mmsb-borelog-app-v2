@@ -14,7 +14,7 @@ type EditProjectInputFormProps = {
   editProject: (editProjectParams: EditProjectParams) => void;
   deleteProject: (projectId: number) => void;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
-}
+};
 
 export function EditProjectInputForm ({
   oldProject,

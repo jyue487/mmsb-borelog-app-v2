@@ -3,10 +3,15 @@ import { Button, type ViewProps } from "react-native";
 
 import { SptBlockInputQuestions } from "@/components/inputQuestions/SptBlockInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
-import { Block } from "@/interfaces/Block";
+import { BaseBlock, Block } from "@/interfaces/Block";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
+import { serializeSptBlock } from "@/json/sptBlock/serializeSptBlock";
+import { deserializeSptBlock } from "@/json/sptBlock/deserializeSptBlock";
+import { SptBlock } from "@/interfaces/SptBlock";
+import { addSptBlockDbAsync } from "@/db/blocks/sptBlock/addSptBlockDbAsync";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 
 export type AddSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -16,6 +21,7 @@ export type AddSptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, setIsAddNewBlockButtonPressed, ...otherProps }: AddSptBlockDetailsInputFormProps) {
+	const db: SQLiteDatabase = useSQLiteContext();
 	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>({
 		dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
 		date: new Date(),
@@ -60,6 +66,11 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		customOtherProperties: '',
 	});
 
+	const addSptBlockAsync = async (blocks: Block[], newBlock: BaseBlock & SptBlock): Promise<Block[]> => {
+		const updatedBlocks: Block[] = [...blocks, await addSptBlockDbAsync(db, newBlock)];
+		return updatedBlocks;
+	};
+
 	return (
 		<>
 		<SptBlockInputQuestions 
@@ -95,42 +106,46 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		/>
 		<Button
 			title='Confirm'
-			onPress={() => {
-				const newBlock: Block = checkAndReturnSptBlock({
-					blocks: blocks,
-					boreholeId: boreholeId,
-					dayWorkStatus: dayWorkStatus,
-					topDepthInMetresStr: topDepthInMetresStr,
-					seatingIncBlows1Str: seatingIncBlows1Str,
-					seatingIncBlows2Str: seatingIncBlows2Str,
-					seatingIncPen1Str: seatingIncPen1Str,
-					seatingIncPen2Str: seatingIncPen2Str,
-					mainIncBlows1Str: mainIncBlows1Str,
-					mainIncBlows2Str: mainIncBlows2Str,
-					mainIncBlows3Str: mainIncBlows3Str,
-					mainIncBlows4Str: mainIncBlows4Str,
-					mainIncPen1Str: mainIncPen1Str,
-					mainIncPen2Str: mainIncPen2Str,
-					mainIncPen3Str: mainIncPen3Str,
-					mainIncPen4Str: mainIncPen4Str,
-					recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
-					colourProperties: colourProperties,
-					soilProperties: soilProperties,
-					isSeatingIncBlows1Active: isSeatingIncBlows1Active,
-					isSeatingIncBlows2Active: isSeatingIncBlows2Active,
-					isMainIncBlows1Active: isMainIncBlows1Active,
-					isMainIncBlows2Active: isMainIncBlows2Active,
-					isMainIncBlows3Active: isMainIncBlows3Active,
-					isMainIncBlows4Active: isMainIncBlows4Active,
-					isSeatingIncPen1Active: isSeatingIncPen1Active,
-					isSeatingIncPen2Active: isSeatingIncPen2Active,
-					isMainIncPen1Active: isMainIncPen1Active,
-					isMainIncPen2Active: isMainIncPen2Active,
-					isMainIncPen3Active: isMainIncPen3Active,
-					isMainIncPen4Active: isMainIncPen4Active,
-				});
-				setBlocks(blocks => [...blocks, newBlock]);
-				setIsAddNewBlockButtonPressed(false);
+			onPress={async () => {
+				try {
+					const newBlock: Block = checkAndReturnSptBlock({
+						blocks: blocks,
+						boreholeId: boreholeId,
+						dayWorkStatus: dayWorkStatus,
+						topDepthInMetresStr: topDepthInMetresStr,
+						seatingIncBlows1Str: seatingIncBlows1Str,
+						seatingIncBlows2Str: seatingIncBlows2Str,
+						seatingIncPen1Str: seatingIncPen1Str,
+						seatingIncPen2Str: seatingIncPen2Str,
+						mainIncBlows1Str: mainIncBlows1Str,
+						mainIncBlows2Str: mainIncBlows2Str,
+						mainIncBlows3Str: mainIncBlows3Str,
+						mainIncBlows4Str: mainIncBlows4Str,
+						mainIncPen1Str: mainIncPen1Str,
+						mainIncPen2Str: mainIncPen2Str,
+						mainIncPen3Str: mainIncPen3Str,
+						mainIncPen4Str: mainIncPen4Str,
+						recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
+						colourProperties: colourProperties,
+						soilProperties: soilProperties,
+						isSeatingIncBlows1Active: isSeatingIncBlows1Active,
+						isSeatingIncBlows2Active: isSeatingIncBlows2Active,
+						isMainIncBlows1Active: isMainIncBlows1Active,
+						isMainIncBlows2Active: isMainIncBlows2Active,
+						isMainIncBlows3Active: isMainIncBlows3Active,
+						isMainIncBlows4Active: isMainIncBlows4Active,
+						isSeatingIncPen1Active: isSeatingIncPen1Active,
+						isSeatingIncPen2Active: isSeatingIncPen2Active,
+						isMainIncPen1Active: isMainIncPen1Active,
+						isMainIncPen2Active: isMainIncPen2Active,
+						isMainIncPen3Active: isMainIncPen3Active,
+						isMainIncPen4Active: isMainIncPen4Active,
+					});
+					setBlocks(await addSptBlockAsync(blocks, newBlock));
+					setIsAddNewBlockButtonPressed(false);
+				} catch (err) {
+					console.log(err);
+				}
 			}}
 		/>
 		</>

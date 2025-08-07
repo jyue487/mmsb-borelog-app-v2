@@ -16,6 +16,7 @@ export const MIGRATION_004: Migration = {
                 id INTEGER PRIMARY KEY,
                 boreholeId INTEGER NOT NULL,
                 blockTypeId INTEGER NOT NULL,
+                payload TEXT,
                 FOREIGN KEY (boreholeId) REFERENCES boreholes(id) ON DELETE CASCADE,
                 FOREIGN KEY (blockTypeId) REFERENCES blockTypes(id) ON DELETE CASCADE
             );

@@ -103,10 +103,9 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
         // Check if need to pad with empty block
         if (Math.round(blocks[blockIndex].topDepthInMetres * 10) - scaleTickIndexWrapper[0] > 0) {
             const numberOfTicksToRender: number = Math.round(blocks[blockIndex].topDepthInMetres * 10) - scaleTickIndexWrapper[0];
-            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
+            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper, blocks[(blockIndex > 0) ? blockIndex - 1 : blockIndex].blockTypeId);
         }
         while (blockIndex < blocks.length) {
-            console.log(1);
             if (scaleTickIndexWrapper[0] === pageIndex * 90) {
                 break;
             }
@@ -140,7 +139,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
 
             // If remaining space too small (less than half of actual block height), then pad with empty block
             if (numberOfTicksToRender < blockHeightInTicks / 2) {
-                result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
+                result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper, blocks[(blockIndex > 0) ? blockIndex - 1 : blockIndex].blockTypeId);
                 continue;
             }
             
@@ -208,7 +207,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
         }
         if (blockIndex === blocks.length) {
             const numberOfTicksToRender: number = pageIndex * 90 - scaleTickIndexWrapper[0];
-            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
+            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper, (blocks.length > 0) ? blocks[blocks.length - 1].blockTypeId : SPT_BLOCK_TYPE_ID);
         }
         return result;
     };
