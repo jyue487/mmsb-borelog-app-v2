@@ -7,8 +7,6 @@ import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturn
 import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { RockProperties } from "@/interfaces/RockProperties";
-import { CoringBlock } from "@/interfaces/CoringBlock";
-import { addBlockDbAsync } from "@/db/blocks/addBlockDbAsync"; 
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCoringBlockDetailsInputFormProps = ViewProps & {

@@ -2,9 +2,7 @@ import { Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlatList, Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { DAY_CONTINUE_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { styles } from '@/constants/styles';
-import { stringToDecimalPoint } from '@/utils/numbers';
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { useState } from 'react';
 import { getDate } from '@/utils/datetime';
 

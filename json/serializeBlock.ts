@@ -1,6 +1,5 @@
 import { 
     Block,
-    BlockTypeId,
     SPT_BLOCK_TYPE_ID,
     CORING_BLOCK_TYPE_ID,
     CAVITY_BLOCK_TYPE_ID,

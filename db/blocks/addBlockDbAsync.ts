@@ -1,9 +1,8 @@
 import { Block } from "@/interfaces/Block";
 import { serializeBlock } from "@/json/serializeBlock";
-import { SQLiteDatabase } from "expo-sqlite";
+import { db } from "../db";
 
 export async function addBlockDbAsync(
-    db: SQLiteDatabase,
     block: Block,
 ): Promise<Block> {
 

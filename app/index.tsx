@@ -12,7 +12,6 @@ import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Proje
 import { db } from '@/db/db';
 
 export default function ProjectListScreen() {
-  // const db = SQLite.openDatabaseSync('mmsb.db');
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -80,15 +79,6 @@ export default function ProjectListScreen() {
     setProjects(projects);
   };
 
-  const clearTable = async () => {
-    await db.runAsync(`DELETE FROM projects;`);
-    await fetchAllProjects();
-  };
-
-  const clearDatabase = async () => {
-    await db.runAsync('DROP TABLE projects');
-  };
-
   const renderFooter = () => {
     return (
       <View style={{ gap: 20 }}>
@@ -110,14 +100,6 @@ export default function ProjectListScreen() {
           />
         )
       }
-      {/* <Button
-        title='Clear Table'
-        onPress={clearTable}
-      /> */}
-      {/* <Button
-        title='Clear Database'
-        onPress={clearDatabase}
-      /> */}
       </View>
     );
   };

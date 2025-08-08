@@ -2,14 +2,8 @@ import React, { useState } from "react";
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/constants/colour";
 import { OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE, ROCK_TYPE_LIST, RockType } from "@/constants/rock";
 import { styles } from "@/constants/styles";
-import { stringToDecimalPoint } from "@/utils/numbers";
-import { ColourProperties } from "@/interfaces/ColourProperties";
-import { ColourPropertiesInputQuestions } from "./ColourPropertiesInputQuestions";
 import { RockProperties } from "@/interfaces/RockProperties";
 
 type Props = {

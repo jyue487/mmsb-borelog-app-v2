@@ -1,4 +1,3 @@
-import { SQLiteProvider } from 'expo-sqlite';
 import { Stack } from 'expo-router';
 import { initDb } from '@/db/initDb';
 import { useEffect, useState } from 'react';
@@ -9,7 +8,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      await initDb(db);
+      await initDb();
       setIsDbReady(true);
     };
     init();

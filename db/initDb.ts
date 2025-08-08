@@ -1,7 +1,7 @@
-import { SQLiteDatabase } from "expo-sqlite";
 import { runMigrationsAsync } from "./runMigrationsAsync";
+import { db } from "./db";
 
-export async function initDb(db: SQLiteDatabase): Promise<void> {
+export async function initDb(): Promise<void> {
     // Set journal mode
     await db.execAsync('PRAGMA journal_mode = WAL;');
 

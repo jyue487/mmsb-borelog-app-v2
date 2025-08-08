@@ -84,17 +84,6 @@ export default function ProjectScreen() {
       reducedLevelInMetres: row.reducedLevelInMetres,
     }));
     setBoreholes(boreholes);
-    const test = await db.getAllAsync(`SELECT * FROM boreholes;`);
-    console.log(test);
-  };
-
-  const clearTable = async () => {
-    await db.runAsync(`DELETE FROM boreholes WHERE projectId = ?;`, [projectId]);
-    await fetchAllBoreholes();
-  };
-
-  const dropTable = async () => {
-    await db.runAsync(`DROP TABLE boreholes;`);
   };
 
   const renderFooter = () => {
@@ -113,14 +102,6 @@ export default function ProjectScreen() {
       {
         isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
       }
-      {/* <Button
-        title='Clear Table'
-        onPress={() => clearTable()}
-      /> */}
-      {/* <Button
-        title='Drop Table'
-        onPress={() => dropTable()}
-      /> */}
       </View>
     );
   };

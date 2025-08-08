@@ -8,7 +8,7 @@ import { AddProjectParams } from '@/interfaces/Project';
 type AddProjectInputFormProps = {
   addProject: (projectParams: AddProjectParams) => void;
   setIsAddButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
-}
+};
 
 export function AddProjectInputForm ({
   addProject,

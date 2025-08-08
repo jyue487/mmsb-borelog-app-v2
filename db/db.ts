@@ -1,3 +1,3 @@
 import * as SQLite from 'expo-sqlite';
 
-export const db: SQLite.SQLiteDatabase = await SQLite.openDatabaseAsync('mmsb.db');
+export const db: SQLite.SQLiteDatabase = SQLite.openDatabaseSync('mmsb.db');

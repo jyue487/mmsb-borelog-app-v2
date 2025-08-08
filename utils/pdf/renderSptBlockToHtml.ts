@@ -1,5 +1,5 @@
-import { CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL, DISTURBED_SAMPLE_SYMBOL, FALLING_HEAD_PERMEABILITY_TEST_SYMBOL, RISING_HEAD_PERMEABILITY_TEST_SYMBOL, SPT_SYMBOL } from "@/constants/symbol";
-import { BaseBlock, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/constants/symbol";
+import { BaseBlock } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { renderDayWorkStatusToHtml } from "@/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
