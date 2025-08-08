@@ -3,7 +3,6 @@ import { CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL } from '@/constants/symbol';
 import { CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface ConstantHeadPermeabilityTestBlock {
-    id: number;
     blockTypeId: typeof CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID;
     symbol: typeof CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL;
     permeabilityTestIndex: number;

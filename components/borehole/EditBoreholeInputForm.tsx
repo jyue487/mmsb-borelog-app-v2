@@ -87,25 +87,25 @@ export function EditBoreholeInputForm ({
             alert("Error: Borehole Name Should not be empty");
             return;
           }
-          if (eastingInMetresStr.length > 0) {
-            if (!stringIsFloat(eastingInMetresStr)) {
+          if (eastingInMetresStr.trim().length > 0) {
+            if (!stringIsFloat(eastingInMetresStr.trim())) {
               alert('Error: Easting');
             }
           }
-          if (northingInMetresStr.length > 0) {
-            if (!stringIsFloat(northingInMetresStr)) {
+          if (northingInMetresStr.trim().length > 0) {
+            if (!stringIsFloat(northingInMetresStr.trim())) {
               alert('Error: Northing');
             }
           }
-          if (reducedLevelInMetresStr.length > 0) {
-            if (!stringIsFloat(reducedLevelInMetresStr)) {
+          if (reducedLevelInMetresStr.trim().length > 0) {
+            if (!stringIsFloat(reducedLevelInMetresStr.trim())) {
               alert('Error: Reduced Level');
             }
           }
 
-          const eastingInMetres: number | null = (eastingInMetresStr.length > 0) ? stringToDecimalPoint(eastingInMetresStr, 3) : null;
-          const northingInMetres: number | null = (northingInMetresStr.length > 0) ? stringToDecimalPoint(northingInMetresStr, 3) : null;
-          const reducedLevelInMetres: number | null = (reducedLevelInMetresStr.length > 0) ? stringToDecimalPoint(reducedLevelInMetresStr, 3) : null;
+          const eastingInMetres: number | null = (eastingInMetresStr.trim().length > 0) ? stringToDecimalPoint(eastingInMetresStr.trim(), 3) : null;
+          const northingInMetres: number | null = (northingInMetresStr.trim().length > 0) ? stringToDecimalPoint(northingInMetresStr.trim(), 3) : null;
+          const reducedLevelInMetres: number | null = (reducedLevelInMetresStr.trim().length > 0) ? stringToDecimalPoint(reducedLevelInMetresStr.trim(), 3) : null;
           
           editBorehole({
             id: oldBorehole.id, 

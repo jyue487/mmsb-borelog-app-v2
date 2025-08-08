@@ -4,7 +4,6 @@ import { ColourProperties } from './ColourProperties';
 import { SoilProperties } from './SoilProperties';
 
 export interface UdBlock {
-    id: number;
     blockTypeId: typeof UD_BLOCK_TYPE_ID;
     sampleIndex: number;
     dayWorkStatus: DayWorkStatus;

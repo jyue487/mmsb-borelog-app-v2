@@ -7,6 +7,7 @@ import { Block, CUSTOM_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { stringToDecimalPoint } from "@/utils/numbers";
 import { checkAndReturnCustomBlock } from "@/utils/checkFunctions/checkAndReturnCustomBlock";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCustomBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -58,7 +59,7 @@ export function AddCustomBlockDetailsInputForm({ style, boreholeId, blocks, setB
     </View>
     <Button
       title='Confirm'
-      onPress={() => {
+      onPress={async () => {
         const newBlock: Block = checkAndReturnCustomBlock({
           blocks: blocks,
           boreholeId: boreholeId,
@@ -67,7 +68,7 @@ export function AddCustomBlockDetailsInputForm({ style, boreholeId, blocks, setB
           baseDepthInMetresStr: baseDepthInMetresStr,
           customOperationType: customOperationType,
         });
-        setBlocks(blocks => [...blocks, newBlock]);
+        setBlocks(await addBlockAsync(blocks, newBlock));
         setIsAddNewBlockButtonPressed(false);
       }}
     />

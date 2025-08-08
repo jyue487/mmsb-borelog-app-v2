@@ -40,7 +40,6 @@ export function checkAndReturnConstantHeadPermeabilityTestBlock({
 
     const newBlock: BaseBlock & ConstantHeadPermeabilityTestBlock = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
         symbol: CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL,
         boreholeId: boreholeId, 
@@ -49,6 +48,8 @@ export function checkAndReturnConstantHeadPermeabilityTestBlock({
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
         description: 'Constant Head Permeability Test',
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

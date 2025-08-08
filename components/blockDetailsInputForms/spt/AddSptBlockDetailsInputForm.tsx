@@ -3,15 +3,11 @@ import { Button, type ViewProps } from "react-native";
 
 import { SptBlockInputQuestions } from "@/components/inputQuestions/SptBlockInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
-import { BaseBlock, Block } from "@/interfaces/Block";
+import { Block } from "@/interfaces/Block";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
-import { serializeSptBlock } from "@/json/sptBlock/serializeSptBlock";
-import { deserializeSptBlock } from "@/json/sptBlock/deserializeSptBlock";
-import { SptBlock } from "@/interfaces/SptBlock";
-import { addSptBlockDbAsync } from "@/db/blocks/sptBlock/addSptBlockDbAsync";
-import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -21,7 +17,6 @@ export type AddSptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, setIsAddNewBlockButtonPressed, ...otherProps }: AddSptBlockDetailsInputFormProps) {
-	const db: SQLiteDatabase = useSQLiteContext();
 	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>({
 		dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
 		date: new Date(),
@@ -65,11 +60,6 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		otherProperties: '',
 		customOtherProperties: '',
 	});
-
-	const addSptBlockAsync = async (blocks: Block[], newBlock: BaseBlock & SptBlock): Promise<Block[]> => {
-		const updatedBlocks: Block[] = [...blocks, await addSptBlockDbAsync(db, newBlock)];
-		return updatedBlocks;
-	};
 
 	return (
 		<>
@@ -141,7 +131,7 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 						isMainIncPen3Active: isMainIncPen3Active,
 						isMainIncPen4Active: isMainIncPen4Active,
 					});
-					setBlocks(await addSptBlockAsync(blocks, newBlock));
+					setBlocks(await addBlockAsync(blocks, newBlock));
 					setIsAddNewBlockButtonPressed(false);
 				} catch (err) {
 					console.log(err);

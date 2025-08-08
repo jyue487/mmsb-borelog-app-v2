@@ -1,22 +1,19 @@
 import { BaseBlock } from "@/interfaces/Block";
 import { SptBlock } from "@/interfaces/SptBlock";
+import { deserializeColourProperties } from "../deserializeColourProperties";
+import { deserializeDayWorkStatus } from "../deserializeDayWorkStatus";
+import { deserializeSoilProperties } from "../deserializeSoilProperties";
+import { deserializeDateTime } from "../deserializeDateTime";
 
 export function deserializeSptBlock(json: string): BaseBlock & SptBlock {
     const parsed = JSON.parse(json);
-    const sptBlock: BaseBlock & SptBlock = {
+    const block: BaseBlock & SptBlock = {
         id: parsed.id,
-        blockId: parsed.blockId,
         boreholeId: parsed.boreholeId,
         blockTypeId: parsed.blockTypeId,
         sptIndex: parsed.sptIndex,
         disturbedSampleIndex: parsed.disturbedSampleIndex,
-        dayWorkStatus: {
-            dayWorkStatusType: parsed.dayWorkStatus.dayWorkStatusType,
-            date: new Date(parsed.dayWorkStatus.date),
-            time: new Date(parsed.dayWorkStatus.time),
-            waterLevelInMetres: parsed.dayWorkStatus.waterLevelInMetres,
-            casingDepthInMetres: parsed.dayWorkStatus.casingDepthInMetres,
-        },
+        dayWorkStatus: deserializeDayWorkStatus(parsed.dayWorkStatus),
         topDepthInMetres: parsed.topDepthInMetres,
         baseDepthInMetres: parsed.baseDepthInMetres,
         description: parsed.description,
@@ -36,30 +33,8 @@ export function deserializeSptBlock(json: string): BaseBlock & SptBlock {
         totalMainPenetrationInMillimetres: parsed.totalMainPenetrationInMillimetres,
         recoveryInPercentage: parsed.recoveryInPercentage,
         recoveryLengthInMillimetres: parsed.recoveryLengthInMillimetres,
-        colourProperties: {
-            dominantColour: (parsed.colourProperties.dominantColour === null) ? null : {
-                level: parsed.colourProperties.dominantColour.level,
-                colourTag: parsed.colourProperties.dominantColour.colourTag,
-                colourTagFontColour: parsed.colourProperties.dominantColour.colourTagFontColour,
-                colourNameForSoilDescription: parsed.colourProperties.dominantColour.colourNameForSoilDescription,
-                colourCode: parsed.colourProperties.dominantColour.colourCode,
-                colourFamily: parsed.colourProperties.dominantColour.colourFamily,
-            },
-            secondaryColour: (parsed.colourProperties.secondaryColour === null) ? null : {
-                level: parsed.colourProperties.secondaryColour.level,
-                colourTag: parsed.colourProperties.secondaryColour.colourTag,
-                colourTagFontColour: parsed.colourProperties.secondaryColour.colourTagFontColour,
-                colourNameForSoilDescription: parsed.colourProperties.secondaryColour.colourNameForSoilDescription,
-                colourCode: parsed.colourProperties.secondaryColour.colourCode,
-                colourFamily: parsed.colourProperties.secondaryColour.colourFamily,
-            },
-        },
-        soilProperties: {
-            dominantSoilType: parsed.soilProperties.dominantSoilType,
-            secondarySoilType: parsed.soilProperties.secondarySoilType,
-            otherProperties: parsed.soilProperties.otherProperties,
-            customOtherProperties: parsed.soilProperties.customOtherProperties,
-        },
+        colourProperties: deserializeColourProperties(parsed.colourProperties),
+        soilProperties: deserializeSoilProperties(parsed.soilProperties),
         isSeatingIncBlows1Active: parsed.isSeatingIncBlows1Active,
         isSeatingIncBlows2Active: parsed.isSeatingIncBlows2Active,
         isMainIncBlows1Active: parsed.isMainIncBlows1Active,
@@ -72,7 +47,8 @@ export function deserializeSptBlock(json: string): BaseBlock & SptBlock {
         isMainIncPen2Active: parsed.isMainIncPen2Active,
         isMainIncPen3Active: parsed.isMainIncPen3Active,
         isMainIncPen4Active: parsed.isMainIncPen4Active,
+        createdAt: deserializeDateTime(parsed.createdAt),
+        updatedAt: deserializeDateTime(parsed.updatedAt),
     };
-    console.log(sptBlock);
-    return sptBlock;
+    return block;
 }

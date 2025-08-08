@@ -1,9 +1,10 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
-import { BaseBlock, Block, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, Block } from "@/interfaces/Block";
 import { FallingHeadPermeabilityTestBlock } from "@/interfaces/FallingHeadPermeabilityTestBlock";
 import { checkAndReturnFallingHeadPermeabilityTestBlock } from "@/utils/checkFunctions/checkAndReturnFallingHeadPermeabilityTestBlock";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
@@ -47,7 +48,7 @@ export function EditFallingHeadPermeabilityTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnFallingHeadPermeabilityTestBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -55,7 +56,7 @@ export function EditFallingHeadPermeabilityTestBlockDetailsInputForm({
             topDepthInMetresStr: topDepthInMetresStr,
             baseDepthInMetresStr: baseDepthInMetresStr,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId, permeabilityTestIndex: b.permeabilityTestIndex} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

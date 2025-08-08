@@ -1,5 +1,6 @@
 import { EndOfBoreholeInputQuestions } from "@/components/inputQuestions/EndOfBoreholeInputQuestions";
 import { Block } from "@/interfaces/Block";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnEndOfBoreholeBlock } from "@/utils/checkFunctions/checkAndReturnEndOfBoreholeBlock";
 import { useState } from "react";
 import { Button, ViewProps } from "react-native";
@@ -34,7 +35,7 @@ export function AddEndOfBoreholeBlockDetailsInputForm({
     />
     <Button
       title='Confirm'
-      onPress={() => {
+      onPress={async () => {
         const newBlock: Block = checkAndReturnEndOfBoreholeBlock({
           blocks: blocks,
           boreholeId: boreholeId,
@@ -43,7 +44,7 @@ export function AddEndOfBoreholeBlockDetailsInputForm({
           installationDepthInMetresStr: installationDepthInMetresStr,
           remarks: remarks,
         });
-        setBlocks(blocks => [...blocks, newBlock]);
+        setBlocks(await addBlockAsync(blocks, newBlock));
         setIsAddNewBlockButtonPressed(false);
       }}
     />

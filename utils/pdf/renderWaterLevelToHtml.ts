@@ -4,7 +4,7 @@ export function renderWaterLevelToHtml(dayWorkStatus: DayWorkStatus) {
     if (dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) {
         return `<td></td>`;
     }
-    if (!dayWorkStatus.waterLevelInMetres) {
+    if (dayWorkStatus.waterLevelInMetres === null) {
         return `<td></td>`;
     }
     return `<td>${dayWorkStatus.waterLevelInMetres.toFixed(2)}</td>`;

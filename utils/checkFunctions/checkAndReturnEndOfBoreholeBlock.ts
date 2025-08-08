@@ -1,8 +1,9 @@
 import { DAY_CONTINUE_WORK_TYPE } from "@/constants/DayWorkStatus";
+import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE } from "@/constants/endOfBorehole";
 import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
-import { stringIsNonNegativeFloat, stringToDecimalPoint } from "../numbers";
 import { throwError } from "../error/throwError";
+import { stringIsNonNegativeFloat, stringToDecimalPoint } from "../numbers";
 
 type Params = {
     blocks: Block[];
@@ -30,7 +31,7 @@ export function checkAndReturnEndOfBoreholeBlock ({
 
     let installationDepthInMetres: number | null = null;
     let description: string = `End of BH at ${endOfBoreholeDepthInMetres}m`;
-    if (otherInstallations !== 'None') {
+    if (otherInstallations !== END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE) {
         if (!stringIsNonNegativeFloat(installationDepthInMetresStr)) {
             throwError('Error: Installation Depth');
         }
@@ -38,20 +39,19 @@ export function checkAndReturnEndOfBoreholeBlock ({
         if (installationDepthInMetres > endOfBoreholeDepthInMetres) {
             throwError('Error: Installation Depth cannot be greater than the borehole depth');
         }
-        if (otherInstallations === 'Custom') {
+        if (otherInstallations === END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM) {
             description += ` with installation of ${customInstallations.trim()}`;
         } else {
             description += ` with installation of ${otherInstallations}`;
         }
-            description += ` to ${installationDepthInMetres}m`;
+        description += ` to ${installationDepthInMetres}m`;
 
         if (remarks.trim().length > 0) {
-            description += `. Remarks: ${remarks}`;
+            description += `. Remarks: ${remarks.trim()}`;
         }
     }
     const newBlock: Block = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         boreholeId: boreholeId,
         blockTypeId: END_OF_BOREHOLE_BLOCK_TYPE_ID,
         dayWorkStatus: {
@@ -68,6 +68,8 @@ export function checkAndReturnEndOfBoreholeBlock ({
         customInstallations: customInstallations,
         installationDepthInMetres: installationDepthInMetres,
         remarks: remarks,
+        createdAt: new Date(),
+        updatedAt: null,
     };
     return newBlock;
 }

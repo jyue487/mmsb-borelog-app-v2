@@ -1,6 +1,7 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnRisingHeadPermeabilityTestBlock } from "@/utils/checkFunctions/checkAndReturnRisingHeadPermeabilityTestBlock";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
@@ -51,7 +52,7 @@ export function AddRisingHeadPermeabilityTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnRisingHeadPermeabilityTestBlock({
             blocks: blocks,
             boreholeId: boreholeId,
@@ -59,7 +60,7 @@ export function AddRisingHeadPermeabilityTestBlockDetailsInputForm({
             topDepthInMetresStr: topDepthInMetresStr,
             baseDepthInMetresStr: baseDepthInMetresStr,
           });
-          setBlocks(blocks => [...blocks, newBlock]);
+          setBlocks(await addBlockAsync(blocks, newBlock));
           setIsAddNewBlockButtonPressed(false);
         }}
       />

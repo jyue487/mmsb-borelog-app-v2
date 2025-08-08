@@ -38,7 +38,6 @@ export function checkAndReturnPressuremeterTestBlock({
 
     const newBlock: BaseBlock & PressuremeterTestBlock = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: PRESSUREMETER_TEST_BLOCK_TYPE_ID,
         symbol: PRESSUREMETER_TEST_SYMBOL,
         boreholeId: boreholeId, 
@@ -47,6 +46,8 @@ export function checkAndReturnPressuremeterTestBlock({
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
         description: 'Pressuremeter Test',
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

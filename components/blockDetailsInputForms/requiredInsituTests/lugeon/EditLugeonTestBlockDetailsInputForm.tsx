@@ -4,6 +4,7 @@ import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { LugeonTestBlock } from "@/interfaces/LugeonTestBlock";
 import { checkAndReturnLugeonTestBlock } from "@/utils/checkFunctions/checkAndReturnLugeonTestBlock";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
@@ -47,7 +48,7 @@ export function EditLugeonTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnLugeonTestBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -55,7 +56,7 @@ export function EditLugeonTestBlockDetailsInputForm({
             topDepthInMetresStr: topDepthInMetresStr,
             baseDepthInMetresStr: baseDepthInMetresStr,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId, lugeonTestIndex: b.lugeonTestIndex} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

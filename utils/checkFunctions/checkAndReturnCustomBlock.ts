@@ -1,12 +1,9 @@
-import React, { useState } from "react";
-import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { BaseBlock, Block, CUSTOM_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { CustomBlock } from "@/interfaces/CustomBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { stringToDecimalPoint } from "@/utils/numbers";
-import { CustomBlock } from "@/interfaces/CustomBlock";
 import { throwError } from "../error/throwError";
 
 
@@ -49,13 +46,14 @@ export function checkAndReturnCustomBlock({
 
     const newBlock: Block = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: CUSTOM_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         dayWorkStatus: dayWorkStatus,
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
         description: customOperationType.trim(),
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

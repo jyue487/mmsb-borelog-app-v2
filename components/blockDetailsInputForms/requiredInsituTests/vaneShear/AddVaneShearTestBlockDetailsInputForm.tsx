@@ -1,6 +1,7 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
@@ -51,7 +52,7 @@ export function AddVaneShearTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
           
@@ -70,7 +71,6 @@ export function AddVaneShearTestBlockDetailsInputForm({
 
           const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: VANE_SHEAR_TEST_BLOCK_TYPE_ID,
             vaneShearTestIndex: vaneShearTestIndex,
             boreholeId: boreholeId, 
@@ -78,8 +78,10 @@ export function AddVaneShearTestBlockDetailsInputForm({
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Vane Shear Test',
+            createdAt: new Date(),
+            updatedAt: null,
           };
-          setBlocks(blocks => [...blocks, newBlock]);
+          setBlocks(await addBlockAsync(blocks, newBlock));
           setIsAddNewBlockButtonPressed(false);
         }}
       />

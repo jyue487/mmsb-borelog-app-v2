@@ -74,7 +74,6 @@ export function checkAndReturnUndisturbedSampleBlock({
 
     const newBlock: BaseBlock & (UdBlock | MzBlock | PsBlock) = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: undisturbedSampleBlockTypeId,
         boreholeId: boreholeId, 
         sampleIndex: undisturbedSampleIndex,
@@ -90,6 +89,8 @@ export function checkAndReturnUndisturbedSampleBlock({
         bottomColourProperties: bottomColourProperties,
         bottomSoilProperties: bottomSoilProperties,
         recoveryLengthInMetres: recoveryLengthInMetres,
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

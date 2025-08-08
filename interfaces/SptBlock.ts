@@ -4,7 +4,6 @@ import { ColourProperties } from './ColourProperties';
 import { SoilProperties } from './SoilProperties';
 
 export interface SptBlock {
-    id: number;
     blockTypeId: typeof SPT_BLOCK_TYPE_ID;
     sptIndex: number;
     disturbedSampleIndex: number;

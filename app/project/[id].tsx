@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { SQLiteDatabase, SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
+import { SQLiteDatabase, SQLiteRunResult } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
@@ -9,9 +9,9 @@ import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
 import { addBoreholeDbAsync } from '@/db/borehole/addBoreholeDbAsync';
 import { editBoreholeDbAsync } from '@/db/borehole/editBoreholeDbAsync';
 import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
+import { db } from '@/db/db';
 
 export default function ProjectScreen() {
-  const db: SQLiteDatabase = useSQLiteContext()
   const { id, title } = useLocalSearchParams();
   if (typeof id != 'string' || typeof title != 'string') {
     throw new Error(`Error. id: ${id}`);

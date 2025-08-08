@@ -68,7 +68,7 @@ export interface Blocks {
   Ha: HaBlock;
   WashBoring: WashBoringBlock;
   ConcreteSlab: ConcreteSlabBlock;
-  ConcretePremix: AsphaltBlock;
+  Asphalt: AsphaltBlock;
   EndOfBorehole: EndOfBoreholeBlock;
   Custom: CustomBlock;
   VaneShearTest: VaneShearTestBlock;
@@ -80,8 +80,10 @@ export interface Blocks {
 }
 
 export interface BaseBlock {
-  blockId: number;
+  id: number;
   boreholeId: number;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export type Block<K extends keyof Blocks = keyof Blocks> = BaseBlock & Blocks[K];

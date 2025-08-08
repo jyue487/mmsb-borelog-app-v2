@@ -38,7 +38,6 @@ export function checkAndReturnLugeonTestBlock({
 
     const newBlock: BaseBlock & LugeonTestBlock = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: LUGEON_TEST_BLOCK_TYPE_ID,
         symbol: LUGEON_TEST_SYMBOL,
         boreholeId: boreholeId, 
@@ -47,6 +46,8 @@ export function checkAndReturnLugeonTestBlock({
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
         description: 'Lugeon Test',
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

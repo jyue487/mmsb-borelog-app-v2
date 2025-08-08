@@ -7,6 +7,7 @@ import { styles } from "@/constants/styles";
 import { BaseBlock, Block, CONCRETE_SLAB_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { ConcreteSlabBlock } from "@/interfaces/ConcreteSlabBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditConcreteSlabBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -43,7 +44,7 @@ export function EditConcreteSlabBlockDetailsInputForm({ style, blocks, setBlocks
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
           
@@ -61,15 +62,16 @@ export function EditConcreteSlabBlockDetailsInputForm({ style, blocks, setBlocks
 
           const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: CONCRETE_SLAB_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Concrete Slab',
+            createdAt: new Date(),
+            updatedAt: null,
           };
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

@@ -3,6 +3,7 @@ import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { checkAndReturnEndOfBoreholeBlock } from "@/utils/checkFunctions/checkAndReturnEndOfBoreholeBlock";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 import { useState } from "react";
 import { Button, View, ViewProps } from "react-native";
 
@@ -36,7 +37,7 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
       />
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnEndOfBoreholeBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -45,7 +46,7 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
             installationDepthInMetresStr: installationDepthInMetresStr,
             remarks: remarks,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

@@ -1,9 +1,10 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { VaneShearTestBlock } from "@/interfaces/VaneShearTestBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
@@ -47,7 +48,7 @@ export function EditVaneShearTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
           
@@ -65,7 +66,6 @@ export function EditVaneShearTestBlockDetailsInputForm({
 
           const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: VANE_SHEAR_TEST_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId,
             vaneShearTestIndex: 1,
@@ -73,8 +73,10 @@ export function EditVaneShearTestBlockDetailsInputForm({
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Vane Shear Test',
+            createdAt: oldBlock.createdAt,
+            updatedAt: new Date(),
           };
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId, vaneShearTestIndex: b.vaneShearTestIndex} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

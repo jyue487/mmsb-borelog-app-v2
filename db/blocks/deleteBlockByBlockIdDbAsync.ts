@@ -1,5 +1,5 @@
-import { SQLiteDatabase } from "expo-sqlite";
+import { db } from "../db";
 
-export async function deleteBlockByBlockIdDbAsync(db: SQLiteDatabase, blockId: number) {
+export async function deleteBlockByBlockIdDbAsync(blockId: number) {
     await db.runAsync('DELETE FROM blocks WHERE id = ?', blockId);
 }

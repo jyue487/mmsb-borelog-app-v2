@@ -1,3 +1,4 @@
+import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE } from "@/constants/endOfBorehole";
 import { styles } from "@/constants/styles";
 import { Block } from "@/interfaces/Block";
 import { stringToDecimalPoint } from "@/utils/numbers";
@@ -43,13 +44,7 @@ export function EndOfBoreholeInputQuestions({
         {
           isSelectOtherInstallationsPressed && (
             <FlatList
-              data={[
-                'None',
-                'Water Standpipe',
-                'Standpipe Piezometer',
-                'Inclinometer',
-                'Custom'
-              ]}
+              data={END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST}
               keyExtractor={item => item}
               renderItem={({ item }) => (
                 <TouchableOpacity 
@@ -67,7 +62,7 @@ export function EndOfBoreholeInputQuestions({
           )
         }
         {
-          otherInstallations === 'Custom' && (
+          otherInstallations === END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM && (
             <TextInput
               value={customInstallations}
               onChangeText={setCustomInstallations}
@@ -78,7 +73,7 @@ export function EndOfBoreholeInputQuestions({
       </View>
     </View>
     {
-      otherInstallations !== 'None' && (
+      otherInstallations !== END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE && (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text>Installation Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
           <TextInput

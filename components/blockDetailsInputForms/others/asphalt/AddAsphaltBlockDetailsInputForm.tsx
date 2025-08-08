@@ -5,6 +5,7 @@ import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWork
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { ASPHALT_BLOCK_TYPE_ID, Block } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddAsphaltBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -47,7 +48,7 @@ export function AddAsphaltBlockDetailsInputForm({ style, boreholeId, blocks, set
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
           
@@ -63,17 +64,18 @@ export function AddAsphaltBlockDetailsInputForm({ style, boreholeId, blocks, set
           const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
-          const newConcretePremixBlock: Block = {
+          const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: ASPHALT_BLOCK_TYPE_ID,
             boreholeId: boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Asphalt, Tar, Bituminous Material',
+            createdAt: new Date(),
+            updatedAt: null,
           };
-          setBlocks(blocks => [...blocks, newConcretePremixBlock]);
+          setBlocks(await addBlockAsync(blocks, newBlock));
           setIsAddNewBlockButtonPressed(false);
         }}
       />

@@ -14,8 +14,8 @@ export function DayWorkStatusComponent({ dayWorkStatus }: DayWorkStatusProps) {
   return (
     <View style={{ alignItems: 'flex-start' }}>
       <Text>{dayWorkStatus.dayWorkStatusType}: {getDateTime(dayWorkStatus.date, dayWorkStatus.time)}</Text>
-      {(!dayWorkStatus.waterLevelInMetres) ? null : <Text>Water Level: {dayWorkStatus.waterLevelInMetres}m</Text>}
-      {(!dayWorkStatus.casingDepthInMetres) ? null : <Text>Casing Depth: {dayWorkStatus.casingDepthInMetres}m</Text>}
+      {(dayWorkStatus.waterLevelInMetres === null) ? null : <Text>Water Level: {dayWorkStatus.waterLevelInMetres}m</Text>}
+      {(dayWorkStatus.casingDepthInMetres === null) ? null : <Text>Casing Depth: {dayWorkStatus.casingDepthInMetres}m</Text>}
     </View>
   );
 }

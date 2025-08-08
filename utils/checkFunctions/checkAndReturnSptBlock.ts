@@ -170,7 +170,6 @@ export function checkAndReturnSptBlock({
 
     const newBlock: Block = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: SPT_BLOCK_TYPE_ID,
         boreholeId: boreholeId,
         sptIndex: sptIndex,
@@ -209,6 +208,8 @@ export function checkAndReturnSptBlock({
         isMainIncPen2Active: isMainIncPen2Active,
         isMainIncPen3Active: isMainIncPen3Active,
         isMainIncPen4Active: isMainIncPen4Active,
+        createdAt: new Date(),
+        updatedAt: null,
     };
     return newBlock;
 }

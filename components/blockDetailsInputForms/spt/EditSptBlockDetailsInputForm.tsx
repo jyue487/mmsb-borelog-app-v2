@@ -3,14 +3,14 @@ import { Button, View, type ViewProps } from "react-native";
 
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
+import { editBlockDbAsync } from "@/db/blocks/editBlockDbAsync";
 import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { SoilProperties } from "@/interfaces/SoilProperties";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
 import { SptBlockInputQuestions } from "../../inputQuestions/SptBlockInputQuestions";
-import { ColourProperties } from "@/interfaces/ColourProperties";
-import { SoilProperties } from "@/interfaces/SoilProperties";
-import { editSptBlockDbAsync } from "@/db/blocks/sptBlock/editSptBlockDbAsync";
-import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -20,7 +20,6 @@ export type EditSptBlockDetailsInputFormProps = ViewProps & {
 };
 
 export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock, setIsEditState, ...otherProps }: EditSptBlockDetailsInputFormProps) {
-	const db: SQLiteDatabase = useSQLiteContext();
 	const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(oldBlock.dayWorkStatus);
 	const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(oldBlock.topDepthInMetres.toFixed(3));
 	const [seatingIncBlows1Str, setSeatingIncBlows1Str] = useState<string>(oldBlock.seatingIncBlows1.toString() ?? '');
@@ -50,31 +49,6 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [recoveryLengthInMillimetresStr, setRecoveryLengthInMillimetresStr] = useState<string>(oldBlock.recoveryLengthInMillimetres.toString());
 	const [colourProperties, setColourProperties] = useState<ColourProperties>(oldBlock.colourProperties);
 	const [soilProperties, setSoilProperties] = useState<SoilProperties>(oldBlock.soilProperties);
-
-	const editAndReindexSptBlocksAsync = async (blocks: Block[], oldBlock: BaseBlock & SptBlock, newBlock: BaseBlock & SptBlock): Promise<Block[]> => {
-		const updatedBlocks: Block[] = [];
-		let sptIndex: number = 1;
-		let disturbedSampleIndex: number = 1;
-		for (const b of blocks) {
-			if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
-				updatedBlocks.push(b);
-				continue;
-			}
-			const updatedBlock: BaseBlock & SptBlock = (b.blockId === oldBlock.blockId) ? {...newBlock, id: oldBlock.id, blockId: oldBlock.blockId} : {...b};
-			updatedBlock.sptIndex = sptIndex++;
-			updatedBlock.disturbedSampleIndex = (updatedBlock.recoveryLengthInMillimetres === 0) ? -1 : disturbedSampleIndex++;
-			updatedBlocks.push(updatedBlock);
-		}
-		await db.withTransactionAsync(async () => {
-			for (const b of updatedBlocks) {
-				if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
-					continue;
-				}
-				await editSptBlockDbAsync(db, b);
-			}
-		});
-		return updatedBlocks;
-	};
 
 	return (
 		<View style={styles.blockDetailsInputForm}>
@@ -146,7 +120,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 							isMainIncPen3Active: isMainIncPen3Active,
 							isMainIncPen4Active: isMainIncPen4Active,
 						});
-						setBlocks(await editAndReindexSptBlocksAsync(blocks, oldBlock, newBlock));
+						setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
 						setIsEditState(false);
 					} catch (err) {
 						console.log(err);

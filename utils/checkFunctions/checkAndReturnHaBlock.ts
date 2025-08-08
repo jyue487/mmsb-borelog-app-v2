@@ -46,7 +46,6 @@ export function checkAndReturnHaBlock({
 
     const newBlock: Block = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: HA_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         haSampleIndex: haSampleIndex,
@@ -57,6 +56,8 @@ export function checkAndReturnHaBlock({
         requireSample: requireSample,
         colourProperties: colourProperties,
         soilProperties: soilProperties,
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

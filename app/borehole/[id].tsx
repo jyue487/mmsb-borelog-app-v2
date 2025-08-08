@@ -26,6 +26,7 @@ import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent'
 import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
+import { deleteBlockByBlockIdDbAsync } from '@/db/blocks/deleteBlockByBlockIdDbAsync';
 import { fetchAllBlocksByBoreholeIdDbAsync } from '@/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
@@ -34,11 +35,8 @@ import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
 import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
-import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
-import { deleteBlockByBlockIdDbAsync } from '@/db/blocks/deleteBlockByBlockIdDbAsync';
 
 export default function BoreholeScreen() {
-  const db: SQLiteDatabase = useSQLiteContext();
 	const { id, projectTitle, name } = useLocalSearchParams();
   if (typeof id != 'string' || typeof projectTitle != 'string' || typeof name != 'string') {
     throw new Error(`Error. id: ${id}, projectTitle: ${projectTitle}, name: ${name}`);
@@ -52,9 +50,9 @@ export default function BoreholeScreen() {
 
   useEffect(() => {
     const init = async () => {
-      const borehole: Borehole | null = await fetchBoreholeByIdAsync(db, boreholeId);
-      const project: Project | null = await fetchProjectByIdAsync(db, borehole.projectId);
-      const blocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(db, boreholeId);
+      const borehole: Borehole | null = await fetchBoreholeByIdAsync(boreholeId);
+      const project: Project | null = await fetchProjectByIdAsync(borehole.projectId);
+      const blocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(boreholeId);
       setBorehole(borehole);
       setProject(project);
       setBlocks(blocks);
@@ -70,15 +68,6 @@ export default function BoreholeScreen() {
       </View>
     );
   }
-
-  const removeLastBlock = async () => {
-    if (blocks.length === 0) {
-      return;
-    }
-    const lastBlock: Block = blocks[blocks.length - 1];
-    await deleteBlockByBlockIdDbAsync(db, lastBlock.blockId);
-    setBlocks((blocks: Block[]) => blocks.filter((b: Block) => b.blockId !== lastBlock.blockId));
-  };
 
   const renderFooter = () => (
     <View style={{ gap: 20 }}>
@@ -104,7 +93,18 @@ export default function BoreholeScreen() {
       }
       <Button
         title='Remove Last Block'
-        onPress={removeLastBlock}
+        onPress={async () => {
+          if (blocks.length === 0) {
+            return;
+          }
+          try {
+            const lastBlock: Block = blocks[blocks.length - 1];
+            await deleteBlockByBlockIdDbAsync(lastBlock.id);
+            setBlocks((blocks: Block[]) => blocks.filter((b: Block) => b.id !== lastBlock.id));
+          } catch (err) {
+            console.log(err);
+          }
+        }}
       />
       <Button
         title='Share'

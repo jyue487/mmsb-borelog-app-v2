@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { Button, View, type ViewProps } from "react-native";
 
+import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, UD_BLOCK_TYPE_ID } from "@/interfaces/Block";
-import { UdBlock } from "@/interfaces/UdBlock";
-import { roundToDecimalPoint } from "@/utils/numbers";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
-import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
+import { UdBlock } from "@/interfaces/UdBlock";
 import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
+import { roundToDecimalPoint } from "@/utils/numbers";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditUdBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -44,7 +45,7 @@ export function EditUdBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
             undisturbedSampleBlockTypeId: UD_BLOCK_TYPE_ID,
             blocks: blocks,
@@ -59,19 +60,7 @@ export function EditUdBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
             bottomColourProperties: bottomColourProperties,
             bottomSoilProperties: bottomSoilProperties,
           });
-          setBlocks((blocks: Block[]) => {
-            let sampleIndex: number = 1;
-            return blocks.map((b: Block) => {
-              if (b.blockTypeId !== UD_BLOCK_TYPE_ID) {
-                return b;
-              }
-              const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
-              updatedBlock.id = b.id;
-              updatedBlock.blockId = b.blockId;
-              updatedBlock.sampleIndex = (updatedBlock.recoveryInPercentage === 0) ? -1 : sampleIndex++;
-              return updatedBlock;
-            });
-          });
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

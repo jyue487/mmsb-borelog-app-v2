@@ -1,6 +1,7 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block } from "@/interfaces/Block";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnPressuremeterTestBlock } from "@/utils/checkFunctions/checkAndReturnPressuremeterTestBlock";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
@@ -52,7 +53,7 @@ export function AddPressuremeterTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnPressuremeterTestBlock({
             blocks: blocks,
             boreholeId: boreholeId,
@@ -60,7 +61,7 @@ export function AddPressuremeterTestBlockDetailsInputForm({
             topDepthInMetresStr: topDepthInMetresStr,
             baseDepthInMetresStr: baseDepthInMetresStr,
           });
-          setBlocks(blocks => [...blocks, newBlock]);
+          setBlocks(await addBlockAsync(blocks, newBlock));
           setIsAddNewBlockButtonPressed(false);
         }}
       />

@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block, CONCRETE_SLAB_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddConcreteSlabBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -47,7 +48,7 @@ export function AddConcreteSlabBlockDetailsInputForm({ style, boreholeId, blocks
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
           
@@ -65,15 +66,16 @@ export function AddConcreteSlabBlockDetailsInputForm({ style, boreholeId, blocks
 
           const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: CONCRETE_SLAB_BLOCK_TYPE_ID,
             boreholeId: boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Concrete Slab',
+            createdAt: new Date(),
+            updatedAt: null,
           };
-          setBlocks(blocks => [...blocks, newBlock]);
+          setBlocks(await addBlockAsync(blocks, newBlock));
           setIsAddNewBlockButtonPressed(false);
         }}
       />

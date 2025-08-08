@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
+import { SQLiteRunResult } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
@@ -9,18 +9,18 @@ import { ProjectComponent } from '@/components/project/ProjectComponent';
 import { addProjectDbAsync } from '@/db/project/addProjectDbAsync';
 import { editProjectDbAsync } from '@/db/project/editProjectDbAsync';
 import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
+import { db } from '@/db/db';
 
 export default function ProjectListScreen() {
-  const db = useSQLiteContext()
   // const db = SQLite.openDatabaseSync('mmsb.db');
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    const initDb = async () => {
+    const init = async () => {
       await fetchAllProjects();
     };
-    initDb();
+    init();
   }, []);
 
   // TODO: How to make it safe from SQL injections?

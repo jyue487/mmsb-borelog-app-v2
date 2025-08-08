@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Button, type ViewProps } from "react-native";
 
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { Colour } from "@/constants/colour";
-import { RockType } from "@/constants/rock";
-import { Block } from "@/interfaces/Block";
+import { BaseBlock, Block } from "@/interfaces/Block";
 import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
 import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { RockProperties } from "@/interfaces/RockProperties";
+import { CoringBlock } from "@/interfaces/CoringBlock";
+import { addBlockDbAsync } from "@/db/blocks/addBlockDbAsync"; 
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCoringBlockDetailsInputFormProps = ViewProps & {
 	boreholeId: number;
@@ -52,7 +53,7 @@ export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setB
 		/>
 		<Button
 			title='Confirm'
-			onPress={() => {
+			onPress={async () => {
 				const newBlock: Block = checkAndReturnCoringBlock({
 					blocks: blocks,
 					boreholeId: boreholeId,
@@ -64,7 +65,7 @@ export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setB
 					colourProperties: colourProperties,
 					rockProperties: rockProperties,
 				});
-				setBlocks(blocks => [...blocks, newBlock]);
+				setBlocks(await addBlockAsync(blocks, newBlock));
 				setIsAddNewBlockButtonPressed(false);
 			}}
 		/>

@@ -9,6 +9,7 @@ import { ColourProperties } from "@/interfaces/ColourProperties";
 import { HaBlock } from "@/interfaces/HaBlock";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnHaBlock } from "@/utils/checkFunctions/checkAndReturnHaBlock";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditHaBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -37,7 +38,7 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnHaBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -48,7 +49,7 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
             colourProperties: colourProperties,
             soilProperties: soilProperties,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId, haSampleIndex: b.haSampleIndex} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

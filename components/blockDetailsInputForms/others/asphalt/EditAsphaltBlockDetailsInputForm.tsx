@@ -7,6 +7,7 @@ import { styles } from "@/constants/styles";
 import { AsphaltBlock } from "@/interfaces/AsphaltBlock";
 import { ASPHALT_BLOCK_TYPE_ID, BaseBlock, Block } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditAsphaltBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -43,7 +44,7 @@ export function EditAsphaltBlockDetailsInputForm({ style, blocks, setBlocks, old
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
 
@@ -61,15 +62,16 @@ export function EditAsphaltBlockDetailsInputForm({ style, blocks, setBlocks, old
 
           const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: ASPHALT_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Asphalt, Tar, Bituminous Material',
+            createdAt: oldBlock.createdAt,
+            updatedAt: new Date(),
           };
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />

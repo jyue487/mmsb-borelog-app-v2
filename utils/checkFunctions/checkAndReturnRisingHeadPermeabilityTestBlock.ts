@@ -40,7 +40,6 @@ export function checkAndReturnRisingHeadPermeabilityTestBlock({
 
     const newBlock: BaseBlock & RisingHeadPermeabilityTestBlock = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
         symbol: RISING_HEAD_PERMEABILITY_TEST_SYMBOL,
         boreholeId: boreholeId, 
@@ -49,6 +48,8 @@ export function checkAndReturnRisingHeadPermeabilityTestBlock({
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
         description: 'Rising Head Permeability Test',
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

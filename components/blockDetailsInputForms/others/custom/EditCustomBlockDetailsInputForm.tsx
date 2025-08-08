@@ -7,6 +7,7 @@ import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { CustomBlock } from "@/interfaces/CustomBlock";
 import { checkAndReturnCustomBlock } from "@/utils/checkFunctions/checkAndReturnCustomBlock";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditCustomBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -52,7 +53,7 @@ export function EditCustomBlockDetailsInputForm({ style, blocks, setBlocks, oldB
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnCustomBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -61,7 +62,7 @@ export function EditCustomBlockDetailsInputForm({ style, blocks, setBlocks, oldB
             baseDepthInMetresStr: baseDepthInMetresStr,
             customOperationType: customOperationType,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />
