@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { DayWorkStatusComponent } from "@/components/DayWorkStatusComponent";
+import { DayWorkStatusComponent } from "@/components/dayWorkStatus/DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 import { DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { SptBlock } from '@/interfaces/SptBlock';
 import { useState } from "react";
 import { EditSptBlockDetailsInputForm } from "../blockDetailsInputForms/spt/EditSptBlockDetailsInputForm";
-import { styles } from "@/constants/styles";
 
 export type SptBlockProps = ViewProps & {
 	block: BaseBlock & SptBlock;

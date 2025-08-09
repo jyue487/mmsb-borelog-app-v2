@@ -1,11 +1,10 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { useState } from "react";
 import { EditEndOfBoreholeBlockDetailsInputForm } from "@/components/blockDetailsInputForms/endOfBorehole/EditEndOfBoreholeBlockDetailsInputForm";
-import { BaseBlock, Block } from "@/interfaces/Block";
 import { styles } from "@/constants/styles";
+import { BaseBlock, Block } from "@/interfaces/Block";
+import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
+import { useState } from "react";
 
 export type EndOfBoreholeBlockProps = ViewProps & {
 	block: BaseBlock & EndOfBoreholeBlock;

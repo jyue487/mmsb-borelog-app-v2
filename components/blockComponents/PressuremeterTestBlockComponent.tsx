@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { PressuremeterTestBlock } from '@/interfaces/PressuremeterTestBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { BaseBlock, Block } from "@/interfaces/Block";
-import { useState } from "react";
 import { EditPressuremeterTestBlockDetailsInputForm } from "@/components/blockDetailsInputForms/requiredInsituTests/pressuremeter/EditPressuremeterTestBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
 import { PRESSUREMETER_TEST_SYMBOL } from "@/constants/symbol";
+import { BaseBlock, Block } from "@/interfaces/Block";
+import { PressuremeterTestBlock } from '@/interfaces/PressuremeterTestBlock';
+import { useState } from "react";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type PressuremeterTestBlockProps = ViewProps & {
 	block: BaseBlock & PressuremeterTestBlock;

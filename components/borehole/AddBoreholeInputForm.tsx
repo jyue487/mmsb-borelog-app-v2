@@ -5,6 +5,7 @@ import { Button, KeyboardAvoidingView, TextInput } from "react-native";
 import { styles } from '@/constants/styles';
 import { AddBoreholeParams } from '@/interfaces/Borehole';
 import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
+import { SignatureQuestionComponent } from '../signature/SignatureQuestionComponent';
 
 type AddBoreholeInputFormProps = {
   addBorehole: (addBoreholeParams: AddBoreholeParams) => void;
@@ -23,6 +24,9 @@ export function AddBoreholeInputForm ({
   const [eastingInMetresStr, setEastingInMetresStr] = useState<string>('');
   const [northingInMetresStr, setNorthingInMetersStr] = useState<string>('');
   const [reducedLevelInMetresStr, setReducedLevelInMetresStr] = useState<string>('');
+  const [drillerName, setDrillerName] = useState<string>('');
+  const [verifierName, setVerifierName] = useState<string>('');
+  const [verifierSignatureBase64, setVerifierSignatureBase64] = useState<string>('');
 
   return (
     <KeyboardAvoidingView style={styles.boreholeInputForm}>
@@ -75,6 +79,24 @@ export function AddBoreholeInputForm ({
         value={reducedLevelInMetresStr}
         onChangeText={setReducedLevelInMetresStr}
       />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Driller Name'
+        value={drillerName}
+        onChangeText={setDrillerName}
+      />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Verifier Name'
+        value={verifierName}
+        onChangeText={setVerifierName}
+      />
+      <SignatureQuestionComponent 
+        verifierSignatureBase64={verifierSignatureBase64} 
+        setVerifierSignatureBase64={setVerifierSignatureBase64} 
+      />
       <Button
         title='Confirm'
         onPress={() => {
@@ -110,6 +132,10 @@ export function AddBoreholeInputForm ({
             eastingInMetres: eastingInMetres,
             northingInMetres: northingInMetres,
             reducedLevelInMetres: reducedLevelInMetres,
+            drillerName: drillerName.trim(),
+            verifierName: verifierName.trim(),
+            verifierSignatureBase64: verifierSignatureBase64,
+            verifierSignDate: (verifierSignatureBase64.length === 0) ? null : new Date(),
           });
           setIsAddButtonPressed(false);
         }}

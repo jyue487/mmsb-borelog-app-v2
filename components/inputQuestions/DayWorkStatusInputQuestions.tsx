@@ -4,8 +4,8 @@ import { DAY_CONTINUE_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST,
 import { styles } from '@/constants/styles';
 import { stringToDecimalPoint } from '@/utils/numbers';
 import { useState } from 'react';
-import { DateSelectorComponent } from '../datetime/DateSelectorComponent';
-import { TimeSelectorComponent } from '../datetime/TimeSelectorComponent';
+import { DayWorkStatusDateSelectorComponent } from '../datetime/DayWorkStatusDateSelectorComponent';
+import { DayWorkStatusTimeSelectorComponent } from '../datetime/DayWorkStatusTimeSelectorComponent';
 
 type DayWorkStatusInputQuestionsProps = {
 	dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
@@ -86,11 +86,11 @@ export function DayWorkStatusInputQuestions({
 				<>
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ paddingVertical: 10 }}>Day {(dayWorkStatusType === DAY_START_WORK_TYPE) ? 'Start' : 'End'} Work Date<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<DateSelectorComponent dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
+					<DayWorkStatusDateSelectorComponent dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
 				</View>
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ paddingVertical: 10 }}>Day {(dayWorkStatusType === DAY_START_WORK_TYPE) ? 'Start' : 'End'} Work Time<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<TimeSelectorComponent dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
+					<DayWorkStatusTimeSelectorComponent dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
 				</View>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 					<Text>Water Level(m): </Text>

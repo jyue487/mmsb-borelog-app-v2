@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { styles } from "@/constants/styles";
 import { CORING_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { CoringBlock } from '@/interfaces/CoringBlock';
 import { useState } from "react";
 import { EditCoringBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/coring/EditCoringBlockDetailsInputForm";
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CoringBlockProps = ViewProps & {
 	block: BaseBlock & CoringBlock;

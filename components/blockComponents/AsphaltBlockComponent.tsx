@@ -5,7 +5,7 @@ import { AsphaltBlock } from '@/interfaces/AsphaltBlock';
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { useState } from "react";
 import { EditAsphaltBlockDetailsInputForm } from "../blockDetailsInputForms/others/asphalt/EditAsphaltBlockDetailsInputForm";
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type AsphaltBlockProps = ViewProps & {
 	block: BaseBlock & AsphaltBlock;

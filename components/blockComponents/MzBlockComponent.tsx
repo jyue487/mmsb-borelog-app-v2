@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { styles } from "@/constants/styles";
 import { MZ_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { MzBlock } from '@/interfaces/MzBlock';
 import { useState } from "react";
 import { EditMzBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/mz/EditMzBlockDetailsInputForm";
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type MzBlockProps = ViewProps & {
 	block: BaseBlock & MzBlock;

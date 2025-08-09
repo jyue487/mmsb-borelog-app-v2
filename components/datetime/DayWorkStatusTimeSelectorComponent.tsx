@@ -1,16 +1,15 @@
-import { Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FlatList, Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Keyboard, Platform, Text, TouchableOpacity } from 'react-native';
 
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
+import { getTime } from '@/utils/datetime';
 import { useState } from 'react';
-import { getDate, getTime } from '@/utils/datetime';
 
 type Props = {
   dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
 };
 
-export function TimeSelectorComponent({
+export function DayWorkStatusTimeSelectorComponent({
   dayWorkStatus, setDayWorkStatus,
 }: Props) {
 

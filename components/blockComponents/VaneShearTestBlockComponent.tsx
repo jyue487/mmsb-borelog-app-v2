@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { VaneShearTestBlock } from '@/interfaces/VaneShearTestBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { BaseBlock, Block } from "@/interfaces/Block";
-import { useState } from "react";
 import { EditVaneShearTestBlockDetailsInputForm } from "@/components/blockDetailsInputForms/requiredInsituTests/vaneShear/EditVaneShearTestBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
 import { VANE_SHEAR_TEST_SYMBOL } from "@/constants/symbol";
+import { BaseBlock, Block } from "@/interfaces/Block";
+import { VaneShearTestBlock } from '@/interfaces/VaneShearTestBlock';
+import { useState } from "react";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type VaneShearTestBlockProps = ViewProps & {
 	block: BaseBlock & VaneShearTestBlock;

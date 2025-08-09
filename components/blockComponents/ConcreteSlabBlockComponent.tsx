@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { ConcreteSlabBlock } from '@/interfaces/ConcreteSlabBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { ConcreteSlabBlock } from '@/interfaces/ConcreteSlabBlock';
 import { useState } from "react";
 import { EditConcreteSlabBlockDetailsInputForm } from "../blockDetailsInputForms/others/concreteSlab/EditConcreteSlabBlockDetailsInputForm";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type ConcreteSlabBlockProps = ViewProps & {
 	block: BaseBlock & ConcreteSlabBlock;

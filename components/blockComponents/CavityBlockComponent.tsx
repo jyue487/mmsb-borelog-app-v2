@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { CavityBlock } from '@/interfaces/CavityBlock';
 import { useState } from "react";
 import { EditCavityBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/cavity/EditCavityBlockDetailsInputForm";
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CavityBlockProps = ViewProps & {
 	block: BaseBlock & CavityBlock;

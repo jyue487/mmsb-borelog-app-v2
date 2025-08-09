@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { styles } from "@/constants/styles";
 import { HA_SYMBOL } from "@/constants/symbol";
-import { HaBlock } from '@/interfaces/HaBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { HaBlock } from '@/interfaces/HaBlock';
 import { useState } from "react";
 import { EditHaBlockDetailsInputForm } from "../blockDetailsInputForms/others/ha/EditHaBlockDetailsInputForm";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type HaBlockProps = ViewProps & {
 	block: BaseBlock & HaBlock;

@@ -1,12 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { styles } from "@/constants/styles";
 import { UD_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { UdBlock } from '@/interfaces/UdBlock';
 import { useState } from "react";
 import { EditUdBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/ud/EditUdBlockDetailsInputForm";
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type UdBlockProps = ViewProps & {
 	block: BaseBlock & UdBlock;

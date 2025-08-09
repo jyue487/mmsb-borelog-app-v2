@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
 import { useState } from "react";
 import { EditWashBoringBlockDetailsInputForm } from "../blockDetailsInputForms/others/washBoring/EditWashBoringBlockDetailsInputForm";
-import { styles } from "@/constants/styles";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type WashBoringBlockProps = ViewProps & {
 	block: BaseBlock & WashBoringBlock;

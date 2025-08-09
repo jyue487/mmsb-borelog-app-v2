@@ -16,7 +16,11 @@ export async function addBoreholeDbAsync(
           diameterOfBoring,
           eastingInMetres,
           northingInMetres,
-          reducedLevelInMetres
+          reducedLevelInMetres,
+          drillerName,
+          verifierName,
+          verifierSignatureBase64,
+          verifierSignDate
         ) VALUES (
           $projectId,
           $name,
@@ -25,7 +29,11 @@ export async function addBoreholeDbAsync(
           $diameterOfBoring,
           $eastingInMetres,
           $northingInMetres,
-          $reducedLevelInMetres
+          $reducedLevelInMetres,
+          $drillerName,
+          $verifierName,
+          $verifierSignatureBase64,
+          $verifierSignDate
         )
         `, {
           $projectId: projectId,
@@ -35,7 +43,11 @@ export async function addBoreholeDbAsync(
           $diameterOfBoring: addBoreholeParams.diameterOfBoring,
           $eastingInMetres: addBoreholeParams.eastingInMetres,
           $northingInMetres: addBoreholeParams.northingInMetres,
-          $reducedLevelInMetres: addBoreholeParams.reducedLevelInMetres
+          $reducedLevelInMetres: addBoreholeParams.reducedLevelInMetres,
+          $drillerName: addBoreholeParams.drillerName,
+          $verifierName: addBoreholeParams.verifierName,
+          $verifierSignatureBase64: addBoreholeParams.verifierSignatureBase64,
+          $verifierSignDate: addBoreholeParams.verifierSignDate?.toISOString() ?? null,
         }
     );
     return {

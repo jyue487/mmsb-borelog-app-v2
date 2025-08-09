@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Alert, Button, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useRef, useState } from 'react';
+import { Alert, Button, Image, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { MaterialIcons } from '@expo/vector-icons';
+import SignatureCanvas from 'react-native-signature-canvas';
 
 // Local imports
 import { styles } from '@/constants/styles';
 import { Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
-import { MaterialIcons } from '@expo/vector-icons';
+import { SignatureQuestionComponent } from '../signature/SignatureQuestionComponent';
 
 type EditBoreholeInputFormProps = {
   oldBorehole: Borehole;
@@ -28,6 +30,9 @@ export function EditBoreholeInputForm ({
   const [eastingInMetresStr, setEastingInMetresStr] = useState<string>(oldBorehole.eastingInMetres?.toFixed(3) ?? '');
   const [northingInMetresStr, setNorthingInMetersStr] = useState<string>(oldBorehole.northingInMetres?.toFixed(3) ?? '');
   const [reducedLevelInMetresStr, setReducedLevelInMetresStr] = useState<string>(oldBorehole.reducedLevelInMetres?.toFixed(3) ?? '');
+  const [drillerName, setDrillerName] = useState<string>(oldBorehole.drillerName);
+  const [verifierName, setVerifierName] = useState<string>(oldBorehole.verifierName);
+  const [verifierSignatureBase64, setVerifierSignatureBase64] = useState<string>(oldBorehole.verifierSignatureBase64);
 
   return (
     <View style={styles.boreholeInputForm}>
@@ -80,6 +85,24 @@ export function EditBoreholeInputForm ({
         value={reducedLevelInMetresStr}
         onChangeText={setReducedLevelInMetresStr}
       />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Driller Name'
+        value={drillerName}
+        onChangeText={setDrillerName}
+      />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Verifier Name'
+        value={verifierName}
+        onChangeText={setVerifierName}
+      />
+      <SignatureQuestionComponent 
+        verifierSignatureBase64={verifierSignatureBase64} 
+        setVerifierSignatureBase64={setVerifierSignatureBase64} 
+      />
       <Button
         title='Confirm'
         onPress={() => {
@@ -116,6 +139,10 @@ export function EditBoreholeInputForm ({
             eastingInMetres: eastingInMetres,
             northingInMetres: northingInMetres,
             reducedLevelInMetres: reducedLevelInMetres,
+            drillerName: drillerName.trim(),
+            verifierName: verifierName.trim(),
+            verifierSignatureBase64: verifierSignatureBase64,
+            verifierSignDate: (verifierSignatureBase64.length === 0) ? null : new Date(),
           })
           setIsEditState(false);
         }}

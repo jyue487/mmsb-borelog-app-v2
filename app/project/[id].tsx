@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SQLiteDatabase, SQLiteRunResult } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
+import { useEffect, useRef, useState } from 'react';
+import { Button, FlatList, Image, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // Local Imports
 import { AddBoreholeInputForm } from '@/components/borehole/AddBoreholeInputForm';
@@ -10,6 +10,7 @@ import { addBoreholeDbAsync } from '@/db/borehole/addBoreholeDbAsync';
 import { editBoreholeDbAsync } from '@/db/borehole/editBoreholeDbAsync';
 import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { db } from '@/db/db';
+import { deserializeDateTime } from '@/json/deserializeDateTime';
 
 export default function ProjectScreen() {
   const { id, title } = useLocalSearchParams();
@@ -54,13 +55,13 @@ export default function ProjectScreen() {
     try {
       const result: SQLiteRunResult = await editBoreholeDbAsync(db, editBoreholeParams);
       setBoreholes((prevBoreholes: Borehole[]) =>
-        prevBoreholes.map((bh: Borehole) =>
+        prevBoreholes.map((bh: Borehole): Borehole =>
           (bh.id === editBoreholeParams.id)
           ? { 
-            ...bh, 
-            ...editBoreholeParams 
+            ...editBoreholeParams,
+            projectId: bh.projectId
           } 
-          : bh
+          : {...bh}
         )
       );
     } catch (err) {
@@ -82,6 +83,10 @@ export default function ProjectScreen() {
       eastingInMetres: row.eastingInMetres,
       northingInMetres: row.northingInMetres,
       reducedLevelInMetres: row.reducedLevelInMetres,
+      drillerName: row.drillerName,
+      verifierName: row.verifierName,
+      verifierSignatureBase64: row.verifierSignatureBase64,
+      verifierSignDate: (row.verifierSignDate === null) ? null : deserializeDateTime(row.verifierSignDate),
     }));
     setBoreholes(boreholes);
   };

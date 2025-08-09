@@ -1,11 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { CustomBlock } from '@/interfaces/CustomBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { useState } from "react";
-import { BaseBlock, Block } from "@/interfaces/Block";
-import { EditCustomBlockDetailsInputForm } from "../blockDetailsInputForms/others/custom/EditCustomBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
+import { BaseBlock, Block } from "@/interfaces/Block";
+import { CustomBlock } from '@/interfaces/CustomBlock';
+import { useState } from "react";
+import { EditCustomBlockDetailsInputForm } from "../blockDetailsInputForms/others/custom/EditCustomBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CustomBlockProps = ViewProps & {
 	block: BaseBlock & CustomBlock;

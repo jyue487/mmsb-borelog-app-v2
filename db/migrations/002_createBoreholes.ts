@@ -18,6 +18,10 @@ export const MIGRATION_002: Migration = {
                 eastingInMetres REAL,
                 northingInMetres REAL,
                 reducedLevelInMetres REAL,
+                drillerName TEXT,
+                verifierName TEXT,
+                verifierSignatureBase64 TEXT,
+                verifierSignDate TEXT,
                 FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
             );
             `
