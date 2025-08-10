@@ -134,7 +134,7 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 					setBlocks(await addBlockAsync(blocks, newBlock));
 					setIsAddNewBlockButtonPressed(false);
 				} catch (err) {
-					console.log(err);
+					alert(err);
 				}
 			}}
 		/>

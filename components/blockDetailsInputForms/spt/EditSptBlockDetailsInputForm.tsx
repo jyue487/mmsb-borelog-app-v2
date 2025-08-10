@@ -123,7 +123,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 						setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
 						setIsEditState(false);
 					} catch (err) {
-						console.log(err);
+						alert(err);
 					}
 				}}
 			/>
