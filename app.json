@@ -16,6 +16,7 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
+      "allowBackup": false,
       "edgeToEdgeEnabled": true,
       "package": "com.jyue487.mmsbborelogapp"
     },
