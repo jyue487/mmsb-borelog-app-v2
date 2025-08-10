@@ -199,6 +199,7 @@ export default function BoreholeScreen() {
             }
           }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           ListFooterComponent={renderFooter}
           contentContainerStyle={{ paddingBottom: 500 }}
           style={{ width: '100%' }}

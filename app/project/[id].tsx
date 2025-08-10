@@ -126,6 +126,7 @@ export default function ProjectScreen() {
         keyExtractor={(borehole: Borehole) => borehole.id.toString()}
         renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListFooterComponent={renderFooter()}
         contentContainerStyle={{ paddingBottom: 500 }}
         style={{ flexGrow: 0, width: '100%' }}

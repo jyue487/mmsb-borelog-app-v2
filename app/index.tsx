@@ -119,6 +119,7 @@ export default function ProjectListScreen() {
         keyExtractor={(project: Project) => project.id.toString()}
         renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListFooterComponent={renderFooter()}
         contentContainerStyle={{ paddingBottom: 500 }}
         style={{ flexGrow: 0, width: '100%' }}
