@@ -12,7 +12,7 @@ export async function initDb(): Promise<void> {
     // await db.runAsync('DROP TABLE IF EXISTS boreholes');
     // await db.runAsync('DROP TABLE IF EXISTS blockTypes');
     // await db.runAsync('DROP TABLE IF EXISTS blocks');
-    await db.runAsync('PRAGMA user_version = 0;');
+    // await db.runAsync('PRAGMA user_version = 0;');
 
     // Optional: verify PRAGMA values
     const journal = await db.getFirstAsync('PRAGMA journal_mode;');
