@@ -45,10 +45,9 @@ export function checkAndReturnEndOfBoreholeBlock ({
             description += ` with installation of ${otherInstallations}`;
         }
         description += ` to ${installationDepthInMetres}m`;
-
-        if (remarks.trim().length > 0) {
-            description += `. Remarks: ${remarks.trim()}`;
-        }
+    }
+    if (remarks.trim().length > 0) {
+        description += `. Remarks: ${remarks.trim()}`;
     }
     const newBlock: Block = {
         id: blocks.length + 1,

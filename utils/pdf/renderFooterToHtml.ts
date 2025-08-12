@@ -36,7 +36,7 @@ export function renderFooterToHtml(borehole: Borehole, dateStarted: Date | null,
                 <td rowspan="9" style="text-align: left; vertical-align: top; padding: 5pt;">
                     <table style="font-size: 4pt; table-layout: auto;">
                         <tr>
-                            <td colspan="2" style="border: 0; height: 15pt; text-align: left; vertical-align: middle; padding: 0;">
+                            <td colspan="2" style="border: 0; height: 15pt; text-align: left; vertical-align: top; padding: 0;">
                                 Checked by: ${(borehole.verifierName.length === 0) ? '' : borehole.verifierName}
                             </td>
                         </tr>
@@ -44,7 +44,7 @@ export function renderFooterToHtml(borehole: Borehole, dateStarted: Date | null,
                             <td style="border: 0; height: 60pt; white-space: nowrap; width: 1%; text-align: left; vertical-align: middle; padding: 0;">
                                 Signature:
                             </td>
-                            <td style="border: 0; height: 60pt; text-align: left; vertical-align: middle; padding: 0;">
+                            <td style="border: 0; height: 60pt; text-align: left; vertical-align: top; padding: 0;">
                                 ${(borehole.verifierSignatureBase64.length === 0) ? '' : `<img src=${borehole.verifierSignatureBase64} style="max-height: 95%; max-width: 95%; width: auto;">`}
                             </td>
                         </tr>
