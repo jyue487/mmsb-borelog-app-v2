@@ -178,7 +178,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                 result += renderAsphaltBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-                result += renderEndOfBoreholeBlockToHtml(block, pageIndex * 90 - scaleTickIndexWrapper[0], scaleTickIndexWrapper);
+                result += renderEndOfBoreholeBlockToHtml(block, Math.max((block.remarks.length === 0) ? 8 : 15, pageIndex * 90 - scaleTickIndexWrapper[0]), scaleTickIndexWrapper);
                 break;
             case CUSTOM_BLOCK_TYPE_ID:
                 result += renderCustomBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);

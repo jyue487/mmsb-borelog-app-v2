@@ -39,6 +39,7 @@ export function EndOfBoreholeBlockComponent({ block, blocks, setBlocks, ...other
 			</View>
 			<View style={{ flex: 1, gap: 20 }}>
 				<Text>{block.description}</Text>
+				{(block.remarks.length === 0) ? '' : <Text>Remarks: {block.remarks}.</Text>}
 			</View>
 		</Pressable>
 	);

@@ -30,7 +30,7 @@ export function checkAndReturnEndOfBoreholeBlock ({
     const endOfBoreholeDepthInMetres: number = blocks[blocks.length - 1].baseDepthInMetres;
 
     let installationDepthInMetres: number | null = null;
-    let description: string = `End of BH at ${endOfBoreholeDepthInMetres}m`;
+    let description: string = `End of BH at ${endOfBoreholeDepthInMetres.toFixed(2)}m`;
     if (otherInstallations !== END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE) {
         if (!stringIsNonNegativeFloat(installationDepthInMetresStr)) {
             throwError('Error: Installation Depth');
@@ -44,11 +44,10 @@ export function checkAndReturnEndOfBoreholeBlock ({
         } else {
             description += ` with installation of ${otherInstallations}`;
         }
-        description += ` to ${installationDepthInMetres}m`;
+        description += ` to ${installationDepthInMetres.toFixed(2)}m`;
     }
-    if (remarks.trim().length > 0) {
-        description += `. Remarks: ${remarks.trim()}`;
-    }
+    description += '.';
+
     const newBlock: Block = {
         id: blocks.length + 1,
         boreholeId: boreholeId,
@@ -66,7 +65,7 @@ export function checkAndReturnEndOfBoreholeBlock ({
         otherInstallations: otherInstallations,
         customInstallations: customInstallations,
         installationDepthInMetres: installationDepthInMetres,
-        remarks: remarks,
+        remarks: remarks.trim(),
         createdAt: new Date(),
         updatedAt: null,
     };

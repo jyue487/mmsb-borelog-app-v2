@@ -11,7 +11,7 @@ export function renderEndOfBoreholeBlockToHtml(block: BaseBlock & EndOfBoreholeB
             <td></td>
             <td></td>
             <td></td>
-            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description + ((block.remarks.length === 0) ? '' : `<br><br>Remarks: ${block.remarks}.`))}
             <td></td>
             <td></td>
             <td></td>
