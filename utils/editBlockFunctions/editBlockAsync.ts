@@ -18,6 +18,7 @@ import {
     CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
     LUGEON_TEST_BLOCK_TYPE_ID,
     PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+    BaseBlock,
 } from "@/interfaces/Block";
 import { editAndReindexSptBlocksAsync } from "./sptBlock/editAndReindexSptBlocksAsync";
 import { throwError } from "../error/throwError";
@@ -38,50 +39,93 @@ import { editAndReindexRisingHeadPermeabilityTestBlocksAsync } from "./risingHea
 import { editAndReindexConstantHeadPermeabilityTestBlocksAsync } from "./constantHeadPermeabilityTestBlock/editAndReindexConstantHeadPermeabilityTestBlocksAsync";
 import { editAndReindexLugeonTestBlocksAsync } from "./lugeonTestBlock/editAndReindexLugeonTestBlocksAsync";
 import { editAndReindexPressuremeterTestBlocksAsync } from "./pressuremeterTestBlock/editAndReindexPressuremeterTestBlocksAsync";
+import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
+import { checkAndReturnEndOfBoreholeBlock } from "../checkFunctions/checkAndReturnEndOfBoreholeBlock";
+import { stringToDecimalPoint } from "../numbers";
+import { editBlockDbAsync } from "@/db/blocks/editBlockDbAsync";
 
 export async function editBlockAsync(
     blocks: Block[],
     oldBlockId: number,
     newBlock: Block,
 ): Promise<Block[]> {
+    let editedBlocks: Block[] = [];
     switch (newBlock.blockTypeId) {
     case SPT_BLOCK_TYPE_ID:
-        return await editAndReindexSptBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexSptBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case CORING_BLOCK_TYPE_ID:
-        return await editAndReindexCoringBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexCoringBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case CAVITY_BLOCK_TYPE_ID:
-        return await editCavityBlockAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editCavityBlockAsync(blocks, oldBlockId, newBlock);
+        break;
     case UD_BLOCK_TYPE_ID:
-        return await editAndReindexUdBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexUdBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case MZ_BLOCK_TYPE_ID:
-        return await editAndReindexMzBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexMzBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case PS_BLOCK_TYPE_ID:
-        return await editAndReindexPsBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexPsBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case HA_BLOCK_TYPE_ID:
-        return await editAndReindexHaBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexHaBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case WASH_BORING_BLOCK_TYPE_ID:
-        return await editWashBoringBlockAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editWashBoringBlockAsync(blocks, oldBlockId, newBlock);
+        break;
     case CONCRETE_SLAB_BLOCK_TYPE_ID:
-        return await editConcreteSlabBlockAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editConcreteSlabBlockAsync(blocks, oldBlockId, newBlock);
+        break;
     case ASPHALT_BLOCK_TYPE_ID:
-        return await editAsphaltBlockAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAsphaltBlockAsync(blocks, oldBlockId, newBlock);
+        break;
     case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-        return await editEndOfBoreholeBlockAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editEndOfBoreholeBlockAsync(blocks, oldBlockId, newBlock);
+        break;
     case CUSTOM_BLOCK_TYPE_ID:
-        return await editCustomBlockAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editCustomBlockAsync(blocks, oldBlockId, newBlock);
+        break;
     case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
-        return await editAndReindexVaneShearTestBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexVaneShearTestBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-        return await editAndReindexFallingHeadPermeabilityTestBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexFallingHeadPermeabilityTestBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-        return await editAndReindexRisingHeadPermeabilityTestBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexRisingHeadPermeabilityTestBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-        return await editAndReindexConstantHeadPermeabilityTestBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexConstantHeadPermeabilityTestBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case LUGEON_TEST_BLOCK_TYPE_ID:
-        return await editAndReindexLugeonTestBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexLugeonTestBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
-        return await editAndReindexPressuremeterTestBlocksAsync(blocks, oldBlockId, newBlock);
+        editedBlocks = await editAndReindexPressuremeterTestBlocksAsync(blocks, oldBlockId, newBlock);
+        break;
     default:
         throwError('No Such Block');
     }
+
+    const lastBlock : Block = editedBlocks[editedBlocks.length - 1];
+    if (editedBlocks.length === 1 || lastBlock.blockTypeId !== END_OF_BOREHOLE_BLOCK_TYPE_ID) {
+        return editedBlocks;
+    }
+    const endOfBoreholeBlock : BaseBlock & EndOfBoreholeBlock = lastBlock;
+    const checkedEndOfBoreholeBlock: BaseBlock & EndOfBoreholeBlock = await checkAndReturnEndOfBoreholeBlock({
+        blocks: editedBlocks,
+        boreholeId: endOfBoreholeBlock.boreholeId,
+        otherInstallations: endOfBoreholeBlock.otherInstallations,
+        customInstallations: endOfBoreholeBlock.customInstallations,
+        installationDepthInMetresStr: endOfBoreholeBlock.installationDepthInMetres?.toFixed(3) ?? '',
+        remarks: endOfBoreholeBlock.remarks,
+    });
+    const editedEndOfBoreholeBlock: BaseBlock & EndOfBoreholeBlock = {
+        ...checkedEndOfBoreholeBlock,
+        id: endOfBoreholeBlock.id,
+    };
+    await editBlockDbAsync(editedEndOfBoreholeBlock);
+    return [...editedBlocks.slice(0, -1), editedEndOfBoreholeBlock];
 }
