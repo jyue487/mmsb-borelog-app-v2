@@ -107,7 +107,7 @@ export default function BoreholeScreen() {
         }}
       />
       <Button
-        title='Share'
+        title='Share PDF'
         onPress={async () => {
           try {
             const sortedBlocks: Block[] = [...blocks].sort((a: Block, b: Block) => a.topDepthInMetres - b.topDepthInMetres);
