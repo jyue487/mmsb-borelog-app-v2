@@ -35,6 +35,8 @@ import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
 import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
+import { sharePdf } from '@/utils/pdf/sharePdf';
+import { shareExcel } from '@/utils/excel/shareExcel';
 
 export default function BoreholeScreen() {
 	const { id, projectTitle, name } = useLocalSearchParams();
@@ -108,32 +110,11 @@ export default function BoreholeScreen() {
       />
       <Button
         title='Share PDF'
-        onPress={async () => {
-          try {
-            const sortedBlocks: Block[] = [...blocks].sort((a: Block, b: Block) => a.topDepthInMetres - b.topDepthInMetres);
-            const html = (Platform.OS === 'ios') ? await generateBorelogPdfIos(project, borehole, sortedBlocks) : await generateBorelogPdfAndroid(project, borehole, sortedBlocks);
-            const { uri } = await Print.printToFileAsync({
-              html,
-              base64: false,
-            });
-
-            const newFileUri = FileSystem.documentDirectory + `${projectTitle.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
-            await FileSystem.moveAsync({
-              from: uri,
-              to: newFileUri,
-            });
-
-            const isAvailable = await Sharing.isAvailableAsync();
-            if (isAvailable) {
-              await Sharing.shareAsync(newFileUri);
-            } else {
-              alert('Sharing is not available on this device');
-            }
-          } catch (error) {
-            console.error("PDF generation or sharing failed:", error);
-            alert("Error: " + error);
-          }
-        }}
+        onPress={() => sharePdf(project, borehole, blocks)}
+      />
+      <Button 
+        title='Share Excel'
+        onPress={() => shareExcel()}
       />
     </View>
   );
