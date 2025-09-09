@@ -38,7 +38,7 @@ export function SoilPropertiesInputQuestions({
     setIsSelectDominantSoilTypePressed(false);
     setSoilProperties((sp: SoilProperties): SoilProperties => ({...sp, dominantSoilType: dominantSoilType}));
   };
-  const selectSecondarySoilType = (secondarySoilType: SecondarySoilType) => {
+  const selectSecondarySoilType = (secondarySoilType: SecondarySoilType | null) => {
     setSecondarySoilType(secondarySoilType);
     setIsSelectSecondarySoilTypePressed(false);
     setSoilProperties((sp: SoilProperties): SoilProperties => ({...sp, secondarySoilType: secondarySoilType}));
@@ -116,8 +116,11 @@ export function SoilPropertiesInputQuestions({
         {
           isSelectSecondarySoilTypePressed && (
             <FlatList
-              data={(!dominantSoilType) ? [] : SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[dominantSoilType]}
-              keyExtractor={item => item}
+              data={(!dominantSoilType) ? [] : [
+                null,
+                ...SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE[dominantSoilType]
+              ]}
+              keyExtractor={item => (item === null) ? 'NULL' :  item}
               renderItem={({ item }) => (
                 <TouchableOpacity 
                   onPress={() => {
@@ -152,7 +155,10 @@ export function SoilPropertiesInputQuestions({
         {
           isSelectOtherPropertiesPressed && (
             <FlatList
-              data={(!dominantSoilType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[dominantSoilType]}
+              data={(!dominantSoilType) ? [] : [
+                '',
+                ...OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE[dominantSoilType]
+              ]}
               keyExtractor={item => item}
               renderItem={({ item }) => (
                 <TouchableOpacity 

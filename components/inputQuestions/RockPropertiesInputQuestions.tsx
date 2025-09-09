@@ -105,7 +105,15 @@ export function RockPropertiesInputQuestions({
         {
           isSelectOtherPropertiesPressed && (
             <FlatList
-              data={(!rockType) ? [] : OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE[rockType]}
+              data={
+                (!rockType) 
+                ? [] 
+                : (rockType === 'OTHERS' && otherRockType.trim().length === 0) 
+                ? []
+                : [
+                  '',
+                  ...OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE[rockType]
+                ]}
               keyExtractor={item => item}
               renderItem={({ item }) => (
                 <TouchableOpacity 

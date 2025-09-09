@@ -30,7 +30,7 @@ export function ColourPropertiesInputQuestions({
       ...cp, dominantColour: colour
     }));
   };
-  const selectSecondaryColour = (colour: Colour) => {
+  const selectSecondaryColour = (colour: Colour | null) => {
     setSecondaryColour(colour);
     setIsSelectSecondaryColourPressed(false);
     setColourProperties((cp: ColourProperties) => ({
@@ -115,16 +115,19 @@ export function ColourPropertiesInputQuestions({
         {
           isSelectSecondaryColourPressed && (
             <FlatList
-              data={SECONDARY_COLOUR_LIST.filter((colour: Colour) => dominantColour && colour.colourFamily != dominantColour.colourFamily)}
-              keyExtractor={item => item.colourCode}
+              data={(!dominantColour) ? [] : [
+                null,
+                ...SECONDARY_COLOUR_LIST.filter((colour: Colour) => colour.colourFamily != dominantColour.colourFamily)
+              ]}
+              keyExtractor={item => (item === null) ? 'NULL' : item.colourCode}
               renderItem={({ item }) => (
                 <TouchableOpacity 
                   onPress={() => {
                     Keyboard.dismiss();
                     selectSecondaryColour(item);
                   }}
-                  style={[styles.listItem, {backgroundColor: item.colourCode}]}>
-                  <Text style={{ color: item.colourTagFontColour }}>{item.colourTag}</Text>
+                  style={[styles.listItem, {backgroundColor: (item === null) ? 'transparent' : item.colourCode}]}>
+                  <Text style={{ color: (item === null) ? 'black' : item.colourTagFontColour }}>{(item === null) ? '' : item.colourTag}</Text>
                 </TouchableOpacity>
               )}
               nestedScrollEnabled={true}
