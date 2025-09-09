@@ -9,6 +9,7 @@ import { Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
 import { checkAndReturnCavityBlock } from "@/utils/checkFunctions/checkAndReturnCavityBlock";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCavityBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -39,7 +40,7 @@ export function AddCavityBlockDetailsInputForm({ style, boreholeId, blocks, setB
     />
     <Button
       title='Confirm'
-      onPress={() => {
+      onPress={async () => {
         const newBlock: Block = checkAndReturnCavityBlock({
           blocks: blocks,
           boreholeId: boreholeId,
@@ -48,7 +49,7 @@ export function AddCavityBlockDetailsInputForm({ style, boreholeId, blocks, setB
           baseDepthInMetresStr: baseDepthInMetresStr,
           description: description,
         });
-        setBlocks(blocks => [...blocks, newBlock]);
+        setBlocks(await addBlockAsync(blocks, newBlock));
         setIsAddNewBlockButtonPressed(false);
       }}
     />

@@ -3,9 +3,9 @@ import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { checkAndReturnEndOfBoreholeBlock } from "@/utils/checkFunctions/checkAndReturnEndOfBoreholeBlock";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 import { useState } from "react";
-import { Button, ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, ViewProps } from "react-native";
 
 export type EditEndOfBoreholeBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -27,7 +27,7 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
   const [remarks, setRemarks] = useState<string>(oldBlock.remarks);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <EndOfBoreholeInputQuestions 
         blocks={blocks}
         otherInstallations={otherInstallations} setOtherInstallations={setOtherInstallations}
@@ -37,7 +37,7 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
       />
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnEndOfBoreholeBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -46,10 +46,10 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
             installationDepthInMetresStr: installationDepthInMetresStr,
             remarks: remarks,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

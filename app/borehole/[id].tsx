@@ -4,34 +4,44 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local Imports
+import { AsphaltBlockComponent } from '@/components/blockComponents/AsphaltBlockComponent';
 import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
-import { ConcretePremixBlockComponent } from '@/components/blockComponents/ConcretePremixBlockComponent';
 import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
+import { ConstantHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/ConstantHeadPermeabilityTestBlockComponent';
 import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
+import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
 import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent';
+import { FallingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/FallingHeadPermeabilityTestBlockComponent';
 import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
+import { LugeonTestBlockComponent } from '@/components/blockComponents/LugeonTestBlockComponent';
 import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
+import { PressuremeterTestBlockComponent } from '@/components/blockComponents/PressuremeterTestBlockComponent';
 import { PsBlockComponent } from '@/components/blockComponents/PsBlockComponent';
+import { RisingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/RisingHeadPermeabilityTestBlockComponent';
 import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponent';
 import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
+import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
 import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
 import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
-import { generateBorelogPdf } from '@/utils/pdf/generateBorelogPdf';
+import { deleteBlockByBlockIdDbAsync } from '@/db/blocks/deleteBlockByBlockIdDbAsync';
+import { fetchAllBlocksByBoreholeIdDbAsync } from '@/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
-import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
+import { ASPHALT_BLOCK_TYPE_ID, Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
-import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
-import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
+import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
+import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
+import { sharePdf } from '@/utils/pdf/sharePdf';
+import { shareExcel } from '@/utils/excel/shareExcel';
 
 export default function BoreholeScreen() {
-  const db: SQLiteDatabase = useSQLiteContext();
-	const { id, projectName, name } = useLocalSearchParams();
-  if (typeof id != 'string' || typeof projectName != 'string' || typeof name != 'string') {
-    throw new Error(`Error. id: ${id}, projectName: ${projectName}, name: ${name}`);
+	const { id, projectTitle, name } = useLocalSearchParams();
+  if (typeof id != 'string' || typeof projectTitle != 'string' || typeof name != 'string') {
+    throw new Error(`Error. id: ${id}, projectTitle: ${projectTitle}, name: ${name}`);
   }
   const boreholeId: number = parseInt(id, 10);
   const boreholeName: string = name;
@@ -42,16 +52,12 @@ export default function BoreholeScreen() {
 
   useEffect(() => {
     const init = async () => {
-      const borehole: Borehole | null = await fetchBoreholeByIdAsync(db, boreholeId);
-      if (!borehole) {
-        throw new Error(`Error. No such borehole.`);
-      }
-      const project: Project | null = await fetchProjectByIdAsync(db, borehole.projectId);
-      if (!project) {
-        throw new Error(`Error. No such project.`);
-      }
+      const borehole: Borehole | null = await fetchBoreholeByIdAsync(boreholeId);
+      const project: Project | null = await fetchProjectByIdAsync(borehole.projectId);
+      const blocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(boreholeId);
       setBorehole(borehole);
       setProject(project);
+      setBlocks(blocks);
     };
 
     init();
@@ -65,12 +71,8 @@ export default function BoreholeScreen() {
     );
   }
 
-  const removeLastBlock = async () => {
-    setBlocks((blocks) => blocks.slice(0, -1));
-  };
-
   const renderFooter = () => (
-    <>
+    <View style={{ gap: 20 }}>
       {
         !isAddNewBlockButtonPressed && (
           <Button
@@ -93,87 +95,98 @@ export default function BoreholeScreen() {
       }
       <Button
         title='Remove Last Block'
-        onPress={removeLastBlock}
-      />
-      <Button
-        title='Share'
         onPress={async () => {
-          const html = await generateBorelogPdf(project, borehole, blocks);
-          const { uri } = await Print.printToFileAsync({
-            html,
-            base64: false,
-          });
-
-          const newFileUri = FileSystem.documentDirectory + `${projectName.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
-          await FileSystem.moveAsync({
-            from: uri,
-            to: newFileUri,
-          });
-
-          const isAvailable = await Sharing.isAvailableAsync();
-          if (isAvailable) {
-            await Sharing.shareAsync(newFileUri);
-          } else {
-            alert('Sharing is not available on this device');
+          if (blocks.length === 0) {
+            return;
+          }
+          try {
+            const lastBlock: Block = blocks[blocks.length - 1];
+            await deleteBlockByBlockIdDbAsync(lastBlock.id);
+            setBlocks((blocks: Block[]) => blocks.filter((b: Block) => b.id !== lastBlock.id));
+          } catch (err) {
+            console.log(err);
           }
         }}
       />
-    </>
+      <Button
+        title='Share PDF'
+        onPress={() => sharePdf(project, borehole, blocks)}
+      />
+      {/* <Button 
+        title='Share Excel'
+        onPress={() => shareExcel()}
+      /> */}
+    </View>
   );
 
 
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: `${(projectName.length < 10) ? projectName : projectName.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <FlatList
-        data={blocks}
-        keyExtractor={(block: Block) => block.id.toString()}
-        renderItem={({ item }) => {
-          switch (item.blockTypeId) {
-          case SPT_BLOCK_TYPE_ID:
-            return <SptBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />;
-          case CORING_BLOCK_TYPE_ID:
-            return <CoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CAVITY_BLOCK_TYPE_ID:
-            return <CavityBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case UD_BLOCK_TYPE_ID:
-            return <UdBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case MZ_BLOCK_TYPE_ID:
-            return <MzBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case PS_BLOCK_TYPE_ID:
-            return <PsBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case HA_BLOCK_TYPE_ID:
-            return <HaBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case WASH_BORING_BLOCK_TYPE_ID:
-            return <WashBoringBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CONCRETE_SLAB_BLOCK_TYPE_ID:
-            return <ConcreteSlabBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CONCRETE_PREMIX_BLOCK_TYPE_ID:
-            return <ConcretePremixBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-            return <EndOfBoreholeBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          case CUSTOM_BLOCK_TYPE_ID:
-            return <CustomBlockComponent style={styles.block} block={item} blocks={blocks} setBlocks={setBlocks} />
-          default:
-            throw new Error('Unknown block type');
-          }
-        }}
-        keyboardShouldPersistTaps="handled"
-        ListFooterComponent={renderFooter}
-        contentContainerStyle={{ paddingBottom: 500 }}
-        style={{ width: '100%' }}
-      />
-    </KeyboardAvoidingView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}>
+        <Stack.Screen
+          options={{
+            title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        />
+        <FlatList
+          data={blocks}
+          keyExtractor={(block: Block) => block.id.toString()}
+          renderItem={({ item }) => {
+            switch (item.blockTypeId) {
+            case SPT_BLOCK_TYPE_ID:
+              return <SptBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />;
+            case CORING_BLOCK_TYPE_ID:
+              return <CoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CAVITY_BLOCK_TYPE_ID:
+              return <CavityBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case UD_BLOCK_TYPE_ID:
+              return <UdBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case MZ_BLOCK_TYPE_ID:
+              return <MzBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case PS_BLOCK_TYPE_ID:
+              return <PsBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case HA_BLOCK_TYPE_ID:
+              return <HaBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case WASH_BORING_BLOCK_TYPE_ID:
+              return <WashBoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CONCRETE_SLAB_BLOCK_TYPE_ID:
+              return <ConcreteSlabBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case ASPHALT_BLOCK_TYPE_ID:
+              return <AsphaltBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case END_OF_BOREHOLE_BLOCK_TYPE_ID:
+              return <EndOfBoreholeBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CUSTOM_BLOCK_TYPE_ID:
+              return <CustomBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
+              return <VaneShearTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+              return <FallingHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+              return <RisingHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+              return <ConstantHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case LUGEON_TEST_BLOCK_TYPE_ID:
+              return <LugeonTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
+              return <PressuremeterTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
+            default:
+              throw new Error('Unknown block type');
+            }
+          }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={{ paddingBottom: 500 }}
+          style={{ width: '100%' }}
+        />
+      </KeyboardAvoidingView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -186,15 +199,4 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     fontSize: 20,
   },
-  block: {
-    width: '100%',
-    borderWidth: 1,
-  },
-  listItem: {
-		borderLeftWidth: 0.25,
-		borderRightWidth: 0.25,
-		borderBottomWidth: 0.25,
-		alignItems: 'center',
-		padding: 10,
-	}
 });

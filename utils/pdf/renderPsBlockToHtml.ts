@@ -15,10 +15,9 @@ export function renderPsBlockToHtml(block: BaseBlock & PsBlock, numberOfTicksToR
             <td>
                 <div>${PS_SYMBOL}${(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</div>
             </td>
-            ${renderDepthInfoToHtml(block)}
+            <td>${renderDepthInfoToHtml(block)}</td>
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
             ${renderDescriptionToHtml(numberOfTicksToRender, block.soilDescription)}
-            <td></td>
             <td></td>
             <td></td>
             <td></td>

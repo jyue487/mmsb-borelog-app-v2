@@ -8,7 +8,7 @@ import { EditProjectParams, Project } from '@/interfaces/Project';
 import { EditProjectInputForm } from './EditProjectInputForm';
 
 type ProjectComponentProps = {
-  project: Project
+  project: Project;
   editProject: (editProjectParams: EditProjectParams) => void;
   deleteProject: (projectId: number) => void;
 };
@@ -32,7 +32,7 @@ export function ProjectComponent({
           pathname: '/project/[id]',
           params: { 
             id: project.id,
-            name: project.title
+            title: project.title
           },
         })
       }
@@ -43,7 +43,7 @@ export function ProjectComponent({
         },
         styles.projectButton
       ]}>
-      <Text>{project.title.toUpperCase()}</Text>
+      <Text>{project.title}</Text>
     </Pressable>
   );
 }

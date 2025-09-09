@@ -4,7 +4,6 @@ import { ColourProperties } from './ColourProperties';
 import { RockProperties } from './RockProperties';
 
 export interface CoringBlock {
-    id: number;
     blockTypeId: typeof CORING_BLOCK_TYPE_ID;
     rockSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

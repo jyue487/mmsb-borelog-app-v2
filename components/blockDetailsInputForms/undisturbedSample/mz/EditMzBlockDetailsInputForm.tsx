@@ -1,25 +1,16 @@
 import React, { useState } from "react";
-import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { Colour } from "@/constants/colour";
-import {
-    DominantSoilType,
-    SecondarySoilType
-} from "@/constants/soil";
+import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, MZ_BLOCK_TYPE_ID } from "@/interfaces/Block";
-import { MzBlock } from "@/interfaces/MzBlock";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { checkAndReturnUndisturbedSampleDescription } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleDescription";
-import { roundToDecimalPoint, stringIsNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
-import { SoilPropertiesInputQuestions } from "../../../inputQuestions/SoilPropertiesInputQuestions";
-import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
-import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
 import { ColourProperties } from "@/interfaces/ColourProperties";
+import { MzBlock } from "@/interfaces/MzBlock";
 import { SoilProperties } from "@/interfaces/SoilProperties";
+import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
+import { roundToDecimalPoint } from "@/utils/numbers";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditMzBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -40,7 +31,7 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
   const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>(oldBlock.bottomSoilProperties);
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <UndisturbedSampleInputQuestions 
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -54,7 +45,7 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
             undisturbedSampleBlockTypeId: MZ_BLOCK_TYPE_ID,
             blocks: blocks,
@@ -69,19 +60,7 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
             bottomColourProperties: bottomColourProperties,
             bottomSoilProperties: bottomSoilProperties,
           });
-          setBlocks((blocks: Block[]) => {
-            let sampleIndex: number = 1;
-            return blocks.map((b: Block) => {
-              if (b.blockTypeId !== MZ_BLOCK_TYPE_ID) {
-                return b;
-              }
-              const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
-              updatedBlock.id = b.id;
-              updatedBlock.blockId = b.blockId;
-              updatedBlock.sampleIndex = (updatedBlock.recoveryInPercentage === 0) ? -1 : sampleIndex++;
-              return updatedBlock;
-            });
-          });
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />
@@ -89,6 +68,6 @@ export function EditMzBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

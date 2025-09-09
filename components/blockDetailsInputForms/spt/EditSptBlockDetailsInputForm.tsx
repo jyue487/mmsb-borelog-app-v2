@@ -1,20 +1,16 @@
 import React, { useState } from "react";
-import { Button, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
-import { Colour } from "@/constants/colour";
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import {
-  DominantSoilType,
-  SecondarySoilType
-} from "@/constants/soil";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
+import { editBlockDbAsync } from "@/db/blocks/editBlockDbAsync";
 import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { ColourProperties } from "@/interfaces/ColourProperties";
+import { SoilProperties } from "@/interfaces/SoilProperties";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
 import { SptBlockInputQuestions } from "../../inputQuestions/SptBlockInputQuestions";
-import { ColourProperties } from "@/interfaces/ColourProperties";
-import { SoilProperties } from "@/interfaces/SoilProperties";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -55,7 +51,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 	const [soilProperties, setSoilProperties] = useState<SoilProperties>(oldBlock.soilProperties);
 
 	return (
-		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
+		<View style={styles.blockDetailsInputForm}>
 			<SptBlockInputQuestions 
 				dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 				topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -89,61 +85,52 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 			/>
 			<Button
 				title='Confirm'
-				onPress={() => {
-					const newBlock: Block = checkAndReturnSptBlock({
-						blocks: blocks,
-						boreholeId: oldBlock.boreholeId,
-						dayWorkStatus: dayWorkStatus,
-						topDepthInMetresStr: topDepthInMetresStr,
-						seatingIncBlows1Str: seatingIncBlows1Str,
-						seatingIncBlows2Str: seatingIncBlows2Str,
-						seatingIncPen1Str: seatingIncPen1Str,
-						seatingIncPen2Str: seatingIncPen2Str,
-						mainIncBlows1Str: mainIncBlows1Str,
-						mainIncBlows2Str: mainIncBlows2Str,
-						mainIncBlows3Str: mainIncBlows3Str,
-						mainIncBlows4Str: mainIncBlows4Str,
-						mainIncPen1Str: mainIncPen1Str,
-						mainIncPen2Str: mainIncPen2Str,
-						mainIncPen3Str: mainIncPen3Str,
-						mainIncPen4Str: mainIncPen4Str,
-						recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
-						colourProperties: colourProperties,
-						soilProperties: soilProperties,
-						isSeatingIncBlows1Active: isSeatingIncBlows1Active,
-						isSeatingIncBlows2Active: isSeatingIncBlows2Active,
-						isMainIncBlows1Active: isMainIncBlows1Active,
-						isMainIncBlows2Active: isMainIncBlows2Active,
-						isMainIncBlows3Active: isMainIncBlows3Active,
-						isMainIncBlows4Active: isMainIncBlows4Active,
-						isSeatingIncPen1Active: isSeatingIncPen1Active,
-						isSeatingIncPen2Active: isSeatingIncPen2Active,
-						isMainIncPen1Active: isMainIncPen1Active,
-						isMainIncPen2Active: isMainIncPen2Active,
-						isMainIncPen3Active: isMainIncPen3Active,
-						isMainIncPen4Active: isMainIncPen4Active,
-					});
-					setBlocks((blocks: Block[]) => {
-						let sptIndex: number = 1;
-						let disturbedSampleIndex: number = 1;
-						return blocks.map((b: Block) => {
-							if (b.blockTypeId !== SPT_BLOCK_TYPE_ID) {
-								return b;
-							}
-							const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
-							updatedBlock.id = b.id;
-							updatedBlock.sptIndex = sptIndex++;
-							updatedBlock.disturbedSampleIndex = (updatedBlock.recoveryLengthInMillimetres === 0) ? -1 : disturbedSampleIndex++;
-							return updatedBlock;
+				onPress={async () => {
+					try {
+						const newBlock: Block = checkAndReturnSptBlock({
+							blocks: blocks,
+							boreholeId: oldBlock.boreholeId,
+							dayWorkStatus: dayWorkStatus,
+							topDepthInMetresStr: topDepthInMetresStr,
+							seatingIncBlows1Str: seatingIncBlows1Str,
+							seatingIncBlows2Str: seatingIncBlows2Str,
+							seatingIncPen1Str: seatingIncPen1Str,
+							seatingIncPen2Str: seatingIncPen2Str,
+							mainIncBlows1Str: mainIncBlows1Str,
+							mainIncBlows2Str: mainIncBlows2Str,
+							mainIncBlows3Str: mainIncBlows3Str,
+							mainIncBlows4Str: mainIncBlows4Str,
+							mainIncPen1Str: mainIncPen1Str,
+							mainIncPen2Str: mainIncPen2Str,
+							mainIncPen3Str: mainIncPen3Str,
+							mainIncPen4Str: mainIncPen4Str,
+							recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
+							colourProperties: colourProperties,
+							soilProperties: soilProperties,
+							isSeatingIncBlows1Active: isSeatingIncBlows1Active,
+							isSeatingIncBlows2Active: isSeatingIncBlows2Active,
+							isMainIncBlows1Active: isMainIncBlows1Active,
+							isMainIncBlows2Active: isMainIncBlows2Active,
+							isMainIncBlows3Active: isMainIncBlows3Active,
+							isMainIncBlows4Active: isMainIncBlows4Active,
+							isSeatingIncPen1Active: isSeatingIncPen1Active,
+							isSeatingIncPen2Active: isSeatingIncPen2Active,
+							isMainIncPen1Active: isMainIncPen1Active,
+							isMainIncPen2Active: isMainIncPen2Active,
+							isMainIncPen3Active: isMainIncPen3Active,
+							isMainIncPen4Active: isMainIncPen4Active,
 						});
-					});
-					setIsEditState(false);
+						setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
+						setIsEditState(false);
+					} catch (err) {
+						alert(err);
+					}
 				}}
 			/>
 			<Button 
 				title='Cancel'
 				onPress={() => setIsEditState(false)} 
 			/>
-		</GestureHandlerRootView>
+		</View>
 	);
 }

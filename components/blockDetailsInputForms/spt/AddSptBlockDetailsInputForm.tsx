@@ -7,6 +7,7 @@ import { Block } from "@/interfaces/Block";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -95,42 +96,46 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		/>
 		<Button
 			title='Confirm'
-			onPress={() => {
-				const newBlock: Block = checkAndReturnSptBlock({
-					blocks: blocks,
-					boreholeId: boreholeId,
-					dayWorkStatus: dayWorkStatus,
-					topDepthInMetresStr: topDepthInMetresStr,
-					seatingIncBlows1Str: seatingIncBlows1Str,
-					seatingIncBlows2Str: seatingIncBlows2Str,
-					seatingIncPen1Str: seatingIncPen1Str,
-					seatingIncPen2Str: seatingIncPen2Str,
-					mainIncBlows1Str: mainIncBlows1Str,
-					mainIncBlows2Str: mainIncBlows2Str,
-					mainIncBlows3Str: mainIncBlows3Str,
-					mainIncBlows4Str: mainIncBlows4Str,
-					mainIncPen1Str: mainIncPen1Str,
-					mainIncPen2Str: mainIncPen2Str,
-					mainIncPen3Str: mainIncPen3Str,
-					mainIncPen4Str: mainIncPen4Str,
-					recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
-					colourProperties: colourProperties,
-					soilProperties: soilProperties,
-					isSeatingIncBlows1Active: isSeatingIncBlows1Active,
-					isSeatingIncBlows2Active: isSeatingIncBlows2Active,
-					isMainIncBlows1Active: isMainIncBlows1Active,
-					isMainIncBlows2Active: isMainIncBlows2Active,
-					isMainIncBlows3Active: isMainIncBlows3Active,
-					isMainIncBlows4Active: isMainIncBlows4Active,
-					isSeatingIncPen1Active: isSeatingIncPen1Active,
-					isSeatingIncPen2Active: isSeatingIncPen2Active,
-					isMainIncPen1Active: isMainIncPen1Active,
-					isMainIncPen2Active: isMainIncPen2Active,
-					isMainIncPen3Active: isMainIncPen3Active,
-					isMainIncPen4Active: isMainIncPen4Active,
-				});
-				setBlocks(blocks => [...blocks, newBlock]);
-				setIsAddNewBlockButtonPressed(false);
+			onPress={async () => {
+				try {
+					const newBlock: Block = checkAndReturnSptBlock({
+						blocks: blocks,
+						boreholeId: boreholeId,
+						dayWorkStatus: dayWorkStatus,
+						topDepthInMetresStr: topDepthInMetresStr,
+						seatingIncBlows1Str: seatingIncBlows1Str,
+						seatingIncBlows2Str: seatingIncBlows2Str,
+						seatingIncPen1Str: seatingIncPen1Str,
+						seatingIncPen2Str: seatingIncPen2Str,
+						mainIncBlows1Str: mainIncBlows1Str,
+						mainIncBlows2Str: mainIncBlows2Str,
+						mainIncBlows3Str: mainIncBlows3Str,
+						mainIncBlows4Str: mainIncBlows4Str,
+						mainIncPen1Str: mainIncPen1Str,
+						mainIncPen2Str: mainIncPen2Str,
+						mainIncPen3Str: mainIncPen3Str,
+						mainIncPen4Str: mainIncPen4Str,
+						recoveryLengthInMillimetresStr: recoveryLengthInMillimetresStr,
+						colourProperties: colourProperties,
+						soilProperties: soilProperties,
+						isSeatingIncBlows1Active: isSeatingIncBlows1Active,
+						isSeatingIncBlows2Active: isSeatingIncBlows2Active,
+						isMainIncBlows1Active: isMainIncBlows1Active,
+						isMainIncBlows2Active: isMainIncBlows2Active,
+						isMainIncBlows3Active: isMainIncBlows3Active,
+						isMainIncBlows4Active: isMainIncBlows4Active,
+						isSeatingIncPen1Active: isSeatingIncPen1Active,
+						isSeatingIncPen2Active: isSeatingIncPen2Active,
+						isMainIncPen1Active: isMainIncPen1Active,
+						isMainIncPen2Active: isMainIncPen2Active,
+						isMainIncPen3Active: isMainIncPen3Active,
+						isMainIncPen4Active: isMainIncPen4Active,
+					});
+					setBlocks(await addBlockAsync(blocks, newBlock));
+					setIsAddNewBlockButtonPressed(false);
+				} catch (err) {
+					alert(err);
+				}
 			}}
 		/>
 		</>

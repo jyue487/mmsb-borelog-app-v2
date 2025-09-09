@@ -1,10 +1,11 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { WashBoringBlock } from '@/interfaces/WashBoringBlock';
 import { useState } from "react";
 import { EditWashBoringBlockDetailsInputForm } from "../blockDetailsInputForms/others/washBoring/EditWashBoringBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type WashBoringBlockProps = ViewProps & {
 	block: BaseBlock & WashBoringBlock;
@@ -12,7 +13,7 @@ export type WashBoringBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function WashBoringBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: WashBoringBlockProps) {
+export function WashBoringBlockComponent({ block, blocks, setBlocks, ...otherProps }: WashBoringBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -30,7 +31,7 @@ export function WashBoringBlockComponent({ style, block, blocks, setBlocks, ...o
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

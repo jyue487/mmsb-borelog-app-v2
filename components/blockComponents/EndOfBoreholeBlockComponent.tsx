@@ -1,10 +1,10 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
-import { useState } from "react";
 import { EditEndOfBoreholeBlockDetailsInputForm } from "@/components/blockDetailsInputForms/endOfBorehole/EditEndOfBoreholeBlockDetailsInputForm";
+import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
+import { useState } from "react";
 
 export type EndOfBoreholeBlockProps = ViewProps & {
 	block: BaseBlock & EndOfBoreholeBlock;
@@ -12,7 +12,7 @@ export type EndOfBoreholeBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function EndOfBoreholeBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: EndOfBoreholeBlockProps) {
+export function EndOfBoreholeBlockComponent({ block, blocks, setBlocks, ...otherProps }: EndOfBoreholeBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -30,7 +30,7 @@ export function EndOfBoreholeBlockComponent({ style, block, blocks, setBlocks, .
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
@@ -39,6 +39,7 @@ export function EndOfBoreholeBlockComponent({ style, block, blocks, setBlocks, .
 			</View>
 			<View style={{ flex: 1, gap: 20 }}>
 				<Text>{block.description}</Text>
+				{(block.remarks.length === 0) ? '' : <Text>Remarks: {block.remarks}.</Text>}
 			</View>
 		</Pressable>
 	);

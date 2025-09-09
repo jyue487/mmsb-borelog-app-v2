@@ -71,7 +71,6 @@ export function checkAndReturnCoringBlock({
 
     const newCoringBlock: Block = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: CORING_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         rockSampleIndex: rockSampleIndex,
@@ -86,6 +85,8 @@ export function checkAndReturnCoringBlock({
         rqdInMetres: rqdInMetres,
         colourProperties: colourProperties,
         rockProperties: rockProperties,
+        createdAt: new Date(),
+        updatedAt: null,
     };
     return newCoringBlock;
 }

@@ -1,14 +1,8 @@
-import React, { useState } from "react";
-import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
 import { CavityBlock } from "@/interfaces/CavityBlock";
+import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { throwError } from "../error/throwError";
 
 type Params = {
@@ -46,13 +40,14 @@ export function checkAndReturnCavityBlock({
 
     const newBlock: Block = {
         id: blocks.length + 1,
-        blockId: blocks.length + 1,
         blockTypeId: CAVITY_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         dayWorkStatus: dayWorkStatus,
         topDepthInMetres: topDepthInMetres,
         baseDepthInMetres: baseDepthInMetres,
         description: description,
+        createdAt: new Date(),
+        updatedAt: null,
     };
 
     return newBlock;

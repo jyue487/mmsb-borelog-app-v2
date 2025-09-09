@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
@@ -11,6 +10,7 @@ import { roundToDecimalPoint } from "@/utils/numbers";
 import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { RockProperties } from "@/interfaces/RockProperties";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditCoringBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
@@ -29,7 +29,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 	const [rockProperties, setRockProperties] = useState<RockProperties>(oldBlock.rockProperties);
 
 	return (
-		<GestureHandlerRootView style={styles.blockDetailsInputForm}>
+		<View style={styles.blockDetailsInputForm}>
 			<CoringBlockInputQuestions 
 				dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
 				topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -41,7 +41,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 			/>
 			<Button
 				title='Confirm'
-				onPress={() => {
+				onPress={async () => {
 					const newBlock: Block = checkAndReturnCoringBlock({
 						blocks: blocks,
 						boreholeId: oldBlock.boreholeId,
@@ -53,18 +53,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 						colourProperties: colourProperties,
 						rockProperties: rockProperties,
 					});
-					setBlocks((blocks: Block[]) => {
-						let rockSampleIndex: number = 1;
-						return blocks.map((b: Block) => {
-							if (b.blockTypeId !== CORING_BLOCK_TYPE_ID) {
-								return b;
-							}
-							const updatedBlock: Block = (b === oldBlock) ? {...newBlock} : {...b};
-							updatedBlock.id = b.id;
-							updatedBlock.rockSampleIndex = (updatedBlock.coreRecoveryInPercentage === 0) ? -1 : rockSampleIndex++;
-							return updatedBlock;
-						});
-					});
+					setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
 					setIsEditState(false);
 				}}
 			/>
@@ -72,6 +61,6 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 				title='Cancel'
 				onPress={() => setIsEditState(false)} 
 			/>
-		</GestureHandlerRootView>
+		</View>
 	);
 }

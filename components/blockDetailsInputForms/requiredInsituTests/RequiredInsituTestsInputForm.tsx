@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { FlatList, Keyboard, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
+import { FlatList, Keyboard, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
-import { Block } from "@/interfaces/Block";
 import { styles } from "@/constants/styles";
-import { AddVaneShearTestBlockDetailsInputForm } from "./vaneShear/AddVaneShearTestBlockDetailsInputForm";
-import { AddPressuremeterTestBlockDetailsInputForm } from "./pressuremeter/AddPressuremeterTestBlockDetailsInputForm";
+import { Block } from "@/interfaces/Block";
 import { AddLugeonTestBlockDetailsInputForm } from "./lugeon/AddLugeonTestBlockDetailsInputForm";
-import { AddPermeabilityTestBlockDetailsInputForm } from "./permeability/AddPermeabilityTestBlockDetailsInputForm";
+import { AddPermeabilityTestInputForm } from "./permeability/AddPermeabilityTestInputForm";
+import { AddPressuremeterTestBlockDetailsInputForm } from "./pressuremeter/AddPressuremeterTestBlockDetailsInputForm";
+import { AddVaneShearTestBlockDetailsInputForm } from "./vaneShear/AddVaneShearTestBlockDetailsInputForm";
 
 export type RequiredInsituTestsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -17,7 +17,7 @@ export type RequiredInsituTestsInputFormProps = ViewProps & {
 
 export function RequiredInsituTestsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: RequiredInsituTestsInputFormProps) {
   const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>(true);
-  const [operationType, setOperationType] = useState<string>('Select Others Type');
+  const [operationType, setOperationType] = useState<string>('Select In-situ Test Type');
 
   return (
     <>
@@ -43,7 +43,6 @@ export function RequiredInsituTestsInputForm({ style, boreholeId, blocks, setBlo
               'Pressuremeter Test',
               'Lugeon Test',
               'Permeability Test',
-              'Others',
             ]}
             keyExtractor={item => item}
             renderItem={({ item }) => (
@@ -64,30 +63,40 @@ export function RequiredInsituTestsInputForm({ style, boreholeId, blocks, setBlo
     { 
       operationType === 'Vane Shear Test' && (
         <AddVaneShearTestBlockDetailsInputForm 
+          boreholeId={boreholeId} 
+          blocks={blocks} 
+          setBlocks={setBlocks} 
+          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed} 
         /> 
       )
     }
     { 
       operationType === 'Pressuremeter Test' && (
         <AddPressuremeterTestBlockDetailsInputForm 
+          boreholeId={boreholeId} 
+          blocks={blocks} 
+          setBlocks={setBlocks} 
+          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed} 
         /> 
       )
     }
     { 
       operationType === 'Lugeon Test' && (
         <AddLugeonTestBlockDetailsInputForm 
+          boreholeId={boreholeId} 
+          blocks={blocks} 
+          setBlocks={setBlocks} 
+          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed} 
         /> 
       )
     }
     { 
       operationType === 'Permeability Test' && (
-        <AddPermeabilityTestBlockDetailsInputForm 
-        /> 
-      )
-    }
-    { 
-      operationType === 'Others' && (
-        <AddPermeabilityTestBlockDetailsInputForm 
+        <AddPermeabilityTestInputForm
+          boreholeId={boreholeId} 
+          blocks={blocks} 
+          setBlocks={setBlocks} 
+          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed} 
         /> 
       )
     }

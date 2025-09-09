@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { WashBoringBlock } from "@/interfaces/WashBoringBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditWashBoringBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -22,7 +22,7 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(oldBlock.baseDepthInMetres.toFixed(3));
   
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
@@ -44,7 +44,7 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           checkAndReturnDayWorkStatus(dayWorkStatus);
           if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
 						alert('Error: Top Depth');
@@ -60,15 +60,16 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
 
           const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: WASH_BORING_BLOCK_TYPE_ID,
             boreholeId: oldBlock.boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Wash Boring',
+            createdAt: oldBlock.createdAt,
+            updatedAt: new Date(),
           };
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />
@@ -76,6 +77,6 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

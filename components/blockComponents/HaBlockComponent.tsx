@@ -1,11 +1,12 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
+import { styles } from "@/constants/styles";
 import { HA_SYMBOL } from "@/constants/symbol";
-import { HaBlock } from '@/interfaces/HaBlock';
-import { DayWorkStatusComponent } from "../DayWorkStatusComponent";
 import { BaseBlock, Block } from "@/interfaces/Block";
+import { HaBlock } from '@/interfaces/HaBlock';
 import { useState } from "react";
 import { EditHaBlockDetailsInputForm } from "../blockDetailsInputForms/others/ha/EditHaBlockDetailsInputForm";
+import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type HaBlockProps = ViewProps & {
 	block: BaseBlock & HaBlock;
@@ -13,7 +14,7 @@ export type HaBlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function HaBlockComponent({ style, block, blocks, setBlocks, ...otherProps }: HaBlockProps) {
+export function HaBlockComponent({ block, blocks, setBlocks, ...otherProps }: HaBlockProps) {
 	const [isEditState, setIsEditState] = useState<boolean>(false);
 	
 	if (isEditState) {
@@ -31,7 +32,7 @@ export function HaBlockComponent({ style, block, blocks, setBlocks, ...otherProp
 			style={({ pressed }) => [
 				{ flexDirection: 'row'}, 
 				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				style,
+				styles.block,
 			]} 
 			{...otherProps}>
 			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>

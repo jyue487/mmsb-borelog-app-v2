@@ -4,7 +4,6 @@ import { ColourProperties } from './ColourProperties';
 import { SoilProperties } from './SoilProperties';
 
 export interface HaBlock {
-    id: number;
     blockTypeId: typeof HA_BLOCK_TYPE_ID;
     haSampleIndex: number;
     dayWorkStatus: DayWorkStatus;

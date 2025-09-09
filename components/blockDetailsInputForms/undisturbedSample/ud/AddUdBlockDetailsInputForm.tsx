@@ -7,6 +7,7 @@ import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
 import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddUdBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -63,7 +64,7 @@ export function AddUdBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
     />
     <Button
       title='Confirm'
-      onPress={() => {
+      onPress={async () => {
         const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
           undisturbedSampleBlockTypeId: UD_BLOCK_TYPE_ID,
           blocks: blocks,
@@ -78,7 +79,7 @@ export function AddUdBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
           bottomColourProperties: bottomColourProperties,
           bottomSoilProperties: bottomSoilProperties,
         });
-        setBlocks(blocks => [...blocks, newBlock]);
+        setBlocks(await addBlockAsync(blocks, newBlock));
         setIsAddNewBlockButtonPressed(false);
       }}
     />

@@ -16,7 +16,11 @@ export async function editBoreholeDbAsync(
             diameterOfBoring = $diameterOfBoring,
             eastingInMetres = $eastingInMetres,
             northingInMetres = $northingInMetres,
-            reducedLevelInMetres = $reducedLevelInMetres
+            reducedLevelInMetres = $reducedLevelInMetres,
+            drillerName = $drillerName,
+            verifierName = $verifierName,
+            verifierSignatureBase64 = $verifierSignatureBase64,
+            verifierSignDate = $verifierSignDate
         WHERE 
             id = $id
         `, {
@@ -27,6 +31,10 @@ export async function editBoreholeDbAsync(
             $eastingInMetres: editBoreholeParams.eastingInMetres,
             $northingInMetres: editBoreholeParams.northingInMetres,
             $reducedLevelInMetres: editBoreholeParams.reducedLevelInMetres,
+            $drillerName: editBoreholeParams.drillerName,
+            $verifierName: editBoreholeParams.verifierName,
+            $verifierSignatureBase64: editBoreholeParams.verifierSignatureBase64,
+            $verifierSignDate: editBoreholeParams.verifierSignDate?.toISOString() ?? null,
             $id: editBoreholeParams.id,
         }
     );

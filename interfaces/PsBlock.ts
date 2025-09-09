@@ -4,7 +4,6 @@ import { ColourProperties } from './ColourProperties';
 import { SoilProperties } from './SoilProperties';
 
 export interface PsBlock {
-    id: number;
     blockTypeId: typeof PS_BLOCK_TYPE_ID;
     sampleIndex: number;
     dayWorkStatus: DayWorkStatus;

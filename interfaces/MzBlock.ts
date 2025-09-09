@@ -4,7 +4,6 @@ import { ColourProperties } from './ColourProperties';
 import { SoilProperties } from './SoilProperties';
 
 export interface MzBlock {
-    id: number;
     blockTypeId: typeof MZ_BLOCK_TYPE_ID;
     sampleIndex: number;
     dayWorkStatus: DayWorkStatus;

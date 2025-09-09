@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { SQLiteDatabase, SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
+import { SQLiteDatabase, SQLiteRunResult } from 'expo-sqlite';
+import { useEffect, useRef, useState } from 'react';
+import { Button, FlatList, Image, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // Local Imports
 import { AddBoreholeInputForm } from '@/components/borehole/AddBoreholeInputForm';
@@ -9,15 +9,16 @@ import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
 import { addBoreholeDbAsync } from '@/db/borehole/addBoreholeDbAsync';
 import { editBoreholeDbAsync } from '@/db/borehole/editBoreholeDbAsync';
 import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
+import { db } from '@/db/db';
+import { deserializeDateTime } from '@/json/deserializeDateTime';
 
 export default function ProjectScreen() {
-  const db: SQLiteDatabase = useSQLiteContext()
-  const { id, name } = useLocalSearchParams();
-  if (typeof id != 'string' || typeof name != 'string') {
+  const { id, title } = useLocalSearchParams();
+  if (typeof id != 'string' || typeof title != 'string') {
     throw new Error(`Error. id: ${id}`);
   }
   const projectId: number = parseInt(id, 10);
-  const projectName: string = name;
+  const projectTitle: string = title;
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
 
@@ -54,13 +55,13 @@ export default function ProjectScreen() {
     try {
       const result: SQLiteRunResult = await editBoreholeDbAsync(db, editBoreholeParams);
       setBoreholes((prevBoreholes: Borehole[]) =>
-        prevBoreholes.map((bh: Borehole) =>
+        prevBoreholes.map((bh: Borehole): Borehole =>
           (bh.id === editBoreholeParams.id)
           ? { 
-            ...bh, 
-            ...editBoreholeParams 
+            ...editBoreholeParams,
+            projectId: bh.projectId
           } 
-          : bh
+          : {...bh}
         )
       );
     } catch (err) {
@@ -82,24 +83,17 @@ export default function ProjectScreen() {
       eastingInMetres: row.eastingInMetres,
       northingInMetres: row.northingInMetres,
       reducedLevelInMetres: row.reducedLevelInMetres,
+      drillerName: row.drillerName,
+      verifierName: row.verifierName,
+      verifierSignatureBase64: row.verifierSignatureBase64,
+      verifierSignDate: (row.verifierSignDate === null) ? null : deserializeDateTime(row.verifierSignDate),
     }));
     setBoreholes(boreholes);
-    const test = await db.getAllAsync(`SELECT * FROM boreholes;`);
-    console.log(test);
-  };
-
-  const clearTable = async () => {
-    await db.runAsync(`DELETE FROM boreholes WHERE projectId = ?;`, [projectId]);
-    await fetchAllBoreholes();
-  };
-
-  const dropTable = async () => {
-    await db.runAsync(`DROP TABLE boreholes;`);
   };
 
   const renderFooter = () => {
     return (
-      <>
+      <View style={{ gap: 20 }}>
       {
         !isAddButtonPressed && (
           <Button
@@ -113,15 +107,7 @@ export default function ProjectScreen() {
       {
         isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
       }
-      <Button
-        title='Clear Table'
-        onPress={() => clearTable()}
-      />
-      <Button
-        title='Drop Table'
-        onPress={() => dropTable()}
-      />
-      </>
+      </View>
     );
   };
 
@@ -129,7 +115,7 @@ export default function ProjectScreen() {
     <KeyboardAvoidingView behavior='height' style={styles.container}>
       <Stack.Screen
         options={{
-          title: (projectName.length < 10) ? projectName : `${projectName.slice(0, 10)}...`,
+          title: (projectTitle.length < 10) ? projectTitle : `${projectTitle.slice(0, 10)}...`,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -138,8 +124,9 @@ export default function ProjectScreen() {
       <FlatList
         data={boreholes}
         keyExtractor={(borehole: Borehole) => borehole.id.toString()}
-        renderItem={({ item }) => <BoreholeComponent projectName={projectName} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
+        renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListFooterComponent={renderFooter()}
         contentContainerStyle={{ paddingBottom: 500 }}
         style={{ flexGrow: 0, width: '100%' }}

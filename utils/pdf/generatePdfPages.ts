@@ -1,33 +1,112 @@
-import { Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_PREMIX_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { TEXT_SIZE_SMALLER_ANDROID, TEXT_SIZE_UNIT } from "@/constants/textSize";
+import { ASPHALT_BLOCK_TYPE_ID, Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { Borehole } from "@/interfaces/Borehole";
+import { Project } from "@/interfaces/Project";
 import { renderSptBlockToHtml } from "@/utils/pdf/renderSptBlockToHtml";
+import { renderAsphaltBlockToHtml } from "./renderAsphaltBlockToHtml";
 import { renderCavityBlockToHtml } from "./renderCavityBlockToHtml";
-import { renderConcretePremixBlockToHtml } from "./renderConcretePremixBlockToHtml";
 import { renderConcreteSlabBlockToHtml } from "./renderConcreteSlabBlockToHtml";
+import { renderConstantHeadPermeabilityTestBlockToHtml } from "./renderConstantHeadPermeabilityTestBlockToHtml";
 import { renderCoringBlockToHtml } from "./renderCoringBlockToHtml";
+import { renderCustomBlockToHtml } from "./renderCustomBlockToHtml";
 import { renderEmptyBlockToHtml } from "./renderEmptyBlockToHtml";
 import { renderEndOfBoreholeBlockToHtml } from "./renderEndOfBoreholeBlockToHtml";
+import { renderFallingHeadPermeabilityTestBlockToHtml } from "./renderFallingHeadPermeabilityTestBlockToHtml";
 import { renderFooterToHtml } from "./renderFooterToHtml";
 import { renderHaBlockToHtml } from "./renderHaBlockToHtml";
 import { renderHeaderToHtml } from "./renderHeaderToHtml";
+import { renderLugeonTestBlockToHtml } from "./renderLugeonTestBlockToHtml";
 import { renderMzBlockToHtml } from "./renderMzBlockToHtml";
+import { renderPressuremeterTestBlockToHtml } from "./renderPressuremeterTestBlockToHtml";
 import { renderPsBlockToHtml } from "./renderPsBlockToHtml";
+import { renderRisingHeadPermeabilityTestBlockToHtml } from "./renderRisingHeadPermeabilityTestBlockToHtml";
 import { renderUdBlockToHtml } from "./renderUdBlockToHtml";
+import { renderVaneShearTestBlockToHtml } from "./renderVaneShearTestBlockToHtml";
 import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
-import { Project } from "@/interfaces/Project";
-import { Borehole } from "@/interfaces/Borehole";
-import { renderCustomBlockToHtml } from "./renderCustomBlockToHtml";
+import { DAY_END_WORK_TYPE, DAY_START_WORK_TYPE } from "@/constants/DayWorkStatus";
 
-export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string) {
+export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string): string {
+    const dateStarted: Date | null = blocks.find((b: Block) => b.dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE)?.dayWorkStatus.date ?? null;
+    const dateFinished: Date | null = (blocks[blocks.length - 1].blockTypeId !== END_OF_BOREHOLE_BLOCK_TYPE_ID) ? null : [...blocks].reverse().find((b: Block) => b.dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE)?.dayWorkStatus.date ?? null;
     let pageIndex: number = 1;
     let blockIndex : number = 0;
 
+    const checkAndReturnSptSpecialCaseResult = (block: Block, nextBlock: Block | null, nextNextBlock: Block | null): string | null => {
+        if (
+            (
+                block.blockTypeId === SPT_BLOCK_TYPE_ID
+            )
+            && (
+                nextBlock !== null
+            )
+            && (
+                nextBlock.topDepthInMetres < block.baseDepthInMetres
+            )
+            && (
+                nextBlock.blockTypeId === FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+            )
+        ) {
+            const blockHeightInTicks: number = (!nextNextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextNextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
+            return renderSptBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper, nextBlock);
+        }
+        return null;
+    };
+    const checkAndReturnUdSpecialCaseResult = (block: Block, nextBlock: Block | null, nextNextBlock: Block | null): string | null => {
+        if (
+            (
+                block.blockTypeId === UD_BLOCK_TYPE_ID
+            )
+            && (
+                nextBlock !== null
+            )
+            && (
+                nextBlock.topDepthInMetres < block.baseDepthInMetres
+            )
+            && (
+                nextBlock.blockTypeId === FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+                || nextBlock.blockTypeId === CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID
+            )
+        ) {
+            const blockHeightInTicks: number = (!nextNextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextNextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
+            return renderUdBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper, nextBlock);
+        }
+        return null;
+    };
+    const checkAndReturnCoringSpecialCaseResult = (block: Block, nextBlock: Block | null, nextNextBlock: Block | null): string | null => {
+        if (
+            (
+                block.blockTypeId === CORING_BLOCK_TYPE_ID
+            )
+            && (
+                nextBlock !== null
+            )
+            && (
+                nextBlock.topDepthInMetres < block.baseDepthInMetres
+            )
+            && (
+                nextBlock.blockTypeId === LUGEON_TEST_BLOCK_TYPE_ID
+            )
+        ) {
+            const blockHeightInTicks: number = (!nextNextBlock) ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) : Math.round(nextNextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
+            return renderCoringBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper, nextBlock);
+        }
+        return null;
+    };
+
     const renderBlocksToHtml = () => {
+        console.log('calling renderBlocksToHtml');
         let result: string = ``;
 
         // Check if need to pad with empty block
         if (Math.round(blocks[blockIndex].topDepthInMetres * 10) - scaleTickIndexWrapper[0] > 0) {
             const numberOfTicksToRender: number = Math.round(blocks[blockIndex].topDepthInMetres * 10) - scaleTickIndexWrapper[0];
-            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
+            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper, blocks[(blockIndex > 0) ? blockIndex - 1 : blockIndex].blockTypeId);
         }
         while (blockIndex < blocks.length) {
             if (scaleTickIndexWrapper[0] === pageIndex * 90) {
@@ -36,13 +115,42 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
             const i: number = blockIndex;
             const block: Block = blocks[i];
             const nextBlock: Block | null = (i + 1 < blocks.length) ? blocks[i + 1] : null;
+            const nextNextBlock: Block | null = (i + 2 < blocks.length) ? blocks[i + 2] : null;
 
-            const blockHeightInTicks: number = (!nextBlock) ? Math.max(10, Math.round((block.baseDepthInMetres - block.topDepthInMetres) * 10)) : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0];
+            const sptSpecialCaseResult: string | null = checkAndReturnSptSpecialCaseResult(block, nextBlock, nextNextBlock);
+            if (sptSpecialCaseResult !== null) {
+                result += sptSpecialCaseResult;
+                blockIndex += 2;
+                continue;
+            }
+            const udSpecialCaseResult: string | null = checkAndReturnUdSpecialCaseResult(block, nextBlock, nextNextBlock);
+            if (udSpecialCaseResult !== null) {
+                result += udSpecialCaseResult;
+                blockIndex += 2;
+                continue;
+            }
+            const coringSpecialCaseResult: string | null = checkAndReturnCoringSpecialCaseResult(block, nextBlock, nextNextBlock);
+            if (coringSpecialCaseResult !== null) {
+                result += coringSpecialCaseResult;
+                blockIndex += 2;
+                continue;
+            }
+
+            const blockHeightInTicks: number = (
+                (block.blockTypeId === END_OF_BOREHOLE_BLOCK_TYPE_ID)
+                ? Math.max(
+                    8 + ((block.remarks.length === 0) ? 0 : 10 + block.remarks.length / 30),
+                    pageIndex * 90 - scaleTickIndexWrapper[0]
+                )
+                : (!nextBlock) 
+                ? Math.max(10, Math.round(block.baseDepthInMetres * 10) - scaleTickIndexWrapper[0]) 
+                : Math.round(nextBlock.topDepthInMetres * 10) - scaleTickIndexWrapper[0]
+            );
             const numberOfTicksToRender: number = Math.min(blockHeightInTicks, pageIndex * 90 - scaleTickIndexWrapper[0]);
 
             // If remaining space too small (less than half of actual block height), then pad with empty block
             if (numberOfTicksToRender < blockHeightInTicks / 2) {
-                result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
+                result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper, blocks[(blockIndex > 0) ? blockIndex - 1 : blockIndex].blockTypeId);
                 continue;
             }
             
@@ -74,82 +182,81 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
             case CONCRETE_SLAB_BLOCK_TYPE_ID:
                 result += renderConcreteSlabBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
-            case CONCRETE_PREMIX_BLOCK_TYPE_ID:
-                result += renderConcretePremixBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+            case ASPHALT_BLOCK_TYPE_ID:
+                result += renderAsphaltBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-                result += renderEndOfBoreholeBlockToHtml(block, pageIndex * 90 - scaleTickIndexWrapper[0], scaleTickIndexWrapper);
+                result += renderEndOfBoreholeBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             case CUSTOM_BLOCK_TYPE_ID:
                 result += renderCustomBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
+                result += renderVaneShearTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+                result += renderFallingHeadPermeabilityTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+                result += renderRisingHeadPermeabilityTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
+                result += renderConstantHeadPermeabilityTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case LUGEON_TEST_BLOCK_TYPE_ID:
+                result += renderLugeonTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
+                break;
+            case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
+                result += renderPressuremeterTestBlockToHtml(block, numberOfTicksToRender, scaleTickIndexWrapper);
                 break;
             default:
                 break;
 
             }
-            
+            // console.log(result);
             ++blockIndex;
         }
         if (blockIndex === blocks.length) {
             const numberOfTicksToRender: number = pageIndex * 90 - scaleTickIndexWrapper[0];
-            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper);
+            result += renderEmptyBlockToHtml(numberOfTicksToRender, scaleTickIndexWrapper, (blocks.length > 0) ? blocks[blocks.length - 1].blockTypeId : SPT_BLOCK_TYPE_ID);
         }
         return result;
     };
 
-    let pages: string = ``;
+    let pages: ((pageNumber: number, totalNumberOfPages: number) => string)[] = [];
     while (blockIndex < blocks.length) {
-        const page: string = (
+        const blocksInHtml: string = renderBlocksToHtml();
+        const page = (pageNumber: number, totalNumberOfPages: number) => (
             `
             <div class="page">
-                ${renderHeaderToHtml(project, borehole, mmsbLogoBase64)}
+                ${renderHeaderToHtml(project, borehole, mmsbLogoBase64, pageNumber, totalNumberOfPages)}
                 <div>
                     <table>
                         <tr>
-                            <th rowspan="4" style="width: 5%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">DATE & TIME</div>
-                            </th>
-                            <th rowspan="4" style="width: 7%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
-                            <th rowspan="3" style="width: 12%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; white-space: nowrap;">
-                                    DEPTH
-                                </div>
-                            </th>
-                            <th rowspan="3" style="width: 5%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; white-space: nowrap;">
-                                    WL
-                                </div>
-                            </th>
+                            <th rowspan="4" style="width: 5.8%;">DATE<br>&<br>TIME</th>
+                            <th rowspan="4" style="width: 6.5%; font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">SAMPLING<br><br>TESTING<br><br>CORING</th>
+                            <th rowspan="3" style="width: 12%;">DEPTH</th>
+                            <th rowspan="3" style="width: 5%;">WL</th>
                             <th rowspan="4">DESCRIPTION</th>
-                            <th rowspan="3" style="width: 4%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                    THICKNESS
-                                </div>
-                            </th>
-                            <th colspan="6" style="width: 24%;">SPT</th>
+                            <th colspan="6" style="width: 28%;">SPT</th>
                             <th rowspan="4" style="width: 5.5%;">SPT<br>(N)</th>
-                            <th rowspan="3" style="width: 4%;">R/r</th>
-                            <th rowspan="3" style="width: 3%;">
-                                <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">
-                                    SCALE
-                                </div>
-                            </th>
+                            <th rowspan="3" style="width: 4.2%;">R/r</th>
+                            <th rowspan="3" style="width: 3.5%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">SCALE</th>
                         </tr>
                         <tr>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
-                            <th>75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
                         </tr>
                         <tr>
                             <th colspan="2" style="height: 40px;">CORE<br/>RUN</th>
+                            <th colspan="2" style="height: 40px;">T.C.R.</th>
                             <th colspan="2" style="height: 40px;">R.Q.D.</th>
-                            <th colspan="2" style="height: 40px;">C.R.</th>
                         </tr>
                         <tr>
-                            <th>m</th>
                             <th>m</th>
                             <th>m</th>
                             <th colspan="2">m</th>
@@ -159,19 +266,27 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                             <th>m</th>
                         </tr>
                         
-                        ${renderBlocksToHtml()}
+                        ${blocksInHtml}
                     </table>
                 </div>
-                ${renderFooterToHtml()}
+                ${renderFooterToHtml(borehole, dateStarted, dateFinished)}
             </div>
             `
         );
-        pages += page;
+        pages.push(page);
         scaleTickIndexWrapper[0] = pageIndex * 90;
         ++pageIndex;
     }
 
-    return pages;
+    const totalNumberOfPages: number = pages.length;
+    let result: string = ``;
+    for (let i = 0; i < pages.length; ++i) {
+        const pageNumber: number = i + 1;
+        const page = pages[i];
+        result += page(pageNumber, totalNumberOfPages);
+    }
+
+    return result;
 }
 
 

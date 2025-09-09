@@ -15,10 +15,9 @@ export function renderHaBlockToHtml(block: BaseBlock & HaBlock, numberOfTicksToR
             <td>
                 <div>${HA_SYMBOL}${block.haSampleIndex}</div>
             </td>
-            ${renderDepthInfoToHtml(block)}
+            <td>${renderDepthInfoToHtml(block)}</td>
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
             ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
-            <td></td>
             <td></td>
             <td></td>
             <td></td>

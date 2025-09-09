@@ -6,19 +6,34 @@ import { renderDepthInfoToHtml } from "@/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/utils/pdf/renderScaleTicksToHtml";
 import { renderDescriptionToHtml } from "./renderDescriptionToHtml";
 import { renderWaterLevelToHtml } from "./renderWaterLevelToHtml";
+import { FallingHeadPermeabilityTestBlock } from "@/interfaces/FallingHeadPermeabilityTestBlock";
+import { RisingHeadPermeabilityTestBlock } from "@/interfaces/RisingHeadPermeabilityTestBlock";
+import { ConstantHeadPermeabilityTestBlock } from "@/interfaces/ConstantHeadPermeabilityTestBlock";
 
-export function renderSptBlockToHtml(block: BaseBlock & SptBlock, numberOfTicksToRender: number, scaleTickIndexWrapper: number[]) {
+export function renderSptBlockToHtml(
+    block: BaseBlock & SptBlock, 
+    numberOfTicksToRender: number, 
+    scaleTickIndexWrapper: number[],
+    testBlock?: BaseBlock & (
+        FallingHeadPermeabilityTestBlock 
+        | RisingHeadPermeabilityTestBlock 
+        | ConstantHeadPermeabilityTestBlock
+    ),
+) {
     return (
         `
         <tr>
             ${renderDayWorkStatusToHtml(block.dayWorkStatus)}
             <td>
                 <div>${SPT_SYMBOL}${block.sptIndex}/${DISTURBED_SAMPLE_SYMBOL}${(block.recoveryInPercentage === 0) ? '*' : block.disturbedSampleIndex}</div>
+                ${(!testBlock) ? '' : `<div>${testBlock.symbol}${testBlock.permeabilityTestIndex}</div>`}
             </td>
-            ${renderDepthInfoToHtml(block)}
+            <td>
+                <div>${renderDepthInfoToHtml(block)}</div>
+                ${(!testBlock) ? '' : `<div>${renderDepthInfoToHtml(testBlock)}</div>`}
+            </td>
             ${renderWaterLevelToHtml(block.dayWorkStatus)}
-            ${renderDescriptionToHtml(numberOfTicksToRender, block.description)}
-            <td></td>
+            ${renderDescriptionToHtml(numberOfTicksToRender, block.description + ((!testBlock) ? '' : `<br><i>${testBlock.description}</i>`))}
             <td>
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center;">
                     <div>${block.seatingIncBlows1}</div>

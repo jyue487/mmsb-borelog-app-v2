@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddWashBoringBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -47,7 +48,7 @@ export function AddWashBoringBlockDetailsInputForm({ style, boreholeId, blocks, 
       </View>
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           
           checkAndReturnDayWorkStatus(dayWorkStatus);
 
@@ -63,17 +64,18 @@ export function AddWashBoringBlockDetailsInputForm({ style, boreholeId, blocks, 
           const topDepthInMetres: number = parseFloat(parseFloat(topDepthInMetresStr).toFixed(3));
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
-          const newWashBoringBlock: Block = {
+          const newBlock: Block = {
             id: blocks.length + 1,
-            blockId: blocks.length + 1,
             blockTypeId: WASH_BORING_BLOCK_TYPE_ID,
             boreholeId: boreholeId, 
             dayWorkStatus: dayWorkStatus,
             topDepthInMetres: topDepthInMetres,
             baseDepthInMetres: baseDepthInMetres,
             description: 'Wash Boring',
+            createdAt: new Date(),
+            updatedAt: null,
           };
-          setBlocks(blocks => [...blocks, newWashBoringBlock]);
+          setBlocks(await addBlockAsync(blocks, newBlock));
           setIsAddNewBlockButtonPressed(false);
         }}
       />

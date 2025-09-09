@@ -1,16 +1,14 @@
 import React, { useState } from "react";
-import { Button, Keyboard, Text, TextInput, TouchableOpacity, View, type ViewProps } from "react-native";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Button, View, type ViewProps } from "react-native";
 
-import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
-import { CavityBlock } from "@/interfaces/CavityBlock";
-import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
-import { roundToDecimalPoint } from "@/utils/numbers";
 import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
+import { styles } from "@/constants/styles";
+import { BaseBlock, Block } from "@/interfaces/Block";
+import { CavityBlock } from "@/interfaces/CavityBlock";
 import { checkAndReturnCavityBlock } from "@/utils/checkFunctions/checkAndReturnCavityBlock";
+import { roundToDecimalPoint } from "@/utils/numbers";
+import { editBlockAsync } from "@/utils/editBlockFunctions/editBlockAsync";
 
 export type EditCavityBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
@@ -26,7 +24,7 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
   const [description, setDescription] = useState<string>(oldBlock.description); 
 
   return (
-    <GestureHandlerRootView style={styles.blockDetailsInputForm}>
+    <View style={styles.blockDetailsInputForm}>
       <CavityBlockInputQuestions 
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
@@ -35,7 +33,7 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
       />
       <Button
         title='Confirm'
-        onPress={() => {
+        onPress={async () => {
           const newBlock: Block = checkAndReturnCavityBlock({
             blocks: blocks,
             boreholeId: oldBlock.boreholeId,
@@ -44,7 +42,7 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
             baseDepthInMetresStr: baseDepthInMetresStr,
             description: description,
           });
-          setBlocks((blocks: Block[]) => blocks.map((b: Block) => (b === oldBlock) ? {...newBlock, id: b.id, blockId: b.blockId} : b));
+          setBlocks(await editBlockAsync(blocks, oldBlock.id, newBlock));
           setIsEditState(false);
         }}
       />
@@ -52,6 +50,6 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
         title='Cancel'
         onPress={() => setIsEditState(false)} 
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }

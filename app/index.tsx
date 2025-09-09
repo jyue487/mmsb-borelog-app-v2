@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
-import { SQLiteRunResult, useSQLiteContext } from 'expo-sqlite';
+import { SQLiteRunResult } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
@@ -9,18 +9,17 @@ import { ProjectComponent } from '@/components/project/ProjectComponent';
 import { addProjectDbAsync } from '@/db/project/addProjectDbAsync';
 import { editProjectDbAsync } from '@/db/project/editProjectDbAsync';
 import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
+import { db } from '@/db/db';
 
 export default function ProjectListScreen() {
-  const db = useSQLiteContext()
-  // const db = SQLite.openDatabaseSync('mmsb.db');
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    const initDb = async () => {
+    const init = async () => {
       await fetchAllProjects();
     };
-    initDb();
+    init();
   }, []);
 
   // TODO: How to make it safe from SQL injections?
@@ -80,18 +79,9 @@ export default function ProjectListScreen() {
     setProjects(projects);
   };
 
-  const clearTable = async () => {
-    await db.runAsync(`DELETE FROM projects;`);
-    await fetchAllProjects();
-  };
-
-  const clearDatabase = async () => {
-    await db.runAsync('DROP TABLE projects');
-  };
-
   const renderFooter = () => {
     return (
-      <>
+      <View style={{ gap: 20 }}>
       {
         !isAddButtonPressed && (
           <Button
@@ -110,15 +100,7 @@ export default function ProjectListScreen() {
           />
         )
       }
-      <Button
-        title='Clear Table'
-        onPress={clearTable}
-      />
-      <Button
-        title='Clear Database'
-        onPress={clearDatabase}
-      />
-      </>
+      </View>
     );
   };
 
@@ -137,6 +119,7 @@ export default function ProjectListScreen() {
         keyExtractor={(project: Project) => project.id.toString()}
         renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListFooterComponent={renderFooter()}
         contentContainerStyle={{ paddingBottom: 500 }}
         style={{ flexGrow: 0, width: '100%' }}

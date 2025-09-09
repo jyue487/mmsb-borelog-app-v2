@@ -13,9 +13,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
+      "allowBackup": false,
       "edgeToEdgeEnabled": true,
       "package": "com.jyue487.mmsbborelogapp"
     },
@@ -36,7 +37,8 @@
         }
       ],
       "expo-sqlite",
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
