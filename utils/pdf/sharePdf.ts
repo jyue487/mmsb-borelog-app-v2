@@ -8,6 +8,7 @@ import { generateBorelogPdfIos } from "./generateBorelogPdfIos";
 import { generateBorelogPdfAndroid } from './generateBorelogPdfAndroid';
 import { Project } from '@/interfaces/Project';
 import { Borehole } from '@/interfaces/Borehole';
+import { safeRenameFileAsync } from './safeRenameFileAsync';
 
 export async function sharePdf(project: Project, borehole: Borehole, blocks: Block[]) {
     try {
@@ -25,17 +26,26 @@ export async function sharePdf(project: Project, borehole: Borehole, blocks: Blo
         const projectTitle: string = project.title;
         const boreholeName: string = borehole.name;
         const newFileUri = FileSystem.documentDirectory + `${projectTitle.toUpperCase()}-${boreholeName.toUpperCase()}.pdf`;
-        await FileSystem.moveAsync({
-            from: uri,
-            to: newFileUri,
-        });
+        await safeRenameFileAsync(uri, newFileUri);
+        // await FileSystem.copyAsync({
+        //     from: uri,
+        //     to: newFileUri,
+        // });
+        // await FileSystem.moveAsync({
+        //     from: uri,
+        //     to: newFileUri,
+        // });
 
         const isAvailable = await Sharing.isAvailableAsync();
         if (isAvailable) {
             await Sharing.shareAsync(newFileUri);
+            // await Sharing.shareAsync(uri);
         } else {
             alert('Sharing is not available on this device');
         }
+
+        // optional: clean up the cache version
+        // await FileSystem.deleteAsync(uri, { idempotent: true });
 
     } catch (error) {
         console.error("PDF generation or sharing failed:", error);
