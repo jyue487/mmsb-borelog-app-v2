@@ -112,10 +112,10 @@ export default function BoreholeScreen() {
         title='Share PDF'
         onPress={() => sharePdf(project, borehole, blocks)}
       />
-      {/* <Button 
+      <Button 
         title='Share Excel'
-        onPress={() => shareExcel()}
-      /> */}
+        onPress={() => shareExcel(blocks)} // TODO: Implement shareJson instead
+      />
     </View>
   );
 

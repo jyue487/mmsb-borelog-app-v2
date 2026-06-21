@@ -18,9 +18,9 @@ export function AddBoreholeInputForm ({
 }: AddBoreholeInputFormProps) {
 
   const [newBoreholeName, setNewBoreholeName] = useState<string>('');
-  const [typeOfBoring, setTypeOfBoring] = useState<string>('');
-  const [typeOfRig, setTypeOfRig] = useState<string>('');
-  const [diameterOfBoring, setDiameterOfBoring] = useState<string>('');
+  const [typeOfBoring, setTypeOfBoring] = useState<string>('Rotary Wash Boring');
+  const [typeOfRig, setTypeOfRig] = useState<string>('YWE D90R');
+  const [diameterOfBoring, setDiameterOfBoring] = useState<string>('89mm/114mm');
   const [eastingInMetresStr, setEastingInMetresStr] = useState<string>('');
   const [northingInMetresStr, setNorthingInMetersStr] = useState<string>('');
   const [reducedLevelInMetresStr, setReducedLevelInMetresStr] = useState<string>('');

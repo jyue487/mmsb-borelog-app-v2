@@ -9,8 +9,8 @@ export function renderDayWorkStatusToHtml(dayWorkStatus: DayWorkStatus) {
             ${(dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) ? '' : 
                 `
                 <div style="display: flex; flex: 1; flex-direction: column; align-items: center;">
-                    <div style="font-size: ${TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT}; transform: scale(0.67); line-height: 0.7;">${getDate(dayWorkStatus.date)}</div>
-                    <div style="font-size: ${TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT}; transform: scale(0.67); line-height: 0.7;">${getTime(dayWorkStatus.time)}</div>
+                    <div style="transform: scale(0.67); line-height: 0.7;">${getDate(dayWorkStatus.date)}</div>
+                    <div style="transform: scale(0.67); line-height: 0.7;">${getTime(dayWorkStatus.time)}</div>
                 </div>
                 `
             }

@@ -3,7 +3,6 @@ import { Block } from '@/interfaces/Block';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 
-import { TEXT_SIZE_ANDROID, TEXT_SIZE_IOS, TEXT_SIZE_SMALLER_IOS, TEXT_SIZE_UNIT } from '@/constants/textSize';
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { generatePdfPages } from './generatePdfPages';
@@ -12,6 +11,17 @@ import { throwError } from '../error/throwError';
 export async function generateBorelogPdfAndroid(project: Project, borehole: Borehole, blocks: Block[]) {
 	const scaleTickIndexWrapper: number[] = [0];
 	const asset: Asset = await Asset.fromModule(require('@/assets/images/mmsb-logo.png')).downloadAsync(); // Ensures it’s saved to a readable path
+	const regularFontAsset = await Asset.fromModule(require('@/assets/fonts/NotoSans-Regular.ttf')).downloadAsync();
+	const boldFontAsset = await Asset.fromModule(require('@/assets/fonts/NotoSans-Bold.ttf')).downloadAsync();
+	const regularFontBase64 = await FileSystem.readAsStringAsync(
+		regularFontAsset.localUri ?? regularFontAsset.uri,
+		{ encoding: FileSystem.EncodingType.Base64 }
+	);
+	const boldFontBase64 = await FileSystem.readAsStringAsync(
+		boldFontAsset.localUri ?? boldFontAsset.uri,
+		{ encoding: FileSystem.EncodingType.Base64 }
+	);
+
 	try {
 		const cachePath = `${FileSystem.cacheDirectory}${asset.name}`;
 		await FileSystem.copyAsync({
@@ -33,79 +43,136 @@ export async function generateBorelogPdfAndroid(project: Project, borehole: Bore
 	<title>Borehole Log</title>
 	<style>
 		@page {
-		size: A4 portrait;
-		margin: 0;
-		padding: 0;
+			size: A4 portrait;
+			margin: 0;
 		}
 
-		@media print {
-		body {
-			width: 210mm;
+		@font-face {
+			font-family: 'ReportFont';
+			src: url('data:font/ttf;base64,${regularFontBase64}') format('truetype');
+			font-weight: 400;
+			font-style: normal;
+		}
+
+		@font-face {
+			font-family: 'ReportFont';
+			src: url('data:font/ttf;base64,${boldFontBase64}') format('truetype');
+			font-weight: 700;
+			font-style: normal;
+		}
+
+		:root {
+			--report-font: 'ReportFont' !important;
+			--base-font-size: 7pt;
+			--base-line-height: 1.15;
+			--border: 0.5pt solid #000;
+			--page-width: 210mm;
+			--page-height: 297mm;
+			--page-padding-top: 5mm;
+			--page-padding-left: 10mm;
+			--page-padding-right: 0mm;
+		}
+
+		* {
 			box-sizing: border-box;
 			margin: 0;
 			padding: 0;
+			-webkit-text-size-adjust: none !important;
+			text-size-adjust: none !important;
+			font-family: var(--report-font);
+		}
+
+		html, body {
+			width: var(--page-width);
+			margin: 0;
+			padding: 0;
+			font-family: var(--report-font);
+			font-size: var(--base-font-size);
+			line-height: var(--base-line-height);
+			font-weight: 400;
+			color: #000;
+			background: #fff;
+			-webkit-text-size-adjust: none !important;
+  			text-size-adjust: none !important;
+		}
+
+		body {
+			print-color-adjust: exact;
+			-webkit-print-color-adjust: exact;
+		}
+
+		.page {
+			width: var(--page-width);
+			min-height: var(--page-height);
+			page-break-after: always;
+			page-break-inside: avoid;
+			padding-top: var(--page-padding-top);
+			padding-left: var(--page-padding-left);
+			padding-right: var(--page-padding-right);
+			font-size: var(--base-font-size);
+			line-height: var(--base-line-height);
 		}
 
 		table {
-			page-break-inside: avoid;
+			width: 100%;
 			border-collapse: collapse;
+			table-layout: fixed;
+			font-size: var(--base-font-size);
+			line-height: var(--base-line-height);
+		}
+
+		th {
+			border: var(--border);
+			padding: 0;
+			text-align: center;
+			vertical-align: middle;
+			font-weight: 700;
+		}
+
+		td {
+			border: var(--border);
+			padding-top: 3pt;
+			text-align: center;
+			vertical-align: top;
+			font-weight: 400;
 		}
 
 		h2 {
 			text-align: center;
+			font-size: var(--base-font-size);
+			line-height: var(--base-line-height);
+			font-weight: 700;
 		}
 
-		.page {
-			page-break-after: always;
-			page-break-inside: avoid;
-			width: 210mm;
-			margin: 0;
-			padding-top: 5mm;
-			padding-left: 10mm;
-			padding-right: 0;
+		.header,
+		.sub-header {
+			text-align: left;
+			font-weight: 700;
 		}
-		}
-		body { 
-			font-family: Arial, sans-serif;
-			margin: 0;
-			padding: 0;
-		}
-		table {
-			border-collapse: collapse;
-			table-layout: fixed;
-			width: 100%;
-			font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
-		}
-		th {
-			border: 0.5pt solid #000;
-			padding: 0;
-			text-align: center;
-			vertical-align: middle;
-		}
-		td {
-			border: 0.5pt solid #000;
-			padding-top: 3pt;
-			text-align: center;
-			vertical-align: top;
-		}
-		.page {
-			page-break-after: always;
-			page-break-inside: avoid;
-		}
-		.header, .sub-header {
-		text-align: left;
-		font-weight: bold;
-		}
+
 		.description-cell {
-		text-align: left;
-		padding-left: 10pt;
-		padding-right: 10pt;
-		font-size: ${(Platform.OS === 'ios') ? TEXT_SIZE_IOS : TEXT_SIZE_ANDROID}${TEXT_SIZE_UNIT};
+			text-align: left;
+			padding-left: 10pt;
+			padding-right: 10pt;
+			font-size: var(--base-font-size);
+			line-height: var(--base-line-height);
 		}
+
 		.no-border {
-		border: none;
+			border: none;
 		}
-	</style>
+
+		@media print {
+			html, body {
+			width: var(--page-width);
+			height: auto;
+			}
+
+			.page:last-child {
+			page-break-after: auto;
+			}
+		}
+		</style>
 	</head>
 	<body>
 		${generatePdfPages(project, borehole, blocks, scaleTickIndexWrapper, mmsbLogoBase64)}

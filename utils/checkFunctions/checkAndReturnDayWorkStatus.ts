@@ -1,4 +1,4 @@
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, WL_NIL, WL_FULL } from "@/constants/DayWorkStatus";
 import { throwError } from "../error/throwError";
 import { isNonNegative } from "../numbers";
 
@@ -20,8 +20,17 @@ export function checkAndReturnDayWorkStatus({
         };
     }
 
-    if (waterLevelInMetres !== null && !isNonNegative(waterLevelInMetres)) {
-        throwError('Error: Water Level');
+    if (waterLevelInMetres !== null) {
+        if (typeof waterLevelInMetres === 'number') {
+            if (!isNonNegative(waterLevelInMetres)) {
+                throwError('Error: Water Level should not have a negative value');
+            }
+        } else if (typeof waterLevelInMetres === 'string') {
+            waterLevelInMetres = waterLevelInMetres.trim().toUpperCase();
+            if (waterLevelInMetres !== WL_NIL && waterLevelInMetres !== WL_FULL) {
+                throwError('Error: Water Level should be either NIL or FULL');
+            }
+        }
     }
     if (casingDepthInMetres !== null && !isNonNegative(casingDepthInMetres)) {
         throwError('Error: Casing Depth');

@@ -15,6 +15,7 @@ export async function shareExcel(blocks: Block[]) {
 
         // Create workbook
         const wb = XLSX.utils.book_new();
+        
         // Create worksheet
         const ws1 = XLSX.utils.aoa_to_sheet(data);
         const ws2 = XLSX.utils.aoa_to_sheet([
