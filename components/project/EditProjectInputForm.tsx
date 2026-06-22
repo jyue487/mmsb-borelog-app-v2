@@ -108,6 +108,7 @@ export function EditProjectInputForm ({
         }}
         style={{ position: 'absolute', top: 10, left: 10 }}>
         <MaterialIcons name="delete" size={30} color="red" />
+        <Text>delete</Text>
       </TouchableOpacity>
     </View>
   );

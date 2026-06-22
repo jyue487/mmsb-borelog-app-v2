@@ -36,7 +36,7 @@ import { Project } from '@/interfaces/Project';
 import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
 import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
 import { sharePdf } from '@/utils/pdf/sharePdf';
-import { shareExcel } from '@/utils/excel/shareExcel';
+// import { shareExcel } from '@/utils/excel/shareExcel';
 
 export default function BoreholeScreen() {
 	const { id, projectTitle, name } = useLocalSearchParams();
@@ -112,10 +112,10 @@ export default function BoreholeScreen() {
         title='Share PDF'
         onPress={() => sharePdf(project, borehole, blocks)}
       />
-      <Button 
+      {/* <Button 
         title='Share Excel'
         onPress={() => shareExcel(blocks)} // TODO: Implement shareJson instead
-      />
+      /> */}
     </View>
   );
 

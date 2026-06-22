@@ -1,7 +1,7 @@
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { SQLiteRunResult } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View, Pressable, Text } from "react-native";
 
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
@@ -112,6 +112,11 @@ export default function ProjectListScreen() {
           headerTitleStyle: {
             fontWeight: 'bold',
           },
+          headerRight: () => (
+            <Pressable onPress={() => router.push('/settings/screen')}>
+              <Text>Settings</Text>
+            </Pressable>
+          ),
         }}
       />
       <FlatList
