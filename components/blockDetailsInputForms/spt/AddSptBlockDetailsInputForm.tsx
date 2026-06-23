@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { SptBlockInputQuestions } from "@/components/inputQuestions/SptBlockInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block } from "@/interfaces/Block";
@@ -96,6 +97,7 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		/>
 		<Button
 			title='Confirm'
+			color={styles.confirmButton.color}
 			onPress={async () => {
 				try {
 					const newBlock: Block = checkAndReturnSptBlock({

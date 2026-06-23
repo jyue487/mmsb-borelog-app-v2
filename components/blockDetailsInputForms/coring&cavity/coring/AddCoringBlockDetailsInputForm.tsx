@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
@@ -51,6 +52,7 @@ export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setB
 		/>
 		<Button
 			title='Confirm'
+			color={styles.confirmButton.color}
 			onPress={async () => {
 				const newBlock: Block = checkAndReturnCoringBlock({
 					blocks: blocks,

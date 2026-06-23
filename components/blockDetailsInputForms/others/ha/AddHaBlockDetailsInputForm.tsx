@@ -8,6 +8,7 @@ import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnHaBlock } from "@/utils/checkFunctions/checkAndReturnHaBlock";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
+import { styles } from '@/constants/styles';
 
 export type AddHaBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -50,6 +51,7 @@ export function AddHaBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
     />
     <Button
       title='Confirm'
+      color={styles.confirmButton.color}
       onPress={async () => {
         const newBlock: Block = checkAndReturnHaBlock({
           blocks: blocks,

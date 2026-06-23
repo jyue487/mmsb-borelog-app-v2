@@ -48,6 +48,7 @@ export function EditRisingHeadPermeabilityTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnRisingHeadPermeabilityTestBlock({
             blocks: blocks,

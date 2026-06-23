@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
@@ -48,6 +49,7 @@ export function AddWashBoringBlockDetailsInputForm({ style, boreholeId, blocks, 
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           
           checkAndReturnDayWorkStatus(dayWorkStatus);

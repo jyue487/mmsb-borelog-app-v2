@@ -48,6 +48,7 @@ export function EditPressuremeterTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnPressuremeterTestBlock({
             blocks: blocks,

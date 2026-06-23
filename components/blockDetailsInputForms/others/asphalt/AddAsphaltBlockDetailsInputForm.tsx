@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { ASPHALT_BLOCK_TYPE_ID, Block } from "@/interfaces/Block";
@@ -48,6 +49,7 @@ export function AddAsphaltBlockDetailsInputForm({ style, boreholeId, blocks, set
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);

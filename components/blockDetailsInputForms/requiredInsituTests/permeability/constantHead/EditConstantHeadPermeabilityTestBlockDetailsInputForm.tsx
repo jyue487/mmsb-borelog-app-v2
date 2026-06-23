@@ -48,6 +48,7 @@ export function EditConstantHeadPermeabilityTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnConstantHeadPermeabilityTestBlock({
             blocks: blocks,

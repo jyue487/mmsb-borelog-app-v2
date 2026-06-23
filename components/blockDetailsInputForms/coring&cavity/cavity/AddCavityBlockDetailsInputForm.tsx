@@ -40,6 +40,7 @@ export function AddCavityBlockDetailsInputForm({ style, boreholeId, blocks, setB
     />
     <Button
       title='Confirm'
+      color={styles.confirmButton.color}
       onPress={async () => {
         const newBlock: Block = checkAndReturnCavityBlock({
           blocks: blocks,

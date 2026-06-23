@@ -37,6 +37,7 @@ export function EditEndOfBoreholeBlockDetailsInputForm({
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnEndOfBoreholeBlock({
             blocks: blocks,

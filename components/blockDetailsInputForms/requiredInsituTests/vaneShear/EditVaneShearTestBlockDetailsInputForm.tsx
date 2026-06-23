@@ -48,6 +48,7 @@ export function EditVaneShearTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);

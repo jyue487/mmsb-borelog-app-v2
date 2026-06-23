@@ -99,6 +99,7 @@ export function AddBoreholeInputForm ({
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={() => {
           if (!newBoreholeName.trim()) {
             alert("Error: Borehole Name Should not be empty");
@@ -142,6 +143,7 @@ export function AddBoreholeInputForm ({
       />
       <Button
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsAddButtonPressed(false)}
       />
     </KeyboardAvoidingView>

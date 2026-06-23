@@ -71,6 +71,7 @@ export function EditProjectInputForm ({
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={() => {
           if (!projectCode.trim()) {
             alert("Error: Project Code Should not be empty");
@@ -92,6 +93,7 @@ export function EditProjectInputForm ({
       />
       <Button
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)}
       />
       <TouchableOpacity 

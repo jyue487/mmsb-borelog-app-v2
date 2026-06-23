@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Alert, Button, Image, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MaterialIcons from "@react-native-vector-icons/material-icons/static";
-import SignatureCanvas from 'react-native-signature-canvas';
 
 // Local imports
 import { styles } from '@/constants/styles';
@@ -105,6 +104,7 @@ export function EditBoreholeInputForm ({
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={() => {
           if (!newBoreholeName.trim()) {
             alert("Error: Borehole Name Should not be empty");
@@ -149,6 +149,7 @@ export function EditBoreholeInputForm ({
       />
       <Button
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)}
       />
       <TouchableOpacity 

@@ -45,6 +45,7 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
             undisturbedSampleBlockTypeId: PS_BLOCK_TYPE_ID,
@@ -66,6 +67,7 @@ export function EditPsBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>

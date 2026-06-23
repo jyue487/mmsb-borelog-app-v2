@@ -48,6 +48,7 @@ export function EditFallingHeadPermeabilityTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnFallingHeadPermeabilityTestBlock({
             blocks: blocks,

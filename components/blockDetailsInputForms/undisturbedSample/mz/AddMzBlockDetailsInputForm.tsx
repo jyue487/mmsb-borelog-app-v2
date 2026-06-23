@@ -8,6 +8,7 @@ import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/che
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
+import { styles } from "@/constants/styles";
 
 export type AddMzBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -64,6 +65,7 @@ export function AddMzBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
             undisturbedSampleBlockTypeId: MZ_BLOCK_TYPE_ID,

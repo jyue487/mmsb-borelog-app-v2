@@ -44,6 +44,7 @@ export function EditAsphaltBlockDetailsInputForm({ style, blocks, setBlocks, old
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
@@ -77,6 +78,7 @@ export function EditAsphaltBlockDetailsInputForm({ style, blocks, setBlocks, old
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>

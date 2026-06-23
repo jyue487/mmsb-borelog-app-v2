@@ -127,6 +127,7 @@ export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, borehole
       }
       <Button
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => {
           setIsAddNewBlockButtonPressed(false);
         }}

@@ -44,6 +44,7 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           checkAndReturnDayWorkStatus(dayWorkStatus);
           if (isNaN(parseFloat(topDepthInMetresStr)) || parseFloat(topDepthInMetresStr) < 0) {
@@ -75,6 +76,7 @@ export function EditWashBoringBlockDetailsInputForm({ style, blocks, setBlocks, 
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>

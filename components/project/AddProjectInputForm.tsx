@@ -65,6 +65,7 @@ export function AddProjectInputForm ({
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={() => {
           if (!projectCode.trim()) {
             alert("Error: Project Code Should not be empty");
@@ -86,6 +87,7 @@ export function AddProjectInputForm ({
       />
       <Button
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsAddButtonPressed(false)}
       />
     </View>
