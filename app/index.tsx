@@ -1,11 +1,13 @@
 import { Stack, router } from 'expo-router';
 import { SQLiteRunResult } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View, Pressable, Text } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
 import { ProjectComponent } from '@/components/project/ProjectComponent';
+import { SignOutButtonComponent } from '@/components/auth/SignOutButtonComponent';
 import { addProjectDbAsync } from '@/db/project/addProjectDbAsync';
 import { editProjectDbAsync } from '@/db/project/editProjectDbAsync';
 import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
@@ -113,9 +115,9 @@ export default function ProjectListScreen() {
             fontWeight: 'bold',
           },
           headerRight: () => (
-            <Pressable onPress={() => router.push('/settings/screen')}>
-              <Text>Settings</Text>
-            </Pressable>
+            <TouchableOpacity onPress={() => router.push('/settings/screen')}>
+              <MaterialIcons name="settings" size={30} color="gray" />
+            </TouchableOpacity>
           ),
         }}
       />

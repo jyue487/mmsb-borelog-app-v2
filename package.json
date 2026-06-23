@@ -11,7 +11,6 @@
     "lint": "expo lint"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/datetimepicker": "8.4.1",
     "@react-native-picker/picker": "2.11.1",
@@ -48,7 +47,8 @@
     "react-native-signature-canvas": "^5.0.1",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "@react-native-vector-icons/material-icons": "^13.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

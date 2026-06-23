@@ -30,6 +30,8 @@ export default function RootLayout() {
       const { data } = await supabase.auth.getClaims();
       if (data === null) {
         console.log("getClaims: No data found");
+        setUserId(null);
+        setEmail(undefined);
         return;
       }
       const { claims } = data;

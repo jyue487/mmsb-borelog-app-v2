@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 
 // Local imports
 import { EditProjectParams, Project } from '@/interfaces/Project';
@@ -108,7 +108,6 @@ export function EditProjectInputForm ({
         }}
         style={{ position: 'absolute', top: 10, left: 10 }}>
         <MaterialIcons name="delete" size={30} color="red" />
-        <Text>delete</Text>
       </TouchableOpacity>
     </View>
   );

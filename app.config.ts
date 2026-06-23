@@ -66,6 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-sqlite",
       "expo-font",
       "expo-asset",
+      "@react-native-vector-icons/material-icons",
     ],
     experiments: {
       typedRoutes: true,

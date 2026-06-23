@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Alert, Button, Image, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 import SignatureCanvas from 'react-native-signature-canvas';
 
 // Local imports
