@@ -4,6 +4,7 @@ export const styles = StyleSheet.create({
     block: {
         width: '100%',
         borderWidth: 1,
+        gap: 5,
     },
     blockDetailsInputForm: {
         width: '100%',

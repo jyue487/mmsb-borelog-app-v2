@@ -115,7 +115,7 @@ export default function ProjectListScreen() {
             fontWeight: 'bold',
           },
           headerRight: () => (
-            <TouchableOpacity onPress={() => router.push('/settings/screen')}>
+            <TouchableOpacity onPress={() => router.push('/settings/SettingsScreen')}>
               <MaterialIcons name="settings" size={30} color="gray" />
             </TouchableOpacity>
           ),

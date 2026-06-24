@@ -1,5 +1,4 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { SQLiteDatabase, SQLiteRunResult } from 'expo-sqlite';
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 

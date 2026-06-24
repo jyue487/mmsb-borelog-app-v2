@@ -1,16 +1,11 @@
 import { Stack } from 'expo-router';
-import { useState } from 'react';
 import { View, Text } from 'react-native';
 
-import { supabase } from '@/db/supabase';
 import { SignOutButtonComponent } from '@/components/auth/SignOutButtonComponent';
+import { useAuth } from '@/context/AuthContextProvider';
 
 export default function SettingsScreen() {
-  const [email, setEmail] = useState<string | undefined>(undefined)
-
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    setEmail(user?.email);
-  });
+  const { email } = useAuth();
 
   return (
     <View>

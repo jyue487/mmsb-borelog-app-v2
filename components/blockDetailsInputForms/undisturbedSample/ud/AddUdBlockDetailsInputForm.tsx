@@ -4,7 +4,7 @@ import { Button, type ViewProps } from "react-native";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block, UD_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { ColourProperties } from "@/interfaces/ColourProperties";
-import { SoilProperties } from "@/interfaces/SoilProperties";
+import { createDefaultSoilProperties, SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
 import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
@@ -32,23 +32,13 @@ export function AddUdBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
     dominantColour: null,
     secondaryColour: null,
   });
-  const [topSoilProperties, setTopSoilProperties] = useState<SoilProperties>({
-    dominantSoilType: null,
-    secondarySoilType: null,
-    otherProperties: '',
-    customOtherProperties: '',
-  });
+  const [topSoilProperties, setTopSoilProperties] = useState<SoilProperties>(() => createDefaultSoilProperties());
   const [baseDitto, setBaseDitto] = useState<boolean>(true);
   const [bottomColourProperties, setBottomColourProperties] = useState<ColourProperties>({
     dominantColour: null,
     secondaryColour: null,
   });
-  const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>({
-    dominantSoilType: null,
-    secondarySoilType: null,
-    otherProperties: '',
-    customOtherProperties: '',
-  });
+  const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>(() => createDefaultSoilProperties());
 
   return (
     <>

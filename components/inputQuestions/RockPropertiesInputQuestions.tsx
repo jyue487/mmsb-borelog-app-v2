@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
-import { OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE, ROCK_TYPE_LIST, RockType } from "@/constants/rock";
+import { OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE, OTHERS_ROCK_CODE, ROCK_TYPE_LIST, RockType } from "@/constants/rock";
 import { styles } from "@/constants/styles";
 import { RockProperties } from "@/interfaces/RockProperties";
+import { getRockCode } from "@/utils/rock/getRockCode";
 
 type Props = {
   rockProperties: RockProperties;
@@ -26,11 +27,11 @@ export function RockPropertiesInputQuestions({
     setRockType(rockType);
     setIsSelectRockTypePressed(false);
     setOtherRockType('');
-    setRockProperties((rp: RockProperties): RockProperties => ({...rp, rockType: rockType, otherRockType: ''}));
+    setRockProperties((rp: RockProperties): RockProperties => ({...rp, rockType: rockType, rockCode: getRockCode(rockType), otherRockType: ''}));
   };
   const saveOtherRockType = (otherRockType: string) => {
     setOtherRockType(otherRockType.toUpperCase());
-    setRockProperties((rp: RockProperties): RockProperties => ({...rp, otherRockType: otherRockType}));
+    setRockProperties((rp: RockProperties): RockProperties => ({...rp, rockCode: OTHERS_ROCK_CODE, otherRockType: otherRockType}));
   };
   const selectOtherProperties = (otherProperties: string) => {
     setOtherProperties(otherProperties);

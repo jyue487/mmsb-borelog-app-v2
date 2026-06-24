@@ -7,7 +7,7 @@ import { BaseBlock, Block } from "@/interfaces/Block";
 import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
 import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
 import { ColourProperties } from "@/interfaces/ColourProperties";
-import { RockProperties } from "@/interfaces/RockProperties";
+import { createDefaultRockProperties, RockProperties } from "@/interfaces/RockProperties";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCoringBlockDetailsInputFormProps = ViewProps & {
@@ -33,11 +33,7 @@ export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setB
 		dominantColour: null,
 		secondaryColour: null,
 	});
-	const [rockProperties, setRockProperties] = useState<RockProperties>({
-		rockType: null,
-		otherRockType: '',
-		otherProperties: '',
-	});
+	const [rockProperties, setRockProperties] = useState<RockProperties>(() => createDefaultRockProperties());
 
 	return (
 		<>
