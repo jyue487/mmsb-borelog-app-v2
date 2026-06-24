@@ -47,7 +47,7 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
 				<Text>{block.description}</Text>
 				<View style={{ flexDirection: 'row' }}>
-					<View style={{ flex: 2, borderRightWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 2, borderRightWidth: 0.5, alignItems: 'center' }}>
 						<Text>Seating</Text>
 						<View style={{ flexDirection: 'row'}}>
 							<View style={{ flex: 1, alignItems: 'center'}}>
@@ -60,7 +60,7 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 							</View>
 						</View>
 					</View>
-					<View style={{ flex: 4, borderLeftWidth: 0.25, borderRightWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 4, borderLeftWidth: 0.5, borderRightWidth: 0.5, alignItems: 'center' }}>
 						<Text>Test Drive</Text>
 						<View style={{ flexDirection: 'row' }}>
 							<View style={{ flex: 1, alignItems: 'center' }}>
@@ -81,13 +81,13 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 							</View>
 						</View>
 					</View>
-					<View style={{ flex: 1, borderLeftWidth: 0.25, borderRightWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 1, borderLeftWidth: 0.5, borderRightWidth: 0.5, alignItems: 'center' }}>
 						<Text>N</Text>
 						<Text>{block.sptNValue}</Text>
 						<Text>{block.sptNValue === 50 ? (block.totalMainPenetrationInMillimetres) : null}
 						</Text>
 					</View>
-					<View style={{ flex: 1.5, borderLeftWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 1.5, borderLeftWidth: 0.5, alignItems: 'center' }}>
 						<Text>R%</Text>
 						<Text>{block.recoveryInPercentage.toFixed(1)}</Text>
 					</View>

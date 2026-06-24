@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, FlatList, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 
 // Local imports
 import { EditProjectParams, Project } from '@/interfaces/Project';
@@ -71,6 +71,7 @@ export function EditProjectInputForm ({
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={() => {
           if (!projectCode.trim()) {
             alert("Error: Project Code Should not be empty");
@@ -92,6 +93,7 @@ export function EditProjectInputForm ({
       />
       <Button
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)}
       />
       <TouchableOpacity 

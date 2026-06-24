@@ -41,6 +41,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 			/>
 			<Button
 				title='Confirm'
+				color={styles.confirmButton.color}
 				onPress={async () => {
 					const newBlock: Block = checkAndReturnCoringBlock({
 						blocks: blocks,
@@ -59,6 +60,7 @@ export function EditCoringBlockDetailsInputForm({ style, blocks, setBlocks, oldB
 			/>
 			<Button 
 				title='Cancel'
+				color={styles.cancelButton.color}
 				onPress={() => setIsEditState(false)} 
 			/>
 		</View>

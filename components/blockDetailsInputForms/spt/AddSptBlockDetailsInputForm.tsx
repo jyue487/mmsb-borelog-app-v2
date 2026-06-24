@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Button, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { SptBlockInputQuestions } from "@/components/inputQuestions/SptBlockInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
 import { Block } from "@/interfaces/Block";
 import { ColourProperties } from "@/interfaces/ColourProperties";
-import { SoilProperties } from "@/interfaces/SoilProperties";
+import { createDefaultSoilProperties, SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnSptBlock } from "@/utils/checkFunctions/checkAndReturnSptBlock";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
@@ -54,12 +55,8 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		dominantColour: null,
 		secondaryColour: null,
 	});
-	const [soilProperties, setSoilProperties] = useState<SoilProperties>({
-		dominantSoilType: null,
-		secondarySoilType: null,
-		otherProperties: '',
-		customOtherProperties: '',
-	});
+	const [soilProperties, setSoilProperties] = useState<SoilProperties>(() => createDefaultSoilProperties());
+
 
 	return (
 		<>
@@ -96,6 +93,7 @@ export function AddSptBlockDetailsInputForm({ style, blocks, setBlocks, borehole
 		/>
 		<Button
 			title='Confirm'
+			color={styles.confirmButton.color}
 			onPress={async () => {
 				try {
 					const newBlock: Block = checkAndReturnSptBlock({

@@ -12,6 +12,8 @@ import {
 } from "@/constants/soil";
 import { styles } from "@/constants/styles";
 import { SoilProperties } from "@/interfaces/SoilProperties";
+import { getSoilCode } from "@/utils/soil/getSoilCode";
+import { throwError } from "@/utils/error/throwError";
 
 export type SoilPropertiesInputQuestionsProps = {
   questionPrefix: string;
@@ -36,12 +38,15 @@ export function SoilPropertiesInputQuestions({
   const selectDominantSoilType = (dominantSoilType: DominantSoilType) => {
     setDominantSoilType(dominantSoilType);
     setIsSelectDominantSoilTypePressed(false);
-    setSoilProperties((sp: SoilProperties): SoilProperties => ({...sp, dominantSoilType: dominantSoilType}));
+    setSoilProperties((sp: SoilProperties): SoilProperties => ({...sp, dominantSoilType: dominantSoilType, soilCode: getSoilCode(dominantSoilType, null)}));
   };
   const selectSecondarySoilType = (secondarySoilType: SecondarySoilType | null) => {
     setSecondarySoilType(secondarySoilType);
     setIsSelectSecondarySoilTypePressed(false);
-    setSoilProperties((sp: SoilProperties): SoilProperties => ({...sp, secondarySoilType: secondarySoilType}));
+    if (dominantSoilType === null) {
+      throwError('Dominant soil type should not be empty!');
+    }
+    setSoilProperties((sp: SoilProperties): SoilProperties => ({...sp, secondarySoilType: secondarySoilType, soilCode: getSoilCode(dominantSoilType, secondarySoilType)}));
   };
   const selectOtherProperties = (otherProperties: string) => {
     setOtherProperties(otherProperties);
@@ -85,8 +90,8 @@ export function SoilPropertiesInputQuestions({
                 <TouchableOpacity 
                   onPress={() => {
                     Keyboard.dismiss();
-                    selectDominantSoilType(item);
                     resetSecondarySoilType();
+                    selectDominantSoilType(item);
                   }}
                   style={[styles.listItem]}>
                   <Text>{item}</Text>

@@ -44,6 +44,7 @@ export function EditConcreteSlabBlockDetailsInputForm({ style, blocks, setBlocks
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);
@@ -77,6 +78,7 @@ export function EditConcreteSlabBlockDetailsInputForm({ style, blocks, setBlocks
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>

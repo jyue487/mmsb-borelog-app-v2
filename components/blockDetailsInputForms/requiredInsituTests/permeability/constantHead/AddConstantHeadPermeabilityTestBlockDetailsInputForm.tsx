@@ -1,5 +1,6 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { styles } from "@/constants/styles";
 import { Block } from "@/interfaces/Block";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnConstantHeadPermeabilityTestBlock } from "@/utils/checkFunctions/checkAndReturnConstantHeadPermeabilityTestBlock";
@@ -53,6 +54,7 @@ export function AddConstantHeadPermeabilityTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnConstantHeadPermeabilityTestBlock({
             blocks: blocks,

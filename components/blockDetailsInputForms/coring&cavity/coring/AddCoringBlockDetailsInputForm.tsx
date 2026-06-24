@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Button, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { checkAndReturnCoringBlock } from "@/utils/checkFunctions/checkAndReturnCoringBlock";
 import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
 import { ColourProperties } from "@/interfaces/ColourProperties";
-import { RockProperties } from "@/interfaces/RockProperties";
+import { createDefaultRockProperties, RockProperties } from "@/interfaces/RockProperties";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCoringBlockDetailsInputFormProps = ViewProps & {
@@ -32,11 +33,7 @@ export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setB
 		dominantColour: null,
 		secondaryColour: null,
 	});
-	const [rockProperties, setRockProperties] = useState<RockProperties>({
-		rockType: null,
-		otherRockType: '',
-		otherProperties: '',
-	});
+	const [rockProperties, setRockProperties] = useState<RockProperties>(() => createDefaultRockProperties());
 
 	return (
 		<>
@@ -51,6 +48,7 @@ export function AddCoringBlockDetailsInputForm({ style, boreholeId, blocks, setB
 		/>
 		<Button
 			title='Confirm'
+			color={styles.confirmButton.color}
 			onPress={async () => {
 				const newBlock: Block = checkAndReturnCoringBlock({
 					blocks: blocks,

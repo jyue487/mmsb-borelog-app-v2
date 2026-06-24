@@ -234,7 +234,7 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                     <table>
                         <tr>
                             <th rowspan="4" style="width: 5.8%;">DATE<br>&<br>TIME</th>
-                            <th rowspan="4" style="width: 6.5%; font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">SAMPLING<br><br>TESTING<br><br>CORING</th>
+                            <th rowspan="4" style="width: 6.5%;">SAMPLING<br><br>TESTING<br><br>CORING</th>
                             <th rowspan="3" style="width: 12%;">DEPTH</th>
                             <th rowspan="3" style="width: 5%;">WL</th>
                             <th rowspan="4">DESCRIPTION</th>
@@ -244,12 +244,12 @@ export function generatePdfPages(project: Project, borehole: Borehole, blocks: B
                             <th rowspan="3" style="width: 3.5%; writing-mode: vertical-lr; transform: rotate(180deg); white-space: nowrap;">SCALE</th>
                         </tr>
                         <tr>
-                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
-                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
-                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
-                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
-                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
-                            <th style="font-size: ${TEXT_SIZE_SMALLER_ANDROID}${TEXT_SIZE_UNIT};">75mm</th>
+                            <th>75mm</th>
+                            <th>75mm</th>
+                            <th>75mm</th>
+                            <th>75mm</th>
+                            <th>75mm</th>
+                            <th>75mm</th>
                         </tr>
                         <tr>
                             <th colspan="2" style="height: 40px;">CORE<br/>RUN</th>

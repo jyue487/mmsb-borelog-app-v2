@@ -33,6 +33,7 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnCavityBlock({
             blocks: blocks,
@@ -48,6 +49,7 @@ export function EditCavityBlockDetailsInputForm({ style, blocks, setBlocks, oldB
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>

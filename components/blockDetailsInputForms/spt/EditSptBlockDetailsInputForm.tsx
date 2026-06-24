@@ -85,6 +85,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 			/>
 			<Button
 				title='Confirm'
+				color={styles.confirmButton.color}
 				onPress={async () => {
 					try {
 						const newBlock: Block = checkAndReturnSptBlock({
@@ -129,6 +130,7 @@ export function EditSptBlockDetailsInputForm({ style, blocks, setBlocks, oldBloc
 			/>
 			<Button 
 				title='Cancel'
+				color={styles.cancelButton.color}
 				onPress={() => setIsEditState(false)} 
 			/>
 		</View>

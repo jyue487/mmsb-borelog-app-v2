@@ -5,6 +5,8 @@ import { checkAndReturnEndOfBoreholeBlock } from "@/utils/checkFunctions/checkAn
 import { useState } from "react";
 import { Button, ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
+
 export type AddEndOfBoreholeBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
   blocks: Block[];
@@ -35,6 +37,7 @@ export function AddEndOfBoreholeBlockDetailsInputForm({
     />
     <Button
       title='Confirm'
+      color={styles.confirmButton.color}
       onPress={async () => {
         const newBlock: Block = checkAndReturnEndOfBoreholeBlock({
           blocks: blocks,

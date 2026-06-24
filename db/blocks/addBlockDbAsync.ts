@@ -5,7 +5,7 @@ import { db } from "../db";
 export async function addBlockDbAsync(
     block: Block,
 ): Promise<Block> {
-
+    console.log(serializeBlock(block));
     const result = await db.runAsync(
         `
         INSERT INTO blocks (

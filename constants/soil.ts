@@ -95,3 +95,71 @@ export const OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE: Record<
     'SAND': OTHER_PROPERTIES_LIST_FOR_SAND,
     'GRAVEL': OTHER_PROPERTIES_LIST_FOR_GRAVEL,
 } as const;
+
+export type SecondarySoilTypeMap = {
+  'CLAY': typeof SECONDARY_SOIL_TYPE_FOR_CLAY[number];
+  'SILT': typeof SECONDARY_SOIL_TYPE_FOR_SILT[number];
+  'PEAT': typeof SECONDARY_SOIL_TYPE_FOR_PEAT[number];
+  'SAND': typeof SECONDARY_SOIL_TYPE_FOR_SAND[number];
+  'GRAVEL': typeof SECONDARY_SOIL_TYPE_FOR_GRAVEL[number];
+};
+
+export const CLAY_SOIL_CODE = 201 as const;
+export const SILT_SOIL_CODE = 301 as const;
+export const PEAT_SOIL_CODE = 601 as const;
+export const SAND_SOIL_CODE = 401 as const;
+export const GRAVEL_SOIL_CODE = 501 as const;
+
+export const SOIL_TYPE_CODE_MAP_SINGLE_ENTRY: Record<DominantSoilType, number> = {
+    'CLAY': CLAY_SOIL_CODE,
+    'SILT': SILT_SOIL_CODE,
+    'PEAT': PEAT_SOIL_CODE,
+    'SAND': SAND_SOIL_CODE,
+    'GRAVEL': GRAVEL_SOIL_CODE,
+} as const;
+
+export const SOIL_TYPE_CODE_MAP_DOUBLE_ENTRY = {
+  'CLAY': {
+    'slightly sandy': 203,
+    'sandy': 203,
+    'slightly gravelly': 204,
+    'gravelly': 204,
+    'peaty organic': 201,
+    'organic': 201,
+  },
+
+  'SILT': {
+    'slightly sandy': 303,
+    'sandy': 303,
+    'slightly gravelly': 304,
+    'gravelly': 304,
+    'peaty organic': 301,
+    'organic': 301,
+  },
+
+  'PEAT': {},
+
+  'SAND': {
+    'fine': 401,
+    'coarse': 401,
+    'slightly gravelly': 404,
+    'gravelly': 404,
+    'slightly silty': 403,
+    'silty': 403,
+    'slightly clayey': 402,
+    'clayey': 402,
+    'peaty organic':401,
+    'organic': 401,
+  },
+
+  'GRAVEL': {
+    'slightly sandy': 504,
+    'sandy': 504,
+    'slightly silty': 503,
+    'silty': 503,
+    'slightly clayey': 502,
+    'clayey': 502,
+  },
+} satisfies {
+  [D in DominantSoilType]: Record<SecondarySoilTypeMap[D], number> | undefined;
+};

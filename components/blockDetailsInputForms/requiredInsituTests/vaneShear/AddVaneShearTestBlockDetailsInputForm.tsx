@@ -1,5 +1,6 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { styles } from "@/constants/styles";
 import { Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
@@ -52,6 +53,7 @@ export function AddVaneShearTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
 
           checkAndReturnDayWorkStatus(dayWorkStatus);

@@ -53,6 +53,7 @@ export function EditCustomBlockDetailsInputForm({ style, blocks, setBlocks, oldB
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnCustomBlock({
             blocks: blocks,
@@ -68,6 +69,7 @@ export function EditCustomBlockDetailsInputForm({ style, blocks, setBlocks, oldB
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>

@@ -2,7 +2,7 @@ import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from "rea
 
 import { DAY_CONTINUE_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { styles } from '@/constants/styles';
-import { stringToDecimalPoint } from '@/utils/numbers';
+import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
 import { useState } from 'react';
 import { DayWorkStatusDateSelectorComponent } from '../datetime/DayWorkStatusDateSelectorComponent';
 import { DayWorkStatusTimeSelectorComponent } from '../datetime/DayWorkStatusTimeSelectorComponent';
@@ -16,7 +16,7 @@ export function DayWorkStatusInputQuestions({
 }: DayWorkStatusInputQuestionsProps) {
   
 	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(dayWorkStatus.dayWorkStatusType);
-	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>(dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
+	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((typeof dayWorkStatus.waterLevelInMetres === 'string') ? dayWorkStatus.waterLevelInMetres: dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
 	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>(dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
 	const [isSelectDayWorkStatusPressed, setIsSelectDayWorkStatusPressed] = useState<boolean>(false);
 
@@ -32,7 +32,7 @@ export function DayWorkStatusInputQuestions({
 		setWaterLevelInMetresStr(waterLevelInMetresStr);
 		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
 			...dayWorkStatus,
-			waterLevelInMetres: (waterLevelInMetresStr.length === 0) ? null : stringToDecimalPoint(waterLevelInMetresStr, 3),
+			waterLevelInMetres: (waterLevelInMetresStr.length === 0) ? null : (stringIsFloat(waterLevelInMetresStr)) ? stringToDecimalPoint(waterLevelInMetresStr, 3) : waterLevelInMetresStr,
 		}));
 	};
 	const saveCasingDepthInMetresStr = (casingDepthInMetresStr: string) => {
@@ -98,7 +98,7 @@ export function DayWorkStatusInputQuestions({
 						value={waterLevelInMetresStr}
 						onChangeText={saveWaterLevelInMetresStr}
 						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
-						keyboardType='numeric'
+						// keyboardType='numeric'
 					/>
 				</View>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>

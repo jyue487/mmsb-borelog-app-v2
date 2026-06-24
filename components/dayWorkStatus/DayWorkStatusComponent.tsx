@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, WaterLevelStringType } from "@/constants/DayWorkStatus";
 import { getDateTime } from "@/utils/datetime";
 
 export type DayWorkStatusProps = {
@@ -14,7 +14,7 @@ export function DayWorkStatusComponent({ dayWorkStatus }: DayWorkStatusProps) {
   return (
     <View style={{ alignItems: 'flex-start' }}>
       <Text>{dayWorkStatus.dayWorkStatusType}: {getDateTime(dayWorkStatus.date, dayWorkStatus.time)}</Text>
-      {(dayWorkStatus.waterLevelInMetres === null) ? null : <Text>Water Level: {dayWorkStatus.waterLevelInMetres}m</Text>}
+      {(dayWorkStatus.waterLevelInMetres === null) ? null : <Text>Water Level: {typeof dayWorkStatus.waterLevelInMetres === "number" ? `${dayWorkStatus.waterLevelInMetres}m` : dayWorkStatus.waterLevelInMetres}</Text>}
       {(dayWorkStatus.casingDepthInMetres === null) ? null : <Text>Casing Depth: {dayWorkStatus.casingDepthInMetres}m</Text>}
     </View>
   );

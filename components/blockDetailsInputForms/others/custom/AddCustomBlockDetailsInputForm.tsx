@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
+import { styles } from '@/constants/styles';
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
 import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { Block, CUSTOM_BLOCK_TYPE_ID } from "@/interfaces/Block";
@@ -59,6 +60,7 @@ export function AddCustomBlockDetailsInputForm({ style, boreholeId, blocks, setB
     </View>
     <Button
       title='Confirm'
+      color={styles.confirmButton.color}
       onPress={async () => {
         const newBlock: Block = checkAndReturnCustomBlock({
           blocks: blocks,

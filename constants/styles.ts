@@ -4,6 +4,7 @@ export const styles = StyleSheet.create({
     block: {
         width: '100%',
         borderWidth: 1,
+        gap: 5,
     },
     blockDetailsInputForm: {
         width: '100%',
@@ -12,9 +13,9 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
     },
     listItem: {
-        borderLeftWidth: 0.25,
-        borderRightWidth: 0.25,
-        borderBottomWidth: 0.25,
+        borderLeftWidth: 0.5,
+        borderRightWidth: 0.5,
+        borderBottomWidth: 0.5,
         alignItems: 'center',
         padding: 10,
     },
@@ -57,6 +58,11 @@ export const styles = StyleSheet.create({
         borderColor: 'gray',
         borderWidth: 1,
         textAlign: 'center',
-    }
-    
+    },
+    confirmButton: {
+        color: 'green',
+    },
+    cancelButton: {
+        color: 'red',
+    },
 });

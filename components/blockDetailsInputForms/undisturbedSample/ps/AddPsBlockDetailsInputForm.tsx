@@ -5,9 +5,10 @@ import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DayWorkStatusType } from "@/cons
 import { Block, PS_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
 import { checkAndReturnUndisturbedSampleBlock } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleBlock";
-import { SoilProperties } from "@/interfaces/SoilProperties";
+import { createDefaultSoilProperties, SoilProperties } from "@/interfaces/SoilProperties";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
+import { styles } from "@/constants/styles";
 
 export type AddPsBlockDetailsInputFormProps = ViewProps & {
   boreholeId: number;
@@ -31,23 +32,13 @@ export function AddPsBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
     dominantColour: null,
     secondaryColour: null,
   });
-  const [topSoilProperties, setTopSoilProperties] = useState<SoilProperties>({
-    dominantSoilType: null,
-    secondarySoilType: null,
-    otherProperties: '',
-    customOtherProperties: '',
-  });
+  const [topSoilProperties, setTopSoilProperties] = useState<SoilProperties>(() => createDefaultSoilProperties());
   const [baseDitto, setBaseDitto] = useState<boolean>(true);
   const [bottomColourProperties, setBottomColourProperties] = useState<ColourProperties>({
     dominantColour: null,
     secondaryColour: null,
   });
-  const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>({
-    dominantSoilType: null,
-    secondarySoilType: null,
-    otherProperties: '',
-    customOtherProperties: '',
-  });
+  const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>(() => createDefaultSoilProperties());
 
   return (
     <>
@@ -64,6 +55,7 @@ export function AddPsBlockDetailsInputForm({ style, boreholeId, blocks, setBlock
     />
     <Button
       title='Confirm'
+      color={styles.confirmButton.color}
       onPress={async () => {
         const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
           undisturbedSampleBlockTypeId: PS_BLOCK_TYPE_ID,

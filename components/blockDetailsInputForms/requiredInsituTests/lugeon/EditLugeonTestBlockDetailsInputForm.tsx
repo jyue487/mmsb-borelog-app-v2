@@ -48,6 +48,7 @@ export function EditLugeonTestBlockDetailsInputForm({
       </View>
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnLugeonTestBlock({
             blocks: blocks,

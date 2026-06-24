@@ -38,6 +38,7 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button
         title='Confirm'
+        color={styles.confirmButton.color}
         onPress={async () => {
           const newBlock: Block = checkAndReturnHaBlock({
             blocks: blocks,
@@ -55,6 +56,7 @@ export function EditHaBlockDetailsInputForm({ style, blocks, setBlocks, oldBlock
       />
       <Button 
         title='Cancel'
+        color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)} 
       />
     </View>
