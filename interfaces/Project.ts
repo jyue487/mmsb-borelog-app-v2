@@ -1,5 +1,5 @@
 export interface Project {
-    id: number; // must
+    id: string; // must
     code: string; // must
     title: string; //must
     location: string;

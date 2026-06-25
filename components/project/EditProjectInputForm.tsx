@@ -9,7 +9,7 @@ import { styles } from '@/constants/styles';
 type EditProjectInputFormProps = {
   oldProject: Project;
   editProject: (editProjectParams: EditProjectParams) => void;
-  deleteProject: (projectId: number) => void;
+  deleteProject: (projectId: string) => void;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 };
 

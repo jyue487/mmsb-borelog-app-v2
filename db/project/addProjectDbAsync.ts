@@ -1,35 +1,41 @@
 import { AddProjectParams, Project } from "@/interfaces/Project";
-import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
+import { throwError } from "@/utils/error/throwError";
+import { PowerSyncDatabase } from '@powersync/react-native';
+import { randomUUID } from 'expo-crypto';
 
 export async function addProjectDbAsync(
-    db: SQLiteDatabase, 
+    db: PowerSyncDatabase, 
     projectParams: AddProjectParams
 ): Promise<Project> {
-    const result: SQLiteRunResult = await db.runAsync(
+    const id = randomUUID();
+    const result = await db.execute(
         `
         INSERT INTO projects (
+            id,
             code,
             title,
             location,
             client,
             consultant
         ) VALUES (
-            $code,
-            $title,
-            $location,
-            $client,
-            $consultant
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
         )
-        `, {
-            $code: projectParams.code,
-            $title: projectParams.title,
-            $location: projectParams.location,
-            $client: projectParams.client,
-            $consultant: projectParams.consultant
-        }
+        `, [
+            id,
+            projectParams.code,
+            projectParams.title,
+            projectParams.location,
+            projectParams.client,
+            projectParams.consultant
+        ]
     );
     return {
-        id: result.lastInsertRowId,
+        id: id,
         ...projectParams,
     };
 }

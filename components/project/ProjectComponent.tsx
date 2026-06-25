@@ -10,7 +10,7 @@ import { EditProjectInputForm } from './EditProjectInputForm';
 type ProjectComponentProps = {
   project: Project;
   editProject: (editProjectParams: EditProjectParams) => void;
-  deleteProject: (projectId: number) => void;
+  deleteProject: (projectId: string) => void;
 };
 
 export function ProjectComponent({

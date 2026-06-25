@@ -7,11 +7,11 @@ import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
 import { ProjectComponent } from '@/components/project/ProjectComponent';
-import { SignOutButtonComponent } from '@/components/auth/SignOutButtonComponent';
 import { addProjectDbAsync } from '@/db/project/addProjectDbAsync';
 import { editProjectDbAsync } from '@/db/project/editProjectDbAsync';
 import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
-import { db } from '@/db/db';
+// import { db } from '@/db/db';
+import { powersync } from '@/powersync/system';
 
 export default function ProjectListScreen() {
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
@@ -27,21 +27,24 @@ export default function ProjectListScreen() {
   // TODO: How to make it safe from SQL injections?
   const addProject = async (addProjectParams: AddProjectParams) => {
     try {
-      const project: Project = await addProjectDbAsync(db, addProjectParams);
+      const project: Project = await addProjectDbAsync(powersync, addProjectParams);
       setProjects((prevProjects: Project[]) => [...prevProjects, project]);
     } catch (err) {
-      const errMsg = `Error: Duplicate project code/title. ${err}`;
+      const errMsg = `Error: ${err}`;
       alert(errMsg);
       console.log(errMsg);
     }
   };
 
-  const deleteProject = async (projectId: number) => {
+  const deleteProject = async (projectId: string) => {
     try {
-      await db.runAsync('DELETE FROM projects WHERE id = ?', projectId);
+      await powersync.execute(
+        `DELETE FROM projects WHERE id = ?`,
+        [projectId]
+      );
       setProjects((prevProjects: Project[]) => prevProjects.filter((p: Project) => p.id !== projectId));
     } catch (err) {
-      const errMsg = `Error: Duplicate title ${err}`;
+      const errMsg = `Error: ${err}`;
       alert(errMsg);
       console.log(errMsg);
     }
@@ -49,7 +52,7 @@ export default function ProjectListScreen() {
 
   const editProject = async (editProjectParams: EditProjectParams) => {
     try {
-      const result: SQLiteRunResult = await editProjectDbAsync(db, editProjectParams);
+      await editProjectDbAsync(powersync, editProjectParams);
       setProjects((prevProjects: Project[]) =>
         prevProjects.map((p: Project) =>
           (p.id === editProjectParams.id)
@@ -61,7 +64,7 @@ export default function ProjectListScreen() {
         )
       );
     } catch (err) {
-      const errMsg = `Error: Duplicate title ${err}`;
+      const errMsg = `Error: ${err}`;
       alert(errMsg);
       console.log(errMsg);
     }
@@ -69,7 +72,7 @@ export default function ProjectListScreen() {
 
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
   const fetchAllProjects = async () => {
-    const rawProjects = await db.getAllAsync('SELECT * FROM projects');
+    const rawProjects = await powersync.getAll('SELECT * FROM projects');
     const projects: Project[] = rawProjects.map((row: any) => ({
       id: row.id,
       code: row.code,
