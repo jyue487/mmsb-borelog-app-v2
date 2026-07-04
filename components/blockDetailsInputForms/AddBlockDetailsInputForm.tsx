@@ -7,18 +7,17 @@ import { AddSptBlockDetailsInputForm } from '@/components/blockDetailsInputForms
 import { UndisturbedSampleInputForm } from '@/components/blockDetailsInputForms/undisturbedSample/UndisturbedSampleInputForm';
 import { styles } from "@/constants/styles";
 import { Block } from "@/interfaces/Block";
-import { RequiredInsituTestsInputForm } from "./requiredInsituTests/RequiredInsituTestsInputForm";
 import { AddEndOfBoreholeBlockDetailsInputForm } from "./endOfBorehole/AddEndOfBoreholeBlockDetailsInputForm";
+import { RequiredInsituTestsInputForm } from "./requiredInsituTests/RequiredInsituTestsInputForm";
 
-export type AddNewBlockDetailsInputFormProps = ViewProps & {
+export type AddBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   boreholeId: string;
-
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function AddNewBlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, setIsAddNewBlockButtonPressed, ...otherProps }: AddNewBlockDetailsInputFormProps) {
+export function AddBlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, setIsAddNewBlockButtonPressed, ...otherProps }: AddBlockDetailsInputFormProps) {
   const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>(true);
   const [operationType, setOperationType] = useState<string>('Select Operation Type');
 

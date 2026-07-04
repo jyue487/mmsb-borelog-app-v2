@@ -1,45 +1,24 @@
-import * as FileSystem from 'expo-file-system';
-import * as Print from 'expo-print';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
+import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local Imports
-import { AsphaltBlockComponent } from '@/components/blockComponents/AsphaltBlockComponent';
-import { CavityBlockComponent } from '@/components/blockComponents/CavityBlockComponent';
-import { ConcreteSlabBlockComponent } from '@/components/blockComponents/ConcreteSlabBlockComponent';
-import { ConstantHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/ConstantHeadPermeabilityTestBlockComponent';
-import { CoringBlockComponent } from '@/components/blockComponents/CoringBlockComponent';
-import { CustomBlockComponent } from '@/components/blockComponents/CustomBlockComponent';
-import { EndOfBoreholeBlockComponent } from '@/components/blockComponents/EndOfBoreholeBlockComponent';
-import { FallingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/FallingHeadPermeabilityTestBlockComponent';
-import { HaBlockComponent } from '@/components/blockComponents/HaBlockComponent';
-import { LugeonTestBlockComponent } from '@/components/blockComponents/LugeonTestBlockComponent';
-import { MzBlockComponent } from '@/components/blockComponents/MzBlockComponent';
-import { PressuremeterTestBlockComponent } from '@/components/blockComponents/PressuremeterTestBlockComponent';
-import { PsBlockComponent } from '@/components/blockComponents/PsBlockComponent';
-import { RisingHeadPermeabilityTestBlockComponent } from '@/components/blockComponents/RisingHeadPermeabilityTestBlockComponent';
-import { SptBlockComponent } from '@/components/blockComponents/SptBlockComponent';
-import { UdBlockComponent } from '@/components/blockComponents/UdBlockComponent';
-import { VaneShearTestBlockComponent } from '@/components/blockComponents/VaneShearTestBlockComponent';
-import { WashBoringBlockComponent } from '@/components/blockComponents/WashBoringBlockComponent';
-import { AddNewBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddNewBlockDetailsInputForm';
+import { BlockComponent } from '@/components/blockComponents/BlockComponent';
+import { AddBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddBlockDetailsInputForm';
 import { deleteBlockByBlockIdDbAsync } from '@/db/blocks/deleteBlockByBlockIdDbAsync';
 import { fetchAllBlocksByBoreholeIdDbAsync } from '@/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/db/project/fetchProjectByIdAsync';
-import { ASPHALT_BLOCK_TYPE_ID, Block, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { Block } from '@/interfaces/Block';
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
-import { generateBorelogPdfAndroid } from '@/utils/pdf/generateBorelogPdfAndroid';
-import { generateBorelogPdfIos } from '@/utils/pdf/generateBorelogPdfIos';
 import { sharePdf } from '@/utils/pdf/sharePdf';
+import LoadingScreen from '../loading';
 // import { shareExcel } from '@/utils/excel/shareExcel';
 
 export default function BoreholeScreen() {
-	const { id, projectTitle, name } = useLocalSearchParams();
+  const { id, projectTitle, name } = useLocalSearchParams();
   if (typeof id != 'string' || typeof projectTitle != 'string' || typeof name != 'string') {
     throw new Error(`Error. id: ${id}, projectTitle: ${projectTitle}, name: ${name}`);
   }
@@ -69,7 +48,8 @@ export default function BoreholeScreen() {
           return;
         }
 
-        const fetchedBlocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(boreholeId);
+        const fetchedBlocks: Block[] = (await fetchAllBlocksByBoreholeIdDbAsync(boreholeId)).sort((a, b) => a.topDepthInMetres - b.topDepthInMetres);
+
         console.log('fetchedBlocks', fetchedBlocks.length);
 
         setBorehole(fetchedBorehole);
@@ -85,9 +65,7 @@ export default function BoreholeScreen() {
 
   if (!borehole || !project) {
     return (
-      <View>
-        <Text>Loading...</Text>
-      </View>
+      <LoadingScreen displayText='Loading' />
     );
   }
 
@@ -105,7 +83,7 @@ export default function BoreholeScreen() {
       }
       {
         isAddNewBlockButtonPressed && (
-          <AddNewBlockDetailsInputForm
+          <AddBlockDetailsInputForm
             blocks={blocks}
             setBlocks={setBlocks}
             boreholeId={boreholeId}
@@ -143,7 +121,7 @@ export default function BoreholeScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}>
         <Stack.Screen
@@ -157,48 +135,7 @@ export default function BoreholeScreen() {
         <FlatList
           data={blocks}
           keyExtractor={(block: Block) => block.id.toString()}
-          renderItem={({ item }) => {
-            switch (item.blockTypeId) {
-            case SPT_BLOCK_TYPE_ID:
-              return <SptBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />;
-            case CORING_BLOCK_TYPE_ID:
-              return <CoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case CAVITY_BLOCK_TYPE_ID:
-              return <CavityBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case UD_BLOCK_TYPE_ID:
-              return <UdBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case MZ_BLOCK_TYPE_ID:
-              return <MzBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case PS_BLOCK_TYPE_ID:
-              return <PsBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case HA_BLOCK_TYPE_ID:
-              return <HaBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case WASH_BORING_BLOCK_TYPE_ID:
-              return <WashBoringBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case CONCRETE_SLAB_BLOCK_TYPE_ID:
-              return <ConcreteSlabBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case ASPHALT_BLOCK_TYPE_ID:
-              return <AsphaltBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-              return <EndOfBoreholeBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case CUSTOM_BLOCK_TYPE_ID:
-              return <CustomBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
-              return <VaneShearTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-              return <FallingHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-              return <RisingHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-              return <ConstantHeadPermeabilityTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case LUGEON_TEST_BLOCK_TYPE_ID:
-              return <LugeonTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
-              return <PressuremeterTestBlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />
-            default:
-              throw new Error('Unknown block type');
-            }
-          }}
+          renderItem={({ item }) => <BlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           ListFooterComponent={renderFooter}

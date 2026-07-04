@@ -13,7 +13,7 @@ import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Proje
 import { useAuth } from '@/context/AuthContextProvider';
 import { supabase } from '@/db/supabase';
 import { powersync, setupPowerSync } from '@/powersync/system';
-import LoadingScreen from './auth/loading';
+import LoadingScreen from './loading';
 
 export default function ProjectListScreen() {
   const { isSignIn } = useAuth();

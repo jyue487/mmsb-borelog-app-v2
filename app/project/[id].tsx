@@ -44,6 +44,7 @@ export default function ProjectScreen() {
 
   const deleteBorehole = async (boreholeId: string) => {
     try {
+      console.log(`deleting borehole, id: ${boreholeId}`);
       await powersync.execute('DELETE FROM boreholes WHERE id = ?', [boreholeId]);
       setBoreholes((prevBoreholes: Borehole[]) => prevBoreholes.filter((bh: Borehole) => bh.id !== boreholeId));
     } catch (err) {
