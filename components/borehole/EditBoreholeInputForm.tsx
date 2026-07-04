@@ -11,7 +11,7 @@ import { SignatureQuestionComponent } from '../signature/SignatureQuestionCompon
 type EditBoreholeInputFormProps = {
   oldBorehole: Borehole;
   editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
-  deleteBorehole: (boreholeId: number) => void;
+  deleteBorehole: (boreholeId: string) => Promise<void>;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -159,7 +159,7 @@ export function EditBoreholeInputForm ({
             `Are you sure you want to delete borehole ${oldBorehole.name}?`,
             [
               { text: 'No, go back', style: 'cancel' },
-              { text: 'Delete', style: 'destructive', onPress: () => deleteBorehole(oldBorehole.id) },
+              { text: 'Delete', style: 'destructive', onPress: async () => await deleteBorehole(oldBorehole.id) },
             ],
             { cancelable: true }
           );

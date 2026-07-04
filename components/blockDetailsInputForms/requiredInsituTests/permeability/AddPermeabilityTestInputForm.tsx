@@ -8,7 +8,7 @@ import { AddFallingHeadPermeabilityTestBlockDetailsInputForm } from "./fallingHe
 import { AddRisingHeadPermeabilityTestBlockDetailsInputForm } from "./risingHead/AddRisingHeadPermeabilityTestBlockDetailsInputForm";
 
 export type AddPermeabilityTestInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

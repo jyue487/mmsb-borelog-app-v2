@@ -24,20 +24,6 @@ function RootStack() {
 }
 
 export default function RootLayout() {
-  const [isDbReady, setIsDbReady] = useState<boolean>(false);
-
-  useEffect(() => {
-    const init = async () => {
-      await initDb();
-      setIsDbReady(true);
-    };
-    init();
-  }, []);
-
-  if (!isDbReady) {
-    return null; // Or return a loading screen component
-  }
-
   return (
     <AuthContextProvider>
       <RootStack />

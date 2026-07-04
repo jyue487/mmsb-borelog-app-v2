@@ -10,11 +10,12 @@ import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndRetu
 import { checkAndReturnUndisturbedSampleDescription } from "@/utils/checkFunctions/checkAndReturnUndisturbedSampleDescription";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
 import { throwError } from "../error/throwError";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     undisturbedSampleBlockTypeId: typeof UD_BLOCK_TYPE_ID | typeof MZ_BLOCK_TYPE_ID | typeof PS_BLOCK_TYPE_ID;
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     penetrationDepthInMetresStr: string;
@@ -73,7 +74,7 @@ export function checkAndReturnUndisturbedSampleBlock({
     const undisturbedSampleIndex: number = (recoveryLengthInMetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === undisturbedSampleBlockTypeId && block.recoveryInPercentage > 0).length + 1;
 
     const newBlock: BaseBlock & (UdBlock | MzBlock | PsBlock) = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: undisturbedSampleBlockTypeId,
         boreholeId: boreholeId, 
         sampleIndex: undisturbedSampleIndex,

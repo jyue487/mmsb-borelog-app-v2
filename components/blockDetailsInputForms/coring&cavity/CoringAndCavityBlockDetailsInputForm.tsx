@@ -7,7 +7,7 @@ import { Block } from "@/interfaces/Block";
 import { styles } from "@/constants/styles";
 
 export type CoringAndCavityBlockDetailsInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

@@ -4,9 +4,10 @@ import { deserializeDayWorkStatus } from "../deserializeDayWorkStatus";
 import { deserializeColourProperties } from "../deserializeColourProperties";
 import { deserializeRockProperties } from "../deserializeRockProperties";
 import { deserializeDateTime } from "../deserializeDateTime";
+import { parseUntilObject } from "@/utils/json/parseUntilObject";
 
 export function deserializeCoringBlock(json: string): BaseBlock & CoringBlock {
-    const parsed = JSON.parse(json);
+    const parsed = parseUntilObject<Record<string, any>>(json);
     const block: BaseBlock & CoringBlock = {
         id: parsed.id,
         boreholeId: parsed.boreholeId,

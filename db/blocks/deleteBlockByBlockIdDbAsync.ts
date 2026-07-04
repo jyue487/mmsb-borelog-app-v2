@@ -1,5 +1,6 @@
 import { db } from "../db";
+import { powersync } from "@/powersync/system";
 
-export async function deleteBlockByBlockIdDbAsync(blockId: number) {
-    await db.runAsync('DELETE FROM blocks WHERE id = ?', blockId);
+export async function deleteBlockByBlockIdDbAsync(blockId: string) {
+    await powersync.execute('DELETE FROM blocks WHERE id = ?', [blockId]);
 }

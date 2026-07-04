@@ -5,10 +5,11 @@ import { FallingHeadPermeabilityTestBlock } from "@/interfaces/FallingHeadPermea
 import { throwError } from "../error/throwError";
 import { stringToDecimalPoint } from "../numbers";
 import { checkAndReturnDayWorkStatus } from "./checkAndReturnDayWorkStatus";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     baseDepthInMetresStr: string;
@@ -39,7 +40,7 @@ export function checkAndReturnFallingHeadPermeabilityTestBlock({
     const permeabilityTestIndex: number = blocks.filter((block: Block) => block.blockTypeId === FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID).length + 1;
 
     const newBlock: BaseBlock & FallingHeadPermeabilityTestBlock = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
         symbol: FALLING_HEAD_PERMEABILITY_TEST_SYMBOL,
         boreholeId: boreholeId, 

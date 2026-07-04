@@ -4,10 +4,11 @@ import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/interfaces/Bl
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { throwError } from "../error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "../numbers";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     otherInstallations: string;
     customInstallations: string;
     installationDepthInMetresStr: string;
@@ -50,7 +51,7 @@ export function checkAndReturnEndOfBoreholeBlock ({
     description += '.';
 
     const newBlock: Block = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         boreholeId: boreholeId,
         blockTypeId: END_OF_BOREHOLE_BLOCK_TYPE_ID,
         dayWorkStatus: {

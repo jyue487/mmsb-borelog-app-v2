@@ -5,11 +5,12 @@ import { CustomBlock } from "@/interfaces/CustomBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { stringToDecimalPoint } from "@/utils/numbers";
 import { throwError } from "../error/throwError";
+import { randomUUID } from "expo-crypto";
 
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     baseDepthInMetresStr: string;
@@ -45,7 +46,7 @@ export function checkAndReturnCustomBlock({
     const baseDepthInMetres: number = (baseDepthInMetresStr.trim().length === 0) ? -1 :  stringToDecimalPoint(baseDepthInMetresStr, 3);
 
     const newBlock: Block = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: CUSTOM_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         dayWorkStatus: dayWorkStatus,

@@ -1,5 +1,7 @@
 import { runMigrationsAsync } from "./runMigrationsAsync";
 import { db } from "./db";
+import { supabase } from "./supabase";
+import { powersync } from "@/powersync/system";
 
 export async function initDb(): Promise<void> {
     // Set journal mode

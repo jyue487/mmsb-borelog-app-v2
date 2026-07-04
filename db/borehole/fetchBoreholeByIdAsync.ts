@@ -1,26 +1,27 @@
 import { Borehole } from "@/interfaces/Borehole";
 import { db } from "../db";
+import { powersync } from "@/powersync/system";
 import { deserializeDateTime } from "@/json/deserializeDateTime";
 
-export async function fetchBoreholeByIdAsync(boreholeId: number): Promise<Borehole> {
-    const result: any = await db.getFirstAsync('SELECT * FROM boreholes WHERE id = ?', boreholeId);
+export async function fetchBoreholeByIdAsync(boreholeId: string): Promise<Borehole> {
+    const result: any = await powersync.get('SELECT * FROM boreholes WHERE id = ?', [boreholeId]);
     if (!result) {
         throw new Error(`Error. No such borehole.`);
     }
     const borehole: Borehole = {
         id: result.id,
-        projectId: result.projectId,
+        projectId: result.project_id,
         name: result.name,
-        typeOfBoring: result.typeOfBoring,
-        typeOfRig: result.typeOfRig,
-        diameterOfBoring: result.diameterOfBoring,
-        eastingInMetres: result.eastingInMetres,
-        northingInMetres: result.northingInMetres,
-        reducedLevelInMetres: result.reducedLevelInMetres,
-        drillerName: result.drillerName,
-        verifierName: result.verifierName,
-        verifierSignatureBase64: result.verifierSignatureBase64,
-        verifierSignDate: (result.verifierSignDate === null) ? null : deserializeDateTime(result.verifierSignDate),
+        typeOfBoring: result.type_of_boring,
+        typeOfRig: result.type_of_rig,
+        diameterOfBoring: result.diameter_of_boring,
+        eastingInMetres: result.easting_in_metres,
+        northingInMetres: result.northing_in_metres,
+        reducedLevelInMetres: result.reduced_level_in_metres,
+        drillerName: result.driller_name,
+        verifierName: result.verifier_name,
+        verifierSignatureBase64: result.verifier_signature_base64,
+        verifierSignDate: (result.verifier_sign_date === null) ? null : deserializeDateTime(result.verifier_sign_date),
     };
     return borehole;
 }

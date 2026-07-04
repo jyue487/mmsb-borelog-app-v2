@@ -1,42 +1,43 @@
 import { EditBoreholeParams } from "@/interfaces/Borehole";
 import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
+import { PowerSyncDatabase } from "@powersync/react-native";
 
 export async function editBoreholeDbAsync(
-    db: SQLiteDatabase,
-    editBoreholeParams: EditBoreholeParams
-): Promise<SQLiteRunResult> {
-    const result: SQLiteRunResult = await db.runAsync(
-        `
-        UPDATE 
-            boreholes 
-        SET 
-            name = $name,
-            typeOfBoring = $typeOfBoring,
-            typeOfRig = $typeOfRig,
-            diameterOfBoring = $diameterOfBoring,
-            eastingInMetres = $eastingInMetres,
-            northingInMetres = $northingInMetres,
-            reducedLevelInMetres = $reducedLevelInMetres,
-            drillerName = $drillerName,
-            verifierName = $verifierName,
-            verifierSignatureBase64 = $verifierSignatureBase64,
-            verifierSignDate = $verifierSignDate
-        WHERE 
-            id = $id
-        `, {
-            $name: editBoreholeParams.name,
-            $typeOfBoring: editBoreholeParams.typeOfBoring,
-            $typeOfRig: editBoreholeParams.typeOfRig,
-            $diameterOfBoring: editBoreholeParams.diameterOfBoring,
-            $eastingInMetres: editBoreholeParams.eastingInMetres,
-            $northingInMetres: editBoreholeParams.northingInMetres,
-            $reducedLevelInMetres: editBoreholeParams.reducedLevelInMetres,
-            $drillerName: editBoreholeParams.drillerName,
-            $verifierName: editBoreholeParams.verifierName,
-            $verifierSignatureBase64: editBoreholeParams.verifierSignatureBase64,
-            $verifierSignDate: editBoreholeParams.verifierSignDate?.toISOString() ?? null,
-            $id: editBoreholeParams.id,
-        }
-    );
-    return result;
+	db: PowerSyncDatabase,
+	editBoreholeParams: EditBoreholeParams
+): Promise<void> {
+	await db.execute(
+		`
+			UPDATE 
+				boreholes 
+			SET 
+				name = ?,
+				type_of_boring = ?,
+				type_of_rig = ?,
+				diameter_of_boring = ?,
+				easting_in_metres = ?,
+				northing_in_metres = ?,
+				reduced_level_in_metres = ?,
+				driller_name = ?,
+				verifier_name = ?,
+				verifier_signature_base64 = ?,
+				verifier_sign_date = ?
+			WHERE 
+				id = ?
+		`, [
+			editBoreholeParams.name,
+			editBoreholeParams.typeOfBoring,
+			editBoreholeParams.typeOfRig,
+			editBoreholeParams.diameterOfBoring,
+			editBoreholeParams.eastingInMetres,
+			editBoreholeParams.northingInMetres,
+			editBoreholeParams.reducedLevelInMetres,
+			editBoreholeParams.drillerName,
+			editBoreholeParams.verifierName,
+			editBoreholeParams.verifierSignatureBase64,
+			editBoreholeParams.verifierSignDate?.toISOString() ?? null,
+			editBoreholeParams.id,
+		]
+	);
+	return;
 }

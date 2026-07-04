@@ -8,7 +8,7 @@ import { Button, ViewProps } from "react-native";
 import { styles } from '@/constants/styles';
 
 export type AddEndOfBoreholeBlockDetailsInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

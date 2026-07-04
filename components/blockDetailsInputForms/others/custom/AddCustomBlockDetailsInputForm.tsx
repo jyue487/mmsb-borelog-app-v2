@@ -11,7 +11,7 @@ import { checkAndReturnCustomBlock } from "@/utils/checkFunctions/checkAndReturn
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCustomBlockDetailsInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

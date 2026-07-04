@@ -46,7 +46,7 @@ import { editBlockDbAsync } from "@/db/blocks/editBlockDbAsync";
 
 export async function editBlockAsync(
     blocks: Block[],
-    oldBlockId: number,
+    oldBlockId: string,
     newBlock: Block,
 ): Promise<Block[]> {
     let editedBlocks: Block[] = [];

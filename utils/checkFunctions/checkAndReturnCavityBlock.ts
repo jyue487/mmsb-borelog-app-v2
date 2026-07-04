@@ -4,10 +4,11 @@ import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { CavityBlock } from "@/interfaces/CavityBlock";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { throwError } from "../error/throwError";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     baseDepthInMetresStr: string;
@@ -39,7 +40,7 @@ export function checkAndReturnCavityBlock({
     const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
     const newBlock: Block = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: CAVITY_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         dayWorkStatus: dayWorkStatus,

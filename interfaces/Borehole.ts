@@ -1,6 +1,6 @@
 export interface Borehole {
-    id: number; // must
-    projectId: number; // must
+    id: string; // must
+    projectId: string; // must
     name: string; // must
     typeOfBoring: string;
     typeOfRig: string;

@@ -80,8 +80,8 @@ export interface Blocks {
 }
 
 export interface BaseBlock {
-  id: number;
-  boreholeId: number;
+  id: string;
+  boreholeId: string;
   createdAt: Date;
   updatedAt: Date | null;
 }

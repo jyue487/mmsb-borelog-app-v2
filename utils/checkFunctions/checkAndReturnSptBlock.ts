@@ -8,10 +8,11 @@ import { checkAndReturnDayWorkStatus } from '@/utils/checkFunctions/checkAndRetu
 import { stringIsNonNegativeFloat, stringIsNonNegativeInteger, stringToDecimalPoint } from '@/utils/numbers';
 import { throwError } from "../error/throwError";
 import { checkAndReturnSptBlockDescription } from "./checkAndReturnSptBlockDescription";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     seatingIncBlows1Str: string;
@@ -169,7 +170,7 @@ export function checkAndReturnSptBlock({
     const disturbedSampleIndex: number = (recoveryLengthInMillimetres === 0) ? -1 : blocks.filter((block: Block) => block.blockTypeId === SPT_BLOCK_TYPE_ID && block.recoveryInPercentage > 0).length + 1;
 
     const newBlock: Block = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: SPT_BLOCK_TYPE_ID,
         boreholeId: boreholeId,
         sptIndex: sptIndex,
