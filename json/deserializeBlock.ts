@@ -41,7 +41,7 @@ import { deserializeLugeonTestBlock } from "./lugeonTestBlock/deserializeRisingH
 import { deserializePressuremeterTestBlock } from "./pressuremeterTestBlock/deserializePressuremeterTestBlock";
 
 export function deserializeBlock(row: any): Block {
-    switch (row.blockTypeId as BlockTypeId) {
+    switch (row.block_type_id as BlockTypeId) {
     case SPT_BLOCK_TYPE_ID:
         return deserializeSptBlock(row.payload);
     case CORING_BLOCK_TYPE_ID:

@@ -11,7 +11,7 @@ import { createDefaultRockProperties, RockProperties } from "@/interfaces/RockPr
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 
 export type AddCoringBlockDetailsInputFormProps = ViewProps & {
-	boreholeId: number;
+	boreholeId: string;
 	blocks: Block[];
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 	setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

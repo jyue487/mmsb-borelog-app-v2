@@ -13,7 +13,7 @@ import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 export type AddSptBlockDetailsInputFormProps = ViewProps & {
 	blocks: Block[];
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-	boreholeId: number;
+	boreholeId: string;
 	setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 

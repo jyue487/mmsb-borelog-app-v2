@@ -4,18 +4,21 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 export type AuthContextType = {
   userId: string | null;
   email: string | null;
+  isSignIn: boolean;
   loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
   userId: null,
   email: null,
+  isSignIn: false,
   loading: true,
 });
 
 export function AuthContextProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [isSignIn, setIsSignIn] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,12 +38,19 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
 
     loadUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(event, session);
       const user = session?.user;
 
       setUserId(user?.id ?? null);
       setEmail(user?.email ?? null);
       setLoading(false);
+
+      console.log(event);
+
+      if (event === 'SIGNED_IN') {
+        setIsSignIn(true);
+      }
     });
 
     return () => {
@@ -49,7 +59,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ userId, email, loading }}>
+    <AuthContext.Provider value={{ userId, email, isSignIn, loading }}>
       {children}
     </AuthContext.Provider>
   );

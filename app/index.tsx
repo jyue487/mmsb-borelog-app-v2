@@ -1,8 +1,7 @@
-import { Stack, router } from 'expo-router';
-import { SQLiteRunResult } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import MaterialIcons from "@react-native-vector-icons/material-icons/static";
+import { Stack, router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Button, FlatList, KeyboardAvoidingView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 // Local imports
 import { AddProjectInputForm } from '@/components/project/AddProjectInputForm';
@@ -11,18 +10,34 @@ import { addProjectDbAsync } from '@/db/project/addProjectDbAsync';
 import { editProjectDbAsync } from '@/db/project/editProjectDbAsync';
 import { AddProjectParams, EditProjectParams, Project } from '@/interfaces/Project';
 // import { db } from '@/db/db';
-import { powersync } from '@/powersync/system';
+import { useAuth } from '@/context/AuthContextProvider';
+import { supabase } from '@/db/supabase';
+import { powersync, setupPowerSync } from '@/powersync/system';
+import LoadingScreen from './auth/loading';
 
 export default function ProjectListScreen() {
+  const { isSignIn } = useAuth();
+  const [isPowersyncReady, setIsPowersyncReady] = useState<boolean>(false);
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     const init = async () => {
+      await setupPowerSync();
+      if (isSignIn) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.log('Error: Sign in but no session');
+          throw new Error('Error: Sign in but no session');
+        }
+        await powersync.waitForFirstSync();
+        setIsPowersyncReady(true);
+      }
       await fetchAllProjects();
     };
+
     init();
-  }, []);
+  }, [isPowersyncReady]);
 
   // TODO: How to make it safe from SQL injections?
   const addProject = async (addProjectParams: AddProjectParams) => {
@@ -38,10 +53,8 @@ export default function ProjectListScreen() {
 
   const deleteProject = async (projectId: string) => {
     try {
-      await powersync.execute(
-        `DELETE FROM projects WHERE id = ?`,
-        [projectId]
-      );
+      console.log(`[deleteProject] powersync connected: ${powersync.connected}`);
+      await powersync.execute(`DELETE FROM projects WHERE id = ?`, [projectId]);
       setProjects((prevProjects: Project[]) => prevProjects.filter((p: Project) => p.id !== projectId));
     } catch (err) {
       const errMsg = `Error: ${err}`;
@@ -72,6 +85,7 @@ export default function ProjectListScreen() {
 
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
   const fetchAllProjects = async () => {
+    console.log(`fetchAllProjects called, powersync.connected ${powersync.connected}`);
     const rawProjects = await powersync.getAll('SELECT * FROM projects');
     const projects: Project[] = rawProjects.map((row: any) => ({
       id: row.id,
@@ -109,6 +123,11 @@ export default function ProjectListScreen() {
     );
   };
 
+  if (isSignIn && !isPowersyncReady) {
+    console.log("Signed in but powersync is not ready");
+    return <LoadingScreen displayText="Signing In" />;
+  }
+
   return (
     <KeyboardAvoidingView behavior='height' style={styles.container}>
       <Stack.Screen
@@ -130,7 +149,7 @@ export default function ProjectListScreen() {
         renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        ListFooterComponent={renderFooter()}
+        // ListFooterComponent={renderFooter()}
         contentContainerStyle={{ paddingBottom: 500 }}
         style={{ flexGrow: 0, width: '100%' }}
       />

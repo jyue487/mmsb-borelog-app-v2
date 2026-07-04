@@ -4,11 +4,12 @@ import { styles } from "@/constants/styles";
 import { Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
+import { randomUUID } from "expo-crypto";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
 type Props = {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
@@ -72,7 +73,7 @@ export function AddVaneShearTestBlockDetailsInputForm({
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
           const newBlock: Block = {
-            id: blocks.length + 1,
+            id: randomUUID(),
             blockTypeId: VANE_SHEAR_TEST_BLOCK_TYPE_ID,
             vaneShearTestIndex: vaneShearTestIndex,
             boreholeId: boreholeId, 

@@ -11,7 +11,7 @@ type BoreholeComponentProps = {
   projectTitle: string,
   borehole: Borehole,
   editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
-  deleteBorehole: (boreholeId: number) => void;
+  deleteBorehole: (boreholeId: string) => void;
 };
 
 export function BoreholeComponent({

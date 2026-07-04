@@ -4,9 +4,10 @@ import { deserializeColourProperties } from "../deserializeColourProperties";
 import { deserializeDayWorkStatus } from "../deserializeDayWorkStatus";
 import { deserializeSoilProperties } from "../deserializeSoilProperties";
 import { deserializeDateTime } from "../deserializeDateTime";
+import { parseUntilObject } from "@/utils/json/parseUntilObject";
 
 export function deserializeCavityBlock(json: string): BaseBlock & CavityBlock {
-    const parsed = JSON.parse(json);
+    const parsed = parseUntilObject<Record<string, any>>(json);
     const block: BaseBlock & CavityBlock = {
         id: parsed.id,
         boreholeId: parsed.boreholeId,

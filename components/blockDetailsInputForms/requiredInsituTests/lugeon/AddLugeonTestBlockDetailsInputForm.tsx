@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
 type Props = {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

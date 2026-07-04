@@ -5,10 +5,11 @@ import { PressuremeterTestBlock } from "@/interfaces/PressuremeterTestBlock";
 import { throwError } from "../error/throwError";
 import { stringToDecimalPoint } from "../numbers";
 import { checkAndReturnDayWorkStatus } from "./checkAndReturnDayWorkStatus";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     baseDepthInMetresStr: string;
@@ -37,7 +38,7 @@ export function checkAndReturnPressuremeterTestBlock({
     const pressuremeterTestIndex: number = blocks.filter((block: Block) => block.blockTypeId === PRESSUREMETER_TEST_BLOCK_TYPE_ID).length + 1;
 
     const newBlock: BaseBlock & PressuremeterTestBlock = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: PRESSUREMETER_TEST_BLOCK_TYPE_ID,
         symbol: PRESSUREMETER_TEST_SYMBOL,
         boreholeId: boreholeId, 

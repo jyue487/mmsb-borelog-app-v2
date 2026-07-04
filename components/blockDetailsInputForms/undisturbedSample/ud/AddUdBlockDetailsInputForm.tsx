@@ -11,7 +11,7 @@ import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
 import { styles } from "@/constants/styles";
 
 export type AddUdBlockDetailsInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

@@ -1,4 +1,4 @@
-import { PowerSyncBackendConnector, AbstractPowerSyncDatabase, UpdateType } from "@powersync/react-native"
+import { PowerSyncBackendConnector, AbstractPowerSyncDatabase, UpdateType, PowerSyncCredentials } from "@powersync/react-native"
 
 import { supabase } from "@/db/supabase";
 
@@ -8,6 +8,14 @@ export class Connector implements PowerSyncBackendConnector {
   * See https://docs.powersync.com/configuration/auth/custom
   */
   async fetchCredentials() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (!session || error) {
+      throw new Error(`Could not fetch Supabase credentials: ${error}`);
+    }
+
+    console.debug('session expires at', session.expires_at);
+
     return {
       // The PowerSync instance URL or self-hosted endpoint
       endpoint: 'https://6a34ef0b35ca576ca0dde705.powersync.journeyapps.com',
@@ -15,8 +23,8 @@ export class Connector implements PowerSyncBackendConnector {
       * To get started quickly, use a development token, see:
       * Authentication Setup https://docs.powersync.com/configuration/auth/development-tokens) to get up and running quickly
       */
-      token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6InBvd2Vyc3luYy1kZXYtMzIyM2Q0ZTMifQ.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE3ODIzNDMxMzgsImlzcyI6Imh0dHBzOi8vcG93ZXJzeW5jLWFwaS5qb3VybmV5YXBwcy5jb20iLCJhdWQiOiJodHRwczovLzZhMzRlZjBiMzVjYTU3NmNhMGRkZTcwNS5wb3dlcnN5bmMuam91cm5leWFwcHMuY29tIiwiZXhwIjoxNzgyMzg2MzM4fQ.GoAn0fxjK2W8n5aQTNaQTc9OvRsYmG0rtsxBXkR_EqjRf5cdFxCVT9_Im3Md3OHpL9kgXwI8mLEaq_ZodYZp3RhubBM97lpwenbZue9VxdPbVjuhTSUeLY9iMasnyI-ZpNVRdX_KdTpJtC1MosT2pKT6c1Ya94nZf0-hQce3Ps7uMy45Yz_7BxLgj6j0vTav9JGBpbtgnt8LoqSo3SPJu3uO6SW8y6RcjYNYYBqbpUK0mN3bn7Ssd1G5Jlj-A508CIVnTSobDbnFkh598Rt6uBdIPdr64j-OfE16AlMFKeLC_kgKEXfMnGI2gHbTzohWqBsM7yedkYKEy-lnNXUhbw'
-    };
+      token: session.access_token ?? ''
+    } satisfies PowerSyncCredentials;
   }
 
   /**
@@ -48,6 +56,7 @@ export class Connector implements PowerSyncBackendConnector {
               throw new Error(`PATCH missing opData for ${op.table}:${op.id}`);
             }
             const record = { ...op.opData, id: op.id };
+            console.log("Uploading record:", record);
             result = await table.upsert(record);
             break;
           case UpdateType.PATCH:
@@ -55,10 +64,12 @@ export class Connector implements PowerSyncBackendConnector {
             if (!op.opData) {
               throw new Error(`PATCH missing opData for ${op.table}:${op.id}`);
             }
+            console.log("Updating record:", { ...op.opData, id: op.id });
             result = await table.update(op.opData).eq('id', op.id);
             break;
           case UpdateType.DELETE:
             //TODO: Instruct your backend API to DELETE a record
+            console.log("Deleting record:", { ...op.opData, id: op.id });
             result = await table.delete().eq('id', op.id);
             break;
         }

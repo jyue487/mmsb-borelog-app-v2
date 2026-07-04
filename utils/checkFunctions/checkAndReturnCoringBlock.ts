@@ -8,10 +8,11 @@ import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndRetu
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
 import { throwError } from "../error/throwError";
 import { checkAndReturnCoringBlockDescription } from "./checkAndReturnCoringBlockDescription";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     coreRunInMetresStr: string;
@@ -70,7 +71,7 @@ export function checkAndReturnCoringBlock({
     const rockSampleIndex: number = (coreRecoveryInMetres === 0 ) ? -1 : blocks.filter((block: Block) => block.blockTypeId === CORING_BLOCK_TYPE_ID && block.coreRecoveryInPercentage > 0).length + 1;
 
     const newCoringBlock: Block = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: CORING_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         rockSampleIndex: rockSampleIndex,

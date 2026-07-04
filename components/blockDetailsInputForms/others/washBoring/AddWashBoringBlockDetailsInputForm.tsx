@@ -7,9 +7,10 @@ import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus
 import { Block, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { checkAndReturnDayWorkStatus } from "@/utils/checkFunctions/checkAndReturnDayWorkStatus";
 import { addBlockAsync } from "@/utils/addBlockFunctions/addBlockAsync";
+import { randomUUID } from "expo-crypto";
 
 export type AddWashBoringBlockDetailsInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
@@ -67,7 +68,7 @@ export function AddWashBoringBlockDetailsInputForm({ style, boreholeId, blocks, 
           const baseDepthInMetres: number = parseFloat(parseFloat(baseDepthInMetresStr).toFixed(3));
 
           const newBlock: Block = {
-            id: blocks.length + 1,
+            id: randomUUID(),
             blockTypeId: WASH_BORING_BLOCK_TYPE_ID,
             boreholeId: boreholeId, 
             dayWorkStatus: dayWorkStatus,

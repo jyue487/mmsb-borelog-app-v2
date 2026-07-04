@@ -4,9 +4,10 @@ import { deserializeColourProperties } from "../deserializeColourProperties";
 import { deserializeDayWorkStatus } from "../deserializeDayWorkStatus";
 import { deserializeSoilProperties } from "../deserializeSoilProperties";
 import { deserializeDateTime } from "../deserializeDateTime";
+import { parseUntilObject } from "@/utils/json/parseUntilObject";
 
 export function deserializeConcreteSlabBlock(json: string): BaseBlock & ConcreteSlabBlock {
-    const parsed = JSON.parse(json);
+    const parsed = parseUntilObject<Record<string, any>>(json);
     const block: BaseBlock & ConcreteSlabBlock = {
         id: parsed.id,
         boreholeId: parsed.boreholeId,

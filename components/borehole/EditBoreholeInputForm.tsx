@@ -11,7 +11,7 @@ import { SignatureQuestionComponent } from '../signature/SignatureQuestionCompon
 type EditBoreholeInputFormProps = {
   oldBorehole: Borehole;
   editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
-  deleteBorehole: (boreholeId: number) => void;
+  deleteBorehole: (boreholeId: string) => void;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
 

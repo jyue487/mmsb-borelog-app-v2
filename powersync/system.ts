@@ -5,18 +5,18 @@ import { Connector } from './Connector';
 
 // Create the factory
 const opSqlite = new OPSqliteOpenFactory({
-    dbFilename: 'powersync.db'
+	dbFilename: 'powersync.db'
 });
 
 export const powersync = new PowerSyncDatabase({
-    // For other options see,
-    schema: AppSchema,
-    // Override the default database
-    database: opSqlite
+	// For other options see,
+	schema: AppSchema,
+	// Override the default database
+	database: opSqlite
 });
 
 export const setupPowerSync = async () => {
-  // Uses the backend connector that will be created in the next section
-  const connector = new Connector();
-  powersync.connect(connector);
+	// Uses the backend connector that will be created in the next section
+	await powersync.connect(new Connector());
+	console.log(`setupPowerSync: PowerSync connected ${powersync.connected}`);
 };

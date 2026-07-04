@@ -13,7 +13,7 @@ import { AddEndOfBoreholeBlockDetailsInputForm } from "./endOfBorehole/AddEndOfB
 export type AddNewBlockDetailsInputFormProps = ViewProps & {
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-  boreholeId: number;
+  boreholeId: string;
 
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 };

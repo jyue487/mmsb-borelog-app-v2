@@ -4,9 +4,10 @@ import { deserializeColourProperties } from "../deserializeColourProperties";
 import { deserializeDayWorkStatus } from "../deserializeDayWorkStatus";
 import { deserializeSoilProperties } from "../deserializeSoilProperties";
 import { deserializeDateTime } from "../deserializeDateTime";
+import { parseUntilObject } from "@/utils/json/parseUntilObject";
 
 export function deserializeConstantHeadPermeabilityTestBlock(json: string): BaseBlock & ConstantHeadPermeabilityTestBlock {
-    const parsed = JSON.parse(json);
+    const parsed = parseUntilObject<Record<string, any>>(json);
     const block: BaseBlock & ConstantHeadPermeabilityTestBlock = {
         id: parsed.id,
         boreholeId: parsed.boreholeId,

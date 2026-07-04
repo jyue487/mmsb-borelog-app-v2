@@ -6,10 +6,11 @@ import { SoilProperties } from "@/interfaces/SoilProperties";
 import { throwError } from "../error/throwError";
 import { checkAndReturnDayWorkStatus } from "./checkAndReturnDayWorkStatus";
 import { checkAndReturnHaBlockDescription } from "./checkAndReturnHaBlockDescription";
+import { randomUUID } from "expo-crypto";
 
 type Params = {
     blocks: Block[];
-    boreholeId: number;
+    boreholeId: string;
     dayWorkStatus: DayWorkStatus;
     topDepthInMetresStr: string;
     baseDepthInMetresStr: string;
@@ -45,7 +46,7 @@ export function checkAndReturnHaBlock({
     const haSampleIndex: number = blocks.filter((block: Block) => block.blockTypeId === HA_BLOCK_TYPE_ID).length + 1;
 
     const newBlock: Block = {
-        id: blocks.length + 1,
+        id: randomUUID(),
         blockTypeId: HA_BLOCK_TYPE_ID,
         boreholeId: boreholeId, 
         haSampleIndex: haSampleIndex,

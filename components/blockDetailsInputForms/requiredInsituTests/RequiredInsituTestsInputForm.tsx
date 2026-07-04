@@ -9,7 +9,7 @@ import { AddPressuremeterTestBlockDetailsInputForm } from "./pressuremeter/AddPr
 import { AddVaneShearTestBlockDetailsInputForm } from "./vaneShear/AddVaneShearTestBlockDetailsInputForm";
 
 export type RequiredInsituTestsInputFormProps = ViewProps & {
-  boreholeId: number;
+  boreholeId: string;
   blocks: Block[];
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
   setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;

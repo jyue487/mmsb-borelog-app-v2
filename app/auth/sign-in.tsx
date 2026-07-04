@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 
 import { supabase } from '@/db/supabase'
+import { powersync, setupPowerSync } from '@/powersync/system';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState<string>('');
@@ -11,14 +12,23 @@ export default function SignInScreen() {
 
   async function signInWithEmail() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: { session }, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     });
     if (error) {
       Alert.alert(error.message);
       console.log(error.message);
+      setLoading(false);
+      return;
     }
+    
+    if (!session) {
+      throw new Error('No session after sign in!');
+    }
+
+    await powersync.disconnectAndClear();
+    await setupPowerSync();
     setLoading(false);
   }
 
@@ -57,7 +67,7 @@ export default function SignInScreen() {
         <View style={[styles.verticallySpaced, styles.mt20]}>
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={() => signInWithEmail()}
+            onPress={async () => await signInWithEmail()}
             disabled={loading}
           >
             <Text style={styles.buttonText}>Sign in</Text>

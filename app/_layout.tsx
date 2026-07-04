@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 import { AuthContextProvider, AuthContextType, useAuth } from '@/context/AuthContextProvider';
-import { powersync, setupPowerSync } from '@/powersync/system';
 
 function RootStack() {
   const { userId }: AuthContextType = useAuth();
@@ -25,21 +24,6 @@ function RootStack() {
 }
 
 export default function RootLayout() {
-  const [isDbReady, setIsDbReady] = useState<boolean>(false);
-
-  useEffect(() => {
-    const init = async () => {
-      await initDb();
-      setIsDbReady(true);
-      await setupPowerSync();
-    };
-    init();
-  }, []);
-
-  if (!isDbReady) {
-    return null; // Or return a loading screen component
-  }
-
   return (
     <AuthContextProvider>
       <RootStack />

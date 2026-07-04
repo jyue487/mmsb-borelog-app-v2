@@ -43,21 +43,41 @@ export default function BoreholeScreen() {
   if (typeof id != 'string' || typeof projectTitle != 'string' || typeof name != 'string') {
     throw new Error(`Error. id: ${id}, projectTitle: ${projectTitle}, name: ${name}`);
   }
-  const boreholeId: number = parseInt(id, 10);
+  const boreholeId: string = id;
   const boreholeName: string = name;
   const [project, setProject] = useState<Project | null>(null);
   const [borehole, setBorehole] = useState<Borehole | null>(null);
-  const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
 
   useEffect(() => {
     const init = async () => {
-      const borehole: Borehole | null = await fetchBoreholeByIdAsync(boreholeId);
-      const project: Project | null = await fetchProjectByIdAsync(borehole.projectId);
-      const blocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(boreholeId);
-      setBorehole(borehole);
-      setProject(project);
-      setBlocks(blocks);
+      try {
+        const fetchedBorehole: Borehole | null = await fetchBoreholeByIdAsync(boreholeId);
+        console.log('fetchedBorehole', fetchedBorehole);
+
+        if (!fetchedBorehole) {
+          console.log("No borehole found for id:", boreholeId);
+          return;
+        }
+
+        const fetchedProject: Project | null = await fetchProjectByIdAsync(fetchedBorehole.projectId);
+        console.log('fetchedProject', fetchedProject);
+
+        if (!fetchedProject) {
+          console.log("No project found for id:", fetchedBorehole.projectId);
+          return;
+        }
+
+        const fetchedBlocks: Block[] = await fetchAllBlocksByBoreholeIdDbAsync(boreholeId);
+        console.log('fetchedBlocks', fetchedBlocks.length);
+
+        setBorehole(fetchedBorehole);
+        setProject(fetchedProject);
+        setBlocks(fetchedBlocks);
+      } catch (error) {
+        console.error("Failed to load borehole page:", error);
+      }
     };
 
     init();
