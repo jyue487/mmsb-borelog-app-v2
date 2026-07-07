@@ -1,45 +1,63 @@
 import React, { useState } from "react";
 import { FlatList, Keyboard, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
-import { AddCavityBlockDetailsInputForm } from "@/components/blockDetailsInputForms/coring&cavity/cavity/AddCavityBlockDetailsInputForm";
-import { AddCoringBlockDetailsInputForm } from "@/components/blockDetailsInputForms/coring&cavity/coring/AddCoringBlockDetailsInputForm";
-import { Block } from "@/interfaces/Block";
+import { CavityBlockDetailsInputForm } from "@/components/blockDetailsInputForms/coring&cavity/cavity/CavityBlockDetailsInputForm";
+import { CoringBlockDetailsInputForm } from "@/components/blockDetailsInputForms/coring&cavity/coring/CoringBlockDetailsInputForm";
+import { Block, BlockTypeId } from "@/interfaces/Block";
+import * as BlockFile from "@/interfaces/Block";
 import { styles } from "@/constants/styles";
+import { BlockDetailsInputFormProps, SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 
-export type CoringAndCavityBlockDetailsInputFormProps = ViewProps & {
-  boreholeId: string;
-  blocks: Block[];
-  setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-  setIsAddNewBlockButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
-};
+const CORING = 'Coring' as const;
+const CAVITY = 'Cavity' as const;
+const OPERATION_TYPES = [CORING, CAVITY] as const;
+type OperationType = typeof OPERATION_TYPES[number];
+const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType | null> = {
+  [BlockFile.SPT_BLOCK_TYPE_ID]: null,
+  [BlockFile.CORING_BLOCK_TYPE_ID]: CORING,
+  [BlockFile.CAVITY_BLOCK_TYPE_ID]: CAVITY,
+  [BlockFile.UD_BLOCK_TYPE_ID]: null,
+  [BlockFile.MZ_BLOCK_TYPE_ID]: null,
+  [BlockFile.PS_BLOCK_TYPE_ID]: null,
+  [BlockFile.HA_BLOCK_TYPE_ID]: null,
+  [BlockFile.WASH_BORING_BLOCK_TYPE_ID]: null,
+  [BlockFile.CONCRETE_SLAB_BLOCK_TYPE_ID]: null,
+  [BlockFile.ASPHALT_BLOCK_TYPE_ID]: null,
+  [BlockFile.END_OF_BOREHOLE_BLOCK_TYPE_ID]: null,
+  [BlockFile.CUSTOM_BLOCK_TYPE_ID]: null,
+  [BlockFile.VANE_SHEAR_TEST_BLOCK_TYPE_ID]: null,
+  [BlockFile.FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID]: null,
+  [BlockFile.RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID]: null,
+  [BlockFile.CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID]: null,
+  [BlockFile.LUGEON_TEST_BLOCK_TYPE_ID]: null,
+  [BlockFile.PRESSUREMETER_TEST_BLOCK_TYPE_ID]: null,
+} as const;
 
-export function CoringAndCavityBlockDetailsInputForm({ style, boreholeId, blocks, setBlocks, setIsAddNewBlockButtonPressed, ...otherProps }: CoringAndCavityBlockDetailsInputFormProps) {
-  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>(true);
-  const [operationType, setOperationType] = useState<string>('Select Coring or Cavity');
+export function CoringAndCavityBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
+  const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
 
   return (
     <>
-    <View>
-      <TouchableOpacity 
-        onPress={() => {
-          Keyboard.dismiss();
-          setIsSelectOperationTypePressed(prev => !prev);
-        }}
-        style={{ 
-          backgroundColor: 'yellow',
-          borderWidth: 0.5, 
-          alignItems: 'center',
-          padding: 10,
-        }}>
-        <Text>{operationType}</Text>
-      </TouchableOpacity>
-      {
-        isSelectOperationTypePressed && (
-          <FlatList
-            data={['Coring', 'Cavity']}
-            keyExtractor={item => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
+      <View>
+        <TouchableOpacity
+          onPress={() => {
+            Keyboard.dismiss();
+            setIsSelectOperationTypePressed(prev => !prev);
+          }}
+          style={{
+            backgroundColor: 'yellow',
+            borderWidth: 0.5,
+            alignItems: 'center',
+            padding: 10,
+          }}>
+          <Text>{operationType ?? 'Select Coring or Cavity'}</Text>
+        </TouchableOpacity>
+        {
+          isSelectOperationTypePressed && (
+            OPERATION_TYPES.map((item) => (
+              <TouchableOpacity
+                key={item}
                 onPress={() => {
                   Keyboard.dismiss();
                   setOperationType(item);
@@ -48,31 +66,12 @@ export function CoringAndCavityBlockDetailsInputForm({ style, boreholeId, blocks
                 style={[styles.listItem]}>
                 <Text>{item}</Text>
               </TouchableOpacity>
-            )}
-          />
-        )
-      }
-    </View>
-    { 
-      operationType === 'Coring' && (
-        <AddCoringBlockDetailsInputForm 
-          boreholeId={boreholeId}
-          blocks={blocks}
-          setBlocks={setBlocks}
-          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-        /> 
-      )
-    }
-    { 
-      operationType === 'Cavity' && (
-        <AddCavityBlockDetailsInputForm 
-          boreholeId={boreholeId}
-          blocks={blocks}
-          setBlocks={setBlocks}
-          setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
-        /> 
-      )
-    }
+            ))
+          )
+        }
+      </View>
+      {operationType === 'Coring' && <CoringBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+      {operationType === 'Cavity' && <CavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
     </>
   );
 }

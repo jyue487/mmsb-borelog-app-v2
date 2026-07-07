@@ -123,21 +123,18 @@ export function UndisturbedSampleInputQuestions({
             </TouchableOpacity>
             {
               isSelectBaseDittoPressed && (
-                <FlatList
-                  data={['YES', 'NO']}
-                  keyExtractor={item => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        Keyboard.dismiss();
-                        setBaseDitto((item === 'YES') ? true : false);
-                        setIsSelectBaseDittoPressed(false);
-                      }}
-                      style={[styles.listItem]}>
-                      <Text>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
+                ['YES', 'NO'].map((item) => (
+                  <TouchableOpacity 
+                    key={item}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setBaseDitto((item === 'YES') ? true : false);
+                      setIsSelectBaseDittoPressed(false);
+                    }}
+                    style={[styles.listItem]}>
+                    <Text>{item}</Text>
+                  </TouchableOpacity>
+                ))
               )
             }
           </View>

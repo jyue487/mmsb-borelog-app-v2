@@ -5,6 +5,7 @@ import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 // Local imports
 import { EditProjectParams, Project } from '@/interfaces/Project';
 import { styles } from '@/constants/styles';
+import { TrashDeleteButton } from '../buttons/TrashDeleteButton';
 
 type EditProjectInputFormProps = {
   oldProject: Project;
@@ -96,7 +97,7 @@ export function EditProjectInputForm ({
         color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)}
       />
-      <TouchableOpacity 
+      <TrashDeleteButton 
         onPress={() => {
           Alert.alert(
             "Delete Project",
@@ -108,9 +109,8 @@ export function EditProjectInputForm ({
             { cancelable: true }
           );
         }}
-        style={{ position: 'absolute', top: 10, left: 10 }}>
-        <MaterialIcons name="delete" size={30} color="red" />
-      </TouchableOpacity>
+        style={{ position: 'absolute', top: 10, left: 10 }} 
+      />
     </View>
   );
 }

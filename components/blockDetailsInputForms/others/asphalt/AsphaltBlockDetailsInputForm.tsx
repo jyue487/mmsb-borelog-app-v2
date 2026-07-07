@@ -1,0 +1,55 @@
+import React, { useState } from "react";
+import { Button, Text, TextInput, View, type ViewProps } from "react-native";
+
+import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
+import { DayWorkStatus } from "@/constants/DayWorkStatus";
+import { styles } from "@/constants/styles";
+import { AsphaltBlock, createDefaultAsphaltBlock } from "@/interfaces/AsphaltBlock";
+import { ASPHALT_BLOCK_TYPE_ID, BaseBlock, Block } from "@/interfaces/Block";
+import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
+import { checkAndReturnAsphaltBlock } from "@/utils/block/checkFunctions/checkAndReturnAsphaltBlock";
+import { depthInMetresToString } from "@/utils/depth";
+
+export function AsphaltBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const block: BaseBlock & AsphaltBlock = (inputBlock !== null && inputBlock.blockTypeId === ASPHALT_BLOCK_TYPE_ID) ? inputBlock : createDefaultAsphaltBlock();
+  const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
+  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
+  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
+
+  return (
+    <>
+      <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <TextInput
+          value={topDepthInMetresStr}
+          onChangeText={setTopDepthInMetresStr}
+          style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+          keyboardType='numeric'
+        />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text>Base Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <TextInput
+          value={baseDepthInMetresStr}
+          onChangeText={setBaseDepthInMetresStr}
+          style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+          keyboardType='numeric'
+        />
+      </View>
+      <Button
+        title='Confirm'
+        color={styles.confirmButton.color}
+        onPress={async () => {
+          const newBlock: Block = checkAndReturnAsphaltBlock({
+            boreholeId: boreholeId, 
+            dayWorkStatus: dayWorkStatus,
+            topDepthInMetresStr: topDepthInMetresStr,
+            baseDepthInMetresStr: baseDepthInMetresStr,
+          });
+          await onSubmitAsync(newBlock);
+        }}
+      />
+    </>
+  );
+}

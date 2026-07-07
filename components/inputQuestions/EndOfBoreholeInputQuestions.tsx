@@ -1,4 +1,4 @@
-import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE } from "@/constants/endOfBorehole";
+import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, endOfBoreholeOtherInstallationsType } from "@/constants/endOfBorehole";
 import { styles } from "@/constants/styles";
 import { Block } from "@/interfaces/Block";
 import { stringToDecimalPoint } from "@/utils/numbers";
@@ -7,7 +7,7 @@ import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from "rea
 
 type Props = {
   blocks: Block[];
-  otherInstallations: string; setOtherInstallations: React.Dispatch<React.SetStateAction<string>>;
+  otherInstallations: endOfBoreholeOtherInstallationsType; setOtherInstallations: React.Dispatch<React.SetStateAction<endOfBoreholeOtherInstallationsType>>;
   customInstallations: string; setCustomInstallations: React.Dispatch<React.SetStateAction<string>>;
   installationDepthInMetresStr: string; setInstallationDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
   remarks: string; setRemarks: React.Dispatch<React.SetStateAction<string>>;
@@ -43,22 +43,18 @@ export function EndOfBoreholeInputQuestions({
         </TouchableOpacity>
         {
           isSelectOtherInstallationsPressed && (
-            <FlatList
-              data={END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST}
-              keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity 
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setOtherInstallations(item);
-                    setIsSelectOtherInstallationsPressed(false);
-                  }}
-                  style={[styles.listItem]}>
-                  <Text>{item}</Text>
-                </TouchableOpacity>
-              )}
-              style={{ maxHeight: 500 }}
-            />
+            END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST.map((item) => (
+              <TouchableOpacity 
+                key={item}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setOtherInstallations(item);
+                  setIsSelectOtherInstallationsPressed(false);
+                }}
+                style={[styles.listItem]}>
+                <Text>{item}</Text>
+              </TouchableOpacity>
+            ))
           )
         }
         {

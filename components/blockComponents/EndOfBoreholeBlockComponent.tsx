@@ -13,27 +13,9 @@ export type EndOfBoreholeBlockProps = ViewProps & {
 };
 
 export function EndOfBoreholeBlockComponent({ block, blocks, setBlocks, ...otherProps }: EndOfBoreholeBlockProps) {
-	const [isEditState, setIsEditState] = useState<boolean>(false);
-	
-	if (isEditState) {
-		return <EditEndOfBoreholeBlockDetailsInputForm 
-			blocks={blocks}
-			setBlocks={setBlocks}
-			oldBlock={block}
-			setIsEditState={setIsEditState}
-		/>;
-	}
-	
 	return (
-		<Pressable 
-			onLongPress={() => setIsEditState(true)}
-			style={({ pressed }) => [
-				{ flexDirection: 'row'}, 
-				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				styles.block,
-			]} 
-			{...otherProps}>
-			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
+		<>
+			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1, minHeight: 20 }}></View>
 			</View>
@@ -41,6 +23,6 @@ export function EndOfBoreholeBlockComponent({ block, blocks, setBlocks, ...other
 				<Text>{block.description}</Text>
 				{(block.remarks.length === 0) ? '' : <Text>Remarks: {block.remarks}.</Text>}
 			</View>
-		</Pressable>
+		</>
 	);
 }

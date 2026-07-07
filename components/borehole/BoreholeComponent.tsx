@@ -10,7 +10,7 @@ import { EditBoreholeInputForm } from './EditBoreholeInputForm';
 type BoreholeComponentProps = {
   projectTitle: string,
   borehole: Borehole,
-  editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
+  editBorehole: (editBoreholeParams: EditBoreholeParams) => Promise<void>;
   deleteBorehole: (boreholeId: string) => Promise<void>;
 };
 

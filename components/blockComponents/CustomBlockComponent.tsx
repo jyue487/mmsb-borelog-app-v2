@@ -14,27 +14,9 @@ export type CustomBlockProps = ViewProps & {
 };
 
 export function CustomBlockComponent({ block, blocks, setBlocks, ...otherProps }: CustomBlockProps) {
-	const [isEditState, setIsEditState] = useState<boolean>(false);
-	
-	if (isEditState) {
-		return <EditCustomBlockDetailsInputForm 
-			blocks={blocks}
-			setBlocks={setBlocks}
-			oldBlock={block}
-			setIsEditState={setIsEditState}
-		/>;
-	}
-
 	return (
-		<Pressable 
-			onLongPress={() => setIsEditState(true)}
-			style={({ pressed }) => [
-				{ flexDirection: 'row'}, 
-				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				styles.block,
-			]} 
-			{...otherProps}>
-			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
+		<>
+			<View style={styles.blockComponentLeftColumn}>
 				<Text>{(block.topDepthInMetres === -1) ? null : block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1, minHeight: 20 }}></View>
 				<Text>{(block.baseDepthInMetres === -1) ? null : block.baseDepthInMetres.toFixed(3)}</Text>
@@ -43,6 +25,6 @@ export function CustomBlockComponent({ block, blocks, setBlocks, ...otherProps }
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
 				<Text>{block.description}</Text>
 			</View>
-		</Pressable>
+		</>
 	);
 }

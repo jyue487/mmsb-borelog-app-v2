@@ -15,27 +15,9 @@ export type HaBlockProps = ViewProps & {
 };
 
 export function HaBlockComponent({ block, blocks, setBlocks, ...otherProps }: HaBlockProps) {
-	const [isEditState, setIsEditState] = useState<boolean>(false);
-	
-	if (isEditState) {
-		return <EditHaBlockDetailsInputForm 
-			blocks={blocks}
-			setBlocks={setBlocks}
-			oldBlock={block}
-			setIsEditState={setIsEditState}
-		/>;
-	}
-	
 	return (
-		<Pressable 
-			onLongPress={() => setIsEditState(true)}
-			style={({ pressed }) => [
-				{ flexDirection: 'row'}, 
-				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				styles.block,
-			]} 
-			{...otherProps}>
-			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
+		<>
+			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{HA_SYMBOL}{block.haSampleIndex}</Text>
@@ -46,6 +28,6 @@ export function HaBlockComponent({ block, blocks, setBlocks, ...otherProps }: Ha
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
 				<Text>{block.description}</Text>
 			</View>
-		</Pressable>
+		</>
 	);
 }
