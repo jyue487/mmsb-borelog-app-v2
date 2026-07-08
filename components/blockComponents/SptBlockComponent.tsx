@@ -7,6 +7,7 @@ import { BaseBlock, Block } from "@/interfaces/Block";
 import { SptBlock } from '@/interfaces/SptBlock';
 import { useState } from "react";
 import { EditSptBlockDetailsInputForm } from "../blockDetailsInputForms/spt/EditSptBlockDetailsInputForm";
+import { BlockDetailsInputForm } from "../blockDetailsInputForms/BlockDetailsInputForm";
 
 export type SptBlockProps = ViewProps & {
 	block: BaseBlock & SptBlock;
@@ -15,27 +16,9 @@ export type SptBlockProps = ViewProps & {
 };
 
 export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: SptBlockProps) {
-	const [isEditState, setIsEditState] = useState<boolean>(false);
-
-	if (isEditState) {
-		return <EditSptBlockDetailsInputForm 
-			blocks={blocks}
-			setBlocks={setBlocks}
-			oldBlock={block}
-			setIsEditState={setIsEditState}
-		/>;
-	}
-
 	return (
-		<Pressable 
-			onLongPress={() => setIsEditState(true)}
-			style={({ pressed }) => [
-				{ flexDirection: 'row'}, 
-				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				styles.block,
-			]} 
-			{...otherProps}>
-			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
+		<>
+			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{SPT_SYMBOL}{block.sptIndex}</Text>
@@ -93,6 +76,6 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 					</View>
 				</View>
 			</View>
-		</Pressable>
+		</>
 	);
 }

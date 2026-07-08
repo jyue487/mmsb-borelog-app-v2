@@ -15,27 +15,9 @@ export type PressuremeterTestBlockProps = ViewProps & {
 };
 
 export function PressuremeterTestBlockComponent({ block, blocks, setBlocks, ...otherProps }: PressuremeterTestBlockProps) {
-	const [isEditState, setIsEditState] = useState<boolean>(false);
-	
-	if (isEditState) {
-		return <EditPressuremeterTestBlockDetailsInputForm 
-			blocks={blocks}
-			setBlocks={setBlocks}
-			oldBlock={block}
-			setIsEditState={setIsEditState}
-		/>;
-	}
-	
 	return (
-		<Pressable 
-			onLongPress={() => setIsEditState(true)}
-			style={({ pressed }) => [
-				{ flexDirection: 'row'}, 
-				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-				styles.block,
-			]} 
-			{...otherProps}>
-			<View style={{ backgroundColor: 'red', height: '100%', width: 70, paddingHorizontal: 1, alignItems: 'center'}}>
+		<>
+			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{PRESSUREMETER_TEST_SYMBOL}{block.pressuremeterTestIndex}</Text>
@@ -46,6 +28,6 @@ export function PressuremeterTestBlockComponent({ block, blocks, setBlocks, ...o
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
 				<Text>{block.description}</Text>
 			</View>
-		</Pressable>
+		</>
 	);
 }

@@ -5,7 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Local Imports
 import { BlockComponent } from '@/components/blockComponents/BlockComponent';
-import { AddBlockDetailsInputForm } from '@/components/blockDetailsInputForms/AddBlockDetailsInputForm';
+import { BlockDetailsInputForm } from '@/components/blockDetailsInputForms/BlockDetailsInputForm';
 import { deleteBlockByBlockIdDbAsync } from '@/db/blocks/deleteBlockByBlockIdDbAsync';
 import { fetchAllBlocksByBoreholeIdDbAsync } from '@/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/db/borehole/fetchBoreholeByIdAsync';
@@ -15,6 +15,9 @@ import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';
 import { sharePdf } from '@/utils/pdf/sharePdf';
 import LoadingScreen from '../loading';
+import { sortBlocks } from '@/utils/block/sortBlocksFunctions/sortBlocks';
+import { reindexAllBlocks } from '@/utils/block/reindexBlocksFunctions/reindexBlock';
+import { sortAndReindexAllBlocks } from '@/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks';
 // import { shareExcel } from '@/utils/excel/shareExcel';
 
 export default function BoreholeScreen() {
@@ -48,7 +51,7 @@ export default function BoreholeScreen() {
           return;
         }
 
-        const fetchedBlocks: Block[] = (await fetchAllBlocksByBoreholeIdDbAsync(boreholeId)).sort((a, b) => a.topDepthInMetres - b.topDepthInMetres);
+        const fetchedBlocks: Block[] = sortAndReindexAllBlocks(await fetchAllBlocksByBoreholeIdDbAsync(boreholeId));
 
         console.log('fetchedBlocks', fetchedBlocks.length);
 
@@ -83,11 +86,13 @@ export default function BoreholeScreen() {
       }
       {
         isAddNewBlockButtonPressed && (
-          <AddBlockDetailsInputForm
+          <BlockDetailsInputForm
             blocks={blocks}
             setBlocks={setBlocks}
             boreholeId={boreholeId}
-            setIsAddNewBlockButtonPressed={setIsAddNewBlockButtonPressed}
+            inputBlock={null}
+            setIsVisible={setIsAddNewBlockButtonPressed}
+            action='add'
           />
         )
       }
@@ -140,7 +145,7 @@ export default function BoreholeScreen() {
           keyboardDismissMode="on-drag"
           ListFooterComponent={renderFooter}
           contentContainerStyle={{ paddingBottom: 500 }}
-          style={{ width: '100%' }}
+          style={{ width: '100%', borderTopWidth: 1 }}
         />
       </KeyboardAvoidingView>
     </GestureHandlerRootView>

@@ -1,7 +1,7 @@
-import { DayWorkStatus } from '@/constants/DayWorkStatus';
-import { PS_BLOCK_TYPE_ID } from '@/interfaces/Block';
-import { ColourProperties } from './ColourProperties';
-import { SoilProperties } from './SoilProperties';
+import { createDefaultDayWorkStatus, DayWorkStatus } from '@/constants/DayWorkStatus';
+import { BaseBlock, PS_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { ColourProperties, createDefaultColourProperties } from './ColourProperties';
+import { createDefaultSoilProperties, SoilProperties } from './SoilProperties';
 
 export interface PsBlock {
     blockTypeId: typeof PS_BLOCK_TYPE_ID;
@@ -18,4 +18,27 @@ export interface PsBlock {
     bottomColourProperties: ColourProperties;
     bottomSoilProperties: SoilProperties;
     recoveryLengthInMetres: number;
+}
+
+export function createDefaultPsBlock(): BaseBlock & PsBlock {
+  return {
+    id: '',
+    boreholeId: '',
+    blockTypeId: PS_BLOCK_TYPE_ID,
+    sampleIndex: -1,
+    dayWorkStatus: createDefaultDayWorkStatus(),
+    topDepthInMetres: -1,
+    baseDepthInMetres: -1,
+    soilDescription: '',
+    recoveryInPercentage: -1,
+    penetrationDepthInMetres: -1,
+    topColourProperties: createDefaultColourProperties(),
+    topSoilProperties: createDefaultSoilProperties(),
+    baseDitto: true,
+    bottomColourProperties: createDefaultColourProperties(),
+    bottomSoilProperties: createDefaultSoilProperties(),
+    recoveryLengthInMetres: -1,
+    createdAt: new Date(),
+    updatedAt: null,
+  };
 }

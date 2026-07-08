@@ -7,10 +7,11 @@ import { styles } from '@/constants/styles';
 import { Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
 import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
 import { SignatureQuestionComponent } from '../signature/SignatureQuestionComponent';
+import { TrashDeleteButton } from '../buttons/TrashDeleteButton';
 
 type EditBoreholeInputFormProps = {
   oldBorehole: Borehole;
-  editBorehole: (editBoreholeParams: EditBoreholeParams) => void;
+  editBorehole: (editBoreholeParams: EditBoreholeParams) => Promise<void>;
   deleteBorehole: (boreholeId: string) => Promise<void>;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -105,7 +106,7 @@ export function EditBoreholeInputForm ({
       <Button
         title='Confirm'
         color={styles.confirmButton.color}
-        onPress={() => {
+        onPress={async () => {
           if (!newBoreholeName.trim()) {
             alert("Error: Borehole Name Should not be empty");
             return;
@@ -130,7 +131,7 @@ export function EditBoreholeInputForm ({
           const northingInMetres: number | null = (northingInMetresStr.trim().length > 0) ? stringToDecimalPoint(northingInMetresStr.trim(), 3) : null;
           const reducedLevelInMetres: number | null = (reducedLevelInMetresStr.trim().length > 0) ? stringToDecimalPoint(reducedLevelInMetresStr.trim(), 3) : null;
           
-          editBorehole({
+          await editBorehole({
             id: oldBorehole.id, 
             name: newBoreholeName.trim(),
             typeOfBoring: typeOfBoring.trim(),
@@ -152,7 +153,7 @@ export function EditBoreholeInputForm ({
         color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)}
       />
-      <TouchableOpacity 
+      <TrashDeleteButton 
         onPress={() => {
           Alert.alert(
             "Delete Borehole",
@@ -164,9 +165,8 @@ export function EditBoreholeInputForm ({
             { cancelable: true }
           );
         }}
-        style={{ position: 'absolute', top: 10, left: 10 }}>
-        <MaterialIcons name="delete" size={30} color="red" />
-      </TouchableOpacity>
+        style={{ position: 'absolute', top: 10, left: 10 }} 
+      />
     </View>
   );
 }

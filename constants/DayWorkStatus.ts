@@ -24,3 +24,13 @@ export interface DayWorkStatus {
   waterLevelInMetres: number | string | null;
   casingDepthInMetres: number | null;
 }
+
+export function createDefaultDayWorkStatus(): DayWorkStatus {
+  return {
+    dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
+    date: new Date(),
+    time: new Date(),
+    waterLevelInMetres: null,
+    casingDepthInMetres: null,
+  }
+}

@@ -1,4 +1,5 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
+import { useState } from "react";
 
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
@@ -40,6 +41,7 @@ import {
 	VANE_SHEAR_TEST_BLOCK_TYPE_ID,
 	WASH_BORING_BLOCK_TYPE_ID 
 } from '@/interfaces/Block';
+import { BlockDetailsInputForm } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 
 export type BlockProps = ViewProps & {
 	block: BaseBlock & Block;
@@ -47,7 +49,7 @@ export type BlockProps = ViewProps & {
 	setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 };
 
-export function BlockComponent({ block, blocks, setBlocks, ...otherProps }: BlockProps) {
+function SpecificBlockComponent({ block, blocks, setBlocks, ...otherProps }: BlockProps) {
 	switch (block.blockTypeId) {
 		case SPT_BLOCK_TYPE_ID:
 			return <SptBlockComponent block={block} blocks={blocks} setBlocks={setBlocks} />;
@@ -88,4 +90,25 @@ export function BlockComponent({ block, blocks, setBlocks, ...otherProps }: Bloc
 		default:
 			throw new Error('Unknown block type');
 	}
+}
+
+export function BlockComponent({ block, blocks, setBlocks, ...otherProps }: BlockProps) {
+	const [isEditState, setIsEditState] = useState<boolean>(false);
+
+	if (isEditState) {
+		return <BlockDetailsInputForm blocks={blocks} setBlocks={setBlocks} boreholeId={block.boreholeId} inputBlock={block} setIsVisible={setIsEditState} action='edit' />
+	}
+
+	return (
+		<Pressable 
+			onLongPress={() => setIsEditState(true)}
+			style={({ pressed }) => [
+				{ flexDirection: 'row'}, 
+				pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
+				styles.block,
+			]} 
+			{...otherProps}>
+			<SpecificBlockComponent block={block} blocks={blocks} setBlocks={setBlocks} />
+		</Pressable>
+	);
 }

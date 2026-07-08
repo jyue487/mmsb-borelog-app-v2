@@ -62,22 +62,17 @@ export function DayWorkStatusInputQuestions({
 					<Text>{dayWorkStatusType}</Text>
 				</TouchableOpacity>
 				{
-					isSelectDayWorkStatusPressed && (
-						<FlatList
-							data={DAY_WORK_STATUS_TYPE_LIST}
-							keyExtractor={item => item}
-							renderItem={({ item }) => (
-								<TouchableOpacity 
-									onPress={() => {
-										Keyboard.dismiss();
-										selectDayWorkStatusType(item);
-									}}
-									style={[styles.listItem]}>
-									<Text>{item}</Text>
-								</TouchableOpacity>
-							)}
-						/>
-					)
+					isSelectDayWorkStatusPressed && DAY_WORK_STATUS_TYPE_LIST.map((item) => (
+						<TouchableOpacity 
+							key={item}
+							onPress={() => {
+								Keyboard.dismiss();
+								selectDayWorkStatusType(item);
+							}}
+							style={[styles.listItem]}>
+							<Text>{item}</Text>
+						</TouchableOpacity>
+					))
 				}
 			</View>
 		</View>

@@ -1,10 +1,24 @@
-import { DayWorkStatus } from '@/constants/DayWorkStatus';
-import { WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
+import { createDefaultDayWorkStatus, DayWorkStatus } from '@/constants/DayWorkStatus';
+import { BaseBlock, WASH_BORING_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface WashBoringBlock {
-    blockTypeId: typeof WASH_BORING_BLOCK_TYPE_ID;
-    dayWorkStatus: DayWorkStatus;
-    topDepthInMetres: number;
-    baseDepthInMetres: number;
-    readonly description: 'Wash Boring';
+  blockTypeId: typeof WASH_BORING_BLOCK_TYPE_ID;
+  dayWorkStatus: DayWorkStatus;
+  topDepthInMetres: number;
+  baseDepthInMetres: number;
+  readonly description: 'Wash Boring';
+}
+
+export function createDefaultWashBoringBlock(): BaseBlock & WashBoringBlock {
+  return {
+    id: '',
+    boreholeId: '',
+    blockTypeId: WASH_BORING_BLOCK_TYPE_ID,
+    dayWorkStatus: createDefaultDayWorkStatus(),
+    topDepthInMetres: -1,
+    baseDepthInMetres: -1,
+    description: 'Wash Boring',
+    createdAt: new Date(),
+    updatedAt: null,
+  };
 }
