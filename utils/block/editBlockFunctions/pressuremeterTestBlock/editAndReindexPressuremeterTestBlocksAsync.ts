@@ -4,28 +4,28 @@ import { PressuremeterTestBlock } from "@/interfaces/PressuremeterTestBlock";
 import { db } from "@/db/db";
 
 export async function editAndReindexPressuremeterTestBlocksAsync(
-    blocks: Block[], 
-    oldBlockId: string,
-    newBlock: BaseBlock & PressuremeterTestBlock
+  blocks: Block[],
+  oldBlockId: string,
+  newBlock: BaseBlock & PressuremeterTestBlock
 ): Promise<Block[]> {
-    const updatedBlocks: Block[] = [];
-    let pressuremeterTestIndex: number = 1;
-    for (const b of blocks) {
-        if (b.blockTypeId !== PRESSUREMETER_TEST_BLOCK_TYPE_ID) {
-            updatedBlocks.push(b);
-            continue;
-        }
-        const updatedBlock: BaseBlock & PressuremeterTestBlock = (b.id === oldBlockId) ? {...newBlock, id: oldBlockId} : {...b};
-        updatedBlock.pressuremeterTestIndex = pressuremeterTestIndex++;
-        updatedBlocks.push(updatedBlock);
+  const updatedBlocks: Block[] = [];
+  let pressuremeterTestIndex: number = 1;
+  for (const b of blocks) {
+    if (b.blockTypeId !== PRESSUREMETER_TEST_BLOCK_TYPE_ID) {
+      updatedBlocks.push(b);
+      continue;
     }
-    await db.withTransactionAsync(async () => {
-        for (const b of updatedBlocks) {
-            if (b.blockTypeId !== PRESSUREMETER_TEST_BLOCK_TYPE_ID) {
-                continue;
-            }
-            await editBlockDbAsync(b);
-        }
-    });
-    return updatedBlocks;
+    const updatedBlock: BaseBlock & PressuremeterTestBlock = (b.id === oldBlockId) ? { ...newBlock, id: oldBlockId } : { ...b };
+    updatedBlock.pressuremeterTestIndex = pressuremeterTestIndex++;
+    updatedBlocks.push(updatedBlock);
+  }
+  await db.withTransactionAsync(async () => {
+    for (const b of updatedBlocks) {
+      if (b.blockTypeId !== PRESSUREMETER_TEST_BLOCK_TYPE_ID) {
+        continue;
+      }
+      await editBlockDbAsync(b);
+    }
+  });
+  return updatedBlocks;
 }

@@ -4,28 +4,28 @@ import { RisingHeadPermeabilityTestBlock } from "@/interfaces/RisingHeadPermeabi
 import { db } from "@/db/db";
 
 export async function editAndReindexRisingHeadPermeabilityTestBlocksAsync(
-    blocks: Block[], 
-    oldBlockId: string,
-    newBlock: BaseBlock & RisingHeadPermeabilityTestBlock
+  blocks: Block[],
+  oldBlockId: string,
+  newBlock: BaseBlock & RisingHeadPermeabilityTestBlock
 ): Promise<Block[]> {
-    const updatedBlocks: Block[] = [];
-    let permeabilityTestIndex: number = 1;
-    for (const b of blocks) {
-        if (b.blockTypeId !== RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID) {
-            updatedBlocks.push(b);
-            continue;
-        }
-        const updatedBlock: BaseBlock & RisingHeadPermeabilityTestBlock = (b.id === oldBlockId) ? {...newBlock, id: oldBlockId} : {...b};
-        updatedBlock.permeabilityTestIndex = permeabilityTestIndex++;
-        updatedBlocks.push(updatedBlock);
+  const updatedBlocks: Block[] = [];
+  let permeabilityTestIndex: number = 1;
+  for (const b of blocks) {
+    if (b.blockTypeId !== RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID) {
+      updatedBlocks.push(b);
+      continue;
     }
-    await db.withTransactionAsync(async () => {
-        for (const b of updatedBlocks) {
-            if (b.blockTypeId !== RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID) {
-                continue;
-            }
-            await editBlockDbAsync(b);
-        }
-    });
-    return updatedBlocks;
+    const updatedBlock: BaseBlock & RisingHeadPermeabilityTestBlock = (b.id === oldBlockId) ? { ...newBlock, id: oldBlockId } : { ...b };
+    updatedBlock.permeabilityTestIndex = permeabilityTestIndex++;
+    updatedBlocks.push(updatedBlock);
+  }
+  await db.withTransactionAsync(async () => {
+    for (const b of updatedBlocks) {
+      if (b.blockTypeId !== RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID) {
+        continue;
+      }
+      await editBlockDbAsync(b);
+    }
+  });
+  return updatedBlocks;
 }
