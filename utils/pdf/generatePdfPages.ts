@@ -26,8 +26,8 @@ import { renderWashBoringBlockToHtml } from "./renderWashBoringBlockToHtml";
 import { DAY_END_WORK_TYPE, DAY_START_WORK_TYPE } from "@/constants/DayWorkStatus";
 
 export function generatePdfPages(project: Project, borehole: Borehole, blocks: Block[], scaleTickIndexWrapper: number[], mmsbLogoBase64: string): string {
-    const dateStarted: Date | null = blocks.find((b: Block) => b.dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE)?.dayWorkStatus.date ?? null;
-    const dateFinished: Date | null = (blocks[blocks.length - 1].blockTypeId !== END_OF_BOREHOLE_BLOCK_TYPE_ID) ? null : [...blocks].reverse().find((b: Block) => b.dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE)?.dayWorkStatus.date ?? null;
+    const dateStarted: Date | null = blocks.find((b: Block) => b.dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE)?.dayWorkStatus.startDate ?? null;
+    const dateFinished: Date | null = (blocks[blocks.length - 1].blockTypeId !== END_OF_BOREHOLE_BLOCK_TYPE_ID) ? null : [...blocks].reverse().find((b: Block) => b.dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE)?.dayWorkStatus.endDate ?? null;
     let pageIndex: number = 1;
     let blockIndex : number = 0;
 

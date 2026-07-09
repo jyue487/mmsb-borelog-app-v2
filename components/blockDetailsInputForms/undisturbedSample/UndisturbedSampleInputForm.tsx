@@ -53,7 +53,7 @@ export function UndisturbedSampleInputForm({ boreholeId, inputBlock, onSubmitAsy
             alignItems: 'center',
             padding: 10,
           }}>
-          <Text>{operationType ?? 'Select UD Type'}</Text>
+          <Text>{operationType ?? 'Select Undisturbed Sample Type'}</Text>
         </TouchableOpacity>
         {
           isSelectOperationTypePressed && (

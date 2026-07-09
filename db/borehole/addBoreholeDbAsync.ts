@@ -26,8 +26,10 @@ export async function addBoreholeDbAsync(
           driller_name,
           verifier_name,
           verifier_signature_base64,
-          verifier_sign_date
+          verifier_sign_date,
+          created_by
         ) VALUES (
+          ?,
           ?,
           ?,
           ?,
@@ -55,7 +57,8 @@ export async function addBoreholeDbAsync(
         addBoreholeParams.drillerName,
         addBoreholeParams.verifierName,
         addBoreholeParams.verifierSignatureBase64,
-        addBoreholeParams.verifierSignDate?.toISOString() ?? null
+        addBoreholeParams.verifierSignDate?.toISOString() ?? null,
+        userId
       ]
     );
     await tx.execute(

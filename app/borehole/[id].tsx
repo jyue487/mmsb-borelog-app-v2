@@ -97,21 +97,6 @@ export default function BoreholeScreen() {
         )
       }
       <Button
-        title='Remove Last Block'
-        onPress={async () => {
-          if (blocks.length === 0) {
-            return;
-          }
-          try {
-            const lastBlock: Block = blocks[blocks.length - 1];
-            await deleteBlockByBlockIdDbAsync(lastBlock.id);
-            setBlocks((blocks: Block[]) => blocks.filter((b: Block) => b.id !== lastBlock.id));
-          } catch (err) {
-            console.log(err);
-          }
-        }}
-      />
-      <Button
         title='Share PDF'
         onPress={() => sharePdf(project, borehole, blocks)}
       />

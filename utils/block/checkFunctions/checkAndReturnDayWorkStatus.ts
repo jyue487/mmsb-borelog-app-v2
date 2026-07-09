@@ -1,46 +1,52 @@
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, WL_NIL, WL_FULL } from "@/constants/DayWorkStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, DAY_START_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_AND_END_WORK_TYPE } from "@/constants/DayWorkStatus";
+import { deserializeDateTime } from "@/json/deserializeDateTime";
+import { getDateTime } from "@/utils/datetime";
 import { throwError } from "@/utils/error/throwError";
 import { isNonNegative } from "@/utils/numbers";
+import { checkAndReturnWaterLevelInMetres } from "./checkAndReturnWaterLevelInMetres";
+
+function checkAndReturnCasingDepthInMetres(casingDepthInMetres: number | null): number | null {
+  if (casingDepthInMetres !== null && !isNonNegative(casingDepthInMetres)) {
+    throwError('Error: Casing Depth');
+  }
+  return casingDepthInMetres;
+}
 
 export function checkAndReturnDayWorkStatus({
   dayWorkStatusType,
-  date,
-  time,
-  waterLevelInMetres,
-  casingDepthInMetres,
+  startDate,
+  startTime,
+  startWaterLevelInMetres,
+  startCasingDepthInMetres,
+  endDate,
+  endTime,
+  endWaterLevelInMetres,
+  endCasingDepthInMetres,
 }: DayWorkStatus): DayWorkStatus {
 
-  if (dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) {
-    return {
-      dayWorkStatusType: dayWorkStatusType,
-      date: date,
-      time: time,
-      waterLevelInMetres: waterLevelInMetres,
-      casingDepthInMetres: casingDepthInMetres,
-    };
+  if (dayWorkStatusType === DAY_START_WORK_TYPE || dayWorkStatusType === DAY_START_AND_END_WORK_TYPE) {
+    startWaterLevelInMetres = checkAndReturnWaterLevelInMetres(startWaterLevelInMetres);
+    startCasingDepthInMetres = checkAndReturnCasingDepthInMetres(startCasingDepthInMetres);
   }
-
-  if (waterLevelInMetres !== null) {
-    if (typeof waterLevelInMetres === 'number') {
-      if (!isNonNegative(waterLevelInMetres)) {
-        throwError('Error: Water Level should not have a negative value');
-      }
-    } else if (typeof waterLevelInMetres === 'string') {
-      waterLevelInMetres = waterLevelInMetres.trim().toUpperCase();
-      if (waterLevelInMetres !== WL_NIL && waterLevelInMetres !== WL_FULL) {
-        throwError('Error: Water Level should be either NIL or FULL');
-      }
+  if (dayWorkStatusType === DAY_END_WORK_TYPE || dayWorkStatusType === DAY_START_AND_END_WORK_TYPE) {
+    endWaterLevelInMetres = checkAndReturnWaterLevelInMetres(endWaterLevelInMetres);
+    endCasingDepthInMetres = checkAndReturnCasingDepthInMetres(endCasingDepthInMetres);
+  }
+  if (dayWorkStatusType === DAY_START_AND_END_WORK_TYPE) {
+    if (deserializeDateTime(getDateTime(startDate, startTime)) > deserializeDateTime(getDateTime(endDate, endTime))) {
+      throwError('Start date time ');
     }
-  }
-  if (casingDepthInMetres !== null && !isNonNegative(casingDepthInMetres)) {
-    throwError('Error: Casing Depth');
   }
 
   return {
     dayWorkStatusType: dayWorkStatusType,
-    date: date,
-    time: time,
-    waterLevelInMetres: waterLevelInMetres,
-    casingDepthInMetres: casingDepthInMetres,
+    startDate: startDate,
+    startTime: startTime,
+    startWaterLevelInMetres: startWaterLevelInMetres,
+    startCasingDepthInMetres: startCasingDepthInMetres,
+    endDate: endDate,
+    endTime: endTime,
+    endWaterLevelInMetres: endWaterLevelInMetres,
+    endCasingDepthInMetres: endCasingDepthInMetres,
   };
 }

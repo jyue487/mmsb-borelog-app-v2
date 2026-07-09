@@ -12,6 +12,7 @@ import { createDefaultSptBlock, SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnSptBlock } from "@/utils/block/checkFunctions/checkAndReturnSptBlock";
 import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
+import { CameraComponent } from "@/components/camera/CameraComponent";
 
 export function SptBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
 	const block: BaseBlock & SptBlock = (inputBlock !== null && inputBlock.blockTypeId === SPT_BLOCK_TYPE_ID) ? inputBlock : createDefaultSptBlock();

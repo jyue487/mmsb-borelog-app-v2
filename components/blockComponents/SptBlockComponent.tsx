@@ -6,7 +6,6 @@ import { DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { SptBlock } from '@/interfaces/SptBlock';
 import { useState } from "react";
-import { EditSptBlockDetailsInputForm } from "../blockDetailsInputForms/spt/EditSptBlockDetailsInputForm";
 import { BlockDetailsInputForm } from "../blockDetailsInputForms/BlockDetailsInputForm";
 
 export type SptBlockProps = ViewProps & {

@@ -10,12 +10,13 @@ import { createDefaultHaBlock, HaBlock } from "@/interfaces/HaBlock";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { checkAndReturnHaBlock } from "@/utils/block/checkFunctions/checkAndReturnHaBlock";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
+import { depthInMetresToString } from "@/utils/depth";
 
 export function HaBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & HaBlock = (inputBlock !== null && inputBlock.blockTypeId === HA_BLOCK_TYPE_ID) ? inputBlock : createDefaultHaBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
-  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(block.topDepthInMetres.toFixed(3));
-  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(block.baseDepthInMetres.toFixed(3));
+  const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
+  const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
   const [requireSample, setRequireSample] = useState<boolean>(block.requireSample);
   const [colourProperties, setColourProperties] = useState<ColourProperties>(block.colourProperties);
   const [soilProperties, setSoilProperties] = useState<SoilProperties>(block.soilProperties);
