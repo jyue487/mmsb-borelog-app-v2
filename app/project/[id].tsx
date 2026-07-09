@@ -9,9 +9,10 @@ import { BoreholeComponent } from '@/components/borehole/BoreholeComponent';
 import { addBoreholeDbAsync } from '@/db/borehole/addBoreholeDbAsync';
 import { editBoreholeDbAsync } from '@/db/borehole/editBoreholeDbAsync';
 import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/interfaces/Borehole';
-import { powersync } from '@/powersync/system'; 
+import { powersync, setupPowerSync } from '@/powersync/system';
 import { deserializeDateTime } from '@/json/deserializeDateTime';
 import { useAuth } from '@/context/AuthContextProvider';
+import { throwError } from '@/utils/error/throwError';
 
 export default function ProjectScreen() {
   const { userId } = useAuth();
@@ -36,9 +37,7 @@ export default function ProjectScreen() {
       const borehole: Borehole = await addBoreholeDbAsync(powersync, projectId, userId, addBoreholeParams);
       setBoreholes((prevBoreholes: Borehole[]) => [...prevBoreholes, borehole]);
     } catch (err) {
-      const errMsg = `Error: ${err}`;
-      alert(errMsg);
-      console.log(errMsg);
+      throwError(err);
     }
   };
 
@@ -48,9 +47,7 @@ export default function ProjectScreen() {
       await powersync.execute('DELETE FROM boreholes WHERE id = ?', [boreholeId]);
       setBoreholes((prevBoreholes: Borehole[]) => prevBoreholes.filter((bh: Borehole) => bh.id !== boreholeId));
     } catch (err) {
-      const errMsg = `Error: ${err}`;
-      alert(errMsg);
-      console.log(errMsg);
+      throwError(err);
     }
   };
 
@@ -60,17 +57,15 @@ export default function ProjectScreen() {
       setBoreholes((prevBoreholes: Borehole[]) =>
         prevBoreholes.map((bh: Borehole): Borehole =>
           (bh.id === editBoreholeParams.id)
-          ? { 
-            ...editBoreholeParams,
-            projectId: bh.projectId
-          } 
-          : {...bh}
+            ? {
+              ...editBoreholeParams,
+              projectId: bh.projectId
+            }
+            : { ...bh }
         )
       );
     } catch (err) {
-      const errMsg = `Error: ${err}`;
-      alert(errMsg);
-      console.log(errMsg);
+      throwError(err);
     }
   };
 
@@ -98,19 +93,21 @@ export default function ProjectScreen() {
   const renderFooter = () => {
     return (
       <View style={{ gap: 20 }}>
-      {
-        !isAddButtonPressed && (
-          <Button
-            title='Add new Borehole'
-            onPress={() => {
-              setIsAddButtonPressed(true);
-            }}
-          />
-        )
-      }
-      {
-        isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
-      }
+        {
+          !isAddButtonPressed && (
+            <Button
+              title='Add new Borehole'
+              onPress={() => {
+                setIsAddButtonPressed(true);
+              }}
+            />
+          )
+        }
+        {
+          isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
+        }
+        <Button title='Disconnect Powersync'onPress={async () => await powersync.disconnectAndClear()} />
+        <Button title='Connect Powersync'onPress={async () => await setupPowerSync()} />
       </View>
     );
   };

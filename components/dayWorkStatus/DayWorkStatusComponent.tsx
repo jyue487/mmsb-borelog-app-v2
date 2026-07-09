@@ -1,21 +1,25 @@
-import { Text, View } from "react-native";
-
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus, WaterLevelStringType } from "@/constants/DayWorkStatus";
-import { getDateTime } from "@/utils/datetime";
+import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE, DayWorkStatus } from "@/constants/DayWorkStatus";
+import { DayStartWorkStatusComponent } from "./DayStartWorkStatusComponent";
+import { DayEndWorkStatusComponent } from "./DayEndWorkStatusComponent";
 
 export type DayWorkStatusProps = {
-  dayWorkStatus: DayWorkStatus
+  dayWorkStatus: DayWorkStatus;
 };
 
 export function DayWorkStatusComponent({ dayWorkStatus }: DayWorkStatusProps) {
   if (dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) {
     return <></>;
   }
+  if (dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE) {
+    return <DayStartWorkStatusComponent dayWorkStatus={dayWorkStatus} />;
+  }
+  if (dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE) {
+    return <DayEndWorkStatusComponent dayWorkStatus={dayWorkStatus} />;
+  }
   return (
-    <View style={{ alignItems: 'flex-start' }}>
-      <Text>{dayWorkStatus.dayWorkStatusType}: {getDateTime(dayWorkStatus.date, dayWorkStatus.time)}</Text>
-      {(dayWorkStatus.waterLevelInMetres === null) ? null : <Text>Water Level: {typeof dayWorkStatus.waterLevelInMetres === "number" ? `${dayWorkStatus.waterLevelInMetres}m` : dayWorkStatus.waterLevelInMetres}</Text>}
-      {(dayWorkStatus.casingDepthInMetres === null) ? null : <Text>Casing Depth: {dayWorkStatus.casingDepthInMetres}m</Text>}
-    </View>
+    <>
+      <DayStartWorkStatusComponent dayWorkStatus={dayWorkStatus} />
+      <DayEndWorkStatusComponent dayWorkStatus={dayWorkStatus} />
+    </>
   );
 }

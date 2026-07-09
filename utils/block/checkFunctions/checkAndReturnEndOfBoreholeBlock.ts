@@ -1,10 +1,12 @@
-import { DAY_CONTINUE_WORK_TYPE } from "@/constants/DayWorkStatus";
+import { createDefaultDayWorkStatus, DAY_CONTINUE_WORK_TYPE } from "@/constants/DayWorkStatus";
 import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, endOfBoreholeOtherInstallationsType } from "@/constants/endOfBorehole";
 import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
 import { throwError } from "@/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/utils/numbers";
 import { randomUUID } from "expo-crypto";
+import { checkAndReturnWaterLevelInMetres } from "./checkAndReturnWaterLevelInMetres";
+import { parseWaterLevelInMetresStr } from "@/utils/waterLevel";
 
 type Params = {
   blocks: Block[];
@@ -12,6 +14,9 @@ type Params = {
   otherInstallations: endOfBoreholeOtherInstallationsType;
   customInstallations: string;
   installationDepthInMetresStr: string;
+  installationDate: Date | null,
+  installationTime: Date | null,
+  waterLevelInMetresStr: string,
   remarks: string;
 };
 
@@ -21,6 +26,9 @@ export function checkAndReturnEndOfBoreholeBlock({
   otherInstallations,
   customInstallations,
   installationDepthInMetresStr,
+  installationDate,
+  installationTime,
+  waterLevelInMetresStr,
   remarks,
 }: Params): BaseBlock & EndOfBoreholeBlock {
 
@@ -34,8 +42,11 @@ export function checkAndReturnEndOfBoreholeBlock({
   let installationDepthInMetres: number | null = null;
   let description: string = `End of BH at ${endOfBoreholeDepthInMetres.toFixed(3)}m`;
   if (otherInstallations !== END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE) {
+    if (installationDate === null || installationTime === null) {
+      throwError('Installation Date and Time should not be empty');
+    }
     if (!stringIsNonNegativeFloat(installationDepthInMetresStr)) {
-      throwError('Error: Installation Depth');
+      throwError('Installation Depth');
     }
     installationDepthInMetres = stringToDecimalPoint(installationDepthInMetresStr, 3);
     if (installationDepthInMetres > endOfBoreholeDepthInMetres) {
@@ -50,23 +61,22 @@ export function checkAndReturnEndOfBoreholeBlock({
   }
   description += '.';
 
+  const waterLevelInMetres = parseWaterLevelInMetresStr(waterLevelInMetresStr);
+
   const newBlock: Block = {
     id: randomUUID(),
     boreholeId: boreholeId,
     blockTypeId: END_OF_BOREHOLE_BLOCK_TYPE_ID,
-    dayWorkStatus: {
-      dayWorkStatusType: DAY_CONTINUE_WORK_TYPE,
-      date: new Date(),
-      time: new Date(),
-      waterLevelInMetres: null,
-      casingDepthInMetres: null,
-    },
+    dayWorkStatus: createDefaultDayWorkStatus(),
     topDepthInMetres: endOfBoreholeDepthInMetres,
     baseDepthInMetres: endOfBoreholeDepthInMetres,
     description: description,
     otherInstallations: otherInstallations,
     customInstallations: customInstallations,
     installationDepthInMetres: installationDepthInMetres,
+    installationDate: installationDate,
+    installationTime: installationTime,
+    waterLevelInMetres: waterLevelInMetres,
     remarks: remarks.trim(),
     createdAt: new Date(),
     updatedAt: null,

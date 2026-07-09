@@ -14,6 +14,7 @@ import { useAuth } from '@/context/AuthContextProvider';
 import { supabase } from '@/db/supabase';
 import { powersync, setupPowerSync } from '@/powersync/system';
 import LoadingScreen from './loading';
+import CameraComponent from "./camera";
 
 export default function ProjectListScreen() {
   const { isSignIn } = useAuth();
@@ -127,6 +128,8 @@ export default function ProjectListScreen() {
     console.log("Signed in but powersync is not ready");
     return <LoadingScreen displayText="Signing In" />;
   }
+
+  // return <CameraComponent />;
 
   return (
     <KeyboardAvoidingView behavior='height' style={styles.container}>

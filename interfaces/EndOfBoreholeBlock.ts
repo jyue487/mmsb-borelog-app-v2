@@ -1,5 +1,6 @@
 import { createDefaultDayWorkStatus, DayWorkStatus } from '@/constants/DayWorkStatus';
 import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, endOfBoreholeOtherInstallationsType } from '@/constants/endOfBorehole';
+import { WaterLevelInMetres } from '@/constants/waterLevel';
 import { BaseBlock, END_OF_BOREHOLE_BLOCK_TYPE_ID } from '@/interfaces/Block';
 
 export interface EndOfBoreholeBlock {
@@ -11,6 +12,9 @@ export interface EndOfBoreholeBlock {
   otherInstallations: endOfBoreholeOtherInstallationsType;
   customInstallations: string;
   installationDepthInMetres: number | null;
+  installationDate: Date | null;
+  installationTime: Date | null;
+  waterLevelInMetres: WaterLevelInMetres;
   remarks: string;
 }
 
@@ -26,6 +30,9 @@ export function createDefaultEndOfBoreholeBlock(): BaseBlock & EndOfBoreholeBloc
     otherInstallations: END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE,
     customInstallations: '',
     installationDepthInMetres: null,
+    installationDate: null,
+    installationTime: null,
+    waterLevelInMetres: null,
     remarks: '',
     createdAt: new Date(),
     updatedAt: null,

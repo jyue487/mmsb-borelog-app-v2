@@ -1,38 +1,29 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Keyboard, Platform, Text, TouchableOpacity } from 'react-native';
 
-import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { getTime } from '@/utils/datetime';
+import { getDate, getTime } from '@/utils/datetime';
 import { useState } from 'react';
 
 type Props = {
-  dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
-  startOrEnd: 'start' | 'end';
+  dateTime: Date; onDateTimeChange: (newDateTime: Date) => void;
+  dateOrTime: 'date' | 'time';
 };
 
-export function DayWorkStatusTimeSelectorComponent({
-  dayWorkStatus, setDayWorkStatus, startOrEnd
-}: Props) {
+export function DateTimeSelectorComponent({ dateTime, onDateTimeChange, dateOrTime }: Props) {
 
   const [isEditState, setIsEditState] = useState<boolean>(false);
-  const [time, setTime] = useState<Date>((startOrEnd === 'start') ? dayWorkStatus.startTime : dayWorkStatus.endTime);
-
-	const selectTime = (time: Date) => {
-		setTime(time);
-		setDayWorkStatus((startOrEnd === 'start') ? {...dayWorkStatus, startTime: time} : {...dayWorkStatus, endTime: time});
-	};
 
   if (isEditState || Platform.OS === 'ios') {
     return (
       <DateTimePicker
-        value={time}
-        mode={'time'}
+        value={dateTime}
+        mode={dateOrTime}
         is24Hour={true}
-        onChange={(event, time) => {
+        onChange={(event, newDateTime) => {
           if (event.type === 'set' || event.type === 'dismissed') {
             setIsEditState(false);
           }
-          selectTime(time ?? new Date());
+          onDateTimeChange(newDateTime ?? new Date());
         }}
         style={{ backgroundColor: 'yellow' }}
       />
@@ -51,7 +42,7 @@ export function DayWorkStatusTimeSelectorComponent({
         flex: 1,
         backgroundColor: 'yellow',
       }}>
-      <Text>{getTime(time)}</Text>
+      <Text>{(dateOrTime === 'date') ? getDate(dateTime) : getTime(dateTime)}</Text>
     </TouchableOpacity>
   );
 }

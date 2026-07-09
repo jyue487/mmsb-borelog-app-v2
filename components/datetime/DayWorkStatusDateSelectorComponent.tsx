@@ -7,21 +7,19 @@ import { useState } from 'react';
 
 type Props = {
   dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
+  startOrEnd: 'start' | 'end'
 };
 
 export function DayWorkStatusDateSelectorComponent({
-  dayWorkStatus, setDayWorkStatus,
+  dayWorkStatus, setDayWorkStatus, startOrEnd
 }: Props) {
 
   const [isEditState, setIsEditState] = useState<boolean>(false);
-  const [date, setDate] = useState<Date>(dayWorkStatus.date);
+  const [date, setDate] = useState<Date>((startOrEnd === 'start') ? dayWorkStatus.startDate : dayWorkStatus.endDate);
 
   const selectDate = (date: Date) => {
 		setDate(date);
-		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
-			...dayWorkStatus,
-			date: date,
-		}));
+		setDayWorkStatus((startOrEnd === 'start') ? {...dayWorkStatus, startDate: date} : {...dayWorkStatus, endDate: date});
 	};
 
   if (isEditState || Platform.OS === 'ios') {

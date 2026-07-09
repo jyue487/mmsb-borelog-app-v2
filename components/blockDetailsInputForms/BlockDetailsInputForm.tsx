@@ -104,7 +104,7 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
                 { cancelable: true }
               );
             }}
-            style={{ top: 0, left: 0 }}
+            style={{ top: 0, left: 0, alignSelf: 'flex-start' }}
           />
         ) 
       }

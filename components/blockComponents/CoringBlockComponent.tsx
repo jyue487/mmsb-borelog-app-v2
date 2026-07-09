@@ -5,7 +5,6 @@ import { CORING_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { CoringBlock } from '@/interfaces/CoringBlock';
 import { useState } from "react";
-import { EditCoringBlockDetailsInputForm } from "../blockDetailsInputForms/coring&cavity/coring/EditCoringBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CoringBlockProps = ViewProps & {
@@ -28,15 +27,15 @@ export function CoringBlockComponent({ block, blocks, setBlocks, ...otherProps }
 				<DayWorkStatusComponent dayWorkStatus={block.dayWorkStatus}/>
 				<Text>{block.description}</Text>
 				<View style={{ flexDirection: 'row' }}>
-					<View style={{ flex: 4, borderRightWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 4, borderRightWidth: 1, alignItems: 'center' }}>
 						<Text>Core Run(m)</Text>
 						<Text>{block.coreRunInMetres.toFixed(2)}</Text>
 					</View>
-					<View style={{ flex: 3, borderLeftWidth: 0.25, borderRightWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 3, borderRightWidth: 1, alignItems: 'center' }}>
 						<Text>C.R.%</Text>
 						<Text>{block.coreRecoveryInPercentage}</Text>
 					</View>
-					<View style={{ flex: 3, borderLeftWidth: 0.25, alignItems: 'center' }}>
+					<View style={{ flex: 3, alignItems: 'center' }}>
 						<Text>R.Q.D%</Text>
 						<Text>{block.rqdInPercentage}</Text>
 					</View>

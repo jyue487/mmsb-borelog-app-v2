@@ -1,113 +1,63 @@
 import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { DAY_CONTINUE_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
+import { DAY_END_WORK_TYPE, DAY_START_AND_END_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/constants/DayWorkStatus";
 import { styles } from '@/constants/styles';
-import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
 import { useState } from 'react';
-import { DayWorkStatusDateSelectorComponent } from '../datetime/DayWorkStatusDateSelectorComponent';
-import { DayWorkStatusTimeSelectorComponent } from '../datetime/DayWorkStatusTimeSelectorComponent';
+import { DayStartWorkStatusInputQuestions } from "./DayStartWorkStatusInputQuestions";
+import { DayEndWorkStatusInputQuestions } from "./DayEndWorkStatusInputQuestions";
+import { DayStartAndEndWorkStatusInputQuestion } from "./DayStartAndEndWorkStatusInputQuestions";
 
-type DayWorkStatusInputQuestionsProps = {
-	dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
-}
+export type DayWorkStatusInputQuestionsProps = {
+  dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
+};
 
-export function DayWorkStatusInputQuestions({
-	dayWorkStatus, setDayWorkStatus,
-}: DayWorkStatusInputQuestionsProps) {
-  
-	const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(dayWorkStatus.dayWorkStatusType);
-	const [waterLevelInMetresStr, setWaterLevelInMetresStr] = useState<string>((typeof dayWorkStatus.waterLevelInMetres === 'string') ? dayWorkStatus.waterLevelInMetres: dayWorkStatus.waterLevelInMetres?.toFixed(3) ?? '');
-	const [casingDepthInMetresStr, setCasingDepthInMetresStr] = useState<string>(dayWorkStatus.casingDepthInMetres?.toFixed(3) ?? '');
-	const [isSelectDayWorkStatusPressed, setIsSelectDayWorkStatusPressed] = useState<boolean>(false);
+export function DayWorkStatusInputQuestions({ dayWorkStatus, setDayWorkStatus }: DayWorkStatusInputQuestionsProps) {
 
-	const selectDayWorkStatusType = (dayWorkStatusType: DayWorkStatusType) => {
-		setDayWorkStatusType(dayWorkStatusType);
-		setIsSelectDayWorkStatusPressed(false);
-		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
-			...dayWorkStatus,
-			dayWorkStatusType: dayWorkStatusType,
-		}));
-	};
-	const saveWaterLevelInMetresStr = (waterLevelInMetresStr: string) => {
-		setWaterLevelInMetresStr(waterLevelInMetresStr);
-		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
-			...dayWorkStatus,
-			waterLevelInMetres: (waterLevelInMetresStr.length === 0) ? null : (stringIsFloat(waterLevelInMetresStr)) ? stringToDecimalPoint(waterLevelInMetresStr, 3) : waterLevelInMetresStr,
-		}));
-	};
-	const saveCasingDepthInMetresStr = (casingDepthInMetresStr: string) => {
-		setCasingDepthInMetresStr(casingDepthInMetresStr);
-		setDayWorkStatus((dayWorkStatus: DayWorkStatus): DayWorkStatus => ({
-			...dayWorkStatus,
-			casingDepthInMetres: (casingDepthInMetresStr.length === 0) ? null : stringToDecimalPoint(casingDepthInMetresStr, 3),
-		}));
-	};
+  const [dayWorkStatusType, setDayWorkStatusType] = useState<DayWorkStatusType>(dayWorkStatus.dayWorkStatusType);
+  const [isSelectDayWorkStatusPressed, setIsSelectDayWorkStatusPressed] = useState<boolean>(false);
+
+  const selectDayWorkStatusType = (dayWorkStatusType: DayWorkStatusType) => {
+    setDayWorkStatusType(dayWorkStatusType);
+    setIsSelectDayWorkStatusPressed(false);
+    setDayWorkStatus({...dayWorkStatus, dayWorkStatusType: dayWorkStatusType});
+  };
 
   return (
     <>
-		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ paddingVertical: 10 }}>Day Work Status<Text style={{ color: 'red' }}>*</Text>: </Text>
-			<View style={{ flex: 1 }}>
-				<TouchableOpacity 
-					onPress={() => {
-						Keyboard.dismiss();
-						setIsSelectDayWorkStatusPressed(prev => !prev);
-					}}
-					style={{
-						borderWidth: 0.5,
-						alignItems: 'center',
-						padding: 10,
-						width: '100%',
-					}}>
-					<Text>{dayWorkStatusType}</Text>
-				</TouchableOpacity>
-				{
-					isSelectDayWorkStatusPressed && DAY_WORK_STATUS_TYPE_LIST.map((item) => (
-						<TouchableOpacity 
-							key={item}
-							onPress={() => {
-								Keyboard.dismiss();
-								selectDayWorkStatusType(item);
-							}}
-							style={[styles.listItem]}>
-							<Text>{item}</Text>
-						</TouchableOpacity>
-					))
-				}
-			</View>
-		</View>
-		{
-			dayWorkStatusType !== DAY_CONTINUE_WORK_TYPE && (
-				<>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Day {(dayWorkStatusType === DAY_START_WORK_TYPE) ? 'Start' : 'End'} Work Date<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<DayWorkStatusDateSelectorComponent dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
-				</View>
-				<View style={{ flexDirection: 'row' }}>
-					<Text style={{ paddingVertical: 10 }}>Day {(dayWorkStatusType === DAY_START_WORK_TYPE) ? 'Start' : 'End'} Work Time<Text style={{ color: 'red' }}>*</Text>: </Text>
-					<DayWorkStatusTimeSelectorComponent dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
-				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Water Level(m): </Text>
-					<TextInput
-						value={waterLevelInMetresStr}
-						onChangeText={saveWaterLevelInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
-						// keyboardType='numeric'
-					/>
-				</View>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<Text>Casing Depth(m): </Text>
-					<TextInput
-						value={casingDepthInMetresStr}
-						onChangeText={saveCasingDepthInMetresStr}
-						style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1, backgroundColor: 'yellow' }}
-						keyboardType='numeric'
-					/>
-				</View>
-				</>
-			)
-		}
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ paddingVertical: 10 }}>Day Work Status<Text style={{ color: 'red' }}>*</Text>: </Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSelectDayWorkStatusPressed(prev => !prev);
+            }}
+            style={{
+              borderWidth: 0.5,
+              alignItems: 'center',
+              padding: 10,
+              width: '100%',
+            }}>
+            <Text>{dayWorkStatusType}</Text>
+          </TouchableOpacity>
+          {
+            isSelectDayWorkStatusPressed && DAY_WORK_STATUS_TYPE_LIST.map((item) => (
+              <TouchableOpacity
+                key={item}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  selectDayWorkStatusType(item);
+                }}
+                style={[styles.listItem]}>
+                <Text>{item}</Text>
+              </TouchableOpacity>
+            ))
+          }
+        </View>
+      </View>
+      { dayWorkStatus.dayWorkStatusType === DAY_START_WORK_TYPE && <DayStartWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} /> }
+      { dayWorkStatus.dayWorkStatusType === DAY_END_WORK_TYPE && <DayEndWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} /> }
+      { dayWorkStatus.dayWorkStatusType === DAY_START_AND_END_WORK_TYPE && <DayStartAndEndWorkStatusInputQuestion dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} /> }
     </>
   )
 }

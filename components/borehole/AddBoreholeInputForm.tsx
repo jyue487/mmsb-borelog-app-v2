@@ -8,7 +8,7 @@ import { stringIsFloat, stringToDecimalPoint } from '@/utils/numbers';
 import { SignatureQuestionComponent } from '../signature/SignatureQuestionComponent';
 
 type AddBoreholeInputFormProps = {
-  addBorehole: (addBoreholeParams: AddBoreholeParams) => void;
+  addBorehole: (addBoreholeParams: AddBoreholeParams) => Promise<void>;
   setIsAddButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -100,7 +100,7 @@ export function AddBoreholeInputForm ({
       <Button
         title='Confirm'
         color={styles.confirmButton.color}
-        onPress={() => {
+        onPress={async () => {
           if (!newBoreholeName.trim()) {
             alert("Error: Borehole Name Should not be empty");
             return;
@@ -125,7 +125,7 @@ export function AddBoreholeInputForm ({
           const northingInMetres: number | null = (northingInMetresStr.trim().length > 0) ? stringToDecimalPoint(northingInMetresStr.trim(), 3) : null;
           const reducedLevelInMetres: number | null = (reducedLevelInMetresStr.trim().length > 0) ? stringToDecimalPoint(reducedLevelInMetresStr.trim(), 3) : null;
 
-          addBorehole({
+          await addBorehole({
             name: newBoreholeName.trim(),
             typeOfBoring: typeOfBoring.trim(),
             typeOfRig: typeOfRig.trim(),

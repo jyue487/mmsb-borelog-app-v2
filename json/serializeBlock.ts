@@ -1,23 +1,23 @@
-import { 
-    Block,
-    SPT_BLOCK_TYPE_ID,
-    CORING_BLOCK_TYPE_ID,
-    CAVITY_BLOCK_TYPE_ID,
-    UD_BLOCK_TYPE_ID,
-    MZ_BLOCK_TYPE_ID,
-    PS_BLOCK_TYPE_ID,
-    HA_BLOCK_TYPE_ID,
-    WASH_BORING_BLOCK_TYPE_ID,
-    CONCRETE_SLAB_BLOCK_TYPE_ID,
-    ASPHALT_BLOCK_TYPE_ID,
-    END_OF_BOREHOLE_BLOCK_TYPE_ID,
-    CUSTOM_BLOCK_TYPE_ID,
-    VANE_SHEAR_TEST_BLOCK_TYPE_ID,
-    FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
-    RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
-    CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
-    LUGEON_TEST_BLOCK_TYPE_ID,
-    PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+import {
+  Block,
+  SPT_BLOCK_TYPE_ID,
+  CORING_BLOCK_TYPE_ID,
+  CAVITY_BLOCK_TYPE_ID,
+  UD_BLOCK_TYPE_ID,
+  MZ_BLOCK_TYPE_ID,
+  PS_BLOCK_TYPE_ID,
+  HA_BLOCK_TYPE_ID,
+  WASH_BORING_BLOCK_TYPE_ID,
+  CONCRETE_SLAB_BLOCK_TYPE_ID,
+  ASPHALT_BLOCK_TYPE_ID,
+  END_OF_BOREHOLE_BLOCK_TYPE_ID,
+  CUSTOM_BLOCK_TYPE_ID,
+  VANE_SHEAR_TEST_BLOCK_TYPE_ID,
+  FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  LUGEON_TEST_BLOCK_TYPE_ID,
+  PRESSUREMETER_TEST_BLOCK_TYPE_ID,
 } from "@/interfaces/Block";
 import { throwError } from "@/utils/error/throwError";
 import { serializeSptBlock } from "./sptBlock/serializeSptBlock";
@@ -40,44 +40,44 @@ import { serializeLugeonTestBlock } from "./lugeonTestBlock/serializeLugeonTestB
 import { serializePressuremeterTestBlock } from "./pressuremeterTestBlock/serializePressuremeterTestBlock";
 
 export function serializeBlock(block: Block): string {
-    switch (block.blockTypeId) {
+  switch (block.blockTypeId) {
     case SPT_BLOCK_TYPE_ID:
-        return serializeSptBlock(block);
+      return serializeSptBlock(block);
     case CORING_BLOCK_TYPE_ID:
-        return serializeCoringBlock(block);
+      return serializeCoringBlock(block);
     case CAVITY_BLOCK_TYPE_ID:
-        return serializeCavityBlock(block);
+      return serializeCavityBlock(block);
     case UD_BLOCK_TYPE_ID:
-        return serializeUdBlock(block);
+      return serializeUdBlock(block);
     case MZ_BLOCK_TYPE_ID:
-        return serializeMzBlock(block);
+      return serializeMzBlock(block);
     case PS_BLOCK_TYPE_ID:
-        return serializePsBlock(block);
+      return serializePsBlock(block);
     case HA_BLOCK_TYPE_ID:
-        return serializeHaBlock(block);
+      return serializeHaBlock(block);
     case WASH_BORING_BLOCK_TYPE_ID:
-        return serializeWashBoringBlock(block);
+      return serializeWashBoringBlock(block);
     case CONCRETE_SLAB_BLOCK_TYPE_ID:
-        return serializeConcreteSlabBlock(block);
+      return serializeConcreteSlabBlock(block);
     case ASPHALT_BLOCK_TYPE_ID:
-        return serializeAsphaltBlock(block);
+      return serializeAsphaltBlock(block);
     case END_OF_BOREHOLE_BLOCK_TYPE_ID:
-        return serializeEndOfBoreholeBlock(block);
+      return serializeEndOfBoreholeBlock(block);
     case CUSTOM_BLOCK_TYPE_ID:
-        return serializeCustomBlock(block);
+      return serializeCustomBlock(block);
     case VANE_SHEAR_TEST_BLOCK_TYPE_ID:
-        return serializeVaneShearTestBlock(block);
+      return serializeVaneShearTestBlock(block);
     case FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-        return serializeFallingHeadPermeabilityTestBlock(block);
+      return serializeFallingHeadPermeabilityTestBlock(block);
     case RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-        return serializeRisingHeadPermeabilityTestBlock(block);
+      return serializeRisingHeadPermeabilityTestBlock(block);
     case CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID:
-        return serializeConstantHeadPermeabilityTestBlock(block);
+      return serializeConstantHeadPermeabilityTestBlock(block);
     case LUGEON_TEST_BLOCK_TYPE_ID:
-        return serializeLugeonTestBlock(block);
+      return serializeLugeonTestBlock(block);
     case PRESSUREMETER_TEST_BLOCK_TYPE_ID:
-        return serializePressuremeterTestBlock(block);
+      return serializePressuremeterTestBlock(block);
     default:
-        throwError('No such block');
-    }
+      throwError('No such block');
+  }
 };

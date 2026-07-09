@@ -59,6 +59,7 @@ export function PermeabilityTestBlockDetailsInputForm({ boreholeId, inputBlock, 
           isSelectOperationTypePressed && (
             OPERATION_TYPES.map((item) => (
               <TouchableOpacity
+                key={item}
                 onPress={() => {
                   Keyboard.dismiss();
                   setOperationType(item);

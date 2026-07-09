@@ -2,11 +2,15 @@ import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { deserializeDateTime } from "./deserializeDateTime";
 
 export function deserializeDayWorkStatus(dayWorkStatus: any): DayWorkStatus {
-    return {
-        dayWorkStatusType: dayWorkStatus.dayWorkStatusType,
-        date: deserializeDateTime(dayWorkStatus.date),
-        time: deserializeDateTime(dayWorkStatus.time),
-        waterLevelInMetres: dayWorkStatus.waterLevelInMetres,
-        casingDepthInMetres: dayWorkStatus.casingDepthInMetres,
-    };
+  return {
+    dayWorkStatusType: dayWorkStatus.dayWorkStatusType,
+    startDate: deserializeDateTime(dayWorkStatus.startDate),
+    startTime: deserializeDateTime(dayWorkStatus.startTime),
+    startWaterLevelInMetres: dayWorkStatus.startWaterLevelInMetres,
+    startCasingDepthInMetres: dayWorkStatus.startCasingDepthInMetres,
+    endDate: deserializeDateTime(dayWorkStatus.endDate),
+    endTime: deserializeDateTime(dayWorkStatus.endTime),
+    endWaterLevelInMetres: dayWorkStatus.endWaterLevelInMetres,
+    endCasingDepthInMetres: dayWorkStatus.endCasingDepthInMetres,
+  };
 }
