@@ -6,7 +6,6 @@ import { SoilProperties } from "@/interfaces/SoilProperties";
 import { SptBlock } from "@/interfaces/SptBlock";
 import { checkAndReturnDayWorkStatus } from '@/utils/block/checkFunctions/checkAndReturnDayWorkStatus';
 import { stringIsNonNegativeFloat, stringIsNonNegativeInteger, stringToDecimalPoint } from '@/utils/numbers';
-import { throwError } from "@/utils/error/throwError";
 import { checkAndReturnSptBlockDescription } from "./checkAndReturnSptBlockDescription";
 import { randomUUID } from "expo-crypto";
 
@@ -79,54 +78,54 @@ export function checkAndReturnSptBlock({
   dayWorkStatus = checkAndReturnDayWorkStatus(dayWorkStatus);
 
   if (!stringIsNonNegativeFloat(topDepthInMetresStr)) {
-    throwError('Error: Top Depth');
+    throw new Error('Top Depth');
   }
   if (!stringIsNonNegativeInteger(seatingIncBlows1Str)) {
-    throwError(`Error: seatingIncBlows1Str`);
+    throw new Error(`seatingIncBlows1Str`);
   }
   if (!stringIsNonNegativeInteger(seatingIncPen1Str)) {
-    throwError(`Error: seatingIncPen1Str`);
+    throw new Error(`seatingIncPen1Str`);
   }
   if (parseInt(seatingIncBlows1Str) < 25) {
     if (!stringIsNonNegativeInteger(seatingIncBlows2Str)) {
-      throwError(`Error: seatingIncBlows2Str`);
+      throw new Error(`seatingIncBlows2Str`);
     }
     if (!stringIsNonNegativeInteger(seatingIncPen2Str)) {
-      throwError(`Error: seatingIncPen2Str`);
+      throw new Error(`seatingIncPen2Str`);
     }
   }
   if (!stringIsNonNegativeInteger(mainIncBlows1Str)) {
-    throwError(`Error: mainIncBlows1Str`);
+    throw new Error(`mainIncBlows1Str`);
   }
   if (!stringIsNonNegativeInteger(mainIncPen1Str)) {
-    throwError(`Error: mainIncPen1Str`);
+    throw new Error(`mainIncPen1Str`);
   }
   if (parseInt(mainIncBlows1Str) < 50) {
     if (!stringIsNonNegativeInteger(mainIncBlows2Str)) {
-      throwError(`Error: mainIncBlows2Str`);
+      throw new Error(`mainIncBlows2Str`);
     }
     if (!stringIsNonNegativeInteger(mainIncPen2Str)) {
-      throwError(`Error: mainIncPen2Str`);
+      throw new Error(`mainIncPen2Str`);
     }
   }
   if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) < 50) {
     if (!stringIsNonNegativeInteger(mainIncBlows3Str)) {
-      throwError(`Error: mainIncBlows3Str`);
+      throw new Error(`mainIncBlows3Str`);
     }
     if (!stringIsNonNegativeInteger(mainIncPen3Str)) {
-      throwError(`Error: mainIncPen3Str`);
+      throw new Error(`mainIncPen3Str`);
     }
   }
   if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) + parseInt(mainIncBlows3Str) < 50) {
     if (!stringIsNonNegativeInteger(mainIncBlows4Str)) {
-      throwError(`Error: mainIncBlows4Str`);
+      throw new Error(`mainIncBlows4Str`);
     }
     if (!stringIsNonNegativeInteger(mainIncPen4Str)) {
-      throwError(`Error: mainIncPen4Str`);
+      throw new Error(`mainIncPen4Str`);
     }
   }
   if (!stringIsNonNegativeInteger(recoveryLengthInMillimetresStr)) {
-    throwError('Error: Recovery Length');
+    throw new Error('Recovery Length');
   }
 
   const topDepthInMetres: number = stringToDecimalPoint(topDepthInMetresStr, 3);
@@ -153,7 +152,7 @@ export function checkAndReturnSptBlock({
   const sptNValue: number = mainIncBlows1 + (mainIncBlows2 ?? 0) + (mainIncBlows3 ?? 0) + (mainIncBlows4 ?? 0);
   const recoveryLengthInMillimetres: number = parseInt(recoveryLengthInMillimetresStr);
   if (recoveryLengthInMillimetres > totalPenetrationInMillimetres) {
-    throwError('Error: Recovery Length');
+    throw new Error('Recovery Length');
   }
   const recoveryInPercentage: number = parseFloat((recoveryLengthInMillimetres / totalPenetrationInMillimetres * 100).toFixed(1));
 

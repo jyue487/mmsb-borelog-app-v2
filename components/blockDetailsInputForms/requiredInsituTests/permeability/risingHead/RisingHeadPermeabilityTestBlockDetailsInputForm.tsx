@@ -5,18 +5,34 @@ import { BaseBlock, Block, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@
 import { createDefaultRisingHeadPermeabilityTestBlock, RisingHeadPermeabilityTestBlock } from "@/interfaces/RisingHeadPermeabilityTestBlock";
 import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
 import { checkAndReturnDayWorkStatus } from "@/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { checkAndReturnRisingHeadPermeabilityTestBlock } from "@/utils/block/checkFunctions/checkAndReturnRisingHeadPermeabilityTestBlock";
 import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function RisingHeadPermeabilityTestBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function RisingHeadPermeabilityTestBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & RisingHeadPermeabilityTestBlock = (inputBlock !== null && inputBlock.blockTypeId === RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID) ? inputBlock : createDefaultRisingHeadPermeabilityTestBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
+
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnRisingHeadPermeabilityTestBlock({
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        baseDepthInMetresStr: baseDepthInMetresStr,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    baseDepthInMetresStr,
+  ]);
 
   return (
     <>
@@ -39,23 +55,6 @@ export function RisingHeadPermeabilityTestBlockDetailsInputForm({ boreholeId, in
           keyboardType='numeric'
         />
       </View>
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          try {
-            const newBlock: Block = checkAndReturnRisingHeadPermeabilityTestBlock({
-              boreholeId: boreholeId,
-              dayWorkStatus: dayWorkStatus,
-              topDepthInMetresStr: topDepthInMetresStr,
-              baseDepthInMetresStr: baseDepthInMetresStr,
-            });
-            await onSubmitAsync(newBlock);
-          } catch (err) {
-            alert(err);
-          }
-        }}
-      />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
@@ -11,11 +11,27 @@ import { checkAndReturnConcreteSlabBlock } from "@/utils/block/checkFunctions/ch
 import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function ConcreteSlabBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function ConcreteSlabBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & ConcreteSlabBlock = (inputBlock !== null && inputBlock.blockTypeId === CONCRETE_SLAB_BLOCK_TYPE_ID) ? inputBlock : createDefaultConcreteSlabBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
+
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnConcreteSlabBlock({
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        baseDepthInMetresStr: baseDepthInMetresStr,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    baseDepthInMetresStr,
+  ]);
 
   return (
     <>
@@ -38,19 +54,6 @@ export function ConcreteSlabBlockDetailsInputForm({ boreholeId, inputBlock, onSu
           keyboardType='numeric'
         />
       </View>
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          const newBlock: Block = checkAndReturnConcreteSlabBlock({
-            boreholeId: boreholeId, 
-            dayWorkStatus: dayWorkStatus,
-            topDepthInMetresStr: topDepthInMetresStr,
-            baseDepthInMetresStr: baseDepthInMetresStr,
-          });
-          await onSubmitAsync(newBlock);
-        }}
-      />
     </>
   );
 }

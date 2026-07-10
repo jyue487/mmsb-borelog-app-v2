@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Keyboard, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
 import { styles } from "@/constants/styles";
@@ -37,9 +37,11 @@ const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType | null>
   [BlockFile.PRESSUREMETER_TEST_BLOCK_TYPE_ID]: PRESSUREMETER_TEST,
 } as const;
 
-export function RequiredInsituTestsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
-  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
+export function RequiredInsituTestsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null || BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId] === null) ? true : false);
   const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
+
+  useEffect(() => setCheckAndReturnBlock(null), []);
 
   return (
     <>
@@ -74,10 +76,10 @@ export function RequiredInsituTestsInputForm({ boreholeId, inputBlock, onSubmitA
         )
       }
     </View>
-    { operationType === 'Vane Shear Test' && <VaneShearTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-    { operationType === 'Pressuremeter Test' && <PressuremeterTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-    { operationType === 'Lugeon Test' && <LugeonTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-    { operationType === 'Permeability Test' && <PermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+    { operationType === 'Vane Shear Test' && <VaneShearTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+    { operationType === 'Pressuremeter Test' && <PressuremeterTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+    { operationType === 'Lugeon Test' && <LugeonTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+    { operationType === 'Permeability Test' && <PermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
     </>
   );
 }

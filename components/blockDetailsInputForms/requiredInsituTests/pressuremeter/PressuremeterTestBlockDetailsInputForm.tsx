@@ -5,18 +5,34 @@ import { BaseBlock, Block, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from "@/interfaces
 import { createDefaultPressuremeterTestBlock, PressuremeterTestBlock } from "@/interfaces/PressuremeterTestBlock";
 import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
 import { checkAndReturnDayWorkStatus } from "@/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { checkAndReturnPressuremeterTestBlock } from "@/utils/block/checkFunctions/checkAndReturnPressuremeterTestBlock";
 import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function PressuremeterTestBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function PressuremeterTestBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & PressuremeterTestBlock = (inputBlock !== null && inputBlock.blockTypeId === PRESSUREMETER_TEST_BLOCK_TYPE_ID) ? inputBlock : createDefaultPressuremeterTestBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
+
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnPressuremeterTestBlock({
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        baseDepthInMetresStr: baseDepthInMetresStr,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    baseDepthInMetresStr,
+  ]);
 
   return (
     <>
@@ -39,23 +55,6 @@ export function PressuremeterTestBlockDetailsInputForm({ boreholeId, inputBlock,
           keyboardType='numeric'
         />
       </View>
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          try {
-            const newBlock: Block = checkAndReturnPressuremeterTestBlock({
-              boreholeId: boreholeId,
-              dayWorkStatus: dayWorkStatus,
-              topDepthInMetresStr: topDepthInMetresStr,
-              baseDepthInMetresStr: baseDepthInMetresStr,
-            });
-            await onSubmitAsync(newBlock);
-          } catch (err) {
-            alert(err);
-          }
-        }}
-      />
     </>
   );
 }

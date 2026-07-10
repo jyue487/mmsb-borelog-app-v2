@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, View, type ViewProps } from "react-native";
 
 import { UndisturbedSampleInputQuestions } from "@/components/inputQuestions/UndisturbedSampleInputQuestions";
@@ -13,7 +13,7 @@ import { isNonNegative, roundToDecimalPoint } from "@/utils/numbers";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function MzBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function MzBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & MzBlock = (inputBlock !== null && inputBlock.blockTypeId === MZ_BLOCK_TYPE_ID) ? inputBlock : createDefaultMzBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
@@ -25,9 +25,38 @@ export function MzBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync,
   const [bottomColourProperties, setBottomColourProperties] = useState<ColourProperties>(block.bottomColourProperties);
   const [bottomSoilProperties, setBottomSoilProperties] = useState<SoilProperties>(block.bottomSoilProperties);
 
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnUndisturbedSampleBlock({
+        undisturbedSampleBlockTypeId: MZ_BLOCK_TYPE_ID,
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        penetrationDepthInMetresStr: penetrationDepthInMetresStr,
+        recoveryLengthInMetresStr: recoveryLengthInMetresStr,
+        topColourProperties: topColourProperties,
+        topSoilProperties: topSoilProperties,
+        baseDitto: baseDitto,
+        bottomColourProperties: bottomColourProperties,
+        bottomSoilProperties: bottomSoilProperties,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    penetrationDepthInMetresStr,
+    recoveryLengthInMetresStr,
+    topColourProperties,
+    topSoilProperties,
+    baseDitto,
+    bottomColourProperties,
+    bottomSoilProperties,
+  ]);
+
   return (
     <>
-      <UndisturbedSampleInputQuestions 
+      <UndisturbedSampleInputQuestions
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
         penetrationDepthInMetresStr={penetrationDepthInMetresStr} setPenetrationDepthInMetresStr={setPenetrationDepthInMetresStr}
@@ -37,26 +66,6 @@ export function MzBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync,
         baseDitto={baseDitto} setBaseDitto={setBaseDitto}
         bottomColourProperties={bottomColourProperties} setBottomColourProperties={setBottomColourProperties}
         bottomSoilProperties={bottomSoilProperties} setBottomSoilProperties={setBottomSoilProperties}
-      />
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          const newBlock: Block = checkAndReturnUndisturbedSampleBlock({
-            undisturbedSampleBlockTypeId: MZ_BLOCK_TYPE_ID,
-            boreholeId: boreholeId, 
-            dayWorkStatus: dayWorkStatus,
-            topDepthInMetresStr: topDepthInMetresStr,
-            penetrationDepthInMetresStr: penetrationDepthInMetresStr,
-            recoveryLengthInMetresStr: recoveryLengthInMetresStr,
-            topColourProperties: topColourProperties,
-            topSoilProperties: topSoilProperties,
-            baseDitto: baseDitto,
-            bottomColourProperties: bottomColourProperties,
-            bottomSoilProperties: bottomSoilProperties,
-          });
-          await onSubmitAsync(newBlock);
-        }}
       />
     </>
   );

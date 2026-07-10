@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
@@ -10,11 +10,27 @@ import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInp
 import { checkAndReturnAsphaltBlock } from "@/utils/block/checkFunctions/checkAndReturnAsphaltBlock";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function AsphaltBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function AsphaltBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & AsphaltBlock = (inputBlock !== null && inputBlock.blockTypeId === ASPHALT_BLOCK_TYPE_ID) ? inputBlock : createDefaultAsphaltBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
+
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnAsphaltBlock({
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        baseDepthInMetresStr: baseDepthInMetresStr,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    baseDepthInMetresStr,
+  ]);
 
   return (
     <>
@@ -37,19 +53,6 @@ export function AsphaltBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitA
           keyboardType='numeric'
         />
       </View>
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          const newBlock: Block = checkAndReturnAsphaltBlock({
-            boreholeId: boreholeId, 
-            dayWorkStatus: dayWorkStatus,
-            topDepthInMetresStr: topDepthInMetresStr,
-            baseDepthInMetresStr: baseDepthInMetresStr,
-          });
-          await onSubmitAsync(newBlock);
-        }}
-      />
     </>
   );
 }

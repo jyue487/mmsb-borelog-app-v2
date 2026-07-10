@@ -57,7 +57,7 @@ const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType> = {
 export type SpecificBlockDetailsInputFormProps = ViewProps & {
   boreholeId: string;
   inputBlock: Block | null;
-  onSubmitAsync: (newBlock: Block) => Promise<void>;
+  setCheckAndReturnBlock: React.Dispatch<React.SetStateAction<(() => Block) | null>>;
 };
 
 export type BlockDetailsInputFormProps = ViewProps & {
@@ -72,7 +72,7 @@ export type BlockDetailsInputFormProps = ViewProps & {
 export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, inputBlock, setIsVisible, action, ...otherProps }: BlockDetailsInputFormProps) {
   const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
   const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
-
+  const [checkAndReturnBlock, setCheckAndReturnBlock] = useState<(() => Block) | null>(null);
   const handleDeleteBlockAsync = async (blockId: string, blockTypeId: BlockTypeId) => {
     const blocksToReindex = await deleteBlockAsync(blocks, blockId);
     const reindexedBlocks = reindexBlock(blocksToReindex, blockTypeId);
@@ -132,12 +132,28 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
           ))
         }
       </View>
-      { operationType === 'SPT' && <SptBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'Coring & Cavity' && <CoringAndCavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'Undisturbed Sample' && <UndisturbedSampleInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'Required In-situ Tests' && <RequiredInsituTestsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'End of Borehole' && <EndOfBoreholeBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} blocks={blocks} /> }
-      { operationType === 'Others' && <OthersInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+      { operationType === 'SPT' && <SptBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Coring & Cavity' && <CoringAndCavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Undisturbed Sample' && <UndisturbedSampleInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Required In-situ Tests' && <RequiredInsituTestsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'End of Borehole' && <EndOfBoreholeBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} blocks={blocks} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Others' && <OthersInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      {
+        (checkAndReturnBlock !== null) && (
+          <Button
+            title="Confirm"
+            color={styles.confirmButton.color}
+            onPress={async () => {
+              try {
+                const newBlock = checkAndReturnBlock();
+                await onSubmitAsync(newBlock);
+              } catch (err) {
+                alert(err);
+              }
+            }}
+          />
+        )
+      }
       <Button
         title='Cancel'
         color={styles.cancelButton.color}

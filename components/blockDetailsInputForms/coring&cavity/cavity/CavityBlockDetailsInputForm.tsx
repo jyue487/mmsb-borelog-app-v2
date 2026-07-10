@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, View, type ViewProps } from "react-native";
 
 import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
@@ -12,12 +12,30 @@ import { isNonNegative, roundToDecimalPoint } from "@/utils/numbers";
 import { SpecificBlockDetailsInputFormProps } from "../../BlockDetailsInputForm";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function CavityBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function CavityBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & CavityBlock = (inputBlock !== null && inputBlock.blockTypeId === CAVITY_BLOCK_TYPE_ID) ? inputBlock : createDefaultCavityBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
   const [description, setDescription] = useState<string>(block.description);
+
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnCavityBlock({
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        baseDepthInMetresStr: baseDepthInMetresStr,
+        description: description,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    baseDepthInMetresStr,
+    description,
+  ]);
 
   return (
     <>
@@ -26,20 +44,6 @@ export function CavityBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAs
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
         baseDepthInMetresStr={baseDepthInMetresStr} setBaseDepthInMetresStr={setBaseDepthInMetresStr}
         description={description} setDescription={setDescription}
-      />
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          const newBlock: Block = checkAndReturnCavityBlock({
-            boreholeId: boreholeId,
-            dayWorkStatus: dayWorkStatus,
-            topDepthInMetresStr: topDepthInMetresStr,
-            baseDepthInMetresStr: baseDepthInMetresStr,
-            description: description,
-          });
-          await onSubmitAsync(newBlock);
-        }}
       />
     </>
   );
