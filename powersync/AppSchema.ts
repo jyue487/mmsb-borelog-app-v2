@@ -1,4 +1,4 @@
-import { column, Schema, Table } from '@powersync/react-native';
+import { AttachmentTable, column, Schema, Table } from '@powersync/react-native';
 
 const projects = new Table(
   {
@@ -93,7 +93,8 @@ export const AppSchema = new Schema({
   boreholes,
   borehole_to_user,
   block_types,
-  blocks
+  blocks,
+  attachments: new AttachmentTable()
 });
 
 export type Database = (typeof AppSchema)['types'];

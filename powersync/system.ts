@@ -1,4 +1,4 @@
-import { PowerSyncDatabase } from '@powersync/react-native';
+import { PowerSyncDatabase, createBaseLogger } from '@powersync/react-native';
 import { OPSqliteOpenFactory } from '@powersync/op-sqlite'; // Add this import
 import { AppSchema } from './AppSchema';
 import { Connector } from './Connector';
@@ -8,11 +8,14 @@ const opSqlite = new OPSqliteOpenFactory({
 	dbFilename: 'powersync.db'
 });
 
+export const logger = createBaseLogger();
+
 export const powersync = new PowerSyncDatabase({
 	// For other options see,
 	schema: AppSchema,
 	// Override the default database
-	database: opSqlite
+	database: opSqlite,
+  logger: logger,
 });
 
 export const setupPowerSync = async () => {

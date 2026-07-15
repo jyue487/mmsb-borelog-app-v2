@@ -16,6 +16,7 @@ import { EndOfBoreholeBlockDetailsInputForm } from "./endOfBorehole/EndOfBorehol
 import { RequiredInsituTestsInputForm } from "./requiredInsituTests/RequiredInsituTestsInputForm";
 import { SptBlockDetailsInputForm } from "./spt/SptBlockDetailsInputForm";
 import { sortAndReindexAllBlocks } from "@/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks";
+import { CameraComponent } from "../camera/CameraComponent";
 
 const SPT = 'SPT' as const;
 const CORING_AND_CAVITY = 'Coring & Cavity' as const;
@@ -138,6 +139,7 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
       { operationType === 'Required In-situ Tests' && <RequiredInsituTestsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
       { operationType === 'End of Borehole' && <EndOfBoreholeBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} blocks={blocks} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
       { operationType === 'Others' && <OthersInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { checkAndReturnBlock !== null && <CameraComponent /> }
       {
         (checkAndReturnBlock !== null) && (
           <Button

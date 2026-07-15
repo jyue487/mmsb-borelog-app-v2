@@ -1,0 +1,60 @@
+import { SupabaseClient } from '@supabase/supabase-js';
+import { AttachmentRecord, LocalStorageAdapter, RemoteStorageAdapter } from '@powersync/react-native';
+import { supabase } from '@/db/supabase';
+
+export interface SupabaseRemoteStorageAdapterOptions {
+  client: SupabaseClient;
+  bucket: string;
+}
+
+/**
+ * SupabaseRemoteStorageAdapter implements RemoteStorageAdapter for Supabase Storage.
+ * Handles upload, download, and deletion of files from Supabase Storage buckets.
+ */
+export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
+  constructor(private options: SupabaseRemoteStorageAdapterOptions) { }
+
+  async uploadFile(fileData: ArrayBuffer, attachment: AttachmentRecord): Promise<void> {
+    const mediaType = attachment.mediaType ?? 'application/octet-stream';
+
+    const { error } = await this.options.client.storage
+      .from(this.options.bucket)
+      .upload(attachment.filename, fileData, { contentType: mediaType });
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async downloadFile(attachment: AttachmentRecord): Promise<ArrayBuffer> {
+    const { data, error } = await this.options.client.storage.from(this.options.bucket).download(attachment.filename);
+
+    if (error) {
+      throw error;
+    }
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as ArrayBuffer);
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(data);
+    });
+  }
+
+  async deleteFile(attachment: AttachmentRecord): Promise<void> {
+    const { error } = await this.options.client.storage.from(this.options.bucket).remove([attachment.filename]);
+
+    if (error) {
+      console.debug('Failed to delete file from Supabase Storage', error);
+      throw error;
+    }
+  }
+}
+
+// const localStorage = new IndexDBFileSystemStorageAdapter();
+const remoteStorage = new SupabaseRemoteStorageAdapter({
+  client: supabase,
+  bucket: 'Testing'
+});
