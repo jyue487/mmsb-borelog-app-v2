@@ -1,5 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { AttachmentRecord, LocalStorageAdapter, RemoteStorageAdapter } from '@powersync/react-native';
+import { AttachmentRecord, RemoteStorageAdapter } from '@powersync/react-native';
+import { ExpoFileSystemStorageAdapter } from '@powersync/attachments-storage-react-native';
+
 import { supabase } from '@/db/supabase';
 
 export interface SupabaseRemoteStorageAdapterOptions {
