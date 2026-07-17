@@ -1,9 +1,10 @@
-import { CUSTOM_OTHER_PROPERTIES_FOR_SOIL } from "@/constants/soil";
+import { CUSTOM, CUSTOM_OTHER_PROPERTIES_FOR_SOIL } from "@/constants/soil";
 import { SoilProperties } from "@/interfaces/SoilProperties";
 import { throwError } from "@/utils/error/throwError";
 
 export function checkAndReturnSoilPropertiesDescription({
   dominantSoilType,
+  customDominantSoilType,
   secondarySoilType,
   otherProperties,
   customOtherProperties,
@@ -14,10 +15,14 @@ export function checkAndReturnSoilPropertiesDescription({
 
   let description: string = '';
 
-  if (!secondarySoilType) {
-    description += `${dominantSoilType}`;
+  if (dominantSoilType === CUSTOM) {
+    description += `${customDominantSoilType}`
   } else {
-    description += `${secondarySoilType} ${dominantSoilType}`;
+    if (!secondarySoilType) {
+      description += `${dominantSoilType}`;
+    } else {
+      description += `${secondarySoilType} ${dominantSoilType}`;
+    }
   }
   if (otherProperties === CUSTOM_OTHER_PROPERTIES_FOR_SOIL) {
     if (customOtherProperties.trim().length === 0) {

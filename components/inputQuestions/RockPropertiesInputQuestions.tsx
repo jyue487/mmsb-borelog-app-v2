@@ -31,7 +31,7 @@ export function RockPropertiesInputQuestions({
   };
   const saveOtherRockType = (otherRockType: string) => {
     setOtherRockType(otherRockType.toUpperCase());
-    setRockProperties((rp: RockProperties): RockProperties => ({...rp, rockCode: OTHERS_ROCK_CODE, otherRockType: otherRockType}));
+    setRockProperties((rp: RockProperties): RockProperties => ({...rp, rockCode: OTHERS_ROCK_CODE, otherRockType: otherRockType.toUpperCase()}));
   };
   const selectOtherProperties = (otherProperties: string) => {
     setOtherProperties(otherProperties);
