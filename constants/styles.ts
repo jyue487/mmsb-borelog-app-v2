@@ -27,6 +27,7 @@ export const styles = StyleSheet.create({
 	listItem: {
 		borderLeftWidth: 0.5,
 		borderRightWidth: 0.5,
+		borderTopWidth: 0,
 		borderBottomWidth: 0.5,
 		alignItems: 'center',
 		padding: 10,

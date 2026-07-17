@@ -2,6 +2,7 @@ import { DominantSoilType, SecondarySoilType } from "@/constants/soil";
 
 export interface SoilProperties {
   dominantSoilType: DominantSoilType | null;
+  customDominantSoilType: string;
   secondarySoilType: SecondarySoilType | null;
   soilCode: number | null;
   otherProperties: string;
@@ -11,6 +12,7 @@ export interface SoilProperties {
 export function createDefaultSoilProperties(): SoilProperties {
   return {
     dominantSoilType: null,
+    customDominantSoilType: '',
     secondarySoilType: null,
     soilCode: null,
     otherProperties: '',
