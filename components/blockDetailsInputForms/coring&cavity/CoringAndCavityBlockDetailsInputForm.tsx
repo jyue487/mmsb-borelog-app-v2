@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { FlatList, Keyboard, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
 import { CavityBlockDetailsInputForm } from "@/components/blockDetailsInputForms/coring&cavity/cavity/CavityBlockDetailsInputForm";
@@ -33,9 +33,11 @@ const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType | null>
   [BlockFile.PRESSUREMETER_TEST_BLOCK_TYPE_ID]: null,
 } as const;
 
-export function CoringAndCavityBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
-  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
+export function CoringAndCavityBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null || BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId] === null) ? true : false);
   const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
+
+  useEffect(() => setCheckAndReturnBlock(null), []);
 
   return (
     <>
@@ -70,8 +72,8 @@ export function CoringAndCavityBlockDetailsInputForm({ boreholeId, inputBlock, o
           )
         }
       </View>
-      {operationType === 'Coring' && <CoringBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      {operationType === 'Cavity' && <CavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+      {operationType === 'Coring' && <CoringBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      {operationType === 'Cavity' && <CavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
     </>
   );
 }

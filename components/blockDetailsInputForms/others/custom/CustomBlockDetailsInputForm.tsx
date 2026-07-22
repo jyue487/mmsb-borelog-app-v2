@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
@@ -12,12 +12,30 @@ import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInp
 import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
-export function CustomBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+export function CustomBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
   const block: BaseBlock & CustomBlock = (inputBlock !== null && inputBlock.blockTypeId === CUSTOM_BLOCK_TYPE_ID) ? inputBlock : createDefaultCustomBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
   const [baseDepthInMetresStr, setBaseDepthInMetresStr] = useState<string>(depthInMetresToString(block.baseDepthInMetres));
   const [customOperationType, setCustomOperationType] = useState<string>(block.description);
+
+  useEffect(() => {
+    setCheckAndReturnBlock(() => () => {
+      return checkAndReturnCustomBlock({
+        boreholeId: boreholeId,
+        dayWorkStatus: dayWorkStatus,
+        topDepthInMetresStr: topDepthInMetresStr,
+        baseDepthInMetresStr: baseDepthInMetresStr,
+        customOperationType: customOperationType,
+      });
+    });
+  }, [
+    boreholeId,
+    dayWorkStatus,
+    topDepthInMetresStr,
+    baseDepthInMetresStr,
+    customOperationType,
+  ]);
 
   return (
     <>
@@ -48,20 +66,6 @@ export function CustomBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAs
           style={{ borderWidth: 0.5, padding: 10, flex: 1 }}
         />
       </View>
-      <Button
-        title='Confirm'
-        color={styles.confirmButton.color}
-        onPress={async () => {
-          const newBlock: Block = checkAndReturnCustomBlock({
-            boreholeId: boreholeId,
-            dayWorkStatus: dayWorkStatus,
-            topDepthInMetresStr: topDepthInMetresStr,
-            baseDepthInMetresStr: baseDepthInMetresStr,
-            customOperationType: customOperationType,
-          });
-          await onSubmitAsync(newBlock);
-        }}
-      />
     </>
   );
 }

@@ -1,5 +1,3 @@
-import { Colour } from "@/constants/colour";
-import { DominantSoilType, SecondarySoilType } from "@/constants/soil";
 import { checkAndReturnColourPropertiesDescription } from "./checkAndReturnColourPropertiesDescription";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { SoilProperties } from "@/interfaces/SoilProperties";

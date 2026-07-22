@@ -67,15 +67,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-font",
       "expo-asset",
       "@react-native-vector-icons/material-icons",
-      [
-        "expo-camera",
-        {
-          "cameraPermission": `Allow ${appName} to access your camera`,
-          "microphonePermission": `Allow ${appName} to access your microphone`,
-          "recordAudioAndroid": true,
-          "barcodeScannerEnabled": true
-        }
-      ],
     ],
     experiments: {
       typedRoutes: true,

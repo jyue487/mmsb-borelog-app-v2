@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, Keyboard, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
 import { styles } from "@/constants/styles";
@@ -35,9 +35,11 @@ const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType | null>
   [BlockFile.PRESSUREMETER_TEST_BLOCK_TYPE_ID]: null,
 } as const;
 
-export function PermeabilityTestBlockDetailsInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
-  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
+export function PermeabilityTestBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null || BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId] === null) ? true : false);
   const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
+
+  useEffect(() => setCheckAndReturnBlock(null), []);
 
   return (
     <>
@@ -72,9 +74,9 @@ export function PermeabilityTestBlockDetailsInputForm({ boreholeId, inputBlock, 
           )
         }
       </View>
-      {operationType === 'Falling Head' && <FallingHeadPermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      {operationType === 'Rising Head' && <RisingHeadPermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      {operationType === 'Constant Head' && <ConstantHeadPermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+      {operationType === 'Falling Head' && <FallingHeadPermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      {operationType === 'Rising Head' && <RisingHeadPermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      {operationType === 'Constant Head' && <ConstantHeadPermeabilityTestBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
     </>
   );
 }

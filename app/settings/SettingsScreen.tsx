@@ -8,18 +8,16 @@ export default function SettingsScreen() {
   const { email } = useAuth();
 
   return (
-    <View>
-      <Stack.Screen 
-        options={{
-          title: 'Settings',
-        }}
-      />
-      <View style={{ padding: 10 }}>
-        <Text style={{ fontSize: 16 }}>
-          Currently signed in as <Text style={{ fontWeight: "bold", color: "blue" }}>{email}</Text>
-        </Text>
+    <>
+      <Stack.Screen options={{ title: 'Settings' }} />
+      <View>
+        <View style={{ padding: 10 }}>
+          <Text style={{ fontSize: 16 }}>
+            Currently signed in as <Text style={{ fontWeight: "bold", color: "blue" }}>{email}</Text>
+          </Text>
+        </View>
+        <SignOutButtonComponent />
       </View>
-      <SignOutButtonComponent />
-    </View>
+    </>
   );
 }

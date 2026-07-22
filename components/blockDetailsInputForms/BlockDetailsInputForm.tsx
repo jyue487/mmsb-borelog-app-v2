@@ -8,14 +8,13 @@ import { styles } from "@/constants/styles";
 import { ASPHALT_BLOCK_TYPE_ID, Block, BlockTypeId, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { addBlockAsync } from "@/utils/block/addBlockFunctions/addBlockAsync";
 import { deleteBlockAsync } from "@/utils/block/deleteBlockFunctions/deleteBlockAsync";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
-import { reindexAllBlocks, reindexBlock } from "@/utils/block/reindexBlocksFunctions/reindexBlock";
-import { sortBlocks } from "@/utils/block/sortBlocksFunctions/sortBlocks";
+import { sortAndReindexAllBlocks } from "@/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks";
+import { reindexBlock } from "@/utils/block/reindexBlocksFunctions/reindexBlock";
 import { TrashDeleteButton } from "../buttons/TrashDeleteButton";
+import { CameraComponent } from "../camera/CameraComponent";
 import { EndOfBoreholeBlockDetailsInputForm } from "./endOfBorehole/EndOfBoreholeBlockDetailsInputForm";
 import { RequiredInsituTestsInputForm } from "./requiredInsituTests/RequiredInsituTestsInputForm";
 import { SptBlockDetailsInputForm } from "./spt/SptBlockDetailsInputForm";
-import { sortAndReindexAllBlocks } from "@/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks";
 
 const SPT = 'SPT' as const;
 const CORING_AND_CAVITY = 'Coring & Cavity' as const;
@@ -57,7 +56,7 @@ const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType> = {
 export type SpecificBlockDetailsInputFormProps = ViewProps & {
   boreholeId: string;
   inputBlock: Block | null;
-  onSubmitAsync: (newBlock: Block) => Promise<void>;
+  setCheckAndReturnBlock: React.Dispatch<React.SetStateAction<(() => Block) | null>>;
 };
 
 export type BlockDetailsInputFormProps = ViewProps & {
@@ -72,7 +71,8 @@ export type BlockDetailsInputFormProps = ViewProps & {
 export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, inputBlock, setIsVisible, action, ...otherProps }: BlockDetailsInputFormProps) {
   const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
   const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
-
+  const [checkAndReturnBlock, setCheckAndReturnBlock] = useState<(() => Block) | null>(null);
+  const [blockPhotosOnConfirmAsync, setBlockPhotosOnConfirmAsync] = useState<((newBlockId: string) => Promise<void>) | null>(null);
   const handleDeleteBlockAsync = async (blockId: string, blockTypeId: BlockTypeId) => {
     const blocksToReindex = await deleteBlockAsync(blocks, blockId);
     const reindexedBlocks = reindexBlock(blocksToReindex, blockTypeId);
@@ -83,7 +83,6 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
     const unsortedBlocks = await addBlockAsync((inputBlock === null) ? blocks : await deleteBlockAsync(blocks, inputBlock.id), newBlock);
     const sortedBlocks = sortAndReindexAllBlocks(unsortedBlocks);
     setBlocks(sortedBlocks);
-    setIsVisible(false);
   };
 
   return (
@@ -132,12 +131,39 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
           ))
         }
       </View>
-      { operationType === 'SPT' && <SptBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'Coring & Cavity' && <CoringAndCavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'Undisturbed Sample' && <UndisturbedSampleInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'Required In-situ Tests' && <RequiredInsituTestsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'End of Borehole' && <EndOfBoreholeBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} blocks={blocks} /> }
-      { operationType === 'Others' && <OthersInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+      { operationType === 'SPT' && <SptBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Coring & Cavity' && <CoringAndCavityBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Undisturbed Sample' && <UndisturbedSampleInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Required In-situ Tests' && <RequiredInsituTestsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'End of Borehole' && <EndOfBoreholeBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} blocks={blocks} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'Others' && <OthersInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      <CameraComponent inputBlock={inputBlock} setBlockPhotosOnConfirmAsync={setBlockPhotosOnConfirmAsync} />
+      {
+        (checkAndReturnBlock !== null || blockPhotosOnConfirmAsync !== null) && (
+          <Button
+            title="Confirm"
+            color={styles.confirmButton.color}
+            onPress={async () => {
+              try {
+                let newBlockId = (inputBlock !== null) ? inputBlock.id : '';
+                if (checkAndReturnBlock !== null) {
+                  console.log('checkAndReturnBlock running');
+                  const newBlock = checkAndReturnBlock();
+                  newBlockId = newBlock.id;
+                  await onSubmitAsync(newBlock);
+                }
+                if (blockPhotosOnConfirmAsync !== null) {
+                  console.log('blockPhotosOnConfirmAsync running');
+                  await blockPhotosOnConfirmAsync(newBlockId);
+                }
+                setIsVisible(false);
+              } catch (err) {
+                alert(err);
+              }
+            }}
+          />
+        )
+      }
       <Button
         title='Cancel'
         color={styles.cancelButton.color}

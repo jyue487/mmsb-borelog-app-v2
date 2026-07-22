@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, Keyboard, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 
 import { MzBlockDetailsInputForm } from "@/components/blockDetailsInputForms/undisturbedSample/mz/MzBlockDetailsInputForm";
@@ -35,9 +35,11 @@ const BLOCK_TYPE_ID_TO_OPERATION_TYPE: Record<BlockTypeId, OperationType | null>
   [BlockFile.PRESSUREMETER_TEST_BLOCK_TYPE_ID]: null,
 } as const;
 
-export function UndisturbedSampleInputForm({ boreholeId, inputBlock, onSubmitAsync, ...otherProps }: SpecificBlockDetailsInputFormProps) {
-  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null) ? true : false);
+export function UndisturbedSampleInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const [isSelectOperationTypePressed, setIsSelectOperationTypePressed] = useState<boolean>((inputBlock === null || BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId] === null) ? true : false);
   const [operationType, setOperationType] = useState<OperationType | null>((inputBlock === null) ? null : BLOCK_TYPE_ID_TO_OPERATION_TYPE[inputBlock.blockTypeId]);
+
+  useEffect(() => setCheckAndReturnBlock(null), []);
 
   return (
     <>
@@ -72,9 +74,9 @@ export function UndisturbedSampleInputForm({ boreholeId, inputBlock, onSubmitAsy
           )
         }
       </View>
-      { operationType === 'UD' && <UdBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'MZ' && <MzBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
-      { operationType === 'PS' && <PsBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} onSubmitAsync={onSubmitAsync} /> }
+      { operationType === 'UD' && <UdBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'MZ' && <MzBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
+      { operationType === 'PS' && <PsBlockDetailsInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
     </>
   );
 }
