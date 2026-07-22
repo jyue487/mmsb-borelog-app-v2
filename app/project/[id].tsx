@@ -103,17 +103,15 @@ export default function ProjectScreen() {
             />
           )
         }
-        {
-          isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />
-        }
-        <Button title='Disconnect Powersync'onPress={async () => await powersync.disconnectAndClear()} />
-        <Button title='Connect Powersync'onPress={async () => await setupPowerSync()} />
+        {isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />}
+        <Button title='Disconnect Powersync' onPress={async () => await powersync.disconnectAndClear()} />
+        <Button title='Connect Powersync' onPress={async () => await setupPowerSync()} />
       </View>
     );
   };
 
   return (
-    <KeyboardAvoidingView behavior='height' style={styles.container}>
+    <>
       <Stack.Screen
         options={{
           title: (projectTitle.length < 10) ? projectTitle : `${projectTitle.slice(0, 10)}...`,
@@ -122,17 +120,19 @@ export default function ProjectScreen() {
           },
         }}
       />
-      <FlatList
-        data={boreholes}
-        keyExtractor={(borehole: Borehole) => borehole.id}
-        renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        ListFooterComponent={renderFooter()}
-        contentContainerStyle={{ paddingBottom: 500 }}
-        style={{ flexGrow: 0, width: '100%' }}
-      />
-    </KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior='height' style={styles.container}>
+        <FlatList
+          data={boreholes}
+          keyExtractor={(borehole: Borehole) => borehole.id}
+          renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          ListFooterComponent={renderFooter()}
+          contentContainerStyle={{ paddingBottom: 500 }}
+          style={{ flexGrow: 0, width: '100%' }}
+        />
+      </KeyboardAvoidingView>
+    </>
   );
 }
 

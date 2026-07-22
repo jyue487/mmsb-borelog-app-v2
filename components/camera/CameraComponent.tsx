@@ -1,189 +1,127 @@
-import { Modal, Pressable, ViewProps } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions, CameraMode } from 'expo-camera';
-import { useRef, useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Image } from "expo-image";
-import MaterialIcons from '@react-native-vector-icons/material-icons/static';
+import { useAuth } from '@/context/AuthContextProvider';
+import { fetchAllBlockPhotoUrlsByBlockId } from '@/db/blockPhotos/fetchAllBlockPhotoUrlsByBlockId';
+import { Block } from '@/interfaces/Block';
+import { BLOCK_PHOTOS_TABLE } from '@/powersync/AppSchema';
+import { photoAttachmentQueue } from '@/storage/SupabaseRemoteStorageAdapter';
+import { randomUUID } from 'expo-crypto';
+import { File } from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
+import { useEffect, useState } from 'react';
+import { Alert, Button, View, ViewProps } from 'react-native';
+import { BlockPhoto } from '../blockPhotos/BlockPhoto';
 
-type Props = ViewProps & {
-
+export type ImageInfo = {
+  id: string;
+  uri: string;
+  isNew: boolean;
+  deletedAt: Date | null;
 };
 
-export function CameraComponent({ ...otherProps }: Props) {
-  const [permission, requestPermission] = useCameraPermissions();
-  const ref = useRef<CameraView>(null);
-  const [uri, setUri] = useState<string | null>(null);
-  const [recording, setRecording] = useState<boolean>(false);
-  const [useCamera, setUseCamera] = useState<boolean>(false);
+type Props = ViewProps & {
+  inputBlock: Block | null;
+  setBlockPhotosOnConfirmAsync: React.Dispatch<React.SetStateAction<((newBlockId: string) => Promise<void>) | null>>;
+};
 
-  if (!permission) {
-    // Camera permissions are still loading.
-    return <View />;
-  }
+export function CameraComponent({ inputBlock, setBlockPhotosOnConfirmAsync, ...otherProps }: Props) {
+  const { userId } = useAuth()
+  const [allImageInfos, setAllImageInfos] = useState<ImageInfo[]>([]);
 
-  if (!permission.granted) {
-    // Camera permissions are not granted yet.
-    return (
-      <View style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        padding: 10,
-      }}>
-        <Text style={{ alignItems: 'center' }}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
-      </View>
-    );
-  }
+  const blockPhotosOnConfirmAsync = async (newBlockId: string) => {
+    // The queue will:
+    // 1. Save file locally immediately
+    // 2. Create attachment record with state QUEUED_UPLOAD
+    // 3. Update user record in same transaction
+    // 4. Automatically upload file in background
+    // 5. Update state to SYNCED when complete
+    console.log('blockPhotosOnConfirmAsync running');
 
-  const takePicture = async () => {
-    const photo = await ref.current?.takePictureAsync();
-    if (photo?.uri) {
-      setUri(photo.uri);
+    for (const imageInfo of allImageInfos.filter((imageInfo) => imageInfo.isNew && imageInfo.deletedAt === null)) {
+      const imageUri = imageInfo.uri;
+      console.log(`uploading imageUri: ${imageUri}`);
+      const imageFile = new File(imageUri);
+      const arrayBuffer = await imageFile.arrayBuffer();
+      await photoAttachmentQueue.saveFile({
+        data: arrayBuffer,
+        fileExtension: 'jpg',
+        mediaType: 'image/jpeg',
+        id: imageInfo.id,
+        // updateHook runs in same transaction, ensuring atomicity
+        updateHook: async (tx, attachment) => {
+          await tx.execute(
+            `
+            INSERT INTO ${BLOCK_PHOTOS_TABLE} (
+              id, block_id, uri, created_by
+            ) VALUES (?, ?, ?, ?)
+            `,
+            [attachment.id, newBlockId, '', userId]
+          );
+        }
+      });
+    }
+
+    for (const imageInfo of allImageInfos.filter((imageInfo) => !imageInfo.isNew && imageInfo.deletedAt !== null)) {
+      console.log(`deleting photo: ${imageInfo.id}`);
+      await photoAttachmentQueue.deleteFile({
+        id: imageInfo.id,
+
+        // updateHook ensures atomic deletion
+        updateHook: async (tx, attachment) => {
+          await tx.execute(
+            'DELETE FROM block_photos WHERE id = ?',
+            [attachment.id]
+          );
+        }
+      });
     }
   };
 
-  const recordVideo = async () => {
-    if (recording) {
-      setRecording(false);
-      ref.current?.stopRecording();
+  const takePhoto = async () => {
+    const response = await ImagePicker.requestCameraPermissionsAsync();
+    if (!response.granted) {
+      Alert.alert("Permission Required", "You must allow camera access to take photos.");
       return;
     }
-    setRecording(true);
-    const video = await ref.current?.recordAsync();
-    console.log({ video });
+
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.1 });
+    if (result.canceled || result.assets.length === 0) {
+      return;
+    }
+
+    const rawImage = result.assets[0];
+    console.log(rawImage);
+    setAllImageInfos([...allImageInfos, { id: randomUUID(), uri: rawImage.uri, isNew: true, deletedAt: null }]);
   };
 
-  const renderPicture = (uri: string) => {
-    return (
-      <>
-        <Pressable
-          onLongPress={() => setUri(null)}
-          style={({ pressed }) => [
-            { flexDirection: 'row' },
-            pressed && { transform: [{ scale: 1.02 }], backgroundColor: 'white' },
-          ]}>
-          <Image
-            source={{ uri }}
-            contentFit="contain"
-            style={{ width: '100%', aspectRatio: 1 }}
-          />
-        </Pressable>
-      </>
-    );
+  const deletePhoto = (id: string, uri: string) => {
+    console.log(`deleting photo ${id}`);
+    setAllImageInfos(allImageInfos.map((imageInfo: ImageInfo): ImageInfo => (imageInfo.id !== id) ? imageInfo : { ...imageInfo, deletedAt: new Date() }));
   };
 
-  const renderCamera = () => {
-    return (
-      <Modal
-        visible={useCamera}
-        onRequestClose={() => setUseCamera(false)}
-      >
-        <CameraView
-          style={{
-            flex: 1,
-          }}
-          ref={ref}
-          facing='back'
-          mute={false}
-          responsiveOrientationWhenOrientationLocked
-        />
-        <View style={styles.shutterContainer} >
-          <Pressable onPress={takePicture}>
-            {({ pressed }) => (
-              <View
-                style={[
-                  styles.shutterBtn,
-                  {
-                    opacity: pressed ? 0.5 : 1,
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.shutterBtnInner,
-                  ]}
-                />
-              </View>
-            )}
-          </Pressable>
-        </View>
-        <View style={{ position: 'absolute', bottom: 53, left: 20 }}>
-          <TouchableOpacity onPress={() => setUseCamera(false)}>
-            <MaterialIcons
-              name='keyboard-return'
-              size={50}
-              color='white'
-            />
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    );
-  };
 
-  if (uri) {
-    return (
-      // <View style={styles.container}>
-      renderPicture(uri)
-      // {/* </View> */}
-    );
-  }
 
-  if (!useCamera) {
-    return (
-      <TouchableOpacity
-        style={{
-          backgroundColor: 'transparent',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: 36,
-          borderWidth: 1,
-          borderColor: 'gray',
-        }}
-        onPress={() => setUseCamera(true)}>
-        <MaterialIcons
-          name='camera-alt'
-          color='black'
-          size={30}
-        />
-      </TouchableOpacity>
-      // <Button title='Use Camera' onPress={() => setUseCamera(true)} />
-    );
-  }
+  useEffect(() => {
+    const downloadPhotosAsync = async () => {
+      console.log('downloadPhotoAsync running');
+      if (inputBlock === null) {
+        return;
+      }
+      const allBlockPhotoInfos = await fetchAllBlockPhotoUrlsByBlockId(inputBlock.id);
+      console.log(`allBlockPhotoInfos.length: ${allBlockPhotoInfos.length}`);
+      setAllImageInfos(allBlockPhotoInfos.map((info) => ({ id: info.id, uri: info.localUri, isNew: false, deletedAt: null })));
+    };
+    downloadPhotosAsync();
+  }, [inputBlock?.id]);
 
-  return renderCamera();
+  useEffect(() => {
+    setBlockPhotosOnConfirmAsync(() => blockPhotosOnConfirmAsync);
+  }, [allImageInfos, blockPhotosOnConfirmAsync, setBlockPhotosOnConfirmAsync]);
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center' }}>
+      {allImageInfos.filter((imageInfo: ImageInfo) => imageInfo.deletedAt === null).map((imageInfo: ImageInfo) => {
+        return <BlockPhoto key={imageInfo.id} id={imageInfo.id} uri={imageInfo.uri} deletePhoto={deletePhoto} />;
+      })}
+      <Button title='Use Camera' onPress={takePhoto} />
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cameraContainer: StyleSheet.absoluteFillObject,
-  camera: StyleSheet.absoluteFillObject,
-  shutterContainer: {
-    position: "absolute",
-    bottom: 44,
-    left: 0,
-    width: "100%",
-    alignItems: "center",
-  },
-  shutterBtn: {
-    backgroundColor: "transparent",
-    borderWidth: 5,
-    borderColor: "white",
-    width: 85,
-    height: 85,
-    borderRadius: 45,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  shutterBtnInner: {
-    width: 70,
-    height: 70,
-    borderRadius: 50,
-    backgroundColor: 'white',
-  },
-});

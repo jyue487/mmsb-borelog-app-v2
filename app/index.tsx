@@ -14,7 +14,7 @@ import { useAuth } from '@/context/AuthContextProvider';
 import { supabase } from '@/db/supabase';
 import { powersync, setupPowerSync } from '@/powersync/system';
 import LoadingScreen from './loading';
-import CameraComponent from "./camera";
+import { photoAttachmentQueue } from "@/storage/SupabaseRemoteStorageAdapter";
 
 export default function ProjectListScreen() {
   const { isSignIn } = useAuth();
@@ -34,6 +34,7 @@ export default function ProjectListScreen() {
         await powersync.waitForFirstSync();
         setIsPowersyncReady(true);
       }
+      await photoAttachmentQueue.startSync();
       await fetchAllProjects();
     };
 
@@ -70,11 +71,11 @@ export default function ProjectListScreen() {
       setProjects((prevProjects: Project[]) =>
         prevProjects.map((p: Project) =>
           (p.id === editProjectParams.id)
-          ? { 
-            ...p,
-            ...editProjectParams
-          } 
-          : p
+            ? {
+              ...p,
+              ...editProjectParams
+            }
+            : p
         )
       );
     } catch (err) {
@@ -102,24 +103,24 @@ export default function ProjectListScreen() {
   const renderFooter = () => {
     return (
       <View style={{ gap: 20 }}>
-      {
-        !isAddButtonPressed && (
-          <Button
-            title='Add Project'
-            onPress={() => {
-              setIsAddButtonPressed(true);
-            }}
-          />
-        )
-      }
-      {
-        isAddButtonPressed && (
-          <AddProjectInputForm 
-            addProject={addProject} 
-            setIsAddButtonPressed={setIsAddButtonPressed}
-          />
-        )
-      }
+        {
+          !isAddButtonPressed && (
+            <Button
+              title='Add Project'
+              onPress={() => {
+                setIsAddButtonPressed(true);
+              }}
+            />
+          )
+        }
+        {
+          isAddButtonPressed && (
+            <AddProjectInputForm
+              addProject={addProject}
+              setIsAddButtonPressed={setIsAddButtonPressed}
+            />
+          )
+        }
       </View>
     );
   };
@@ -132,7 +133,7 @@ export default function ProjectListScreen() {
   // return <CameraComponent />;
 
   return (
-    <KeyboardAvoidingView behavior='height' style={styles.container}>
+    <>
       <Stack.Screen
         options={{
           title: 'MMSB Project List',
@@ -146,17 +147,19 @@ export default function ProjectListScreen() {
           ),
         }}
       />
-      <FlatList
-        data={projects}
-        keyExtractor={(project: Project) => project.id.toString()}
-        renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        // ListFooterComponent={renderFooter()}
-        contentContainerStyle={{ paddingBottom: 500 }}
-        style={{ flexGrow: 0, width: '100%' }}
-      />
-    </KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior='height' style={styles.container}>
+        <FlatList
+          data={projects}
+          keyExtractor={(project: Project) => project.id.toString()}
+          renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          // ListFooterComponent={renderFooter()}
+          contentContainerStyle={{ paddingBottom: 500 }}
+          style={{ flexGrow: 0, width: '100%' }}
+        />
+      </KeyboardAvoidingView>
+    </>
   );
 }
 

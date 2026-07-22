@@ -110,30 +110,32 @@ export default function BoreholeScreen() {
 
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}>
-        <Stack.Screen
-          options={{
-            title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-          }}
-        />
-        <FlatList
-          data={blocks}
-          keyExtractor={(block: Block) => block.id.toString()}
-          renderItem={({ item }) => <BlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          ListFooterComponent={renderFooter}
-          contentContainerStyle={{ paddingBottom: 500 }}
-          style={{ width: '100%', borderTopWidth: 1 }}
-        />
-      </KeyboardAvoidingView>
-    </GestureHandlerRootView>
+    <>
+      <Stack.Screen
+        options={{
+          title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}>
+          <FlatList
+            data={blocks}
+            keyExtractor={(block: Block) => block.id.toString()}
+            renderItem={({ item }) => <BlockComponent block={item} blocks={blocks} setBlocks={setBlocks} />}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            ListFooterComponent={renderFooter}
+            contentContainerStyle={{ paddingBottom: 500 }}
+            style={{ width: '100%', borderTopWidth: 1 }}
+          />
+        </KeyboardAvoidingView>
+      </GestureHandlerRootView>
+    </>
   );
 }
 

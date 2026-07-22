@@ -91,6 +91,7 @@ export class Connector implements PowerSyncBackendConnector {
       await transaction.complete();
     } catch (error) {
       console.error('PowerSync upload failed:', error);
+      // alert(`PowerSync upload failed: ${error}`);
 
       // Important:
       // Do NOT call transaction.complete() if upload failed.

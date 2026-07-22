@@ -1,8 +1,10 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { AttachmentRecord, RemoteStorageAdapter } from '@powersync/react-native';
+import { AttachmentQueue, AttachmentRecord, RemoteStorageAdapter, WatchedAttachmentItem } from '@powersync/react-native';
 import { ExpoFileSystemStorageAdapter } from '@powersync/attachments-storage-react-native';
 
 import { supabase } from '@/db/supabase';
+import { logger, powersync } from '@/powersync/system';
+import { BLOCK_PHOTOS_TABLE } from '@/powersync/AppSchema';
 
 export interface SupabaseRemoteStorageAdapterOptions {
   client: SupabaseClient;
@@ -17,6 +19,7 @@ export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
   constructor(private options: SupabaseRemoteStorageAdapterOptions) { }
 
   async uploadFile(fileData: ArrayBuffer, attachment: AttachmentRecord): Promise<void> {
+    console.log(`SupabaseRemoteStorageAdapter.uploadFile running`);
     const mediaType = attachment.mediaType ?? 'application/octet-stream';
 
     const { error } = await this.options.client.storage
@@ -24,14 +27,17 @@ export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
       .upload(attachment.filename, fileData, { contentType: mediaType });
 
     if (error) {
+      console.log(`SupabaseRemoteStorageAdapter.uploadFile error: ${error}`);
       throw error;
     }
   }
 
   async downloadFile(attachment: AttachmentRecord): Promise<ArrayBuffer> {
+    console.log(`SupabaseRemoteStorageAdapter.downloadFile running`);
     const { data, error } = await this.options.client.storage.from(this.options.bucket).download(attachment.filename);
 
     if (error) {
+      console.log(`SupabaseRemoteStorageAdapter.downloadFile error: ${error}`);
       throw error;
     }
 
@@ -46,6 +52,7 @@ export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
   }
 
   async deleteFile(attachment: AttachmentRecord): Promise<void> {
+    console.log(`SupabaseRemoteStorageAdapter.deleteFile running`);
     const { error } = await this.options.client.storage.from(this.options.bucket).remove([attachment.filename]);
 
     if (error) {
@@ -55,8 +62,49 @@ export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
   }
 }
 
-// const localStorage = new IndexDBFileSystemStorageAdapter();
+const localStorage = new ExpoFileSystemStorageAdapter();
 const remoteStorage = new SupabaseRemoteStorageAdapter({
   client: supabase,
-  bucket: 'Testing'
+  bucket: 'Testing',
+});
+export const photoAttachmentQueue = new AttachmentQueue({
+  db: powersync,
+  localStorage: localStorage,
+  remoteStorage: remoteStorage,
+  // Determine what attachments the queue should handle
+  watchAttachments: async (onUpdate, signal) => {
+    const watcher = powersync.watch(
+      `SELECT id FROM ${BLOCK_PHOTOS_TABLE}`,
+      [],
+      {
+        signal
+      }
+    );
+
+    for await (const result of watcher) {
+      const attachments: WatchedAttachmentItem[] = (result.rows?._array ?? []).map((row: any) => ({
+        id: row.id,
+        fileExtension: 'jpg'
+      }));
+      await onUpdate(attachments);
+    }
+  },
+  errorHandler: {
+    onDownloadError: async (attachment: AttachmentRecord, error: Error) => {
+      if (error.toString() === 'StorageApiError: Object not found') {
+        return false; // Don't retry
+      }
+      return true; // Retry
+    },
+    onUploadError: async (attachment: AttachmentRecord, error: Error) => {
+      if (error.toString() === 'StorageApiError: The resource already exists') {
+        return false; // Don't retry
+      }
+      return true; // Retry uploads by default
+    },
+    onDeleteError: async (attachment: AttachmentRecord, error: Error) => {
+      return true; // Retry deletes by default
+    }
+  },
+  logger: logger,
 });

@@ -1,8 +1,6 @@
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
 import { BaseBlock, Block, ASPHALT_BLOCK_TYPE_ID } from "@/interfaces/Block";
-import { ColourProperties } from "@/interfaces/ColourProperties";
 import { AsphaltBlock } from "@/interfaces/AsphaltBlock";
-import { SoilProperties } from "@/interfaces/SoilProperties";
 import { throwError } from "@/utils/error/throwError";
 import { checkAndReturnDayWorkStatus } from "./checkAndReturnDayWorkStatus";
 import { randomUUID } from "expo-crypto";

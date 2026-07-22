@@ -1,5 +1,12 @@
 import { AttachmentTable, column, Schema, Table } from '@powersync/react-native';
 
+export const PROJECTS_TABLE = 'projects' as const;
+export const BOREHOLES_TABLE = 'boreholes' as const;
+export const BOREHOLE_TO_USER_TABLE = 'borehole_to_user' as const;
+export const BLOCK_TYPES_TABLE = 'block_types' as const;
+export const BLOCKS_TABLE = 'blocks' as const;
+export const BLOCK_PHOTOS_TABLE = 'block_photos' as const;
+
 const projects = new Table(
   {
     // id column (text) is automatically included
@@ -88,12 +95,28 @@ const blocks = new Table(
   { indexes: {} }
 );
 
+const block_photos = new Table(
+  {
+    // id column (text) is automatically included
+    block_id: column.text,
+    uri: column.text,
+    created_at: column.text,
+    created_by: column.text,
+    updated_at: column.text,
+    updated_by: column.text,
+    deleted_at: column.text,
+    deleted_by: column.text
+  },
+  { indexes: {} }
+);
+
 export const AppSchema = new Schema({
   projects,
   boreholes,
   borehole_to_user,
   block_types,
   blocks,
+  block_photos,
   attachments: new AttachmentTable()
 });
 

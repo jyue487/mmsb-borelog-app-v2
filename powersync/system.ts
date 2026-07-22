@@ -2,6 +2,7 @@ import { PowerSyncDatabase, createBaseLogger } from '@powersync/react-native';
 import { OPSqliteOpenFactory } from '@powersync/op-sqlite'; // Add this import
 import { AppSchema } from './AppSchema';
 import { Connector } from './Connector';
+import { photoAttachmentQueue } from '@/storage/SupabaseRemoteStorageAdapter';
 
 // Create the factory
 const opSqlite = new OPSqliteOpenFactory({

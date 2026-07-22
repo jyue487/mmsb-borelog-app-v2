@@ -28,7 +28,7 @@ export default function SignInScreen() {
     }
 
     await powersync.disconnectAndClear();
-    await setupPowerSync();
+    // await setupPowerSync();
     setLoading(false);
   }
 
