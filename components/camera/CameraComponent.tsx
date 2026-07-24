@@ -114,7 +114,7 @@ export function CameraComponent({ inputBlock, setBlockPhotosOnConfirmAsync, ...o
 
   useEffect(() => {
     setBlockPhotosOnConfirmAsync(() => blockPhotosOnConfirmAsync);
-  }, [allImageInfos, blockPhotosOnConfirmAsync, setBlockPhotosOnConfirmAsync]);
+  }, [allImageInfos]);
 
   return (
     <View style={{ flex: 1, alignItems: 'center' }}>
