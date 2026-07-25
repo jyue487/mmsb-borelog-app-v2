@@ -1,11 +1,9 @@
 import { Pressable, Text, View, type ViewProps } from "react-native";
 
-import { EditLugeonTestBlockDetailsInputForm } from "@/components/blockDetailsInputForms/requiredInsituTests/lugeon/EditLugeonTestBlockDetailsInputForm";
 import { styles } from "@/constants/styles";
 import { LUGEON_TEST_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { LugeonTestBlock } from '@/interfaces/LugeonTestBlock';
-import { useState } from "react";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type LugeonTestBlockProps = ViewProps & {

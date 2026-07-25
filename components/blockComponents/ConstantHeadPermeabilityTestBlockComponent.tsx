@@ -4,7 +4,6 @@ import { styles } from "@/constants/styles";
 import { CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { ConstantHeadPermeabilityTestBlock } from '@/interfaces/ConstantHeadPermeabilityTestBlock';
-import { useState } from "react";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type ConstantHeadPermeabilityTestBlockProps = ViewProps & {

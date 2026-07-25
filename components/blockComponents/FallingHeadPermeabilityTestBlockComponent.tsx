@@ -4,7 +4,6 @@ import { styles } from "@/constants/styles";
 import { FALLING_HEAD_PERMEABILITY_TEST_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { FallingHeadPermeabilityTestBlock } from '@/interfaces/FallingHeadPermeabilityTestBlock';
-import { useState } from "react";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type FallingHeadPermeabilityTestBlockProps = ViewProps & {

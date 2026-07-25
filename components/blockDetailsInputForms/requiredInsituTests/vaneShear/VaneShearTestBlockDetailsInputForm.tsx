@@ -1,15 +1,11 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
-import { BaseBlock, Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { createDefaultVaneShearTestBlock, VaneShearTestBlock } from "@/interfaces/VaneShearTestBlock";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
-import { checkAndReturnDayWorkStatus } from "@/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
 import { useEffect, useState } from "react";
-import { Button, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { checkAndReturnVaneShearTestBlock } from "@/utils/block/checkFunctions/checkAndReturnVaneShearTestBlock";
-import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
 export function VaneShearTestBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {

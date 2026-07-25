@@ -3,7 +3,6 @@ import { Pressable, Text, View, type ViewProps } from "react-native";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { EndOfBoreholeBlock } from '@/interfaces/EndOfBoreholeBlock';
-import { useState } from "react";
 import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE } from "@/constants/endOfBorehole";
 import { getDateTime } from "@/utils/datetime";
 

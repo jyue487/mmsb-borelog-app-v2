@@ -12,6 +12,7 @@ export function deserializeVaneShearTestBlock(json: string): BaseBlock & VaneShe
         id: parsed.id,
         boreholeId: parsed.boreholeId,
         blockTypeId: parsed.blockTypeId,
+        symbol: parsed.symbol,
         vaneShearTestIndex: parsed.vaneShearTestIndex,
         dayWorkStatus: deserializeDayWorkStatus(parsed.dayWorkStatus),
         topDepthInMetres: parsed.topDepthInMetres,

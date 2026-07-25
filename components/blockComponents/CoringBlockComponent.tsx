@@ -4,7 +4,6 @@ import { styles } from "@/constants/styles";
 import { CORING_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { CoringBlock } from '@/interfaces/CoringBlock';
-import { useState } from "react";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CoringBlockProps = ViewProps & {

@@ -1,7 +1,6 @@
-import { Platform } from 'react-native';
 import { Block } from '@/interfaces/Block';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { Borehole } from '@/interfaces/Borehole';
 import { Project } from '@/interfaces/Project';

@@ -1,15 +1,11 @@
 import { DayWorkStatusInputQuestions } from "@/components/inputQuestions/DayWorkStatusInputQuestions";
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
-import { BaseBlock, Block, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { createDefaultPressuremeterTestBlock, PressuremeterTestBlock } from "@/interfaces/PressuremeterTestBlock";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
-import { checkAndReturnDayWorkStatus } from "@/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
 import { useEffect, useState } from "react";
-import { Button, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { checkAndReturnPressuremeterTestBlock } from "@/utils/block/checkFunctions/checkAndReturnPressuremeterTestBlock";
-import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
 export function PressuremeterTestBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {

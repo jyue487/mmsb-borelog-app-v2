@@ -3,13 +3,10 @@ import { Button, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/components/inputQuestions/DayWorkStatusInputQuestions';
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
 import { BaseBlock, Block, CUSTOM_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { createDefaultCustomBlock, CustomBlock } from "@/interfaces/CustomBlock";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
 import { checkAndReturnCustomBlock } from "@/utils/block/checkFunctions/checkAndReturnCustomBlock";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
-import { isNonNegative } from "@/utils/numbers";
 import { depthInMetresToString } from "@/utils/depth";
 
 export function CustomBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {

@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "react-native";
 
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, CORING_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { ColourProperties } from "@/interfaces/ColourProperties";
 import { CoringBlock, createDefaultCoringBlock } from "@/interfaces/CoringBlock";
 import { RockProperties } from "@/interfaces/RockProperties";
-import { addBlockAsync } from "@/utils/block/addBlockFunctions/addBlockAsync";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
 import { checkAndReturnCoringBlock } from "@/utils/block/checkFunctions/checkAndReturnCoringBlock";
 import { isNonNegative, roundToDecimalPoint } from "@/utils/numbers";
 import { CoringBlockInputQuestions } from "../../../inputQuestions/CoringBlockInputQuestions";
-import { BlockDetailsInputFormProps, SpecificBlockDetailsInputFormProps } from "../../BlockDetailsInputForm";
+import { SpecificBlockDetailsInputFormProps } from "../../BlockDetailsInputForm";
 import { depthInMetresToString } from "@/utils/depth";
 
 export function CoringBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {

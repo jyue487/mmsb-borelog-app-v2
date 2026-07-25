@@ -1,6 +1,6 @@
 import { Block } from '@/interfaces/Block';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@/constants/textSize';
 import { Borehole } from '@/interfaces/Borehole';

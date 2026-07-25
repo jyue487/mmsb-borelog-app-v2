@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Button, View, type ViewProps } from "react-native";
 
 import { CavityBlockInputQuestions } from "@/components/inputQuestions/CavityBlockInputQuestions";
 import { DayWorkStatus } from "@/constants/DayWorkStatus";
-import { styles } from "@/constants/styles";
-import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
+import { BaseBlock, CAVITY_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { CavityBlock, createDefaultCavityBlock } from "@/interfaces/CavityBlock";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
 import { checkAndReturnCavityBlock } from "@/utils/block/checkFunctions/checkAndReturnCavityBlock";
-import { isNonNegative, roundToDecimalPoint } from "@/utils/numbers";
 import { SpecificBlockDetailsInputFormProps } from "../../BlockDetailsInputForm";
 import { depthInMetresToString } from "@/utils/depth";
 

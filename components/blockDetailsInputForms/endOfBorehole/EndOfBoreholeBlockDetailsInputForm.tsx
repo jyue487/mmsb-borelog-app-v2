@@ -1,11 +1,8 @@
 import { EndOfBoreholeInputQuestions } from "@/components/inputQuestions/EndOfBoreholeInputQuestions";
-import { styles } from "@/constants/styles";
 import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/interfaces/Block";
 import { createDefaultEndOfBoreholeBlock, EndOfBoreholeBlock } from "@/interfaces/EndOfBoreholeBlock";
-import { editBlockAsync } from "@/utils/block/editBlockFunctions/editBlockAsync";
 import { checkAndReturnEndOfBoreholeBlock } from "@/utils/block/checkFunctions/checkAndReturnEndOfBoreholeBlock";
 import { useEffect, useState } from "react";
-import { Button, View, ViewProps } from "react-native";
 import { SpecificBlockDetailsInputFormProps } from "@/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { endOfBoreholeOtherInstallationsType } from "@/constants/endOfBorehole";
 import { waterLevelInMetresToString } from "@/utils/waterLevel";

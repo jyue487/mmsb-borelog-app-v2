@@ -4,8 +4,6 @@ import { styles } from "@/constants/styles";
 import { PS_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { PsBlock } from '@/interfaces/PsBlock';
-import { useState } from "react";
-import { EditPsBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/ps/EditPsBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type PsBlockProps = ViewProps & {

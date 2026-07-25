@@ -3,8 +3,6 @@ import { Pressable, Text, View, type ViewProps } from "react-native";
 import { styles } from "@/constants/styles";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { CustomBlock } from '@/interfaces/CustomBlock';
-import { useState } from "react";
-import { EditCustomBlockDetailsInputForm } from "../blockDetailsInputForms/others/custom/EditCustomBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CustomBlockProps = ViewProps & {

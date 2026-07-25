@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@op-engineering/op-sqlite": "^15.2.14",
@@ -63,7 +64,14 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "expo-module-scripts": "^4.1.7",
+    "turbo": "^2.10.6",
     "typescript": "~5.9.2"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "11.17.0"
+    }
   },
   "private": true
 }

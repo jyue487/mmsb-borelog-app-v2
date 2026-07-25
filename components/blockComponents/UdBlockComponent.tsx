@@ -4,8 +4,6 @@ import { styles } from "@/constants/styles";
 import { UD_SYMBOL } from "@/constants/symbol";
 import { BaseBlock, Block } from "@/interfaces/Block";
 import { UdBlock } from '@/interfaces/UdBlock';
-import { useState } from "react";
-import { EditUdBlockDetailsInputForm } from "../blockDetailsInputForms/undisturbedSample/ud/EditUdBlockDetailsInputForm";
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type UdBlockProps = ViewProps & {
