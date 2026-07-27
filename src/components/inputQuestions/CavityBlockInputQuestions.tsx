@@ -1,0 +1,87 @@
+import React, { useState } from "react";
+import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
+
+import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
+import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
+import { styles } from "@/src/constants/styles";
+
+type Props = {
+  dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
+  topDepthInMetresStr: string; setTopDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
+  baseDepthInMetresStr: string; setBaseDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
+  description: string; setDescription: React.Dispatch<React.SetStateAction<string>>;
+}
+
+export function CavityBlockInputQuestions({
+  dayWorkStatus, setDayWorkStatus,
+  topDepthInMetresStr, setTopDepthInMetresStr,
+  baseDepthInMetresStr, setBaseDepthInMetresStr,
+  description, setDescription
+}: Props) {
+
+  const [isSelectCavityDescriptionPressed, setIsSelectCavityDescriptionPressed] = useState<boolean>(false);
+
+  return (
+    <>
+    <DayWorkStatusInputQuestions dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus} />
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Text>Top Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+      <TextInput
+        value={topDepthInMetresStr}
+        onChangeText={setTopDepthInMetresStr}
+        style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+        keyboardType='numeric'
+      />
+    </View>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Text>Base Depth(m)<Text style={{ color: 'red' }}>*</Text>: </Text>
+      <TextInput
+        value={baseDepthInMetresStr}
+        onChangeText={setBaseDepthInMetresStr}
+        style={{ borderWidth: 0.5, alignItems: 'center', padding: 10, flex: 1 }}
+        keyboardType='numeric'
+      />
+    </View>
+    <View style={{ flexDirection: 'row' }}>
+      <Text style={{ paddingVertical: 10 }}>Cavity Description<Text style={{ color: 'red' }}>*</Text>: </Text>
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity 
+          onPress={() => {
+            Keyboard.dismiss();
+            setIsSelectCavityDescriptionPressed(prev => !prev);
+          }}
+          style={{
+            borderWidth: 0.5,
+            alignItems: 'center',
+            padding: 10,
+            width: '100%',
+          }}>
+          <Text>{description}</Text>
+        </TouchableOpacity>
+        {
+          isSelectCavityDescriptionPressed && (
+            <FlatList
+              data={['Void Cavity', 'In-filled Cavity']}
+              keyExtractor={item => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setDescription(item);
+                    setIsSelectCavityDescriptionPressed(false);
+                  }}
+                  style={[styles.listItem]}>
+                  <Text>{item}</Text>
+                </TouchableOpacity>
+              )}
+              nestedScrollEnabled={true}
+              style={{ maxHeight: 500 }}
+            />
+          )
+        }
+      </View>
+    </View>
+    </>
+  );
+}
