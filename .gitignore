@@ -31,12 +31,15 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
-.env*.production
+*.env*
+*.env*.local
+*.env*.production
 
 # typescript
 *.tsbuildinfo
 
+# examples
+*.html
 app-example
 
 # turborepo
