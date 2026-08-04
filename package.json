@@ -1,5 +1,6 @@
 {
   "name": "mmsb-borelog-app",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -10,10 +11,7 @@
     "turbo": "^2.10.6"
   },
   "devEngines": {
-    "packageManager": {
-      "name": "npm",
-      "version": "11.17.0"
-    }
+    
   },
-  "workspaces": ["apps/*"]
+  "workspaces": ["apps/*, packages/*"]
 }
