@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 
 import type { Project } from "@mmsb/core";
 
+import { mapProjectRow, PROJECT_COLUMNS } from "../supabase/projectRow";
 import { supabase } from "../supabase/supabase.server";
 import AddProjectModal from "../components/AddProjectModal";
 
@@ -12,7 +13,6 @@ export default function ProjectListPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function ProjectListPage() {
 
       const { data, error } = await supabase
         .from("projects")
-        .select("id, code, title, location, client, consultant")
+        .select(PROJECT_COLUMNS)
         .order("code");
 
       if (error) {
@@ -32,16 +32,7 @@ export default function ProjectListPage() {
         return;
       }
 
-      setProjects(
-        (data ?? []).map((row) => ({
-          id: row.id,
-          code: row.code,
-          title: row.title,
-          location: row.location,
-          client: row.client,
-          consultant: row.consultant,
-        })),
-      );
+      setProjects((data ?? []).map(mapProjectRow));
 
       setIsLoading(false);
     };
@@ -55,47 +46,21 @@ export default function ProjectListPage() {
     navigate(`/projects/${encodeURIComponent(project.code)}`, { state: project });
   };
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      console.error("Error signing out:", error);
-      setErrorMessage(error.message);
-      setIsLoggingOut(false);
-      return;
-    }
-
-    navigate("/login", { replace: true });
-  };
-
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-slate-50 px-4 py-8 text-slate-950 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-              MMSB Dashboard
-            </p>
+        <header className="mb-8">
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+            MMSB Dashboard
+          </p>
 
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">
-              Projects
-            </h1>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight">
+            Projects
+          </h1>
 
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Select a project to view its boreholes and progress.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => void handleLogout()}
-            disabled={isLoggingOut}
-            className="cursor-pointer inline-flex items-center justify-center rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/50 dark:focus:ring-offset-slate-950"
-          >
-            {isLoggingOut ? "Logging out..." : "Logout"}
-          </button>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Select a project to view its boreholes and progress.
+          </p>
         </header>
 
         {errorMessage && (
@@ -255,6 +220,6 @@ export default function ProjectListPage() {
           );
         }}
       />
-    </main>
+    </div>
   );
 }

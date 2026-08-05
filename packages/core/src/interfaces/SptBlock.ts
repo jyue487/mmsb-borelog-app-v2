@@ -1,4 +1,4 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '@/src/constants/DayWorkStatus';
+import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
 import { BaseBlock, SPT_BLOCK_TYPE_ID } from './Block';
 import { ColourProperties, createDefaultColourProperties } from './ColourProperties';
 import { createDefaultSoilProperties, SoilProperties } from './SoilProperties';

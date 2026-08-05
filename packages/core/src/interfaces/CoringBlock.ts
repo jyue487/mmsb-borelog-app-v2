@@ -1,5 +1,5 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '@/src/constants/DayWorkStatus';
-import { BaseBlock, CORING_BLOCK_TYPE_ID } from '@/src/interfaces/Block';
+import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { BaseBlock, CORING_BLOCK_TYPE_ID } from './Block';
 import { ColourProperties, createDefaultColourProperties } from './ColourProperties';
 import { createDefaultRockProperties, RockProperties } from './RockProperties';
 

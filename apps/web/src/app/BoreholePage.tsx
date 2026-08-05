@@ -1,4 +1,4 @@
-import type { Borehole, Project } from "@mmsb/core";
+import type { Borehole } from "@mmsb/core";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 function useBoreholeState() {

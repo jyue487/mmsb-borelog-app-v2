@@ -1,5 +1,5 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '@/src/constants/DayWorkStatus';
-import { BaseBlock, WASH_BORING_BLOCK_TYPE_ID } from '@/src/interfaces/Block';
+import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { BaseBlock, WASH_BORING_BLOCK_TYPE_ID } from './Block';
 
 export interface WashBoringBlock {
   blockTypeId: typeof WASH_BORING_BLOCK_TYPE_ID;

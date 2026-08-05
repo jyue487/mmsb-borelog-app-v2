@@ -38,8 +38,10 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# examples
-*.html
+# examples (scratch files in apps/mobile — do NOT blanket-ignore *.html,
+# it swallows apps/web/index.html, the Vite entry point)
+apps/mobile/demo*.html
+apps/mobile/header.html
 app-example
 
 # turborepo

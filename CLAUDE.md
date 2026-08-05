@@ -18,10 +18,8 @@ Two clients over one Supabase backend:
 
 pnpm workspace + Turborepo. Node 24, pnpm 11.
 
-**The root turbo scripts (`pnpm build`, `pnpm dev`, `pnpm lint`) currently fail** — turbo aborts with
-`Could not resolve workspace: Missing devEngines.packageManager or legacy packageManager field`
-because root `package.json` has an empty `devEngines: {}`. Adding `"packageManager": "pnpm@11.18.0"`
-fixes it. Until then, run per-package:
+`pnpm build` from the root works and is fully cached (`@mmsb/core` → `web`; `apps/mobile` has no
+build task — it ships via EAS). Per-package:
 
 ```bash
 # mobile (apps/mobile)
@@ -35,6 +33,9 @@ pnpm --filter web dev                  # vite dev server
 pnpm --filter web build                # tsc -b && vite build
 pnpm --filter web lint
 ```
+
+Note the package names are inconsistent: `apps/mobile` (literally, a path), `web`, `@mmsb/core` —
+so the `--filter` argument differs in shape per package.
 
 There are no tests in this repo — no test runner is configured in any package.
 
@@ -161,18 +162,17 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
 
 ## Rough edges to know about
 
-- **`packages/core` does not compile.** Its `interfaces/` and `constants/` are a copy-paste of the
-  mobile tree that still imports `@/src/...` and `react-native`, which don't resolve there. Only
-  `Project.ts` and `Borehole.ts` are exported from `src/index.ts`, and only the web app consumes it.
-  Mobile still uses its own `apps/mobile/src/interfaces/**` — the two copies must be kept in sync by
-  hand. Don't run `tsc` in `packages/core` expecting green.
-- **`apps/web build` is currently red** on two `noUnusedLocals` errors (`BoreholePage.tsx`,
-  `context/AuthContextProvider.tsx`).
-- **`apps/web/index.html` is gitignored** — root `.gitignore` has a blanket `*.html` (intended for
-  the `demo*.html` scratch files in `apps/mobile`). The Vite entry point is therefore not in the
-  repo; a fresh clone won't build until it's restored or the ignore rule is narrowed.
-- `turbo.json`'s `build.outputs` is still the Next.js default (`.next/**`); nothing here emits
-  `.next`, so web's `dist` is never cached.
+- **`packages/core` is a copy-paste of the mobile tree, and mobile does not depend on it.**
+  `packages/core/src/interfaces/**` is byte-identical to `apps/mobile/src/interfaces/**` (with one
+  deliberate exception: `Project.terminationCriteria` exists only in core — see the note in
+  `apps/mobile/src/interfaces/Project.ts` for why mobile must not gain it), but
+  `apps/mobile/package.json` has no `@mmsb/core` dependency — so the two copies are kept in sync by
+  hand, and only `Project.ts` and `Borehole.ts` are exported from `src/index.ts`. This is the
+  repo's main structural debt: `Block` is an 18-variant union persisted as a JSON blob with
+  field-by-field deserializers, so drift between the copies shows up as fields silently vanishing
+  on read rather than as a type error. Fixing it means moving the pure domain types into core
+  (they have no react-native dependency), leaving the RN-flavoured constants in mobile, and making
+  `apps/mobile/src/interfaces/**` re-export from `@mmsb/core`.
 - `src/db/db.ts`, `src/db/initDb.ts`, `src/db/runMigrationsAsync.ts` and `src/db/migrations/**` are
   **dead code** from the pre-PowerSync `expo-sqlite` era. Nothing imports them. PowerSync owns the
   schema now (`AppSchema.ts`) — do not add migrations there.

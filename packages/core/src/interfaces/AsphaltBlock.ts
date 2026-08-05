@@ -1,5 +1,5 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '@/src/constants/DayWorkStatus';
-import { ASPHALT_BLOCK_TYPE_ID, BaseBlock } from '@/src/interfaces/Block';
+import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { ASPHALT_BLOCK_TYPE_ID, BaseBlock } from './Block';
 
 export interface AsphaltBlock {
   blockTypeId: typeof ASPHALT_BLOCK_TYPE_ID;

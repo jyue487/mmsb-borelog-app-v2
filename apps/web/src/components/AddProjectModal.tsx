@@ -1,6 +1,8 @@
 import type { Project } from "@mmsb/core";
+import { X } from "lucide-react";
 import { useEffect, useState, type SubmitEvent } from "react";
 
+import { mapProjectRow, PROJECT_COLUMNS } from "../supabase/projectRow";
 import { supabase } from "../supabase/supabase.server";
 
 type AddProjectModalProps = {
@@ -50,7 +52,7 @@ export default function AddProjectModal({
       .insert({
         code: trimmedProjectCode,
       })
-      .select("id, code, title, location, client, consultant")
+      .select(PROJECT_COLUMNS)
       .single();
 
     if (error) {
@@ -66,7 +68,7 @@ export default function AddProjectModal({
       return;
     }
 
-    onProjectAdded(data as Project);
+    onProjectAdded(mapProjectRow(data));
     resetModal();
     setIsSubmitting(false);
     onClose();
@@ -131,16 +133,7 @@ export default function AddProjectModal({
             aria-label="Close modal"
             className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="h-5 w-5"
-              aria-hidden="true"
-            >
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 

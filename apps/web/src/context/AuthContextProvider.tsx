@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router';
 import { supabase } from '../supabase/supabase.server';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -17,7 +16,6 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [isSignIn, setIsSignIn] = useState<boolean>(false);
