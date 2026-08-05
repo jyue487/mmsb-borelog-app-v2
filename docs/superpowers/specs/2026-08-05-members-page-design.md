@@ -60,6 +60,34 @@ so adding a fourth role later is one edit plus a compiler error at the colour ma
 | `apps/web/src/app/main.tsx` | Add `<Route path="/members" element={<MembersPage />} />` inside `AppLayout`. |
 | `apps/web/src/components/AppSidebar.tsx` | Add a `Members` `NavLink` (lucide `Users` icon) between Projects and Settings. |
 
+## Sidebar entry
+
+`AppSidebar` renders a flat `<ul>` of top-level `NavLink`s — currently Projects (with a nested
+project → borehole tree derived from the URL) and Settings. Members becomes a third `<li>`,
+inserted **between** them, so the order reads Projects → Members → Settings: the two content
+sections first, account/config last.
+
+```tsx
+<li>
+  <NavLink to="/members" onClick={onNavigate} className={navLinkClassName}>
+    <Users className="size-4 shrink-0" aria-hidden="true" />
+    Members
+  </NavLink>
+</li>
+```
+
+- Icon: lucide-react `Users`, added to the existing `import { Layers, Settings } from 'lucide-react'`.
+  Sized `size-4 shrink-0` and `aria-hidden` like the others — the link text is the accessible name.
+- Styling: reuses the existing `navLinkClassName` helper, so the active state picks up the same
+  indigo `ACTIVE_CLASSES` and the idle/hover treatment matches Projects and Settings. No new
+  classes.
+- `onClick={onNavigate}` is required: `AppLayout` passes that prop to close the mobile drawer after
+  a tap. Omitting it leaves the drawer open over the new page on small screens.
+- No `end` prop. Projects uses `end` because it has child routes (`/projects/:code`) that should not
+  keep the parent highlighted; Members has no children, so plain prefix matching is correct and
+  `/members` highlights only itself.
+- No nested tree under Members — the page is a single flat list with no drill-down routes.
+
 ## Dummy data
 
 `createDummyMembers(currentUserEmail)` returns roughly five members. The **first entry is the
