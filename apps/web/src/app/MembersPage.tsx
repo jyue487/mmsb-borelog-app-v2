@@ -4,6 +4,7 @@ import type { Member } from '@mmsb/core';
 import { useState } from 'react';
 
 import AddMemberModal from '../components/AddMemberModal';
+import RemoveMemberModal from '../components/RemoveMemberModal';
 import { useAuth } from '../context/AuthContextProvider';
 import { createDummyMembers } from '../data/dummyMembers';
 import {
@@ -43,6 +44,8 @@ export default function MembersPage() {
     sortMembers(createDummyMembers(email)),
   );
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [memberPendingRemoval, setMemberPendingRemoval] =
+    useState<Member | null>(null);
 
   const isCurrentUser = (member: Member) =>
     email !== null && member.email.toLowerCase() === email.toLowerCase();
@@ -163,9 +166,9 @@ export default function MembersPage() {
                             Remove
                           </button>
                         ) : (
-                          // Inert until Task 5 attaches the confirm modal.
                           <button
                             type="button"
+                            onClick={() => setMemberPendingRemoval(member)}
                             className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 dark:text-red-400 dark:hover:bg-red-950/50"
                           >
                             Remove
@@ -189,6 +192,19 @@ export default function MembersPage() {
           setMembers((currentMembers) =>
             sortMembers([...currentMembers, newMember]),
           );
+        }}
+      />
+
+      <RemoveMemberModal
+        member={memberPendingRemoval}
+        onClose={() => setMemberPendingRemoval(null)}
+        onConfirm={(member) => {
+          setMembers((currentMembers) =>
+            currentMembers.filter(
+              (currentMember) => currentMember.id !== member.id,
+            ),
+          );
+          setMemberPendingRemoval(null);
         }}
       />
     </div>
