@@ -1,6 +1,6 @@
 // AppSidebar.tsx
 
-import { Layers, Settings } from 'lucide-react';
+import { Layers, Settings, Users } from 'lucide-react';
 import { NavLink, useMatch } from 'react-router';
 
 import { useAuth } from '../context/AuthContextProvider';
@@ -93,6 +93,13 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
                 </li>
               </ul>
             )}
+          </li>
+
+          <li>
+            <NavLink to="/members" onClick={onNavigate} className={navLinkClassName}>
+              <Users className="size-4 shrink-0" aria-hidden="true" />
+              Members
+            </NavLink>
           </li>
 
           <li>

@@ -6,6 +6,7 @@ import AppLayout from './AppLayout.tsx';
 import LoginPage from './auth/LoginPage.tsx';
 import BoreholePage from './BoreholePage.tsx';
 import './index.css';
+import MembersPage from './MembersPage.tsx';
 import ProjectListPage from './ProjectListPage.tsx';
 import ProjectPage from './ProjectPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Route path="/projects" element={<ProjectListPage />} />
               <Route path="/projects/:projectCode" element={<ProjectPage />} />
               <Route path="/projects/:projectCode/boreholes/:boreholeName" element={<BoreholePage />} />
+              <Route path="/members" element={<MembersPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
