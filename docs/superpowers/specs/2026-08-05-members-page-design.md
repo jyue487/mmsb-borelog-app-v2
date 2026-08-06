@@ -54,6 +54,7 @@ so adding a fourth role later is one edit plus a compiler error at the colour ma
 | `packages/core/src/interfaces/Member.ts` | New. Type + role list above. |
 | `packages/core/src/index.ts` | Add `export * from './interfaces/Member';` |
 | `apps/web/src/data/dummyMembers.ts` | New. `createDummyMembers(currentUserEmail: string \| null): Member[]` |
+| `apps/web/src/data/memberRoles.ts` | New. Role display metadata keyed by `MemberRole`: sort rank, labels, badge classes, dropdown descriptions. Shared by the page and the add modal so the table badge and the dropdown option cannot drift apart. |
 | `apps/web/src/app/MembersPage.tsx` | New. Route component, owns the `members` state. |
 | `apps/web/src/components/AddMemberModal.tsx` | New. |
 | `apps/web/src/components/RemoveMemberModal.tsx` | New. |
