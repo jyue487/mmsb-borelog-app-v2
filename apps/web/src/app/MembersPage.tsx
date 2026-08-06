@@ -10,7 +10,7 @@ import { createDummyMembers } from '../data/dummyMembers';
 import {
   MEMBER_ROLE_BADGE_CLASSES,
   MEMBER_ROLE_LABELS,
-  MEMBER_ROLE_RANK,
+  memberRoleRank,
 } from '../data/memberRoles';
 
 const ADDED_DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', {
@@ -23,8 +23,7 @@ const ADDED_DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', {
 // list is module state and `members` is React state.
 function sortMembers(members: Member[]): Member[] {
   return [...members].sort((a, b) => {
-    const rankDifference =
-      MEMBER_ROLE_RANK[a.role] - MEMBER_ROLE_RANK[b.role];
+    const rankDifference = memberRoleRank(a.role) - memberRoleRank(b.role);
 
     if (rankDifference !== 0) {
       return rankDifference;
@@ -36,19 +35,21 @@ function sortMembers(members: Member[]): Member[] {
 
 export default function MembersPage() {
   // `ProtectedRoute` already blocks rendering until the session resolves, so
-  // `email` is populated on the very first render and the seed can stay a
+  // `userId` is populated on the very first render and the seed can stay a
   // one-shot initialiser — no effect that could clobber members just added.
-  const { email } = useAuth();
+  // `userId` is typed `string | null` because `useAuth()` is shared with
+  // unprotected routes, but `ProtectedRoute` guarantees it here, so `?? ''`
+  // (never actually reached) stands in for a non-null assertion.
+  const { userId, email } = useAuth();
 
   const [members, setMembers] = useState<Member[]>(() =>
-    sortMembers(createDummyMembers(email)),
+    sortMembers(createDummyMembers(userId ?? '', email)),
   );
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [memberPendingRemoval, setMemberPendingRemoval] =
     useState<Member | null>(null);
 
-  const isCurrentUser = (member: Member) =>
-    email !== null && member.email.toLowerCase() === email.toLowerCase();
+  const isCurrentUser = (member: Member) => member.id === userId;
 
   return (
     <div className="min-h-full bg-slate-100 px-4 py-8 text-slate-950 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
@@ -188,7 +189,16 @@ export default function MembersPage() {
         isOpen={isAddMemberOpen}
         onClose={() => setIsAddMemberOpen(false)}
         existingMembers={members}
-        onMemberAdded={(newMember) => {
+        onMemberAdded={(draft) => {
+          // The id and timestamp are minted here, not in the modal, because
+          // this is the line the real Supabase insert replaces — the server
+          // owns both once the dummy data is swapped out.
+          const newMember: Member = {
+            id: crypto.randomUUID(),
+            createdAt: new Date(),
+            ...draft,
+          };
+
           setMembers((currentMembers) =>
             sortMembers([...currentMembers, newMember]),
           );
@@ -199,6 +209,14 @@ export default function MembersPage() {
         member={memberPendingRemoval}
         onClose={() => setMemberPendingRemoval(null)}
         onConfirm={(member) => {
+          // The render-time ternary above is the UI affordance (no Remove
+          // button to click); this is the invariant that must still hold
+          // once a real backend replaces the dummy data and this handler
+          // becomes the delete call.
+          if (isCurrentUser(member)) {
+            return;
+          }
+
           setMembers((currentMembers) =>
             currentMembers.filter(
               (currentMember) => currentMember.id !== member.id,

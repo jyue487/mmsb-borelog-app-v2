@@ -23,7 +23,11 @@ type AddMemberModalProps = {
   isOpen: boolean;
   onClose: () => void;
   existingMembers: Member[];
-  onMemberAdded: (member: Member) => void;
+  onMemberAdded: (draft: {
+    name: string;
+    email: string;
+    role: MemberRole;
+  }) => void;
 };
 
 export default function AddMemberModal({
@@ -82,11 +86,9 @@ export default function AddMemberModal({
     }
 
     onMemberAdded({
-      id: crypto.randomUUID(),
       name: trimmedName,
       email: normalisedEmail,
       role,
-      createdAt: new Date(),
     });
 
     resetModal();

@@ -4,14 +4,14 @@
 // role to MEMBER_ROLE_LIST in @mmsb/core surfaces a compiler error in every
 // map below rather than a silently missing label.
 
-import type { MemberRole } from '@mmsb/core';
+import { MEMBER_ROLE_LIST, type MemberRole } from '@mmsb/core';
 
-// Sort order for the member list: most privileged first.
-export const MEMBER_ROLE_RANK: Record<MemberRole, number> = {
-  admin: 0,
-  supervisor: 1,
-  viewer: 2,
-};
+// Sort order for the member list: most privileged first. Order comes from
+// MEMBER_ROLE_LIST itself, so a role added there is ranked automatically
+// instead of needing a rank assigned by hand here.
+export function memberRoleRank(role: MemberRole): number {
+  return MEMBER_ROLE_LIST.indexOf(role);
+}
 
 export const MEMBER_ROLE_LABELS: Record<MemberRole, string> = {
   admin: 'Admin',

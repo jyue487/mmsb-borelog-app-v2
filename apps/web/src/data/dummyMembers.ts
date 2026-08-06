@@ -38,19 +38,19 @@ const FABRICATED_MEMBERS: Member[] = [
   },
 ];
 
-// Seeding the real signed-in email matters: it makes the "you cannot remove
-// yourself" row render in its disabled state during development, instead of
-// being a branch nobody ever sees.
-export function createDummyMembers(currentUserEmail: string | null): Member[] {
-  if (currentUserEmail === null) {
-    return [...FABRICATED_MEMBERS];
-  }
-
+// Seeding the self row with the real auth user id (rather than a fixed
+// placeholder id) is what lets the self-removal guard key off `id` instead of
+// a nullable email — `userId` is always present by the time this page
+// mounts, whereas `email` can legitimately be null.
+export function createDummyMembers(
+  currentUserId: string,
+  currentUserEmail: string | null,
+): Member[] {
   return [
     {
-      id: 'dummy-member-current-user',
+      id: currentUserId,
       name: 'You',
-      email: currentUserEmail,
+      email: currentUserEmail ?? '—',
       role: 'admin',
       createdAt: new Date('2026-01-05'),
     },
