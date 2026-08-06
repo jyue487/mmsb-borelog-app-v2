@@ -3,6 +3,7 @@
 import type { Member } from '@mmsb/core';
 import { useState } from 'react';
 
+import AddMemberModal from '../components/AddMemberModal';
 import { useAuth } from '../context/AuthContextProvider';
 import { createDummyMembers } from '../data/dummyMembers';
 import {
@@ -38,13 +39,10 @@ export default function MembersPage() {
   // one-shot initialiser — no effect that could clobber members just added.
   const { email } = useAuth();
 
-  // Only the reader is destructured. `setMembers` arrives in Task 4 alongside
-  // the first thing that mutates the list, and the two modal flags arrive with
-  // their modals — `noUnusedLocals` is on, so state with no consumer yet is a
-  // build error, not a warning.
-  const [members] = useState<Member[]>(() =>
+  const [members, setMembers] = useState<Member[]>(() =>
     sortMembers(createDummyMembers(email)),
   );
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   const isCurrentUser = (member: Member) =>
     email !== null && member.email.toLowerCase() === email.toLowerCase();
@@ -74,9 +72,9 @@ export default function MembersPage() {
               </p>
             </div>
 
-            {/* Inert until Task 4 attaches the modal — see the note below. */}
             <button
               type="button"
+              onClick={() => setIsAddMemberOpen(true)}
               className="cursor-pointer inline-flex items-center gap-2 self-start rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 sm:self-auto"
             >
               Add member
@@ -182,6 +180,17 @@ export default function MembersPage() {
           )}
         </section>
       </div>
+
+      <AddMemberModal
+        isOpen={isAddMemberOpen}
+        onClose={() => setIsAddMemberOpen(false)}
+        existingMembers={members}
+        onMemberAdded={(newMember) => {
+          setMembers((currentMembers) =>
+            sortMembers([...currentMembers, newMember]),
+          );
+        }}
+      />
     </div>
   );
 }
