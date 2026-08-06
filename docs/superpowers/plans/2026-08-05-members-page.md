@@ -485,7 +485,7 @@ Expected: PASS (warnings about the not-yet-consumed state are acceptable; errors
 Run: `pnpm --filter web dev`, sign in, then check:
 - The sidebar shows Projects → **Members** → Settings, with the `Users` icon.
 - Clicking Members navigates to `/members` and highlights that entry in indigo — and only that entry.
-- The table lists 5 members: you (Admin, with a "You" chip), Nadia Rahman (Admin), then the supervisors Arjun Pillai and Lim Wei Sheng, then Siti Aminah (Viewer). Admins first, then alphabetical within each role.
+- The table lists 5 members in this exact order: Nadia Rahman (Admin), then your own row (Admin, named "You", with a "You" chip), then the supervisors Arjun Pillai and Lim Wei Sheng, then Siti Aminah (Viewer). Admins first, then alphabetical within each role — and since the seeded self row is literally named "You", it sorts after Nadia among the admins. That is correct behaviour, not a bug: the sort rule is role rank then name, with no special case pinning the signed-in user to the top.
 - Your own row's Remove button is greyed out; hovering it shows "You cannot remove yourself".
 - Narrow the window below `lg`: the hamburger drawer opens, tapping Members navigates **and closes the drawer**.
 
@@ -853,7 +853,7 @@ Run `pnpm --filter web dev` and, on `/members`:
 - Type `not-an-email` — on submit you get "Enter a valid email address."
 - Enter `nadia.rahman@example.com` (any capitalisation) with a valid name — you get "A member with this email already exists."
 - Change the Role dropdown — the helper line under it changes with the selection.
-- Add `Test Person` / `test.person@mmsb.com` / Supervisor — the modal closes and the row appears **between the admins and the viewer**, alphabetically among supervisors (after Arjun Pillai, before Lim Wei Sheng), with today's date in Added and the count incremented.
+- Add `Test Person` / `test.person@mmsb.com` / Supervisor — the modal closes and the row appears **between the admins and the viewer**, last among the supervisors (after Arjun Pillai and Lim Wei Sheng, since `T` follows `L`), with today's date in Added and the count incremented.
 - Reopen the modal — all fields are reset and no errors are showing.
 - Press Escape, and separately click the dark backdrop — both close the modal.
 
