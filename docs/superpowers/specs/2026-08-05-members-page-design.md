@@ -175,9 +175,15 @@ in a dense table row.
 ## Backend seam
 
 Every mutation flows through exactly two handlers in `MembersPage` — the `onMemberAdded` callback
-and the `onConfirm` callback — and all data originates from `createDummyMembers`. Wiring the real
-backend later means replacing those three things; the table, badges, modals, sidebar entry and
-route are untouched.
+and the `onConfirm` callback — and all data originates from `createDummyMembers`. The add modal
+hands up a `{ name, email, role }` draft and the page mints `id` and `createdAt`, so identity is
+created on the line the real Supabase insert will replace, not inside the modal. Wiring the backend
+later means replacing those three things; the table, badges, sidebar entry and route are untouched.
+
+The modals are *nearly* untouched, not entirely: `AddMemberModal` still owes an
+`isSubmitting`/`submitError` lifecycle, and its client-side duplicate-email scan gives way to
+handling Postgres error `23505` the way `AddProjectModal` does. Those are additions to the modal's
+async behaviour, not changes to the seam.
 
 ## Out of scope
 

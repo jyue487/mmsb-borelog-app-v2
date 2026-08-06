@@ -13,6 +13,7 @@
 ## Global Constraints
 
 - **No test runner exists in this repo.** No package defines a `test` script and no framework is installed. This plan does **not** add one — adding Vitest + React Testing Library is a separate decision the user has not made. Every task therefore substitutes a **typecheck + lint + explicit manual browser check** for an automated test cycle. Do not write test files; do not install a test framework.
+- **`pnpm --filter web lint` exits 1 at the baseline.** `apps/web/src/context/AuthContextProvider.tsx:65` has a pre-existing `react-refresh/only-export-components` **error** (the file exports both `useAuth` and `AuthContextProvider`), and `ProjectPage.tsx` and `AddProjectModal.tsx` carry pre-existing `react-hooks/exhaustive-deps` warnings. None of these are this plan's to fix — moving `useAuth` to its own module would ripple through every consumer and is out of scope. So "lint passes" below means **no new errors relative to that baseline**, not exit code 0. Verify by comparing against a `git stash`ed tree if in doubt.
 - **Package filter names are inconsistent.** Use `pnpm --filter web …` for the web app and `pnpm --filter @mmsb/core …` for core. (`apps/mobile` is not touched by this plan.)
 - **`verbatimModuleSyntax: true`** in `apps/web/tsconfig.app.json` — type-only imports MUST use `import type { X }` or inline `type` specifiers, or the build fails.
 - **`noUnusedLocals` and `noUnusedParameters` are on** — an unused import fails `pnpm --filter web build`.
@@ -1072,7 +1073,7 @@ After Task 5, run the full workspace build once to confirm nothing else regresse
 
 These are recorded so the next person does not mistake them for oversights:
 
-- Real Supabase-backed signup and deletion, and a `members` table with a role column.
+- Real Supabase-backed signup and deletion, and a `members` table with a role column. Two traps for whoever does it: (a) `MembersPage` formats `member.createdAt` with `Intl.DateTimeFormat`, which throws `RangeError: Invalid time value` on anything that is not a real `Date` — Supabase returns `created_at` as an ISO **string**, so the row mapper must do `new Date(row.created_at)`; web has no existing date-column mapper to copy, since `supabase/projectRow.ts` has none. (b) `AddMemberModal` still owes an `isSubmitting`/`submitError` lifecycle and needs its client-side duplicate-email scan replaced by handling Postgres error code `23505`, the way `AddProjectModal.tsx` already does.
 - Hiding or disabling the Members tab for non-admins, once the session carries a role.
 - Editing an existing member's role.
 - Password entry, invite emails, and password-reset flows.
