@@ -283,12 +283,13 @@ export default function MembersPage() {
   // one-shot initialiser — no effect that could clobber members just added.
   const { email } = useAuth();
 
-  const [members, setMembers] = useState<Member[]>(() =>
+  // Only the reader is destructured. `setMembers` arrives in Task 4 alongside
+  // the first thing that mutates the list, and the two modal flags arrive with
+  // their modals — `noUnusedLocals` is on, so state with no consumer yet is a
+  // build error, not a warning.
+  const [members] = useState<Member[]>(() =>
     sortMembers(createDummyMembers(email)),
   );
-  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-  const [memberPendingRemoval, setMemberPendingRemoval] =
-    useState<Member | null>(null);
 
   const isCurrentUser = (member: Member) =>
     email !== null && member.email.toLowerCase() === email.toLowerCase();
@@ -318,9 +319,9 @@ export default function MembersPage() {
               </p>
             </div>
 
+            {/* Inert until Task 4 attaches the modal — see the note below. */}
             <button
               type="button"
-              onClick={() => setIsAddMemberOpen(true)}
               className="cursor-pointer inline-flex items-center gap-2 self-start rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 sm:self-auto"
             >
               Add member
@@ -409,9 +410,9 @@ export default function MembersPage() {
                             Remove
                           </button>
                         ) : (
+                          // Inert until Task 5 attaches the confirm modal.
                           <button
                             type="button"
-                            onClick={() => setMemberPendingRemoval(member)}
                             className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 dark:text-red-400 dark:hover:bg-red-950/50"
                           >
                             Remove
@@ -431,7 +432,7 @@ export default function MembersPage() {
 }
 ```
 
-`setMembers`, `isAddMemberOpen` and `memberPendingRemoval` are written but not read in this task. That is fine for `tsc` (`noUnusedLocals` does not flag destructured array elements or state that is set), but if `pnpm --filter web lint` reports unused variables, leave them — Tasks 4 and 5 consume them two steps later. Do not delete them to silence a warning.
+**Why the Add member and Remove buttons have no `onClick` yet.** `noUnusedLocals` is on and eslint sets `@typescript-eslint/no-unused-vars` to `error`, so a `setIsAddMemberOpen` that nothing reads is a **hard build failure** (TS6133), not a warning. Rather than parking dead state behind `void` statements or suppression comments, each piece of state lands in the task that introduces its consumer: Task 4 adds `setMembers` + `isAddMemberOpen` with the add modal, Task 5 adds `memberPendingRemoval` with the confirm modal. The cost is that both buttons are inert for exactly one commit; the benefit is that every task builds and lints green on its own.
 
 - [ ] **Step 2: Register the route**
 
@@ -786,13 +787,42 @@ The `as MemberRole` cast on the `<select>` change handler is the one unavoidable
 
 - [ ] **Step 2: Wire it into the page**
 
-In `apps/web/src/app/MembersPage.tsx`, add the import below the `useState` import:
+Three edits to `apps/web/src/app/MembersPage.tsx`.
+
+**(a)** Add the import below the `useState` import:
 
 ```tsx
 import AddMemberModal from '../components/AddMemberModal';
 ```
 
-Then render it just before the final `</div>` of the outer page `<div>` (i.e. after `</section>`'s parent `</div>`, matching how `ProjectListPage` renders `AddProjectModal` as the last child of the page root):
+**(b)** Task 3 deliberately destructured only the reader, because unused state is a build error under `noUnusedLocals`. This task introduces both consumers, so widen the declaration and add the open flag. Replace:
+
+```tsx
+  const [members] = useState<Member[]>(() =>
+    sortMembers(createDummyMembers(email)),
+  );
+```
+
+with:
+
+```tsx
+  const [members, setMembers] = useState<Member[]>(() =>
+    sortMembers(createDummyMembers(email)),
+  );
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+```
+
+Delete the Task 3 comment above it that explains the narrow destructuring — it no longer applies. Keep the comment about `ProtectedRoute` and the one-shot initialiser; that one still does.
+
+**(c)** Wire the Add member button, which Task 3 left inert. Remove the `{/* Inert until Task 4 attaches the modal — see the note below. */}` comment above it and add the handler:
+
+```tsx
+            <button
+              type="button"
+              onClick={() => setIsAddMemberOpen(true)}
+```
+
+**(d)** Render the modal just before the final `</div>` of the outer page `<div>` (i.e. after `</section>`'s parent `</div>`, matching how `ProjectListPage` renders `AddProjectModal` as the last child of the page root):
 
 ```tsx
       <AddMemberModal
@@ -843,7 +873,7 @@ git commit -m "Add member modal to the Members page"
 - Modify: `apps/web/src/app/MembersPage.tsx`
 
 **Interfaces:**
-- Consumes: `Member` from `@mmsb/core` (Task 1); `memberPendingRemoval` state from Task 3.
+- Consumes: `Member` from `@mmsb/core` (Task 1). Introduces the `memberPendingRemoval` state itself — Task 3 could not declare it, since unused state fails the build under `noUnusedLocals`.
 - Produces: `RemoveMemberModal` with props `{ member: Member | null; onClose: () => void; onConfirm: (member: Member) => void }`. It renders `null` when `member` is `null`, so the page needs no separate open flag.
 
 - [ ] **Step 1: Create the modal**
@@ -959,13 +989,32 @@ This one is a `<div>`, not a `<form>` — there is no input to submit, and the c
 
 - [ ] **Step 2: Wire it into the page**
 
-In `apps/web/src/app/MembersPage.tsx`, add the import next to the `AddMemberModal` import:
+Three edits to `apps/web/src/app/MembersPage.tsx`.
+
+**(a)** Add the import next to the `AddMemberModal` import:
 
 ```tsx
 import RemoveMemberModal from '../components/RemoveMemberModal';
 ```
 
-and render it immediately after `<AddMemberModal … />`:
+**(b)** Add the state this task consumes, directly below the `isAddMemberOpen` line from Task 4:
+
+```tsx
+  const [memberPendingRemoval, setMemberPendingRemoval] =
+    useState<Member | null>(null);
+```
+
+**(c)** Wire the per-row Remove button, which Task 3 left inert. It sits in the `: (` branch of the `isCurrentUser(member) ? … : …` ternary — the enabled branch, not the disabled one. Remove the `// Inert until Task 5 attaches the confirm modal.` comment above it and add the handler:
+
+```tsx
+                          <button
+                            type="button"
+                            onClick={() => setMemberPendingRemoval(member)}
+```
+
+Leave the disabled self-row button exactly as it is — it must stay handler-free.
+
+**(d)** Render the modal immediately after `<AddMemberModal … />`:
 
 ```tsx
       <RemoveMemberModal
