@@ -5,7 +5,10 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "sb": "pnpm --filter @mmsb/supabase exec supabase --workdir ..",
+    "sb:deploy": "pnpm sb:check && pnpm sb functions deploy invite-member && pnpm sb functions deploy set-member-password && pnpm sb functions deploy remove-member",
+    "sb:check": "pnpm --filter @mmsb/supabase exec deno check --node-modules-dir=none --no-lock functions/invite-member/index.ts functions/set-member-password/index.ts functions/remove-member/index.ts"
   },
   "devDependencies": {
     "turbo": "^2.10.6"

@@ -3,3 +3,7 @@ packages:
   - 'packages/*'
 allowBuilds:
   unrs-resolver: true
+  # Both download a platform binary in a postinstall script. pnpm blocks those by
+  # default, and without these the install "succeeds" with no working binary.
+  supabase: true
+  deno: true
