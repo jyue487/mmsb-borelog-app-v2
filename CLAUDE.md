@@ -13,6 +13,8 @@ Two clients over one Supabase backend:
 - `apps/mobile` — Expo/React Native app used offline in the field. The primary app: data entry + PDF generation.
 - `apps/web` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
 - `packages/core` — shared TypeScript types. Only partially migrated (see Rough edges).
+- `packages/supabase` — the shared backend: Deno edge functions and RLS policy SQL. **Not** at the
+  repo root, which is where the Supabase CLI expects to find it — see the warning below.
 
 ## Commands
 
@@ -45,6 +47,31 @@ profiles, each with a distinct bundle id driven by the `APP_VARIANT` env var in 
 Env vars are gitignored and must be created locally: `apps/mobile/.env.local`
 (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY`), `apps/web/.env`
 (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`).
+
+### Supabase CLI — always go through the package scripts
+
+```bash
+pnpm sb <any supabase command>    # e.g. pnpm sb functions list, pnpm sb login
+pnpm sb:check                     # type-check the edge functions (Deno)
+pnpm sb:deploy                    # check, then deploy both edge functions
+```
+
+`sb` is a root `package.json` script that forwards all arguments, so anything in the Supabase docs
+works with `supabase` swapped for `pnpm sb`. **Never invoke the CLI any other way.** It locates its
+project by looking for a directory named `supabase` inside its working directory; this repo keeps
+that at `packages/supabase`, so every command needs `--workdir ..`, which only the `sb` script
+passes. `pnpm exec supabase` from the root also just fails — the CLI is a devDependency of
+`@mmsb/supabase`, not of the root.
+
+**Running the bare CLI from the repo root fails silently**: it reports success and creates a second,
+empty `supabase/` at the root that then shadows the real one. A stray root `supabase/` directory is
+the symptom — delete it and use a script. See `packages/supabase/README.md`.
+
+The edge functions are Deno and sit outside every `tsconfig.json`, so neither `pnpm build` nor
+`pnpm lint` type-checks them, and `functions deploy` bundles without checking types either — hence
+`sb:check`, which `sb:deploy` runs first and stops on. Its `--node-modules-dir=none --no-lock` flags
+are load-bearing: without them Deno writes a `workspaces` field into the root `package.json` and
+drops a `deno.lock` at the root. See `packages/supabase/README.md`.
 
 ## Architecture
 

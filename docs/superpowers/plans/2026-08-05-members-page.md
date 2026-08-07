@@ -1073,8 +1073,16 @@ After Task 5, run the full workspace build once to confirm nothing else regresse
 
 These are recorded so the next person does not mistake them for oversights:
 
-- Real Supabase-backed signup and deletion, and a `members` table with a role column. Two traps for whoever does it: (a) `MembersPage` formats `member.createdAt` with `Intl.DateTimeFormat`, which throws `RangeError: Invalid time value` on anything that is not a real `Date` — Supabase returns `created_at` as an ISO **string**, so the row mapper must do `new Date(row.created_at)`; web has no existing date-column mapper to copy, since `supabase/projectRow.ts` has none. (b) `AddMemberModal` still owes an `isSubmitting`/`submitError` lifecycle and needs its client-side duplicate-email scan replaced by handling Postgres error code `23505`, the way `AddProjectModal.tsx` already does.
-- Hiding or disabling the Members tab for non-admins, once the session carries a role.
+- ~~Real Supabase-backed signup and deletion, and a `members` table with a role column. Two traps for whoever does it: (a) `MembersPage` formats `member.createdAt` with `Intl.DateTimeFormat`, which throws `RangeError: Invalid time value` on anything that is not a real `Date` — Supabase returns `created_at` as an ISO **string**, so the row mapper must do `new Date(row.created_at)`; web has no existing date-column mapper to copy, since `supabase/projectRow.ts` has none. (b) `AddMemberModal` still owes an `isSubmitting`/`submitError` lifecycle and needs its client-side duplicate-email scan replaced by handling Postgres error code `23505`, the way `AddProjectModal.tsx` already does.~~ **Done 2026-08-06** — backed by the existing `user_to_role` table rather than a new `members` table. See "Backend integration" in the design spec. Both traps are closed: `mapMemberRow` revives the date and `MembersPage` additionally renders `—` for an `Invalid Date`, and `AddMemberModal` has the full async lifecycle. Note the duplicate case surfaces as the edge function's `duplicate` code rather than a raw `23505`, since the insert no longer happens in the browser.
+- Hiding or disabling the Members tab for non-admins. **Partly done 2026-08-06** — `useAuth()` now carries the role and Add/Remove are gated to owner + admin, but the tab itself is still shown to everyone (a read-only "who has access" list is useful to a supervisor). Hiding it entirely is a one-line change in `AppSidebar.tsx`.
 - Editing an existing member's role.
-- Password entry, invite emails, and password-reset flows.
+- ~~Password entry, invite emails, and password-reset flows.~~ **Password entry done 2026-08-06** —
+  supervisors (and only supervisors) are created with a password, because the mobile app signs in
+  with `signInWithPassword` while the dashboard uses an emailed OTP. `RemoveMemberModal` was absorbed
+  into a new `EditMemberModal` holding both the password controls and removal. See "Supervisor
+  passwords" in the design spec. The trap: three separate branches resolve a user id, and the two
+  that skip `createUser` — reviving a removed supervisor, and adopting a pre-existing auth account —
+  must push the password explicitly or it silently never applies. Still out of scope: invite emails,
+  and any self-service password reset. Note passwords can only ever be **replaced**, not shown —
+  Supabase keeps a bcrypt hash, and storing a readable second copy was considered and rejected.
 - Automated tests. There is no test runner in this repo; if one is wanted, adding Vitest + React Testing Library to `apps/web` is its own piece of work, and the validation logic in `AddMemberModal` is the first thing worth covering.
