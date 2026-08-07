@@ -1,0 +1,9 @@
+{
+  "name": "@mmsb/supabase",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "deno": "^2.9.4",
+    "supabase": "^2.111.0"
+  }
+}

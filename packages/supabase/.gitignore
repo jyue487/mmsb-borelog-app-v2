@@ -1,0 +1,7 @@
+# Machine-local CLI state: which project this clone is linked to, plus cached
+# service versions. Written by `pnpm sb link`, different per developer.
+#
+# Normally `supabase init` generates this file. This directory was hand-authored
+# rather than init'd, so it has to exist by hand too.
+.temp/
+.branches/
