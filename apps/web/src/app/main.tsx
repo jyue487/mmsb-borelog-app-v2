@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from "react-router";
-import { AuthContextProvider } from '../context/AuthContextProvider.tsx';
+import { AuthContextProvider } from '../context/auth.tsx';
 import AppLayout from './AppLayout.tsx';
 import LoginPage from './auth/LoginPage.tsx';
 import BoreholePage from './BoreholePage.tsx';

@@ -3,7 +3,7 @@
 import { Layers, Settings, Users } from 'lucide-react';
 import { NavLink, useMatch } from 'react-router';
 
-import { useAuth } from '../context/AuthContextProvider';
+import { useAuth } from '../context/auth';
 
 const ACTIVE_CLASSES =
   'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300';

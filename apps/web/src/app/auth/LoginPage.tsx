@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { useAuth } from "../../context/auth";
 import { supabase } from "../../supabase/supabase.server";
-import { useAuth } from "../../context/AuthContextProvider";
 
 type LoginStep = "email" | "otp";
 

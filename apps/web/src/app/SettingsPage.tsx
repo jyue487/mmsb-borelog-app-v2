@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { useAuth } from '../context/AuthContextProvider';
+import { useAuth } from '../context/auth';
 import { supabase } from '../supabase/supabase.server';
 
 export default function SettingsPage() {
