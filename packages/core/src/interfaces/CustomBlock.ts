@@ -1,5 +1,5 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
-import { BaseBlock, CUSTOM_BLOCK_TYPE_ID } from './Block';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
+import { type BaseBlock, CUSTOM_BLOCK_TYPE_ID } from './Block';
 
 export interface CustomBlock {
   blockTypeId: typeof CUSTOM_BLOCK_TYPE_ID;

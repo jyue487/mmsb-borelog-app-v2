@@ -1,6 +1,6 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
 import { PRESSUREMETER_TEST_SYMBOL } from '../constants/symbol';
-import { BaseBlock, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from './Block';
+import { type BaseBlock, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from './Block';
 
 export interface PressuremeterTestBlock {
     blockTypeId: typeof PRESSUREMETER_TEST_BLOCK_TYPE_ID;

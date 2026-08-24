@@ -1,5 +1,5 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
-import { BaseBlock, CONCRETE_SLAB_BLOCK_TYPE_ID } from './Block';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
+import { type BaseBlock, CONCRETE_SLAB_BLOCK_TYPE_ID } from './Block';
 
 export interface ConcreteSlabBlock {
   blockTypeId: typeof CONCRETE_SLAB_BLOCK_TYPE_ID;

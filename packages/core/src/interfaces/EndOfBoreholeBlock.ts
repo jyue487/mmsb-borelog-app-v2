@@ -1,7 +1,7 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
-import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, endOfBoreholeOtherInstallationsType } from '../constants/endOfBorehole';
-import { WaterLevelInMetres } from '../constants/waterLevel';
-import { BaseBlock, END_OF_BOREHOLE_BLOCK_TYPE_ID } from './Block';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
+import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, type endOfBoreholeOtherInstallationsType } from '../constants/endOfBorehole';
+import type { WaterLevelInMetres } from '../constants/waterLevel';
+import { type BaseBlock, END_OF_BOREHOLE_BLOCK_TYPE_ID } from './Block';
 
 export interface EndOfBoreholeBlock {
   blockTypeId: typeof END_OF_BOREHOLE_BLOCK_TYPE_ID;

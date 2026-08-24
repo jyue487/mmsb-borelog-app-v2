@@ -1,5 +1,5 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
-import { BaseBlock, CAVITY_BLOCK_TYPE_ID } from './Block';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
+import { type BaseBlock, CAVITY_BLOCK_TYPE_ID } from './Block';
 
 export interface CavityBlock {
   blockTypeId: typeof CAVITY_BLOCK_TYPE_ID;

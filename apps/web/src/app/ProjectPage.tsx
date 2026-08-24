@@ -24,11 +24,14 @@ export default function ProjectPage() {
   const location = useLocation();
   const { projectCode } = useParams<{ projectCode: string }>();
 
-  const locationState = location.state as ProjectPageLocationState | null;
+  // Derived on each effect run rather than seeded into state once. `useState`'s
+  // initialiser only runs on mount, so going straight from one project to another
+  // would leave this holding the first: the URL would say B while the page showed
+  // A's details and A's boreholes.
+  const projectFromRouterState =
+    (location.state as ProjectPageLocationState | null)?.project ?? null;
 
-  const [project, setProject] = useState<Project | null>(
-    locationState?.project ?? null,
-  );
+  const [project, setProject] = useState<Project | null>(null);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -51,7 +54,9 @@ export default function ProjectPage() {
       setErrorMessage(null);
 
       try {
-        let currentProject = project;
+        // Router state saves the round trip when arriving from the project list;
+        // a refresh or a pasted link has none, so fall back to the code in the URL.
+        let currentProject = projectFromRouterState;
 
         if (!currentProject) {
           const { data: projectData, error: projectError } = await supabase
@@ -65,9 +70,12 @@ export default function ProjectPage() {
           }
 
           currentProject = mapProjectRow(projectData);
-
-          setProject(currentProject);
         }
+
+        // Written on every run, so switching projects replaces the previous one.
+        // Edits from the modals below still land here and survive, because this
+        // only re-runs when the URL or the router state changes.
+        setProject(currentProject);
 
         const { data: boreholeData, error: boreholeError } = await supabase
           .from('boreholes')
@@ -132,7 +140,7 @@ export default function ProjectPage() {
     };
 
     void fetchProjectAndBoreholes();
-  }, [projectCode]);
+  }, [projectCode, projectFromRouterState]);
 
   const openBorehole = (borehole: Borehole) => {
     if (!project || !projectCode) {

@@ -1,7 +1,7 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
-import { BaseBlock, MZ_BLOCK_TYPE_ID } from './Block';
-import { ColourProperties, createDefaultColourProperties } from './ColourProperties';
-import { createDefaultSoilProperties, SoilProperties } from './SoilProperties';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
+import { type BaseBlock, MZ_BLOCK_TYPE_ID } from './Block';
+import { type ColourProperties, createDefaultColourProperties } from './ColourProperties';
+import { createDefaultSoilProperties, type SoilProperties } from './SoilProperties';
 
 export interface MzBlock {
   blockTypeId: typeof MZ_BLOCK_TYPE_ID;

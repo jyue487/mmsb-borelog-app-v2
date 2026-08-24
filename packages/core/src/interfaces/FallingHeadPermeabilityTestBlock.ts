@@ -1,6 +1,6 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
 import { FALLING_HEAD_PERMEABILITY_TEST_SYMBOL } from '../constants/symbol';
-import { BaseBlock, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from './Block';
+import { type BaseBlock, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from './Block';
 
 export interface FallingHeadPermeabilityTestBlock {
   blockTypeId: typeof FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID;

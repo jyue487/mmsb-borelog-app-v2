@@ -71,9 +71,10 @@ service role key never leaves Supabase's servers and must never enter this repo 
 | `functions/set-member-password/` | Replaces a supervisor's password. |
 | `functions/remove-member/` | Bans the auth account, then soft-deletes the membership row. |
 | `policies/user_to_role.sql` | RLS policies. **Reference SQL, run by hand** in the Supabase SQL editor — there is no migration tooling in this repo. Additive: it uses the project's existing `get_current_user_role()` helper and leaves the existing owner policy alone. Read its STEP 1 header before running it. |
+| `policies/blocks.sql` | **Not SQL to run** — a record of the policies already deployed on `blocks`, which the dashboard (select) and the field app (insert/update/delete) both depend on. Read it before narrowing anything there: tightening `blocks` breaks the *field app's uploads*, not the dashboard. |
 
 All three leave `verify_jwt` at its default (on) and authorize the caller themselves; see the header
-comment in each. Deploying a function does **not** apply `policies/user_to_role.sql` — that is a
+comment in each. Deploying a function does **not** apply anything under `policies/` — those are a
 separate manual step.
 
 ## Why removal bans rather than deletes

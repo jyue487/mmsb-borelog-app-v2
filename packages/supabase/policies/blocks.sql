@@ -1,0 +1,147 @@
+-- Row level security for public.blocks — a record of what is deployed.
+--
+-- This file is NOT SQL to run. It records the policies already in place, because
+-- they are narrower than they look and two things in this repo are broken by
+-- them. Read this before changing anything on this table.
+--
+-- ---------------------------------------------------------------------------
+-- What is deployed (August 2026)
+-- ---------------------------------------------------------------------------
+--
+-- RLS is enabled. There are four policies for `authenticated` — select, insert,
+-- update, delete — and ALL FOUR use the same predicate:
+--
+--   exists (
+--     select 1 from borehole_to_user bu
+--     where bu.borehole_id = blocks.borehole_id
+--       and bu.user_id = auth.uid()
+--   )
+--
+-- So access is not "signed in", it is "assigned to this borehole".
+--
+-- THIS IS DELIBERATE. Projects, boreholes and blocks are all scoped the same
+-- way: a user sees the work assigned to them and nothing else. Do not "fix" it
+-- by widening the predicate — that is the access control, not a bug.
+--
+-- One property to be aware of rather than to change casually: there is no
+-- role-based escape hatch here. Unlike public.user_to_role, which carries an
+-- owner policy granting unrestricted access, an owner or admin on this table has
+-- exactly the same access as a viewer — none, unless they hold a
+-- borehole_to_user row.
+--
+-- ---------------------------------------------------------------------------
+-- Who actually gets a borehole_to_user row
+-- ---------------------------------------------------------------------------
+--
+-- Exactly one piece of code in this repo ever writes that table:
+-- apps/mobile/src/db/borehole/addBoreholeDbAsync.ts:63-68, which assigns a newly
+-- created borehole to the user who created it, in the same transaction.
+--
+-- Nothing else does. There is no UI for assigning a borehole to anyone, and no
+-- edge function that grants an assignment.
+--
+-- Note that the app code does no filtering of its own — ProjectPage selects
+-- boreholes by project_id with no user predicate, and BoreholePage selects
+-- blocks by borehole_id. The scoping is entirely RLS, applied server-side. Do
+-- not read the absence of a `.eq('user_id', …)` in the client as evidence that
+-- a table is unscoped.
+--
+-- ---------------------------------------------------------------------------
+-- Consequence — boreholes created on the dashboard are orphaned
+-- ---------------------------------------------------------------------------
+--
+-- apps/web/src/components/AddBulkBoreholesModal.tsx:181-183 inserts into
+-- `boreholes` only. It creates no borehole_to_user row (and sets no created_by),
+-- unlike the mobile path.
+--
+-- A borehole created from the dashboard therefore has ZERO assignment rows, so
+-- NOBODY satisfies the predicate above for it — not the creator, not an owner,
+-- nobody. And because all four policies share that predicate, that blocks
+-- writes as well as reads:
+--
+--   * apps/mobile READS bypass RLS entirely (PowerSync connects to Postgres
+--     directly with its own credentials), so the field app can still display
+--     such a borehole if PowerSync's sync rules deliver it.
+--   * apps/mobile WRITES do not. The Connector uploads with the user's session
+--     (apps/mobile/src/db/supabase.ts, publishable key), so an insert of a block
+--     against a dashboard-created borehole is denied by RLS. Connector.ts
+--     rethrows rather than calling transaction.complete(), which is what makes
+--     PowerSync retry — forever. The data stays on the device.
+--
+-- That is the failure mode this system can least afford: silent, delayed, and on
+-- the machine holding the only copy of the field data.
+--
+-- TO VERIFY, and it needs verifying rather than assuming: PowerSync's sync rules
+-- are configured in the PowerSync dashboard, not in this repo. If they also key
+-- off borehole_to_user, a dashboard-created borehole never reaches the device at
+-- all — less destructive, but it means the "Add Boreholes" button produces
+-- boreholes no field engineer can use. Either way the bulk-add path is wrong.
+--
+-- MEASURED 2026-08-20: an owner added boreholes from the dashboard and they
+-- survived a hard reload. So `boreholes` does NOT share this predicate — at
+-- minimum it has an owner bypass, of the kind public.user_to_role already
+-- carries. `blocks` has no role branch whatsoever.
+--
+-- The two tables therefore disagree, and the dashboard is incoherent for its most
+-- privileged user: an owner can list every borehole and read none of their logs.
+-- Making `blocks` consistent with `boreholes` is a narrow, targeted addition —
+-- not the broad "any signed-in member" widening warned against below.
+--
+-- The fix is NOT to teach the dashboard to write borehole_to_user rows. The
+-- intended direction is to drop borehole_to_user altogether and scope on a
+-- project_to_user table instead, so a borehole inherits access from its project
+-- and needs no per-row grant — which makes this entire class of bug go away.
+-- See docs/follow-ups.md, "Planned: assignment moves to the project".
+--
+-- Which also means: EVERYTHING IN THIS FILE IS PROVISIONAL. All four predicates
+-- above are expected to be rewritten when that migration happens, together with
+-- the equivalents on projects and boreholes and PowerSync's sync rules. Update
+-- this file in the same pass rather than leaving it describing a schema that no
+-- longer exists.
+--
+-- ---------------------------------------------------------------------------
+-- If you change these policies
+-- ---------------------------------------------------------------------------
+--
+-- Postgres combines permissive policies with OR. So an ADDITIONAL permissive
+-- policy cannot break the field app — but it CAN silently dismantle the access
+-- model, because one over-broad policy is enough to grant everything regardless
+-- of what the other four say. "It only widens" is a statement about breakage,
+-- not about safety.
+--
+-- In particular, do not add a policy of the form
+-- `using (get_current_user_role() is not null)` to make the dashboard show more.
+-- That grants every signed-in member every borehole's log, which is exactly what
+-- the assignment scoping exists to prevent. If the dashboard is not showing
+-- something it should, the missing piece is a borehole_to_user row, not a policy.
+--
+-- Never disable and re-enable RLS on this table as a shortcut. Once RLS is on,
+-- any command with no policy granting it is denied — so re-enabling without the
+-- write policies in place locks out the Connector, with the consequences above.
+--
+-- After any change here, test an actual upload from a device. A dashboard page
+-- load exercises only the select policy.
+
+-- ---------------------------------------------------------------------------
+-- A note on blocks.deleted_at
+-- ---------------------------------------------------------------------------
+--
+-- The column exists on the table and in apps/mobile/src/powersync/AppSchema.ts,
+-- but nothing populates it: deleteBlockByBlockIdDbAsync issues a plain
+-- `DELETE FROM blocks`, and Connector.ts maps that to a real `.delete()`. Blocks
+-- are HARD deleted, unlike members.
+--
+-- BoreholePage still filters `.is('deleted_at', null)` on the way out. Today that
+-- matches every row and changes nothing; it is there so the dashboard is already
+-- correct if blocks ever move to soft deletion, which is the direction every
+-- other table in this schema leans. No policy clause is needed for it.
+
+-- ---------------------------------------------------------------------------
+-- Not covered here
+-- ---------------------------------------------------------------------------
+--
+-- public.block_photos and the Storage bucket behind it. The dashboard does not
+-- render photos yet, so neither is documented. When it does, the table needs a
+-- policy AND the bucket needs its own — they are separate systems, and granting
+-- one does not grant the other. Check whether block_photos carries the same
+-- borehole_to_user predicate; if so it has the same two problems.

@@ -204,3 +204,5 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
   **dead code** from the pre-PowerSync `expo-sqlite` era. Nothing imports them. PowerSync owns the
   schema now (`AppSchema.ts`) — do not add migrations there.
 - `src/utils/excel/shareExcel.ts` and the Excel/PDF buttons in `borehole/[id].tsx` are commented out.
+- Further deferred defects and debt — most of them latent, with the trigger that would make each one
+  bite — are recorded in `docs/follow-ups.md`.

@@ -1,6 +1,6 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
 import { VANE_SHEAR_TEST_SYMBOL } from '../constants/symbol';
-import { BaseBlock, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from './Block';
+import { type BaseBlock, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from './Block';
 
 export interface VaneShearTestBlock {
     blockTypeId: typeof VANE_SHEAR_TEST_BLOCK_TYPE_ID;

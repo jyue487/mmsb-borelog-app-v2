@@ -1,7 +1,7 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
-import { BaseBlock, CORING_BLOCK_TYPE_ID } from './Block';
-import { ColourProperties, createDefaultColourProperties } from './ColourProperties';
-import { createDefaultRockProperties, RockProperties } from './RockProperties';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
+import { type BaseBlock, CORING_BLOCK_TYPE_ID } from './Block';
+import { type ColourProperties, createDefaultColourProperties } from './ColourProperties';
+import { createDefaultRockProperties, type RockProperties } from './RockProperties';
 
 export interface CoringBlock {
 	blockTypeId: typeof CORING_BLOCK_TYPE_ID;

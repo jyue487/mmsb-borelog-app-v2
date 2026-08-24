@@ -1,4 +1,4 @@
-import { DominantSoilType, SecondarySoilType } from "../constants/soil";
+import type { DominantSoilType, SecondarySoilType } from "../constants/soil";
 
 export interface SoilProperties {
   dominantSoilType: DominantSoilType | null;

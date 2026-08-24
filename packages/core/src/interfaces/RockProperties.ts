@@ -1,4 +1,4 @@
-import { RockType } from "../constants/rock";
+import type { RockType } from "../constants/rock";
 
 export interface RockProperties {
   rockType: RockType | null;

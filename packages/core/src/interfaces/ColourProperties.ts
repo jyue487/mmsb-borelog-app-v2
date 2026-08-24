@@ -1,4 +1,4 @@
-import { Colour } from "../constants/colour";
+import type { Colour } from "../constants/colour";
 
 export interface ColourProperties {
 	dominantColour: Colour | null;

@@ -1,4 +1,4 @@
-import { WaterLevelInMetres } from "./waterLevel";
+import type { WaterLevelInMetres } from "./waterLevel";
 
 export const DAY_START_WORK_TYPE = 'Day Start Work' as const;
 export const DAY_CONTINUE_WORK_TYPE = 'Day Continue Work' as const;

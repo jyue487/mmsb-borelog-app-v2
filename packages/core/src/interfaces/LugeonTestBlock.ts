@@ -1,6 +1,6 @@
-import { createDefaultDayWorkStatus, DayWorkStatus } from '../constants/DayWorkStatus';
+import { createDefaultDayWorkStatus, type DayWorkStatus } from '../constants/DayWorkStatus';
 import { LUGEON_TEST_SYMBOL } from '../constants/symbol';
-import { BaseBlock, LUGEON_TEST_BLOCK_TYPE_ID } from './Block';
+import { type BaseBlock, LUGEON_TEST_BLOCK_TYPE_ID } from './Block';
 
 export interface LugeonTestBlock {
     blockTypeId: typeof LUGEON_TEST_BLOCK_TYPE_ID;
