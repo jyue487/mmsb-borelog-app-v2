@@ -9,8 +9,19 @@
 -- packages/supabase/functions/_shared/members.ts.
 --
 -- ---------------------------------------------------------------------------
--- This file is ADDITIVE. Read this before running it.
+-- This file is ADDITIVE with respect to the OWNER policy. Read this first.
 -- ---------------------------------------------------------------------------
+--
+-- It owns two policies and one helper function, drops each by name before
+-- creating it, and is safe to re-run. It does not touch the pre-existing owner
+-- policy described below.
+--
+-- Note it is not purely additive in effect: as of 2026-08-25 the read policy
+-- NARROWED. It used to admit every active member; it now admits supervisors and
+-- above, plus your own row, plus anyone who shares a project with you. Viewers
+-- lost the org-wide member directory, which is the point — see the Members page
+-- gating in apps/web/src/app/RequireRole.tsx and canViewMembers() in
+-- apps/web/src/data/memberRoles.ts.
 --
 -- The project already has RLS enabled on user_to_role, a `security definer`
 -- helper `public.get_current_user_role()` returning the caller's role_id, and
@@ -20,9 +31,10 @@
 --     for all to public
 --     using (get_current_user_role() = 1) with check (get_current_user_role() = 1)
 --
--- None of that is touched here. This file adds only the two policies the
--- Members page needs on top of it, and it defines no helper of its own —
--- get_current_user_role() is the single source of truth for "who is the caller",
+-- None of that is touched here. This file adds the two policies the Members page
+-- needs on top of it, and one helper — public.shares_a_project_with(), for the
+-- People panel's read path. It deliberately defines nothing that answers "who is
+-- the caller": get_current_user_role() is the single source of truth for that,
 -- and a second function doing the same job would be a drift risk rather than a
 -- convenience.
 --
@@ -93,22 +105,86 @@
 alter table public.user_to_role enable row level security;
 
 drop policy if exists "members readable by active members" on public.user_to_role;
+drop policy if exists "members readable by supervisors and above" on public.user_to_role;
 drop policy if exists "owners and admins may soft delete non-owners" on public.user_to_role;
 
--- Read. Without this, only owners can select from user_to_role, and the app is
--- broken for everyone else in a way that does not look like a permissions
--- error: AuthContextProvider's role lookup returns no rows, `role` resolves to
--- null, and ProtectedRoute renders the "access has been removed" panel to a
--- perfectly valid admin. The Members table would also read empty.
+-- Helper for the third clause of the read policy below: does the caller share a
+-- project with this person?
 --
--- Any signed-in user who is themselves an active member sees the whole list. A
--- removed user matches nothing, which is exactly what makes the revocation
--- check work — their own role lookup returns null.
-create policy "members readable by active members"
+-- A function rather than an inline `exists`, and `security definer` for a
+-- specific reason. RLS applies to tables referenced inside a policy expression,
+-- so an inline subquery over project_to_user would see only the assignment rows
+-- the *caller* is allowed to read. It works today, because project_to_user lets
+-- any active member read the whole table — but the day someone narrows that,
+-- this clause silently starts matching nothing, the People panel on the project
+-- page empties for viewers, and nothing anywhere reports an error. A definer
+-- function severs that coupling, exactly as get_current_user_role() already
+-- does for "who is the caller".
+--
+-- (This does not contradict this file's header note about defining nothing that
+-- answers "who is the caller". That is about not duplicating
+-- get_current_user_role(). This answers a different question.)
+--
+-- `set search_path` is not optional: a security definer function without a
+-- pinned search_path is a privilege escalation vector, and Supabase's database
+-- linter flags it.
+create or replace function public.shares_a_project_with(target_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.project_to_user mine
+    join public.project_to_user theirs on theirs.project_id = mine.project_id
+    where mine.user_id = auth.uid()
+      and theirs.user_id = target_user_id
+  )
+$$;
+
+-- Read. Three clauses, OR'd:
+--
+--   1. your own row              — ALWAYS. See the warning below.
+--   2. supervisor and above      — role ids 1, 2, 3. The member directory.
+--   3. someone on your projects  — so the People panel keeps working.
+--
+-- Without ANY read policy, only owners can select from user_to_role and the app
+-- breaks for everyone else in a way that does not look like a permissions error:
+-- AuthContextProvider's role lookup returns no rows, `role` resolves to null,
+-- and ProtectedRoute renders the "access has been removed" panel to a perfectly
+-- valid admin.
+--
+-- ***********************************************************************
+-- * CLAUSE 1 IS LOAD-BEARING. Do not "simplify" it away.                *
+-- ***********************************************************************
+--
+-- apps/web/src/context/auth.tsx resolves the signed-in user's own role by
+-- selecting their user_to_role row — through this policy. Clause 2 does not
+-- cover a viewer (role 4), and clause 3 does not cover a viewer with no project
+-- assignments. Drop clause 1 and every such user reads zero rows, `role`
+-- resolves to null, and ProtectedRoute tells them their access has been removed.
+-- They are locked out of the ENTIRE dashboard, not just the Members page,
+-- recoverable only from the SQL editor. Same class of trap as STEP 1 above.
+--
+-- Clause 2 mirrors canViewMembers() in apps/web/src/data/memberRoles.ts, which
+-- hides the nav item and gates the /members route. That is the affordance; this
+-- is the enforcement. Move them together.
+--
+-- A removed user matches nothing through clauses 2 and 3 — get_current_user_role()
+-- filters on deleted_at — and reaches only their own row through clause 1, which
+-- is what makes the revocation check work: ProtectedRoute reads `deleted_at is
+-- null` in its own query, so a removed member still resolves to a null role.
+create policy "members readable by supervisors and above"
   on public.user_to_role
   for select
   to authenticated
-  using (public.get_current_user_role() is not null);
+  using (
+    user_id = auth.uid()
+    or public.get_current_user_role() in (1, 2, 3)
+    or public.shares_a_project_with(user_id)
+  );
 
 -- Write. NOTE: as of the remove-member edge function, the dashboard no longer
 -- performs this update itself — removal moved server-side so it could ban the
@@ -160,10 +236,13 @@ create policy "owners and admins may soft delete non-owners"
 -- step by hand.
 
 -- ---------------------------------------------------------------------------
--- Spot check
+-- Spot checks
 -- ---------------------------------------------------------------------------
 --
--- Signed in as a viewer, this must report 0 rows updated:
+-- A disabled button, or a nav item that is not rendered, proves nothing. These
+-- are the checks that do.
+--
+-- WRITE. Signed in as a viewer, this must report 0 rows updated:
 --
 --   update public.user_to_role
 --   set deleted_at = now()
@@ -171,4 +250,21 @@ create policy "owners and admins may soft delete non-owners"
 --
 -- Signed in as an admin, the same statement against a non-owner must report 1.
 --
--- A disabled button in the UI proves nothing; these are the checks that do.
+-- READ. Signed in as a VIEWER:
+--
+--   select count(*) from public.user_to_role;
+--     -- their own row, plus anyone sharing a project with them. NOT the whole
+--     -- table. Before 2026-08-25 this returned every member.
+--
+--   select count(*) from public.user_to_role where user_id = auth.uid();
+--     -- MUST be 1. If it is 0, clause 1 of the read policy is broken and that
+--     -- viewer is locked out of the whole dashboard, not just Members. Fix it
+--     -- here before anyone signs in.
+--
+-- Signed in as a SUPERVISOR:
+--
+--   select count(*) from public.user_to_role;   -- every member, removed included
+--
+-- Then confirm in the browser, which is where the lockout would actually show:
+-- sign in as a viewer and check they land on Projects rather than on "Your
+-- access has been removed".

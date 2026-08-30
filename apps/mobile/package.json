@@ -12,6 +12,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@mmsb/core": "workspace:*",
+    "@mmsb/report": "workspace:*",
     "@op-engineering/op-sqlite": "^15.2.14",
     "@powersync/attachments-storage-react-native": "^0.0.2",
     "@powersync/op-sqlite": "^0.9.13",

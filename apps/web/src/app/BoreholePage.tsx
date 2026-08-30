@@ -1,55 +1,69 @@
 // BoreholePage.tsx
 
 import type { Block, Borehole } from '@mmsb/core';
+import type { ReportProject } from '@mmsb/report';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { sortAndReindexAllBlocks } from '../blocks/sortAndReindexAllBlocks';
 import BlockRow from '../components/blocks/BlockRow';
 import BoreholeDetailStrip from '../components/BoreholeDetailStrip';
+import EditBoreholeModal from '../components/EditBoreholeModal';
+import { useAuth } from '../context/auth';
+import { canEditBoreholeDetails } from '../data/memberRoles';
+import {
+  fetchBlockPhotosByBlockIds,
+  type BlockPhoto,
+} from '../supabase/blockPhotos';
 import { BLOCK_COLUMNS, mapBlockRow } from '../supabase/blockRow';
+import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
 import { supabase } from '../supabase/supabase.server';
+import { buildPhotoFilenames } from '../utils/blockPhotoFilenames';
+import { sanitiseFilename } from '../utils/sanitiseFilename';
 
 type BoreholePageLocationState = Borehole | null;
 
-const BOREHOLE_COLUMNS = `
-  id,
-  project_id,
-  name,
-  type_of_boring,
-  type_of_rig,
-  diameter_of_boring,
-  easting_in_metres,
-  northing_in_metres,
-  reduced_level_in_metres,
-  driller_name,
-  verifier_name,
-  verifier_signature_base64,
-  verifier_sign_date
-`;
+/**
+ * The report header prints title/location/client/consultant, so they are fetched even when
+ * the borehole itself arrived in router state — that path used to skip the project query
+ * altogether, and the previous version selected only `id`.
+ */
+async function fetchProjectByCode(
+  projectCode: string,
+): Promise<{ id: string; project: ReportProject }> {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('id, title, location, client, consultant')
+    .eq('code', projectCode)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    id: data.id,
+    project: {
+      title: data.title,
+      location: data.location,
+      client: data.client,
+      consultant: data.consultant,
+    },
+  };
+}
 
 /**
  * ProjectPage hands the borehole over in router state, but that is gone on a
  * refresh or a pasted link, so fall back to resolving it from the URL.
  */
-async function fetchBoreholeByProjectCodeAndName(
-  projectCode: string,
+async function fetchBoreholeByProjectIdAndName(
+  projectId: string,
   boreholeName: string,
 ): Promise<Borehole> {
-  const { data: projectData, error: projectError } = await supabase
-    .from('projects')
-    .select('id')
-    .eq('code', projectCode)
-    .single();
-
-  if (projectError) {
-    throw projectError;
-  }
-
   const { data: boreholeData, error: boreholeError } = await supabase
     .from('boreholes')
     .select(BOREHOLE_COLUMNS)
-    .eq('project_id', projectData.id)
+    .eq('project_id', projectId)
     .eq('name', boreholeName)
     .single();
 
@@ -57,26 +71,13 @@ async function fetchBoreholeByProjectCodeAndName(
     throw boreholeError;
   }
 
-  return {
-    id: boreholeData.id,
-    projectId: boreholeData.project_id,
-    name: boreholeData.name,
-    typeOfBoring: boreholeData.type_of_boring,
-    typeOfRig: boreholeData.type_of_rig,
-    diameterOfBoring: boreholeData.diameter_of_boring,
-    eastingInMetres: boreholeData.easting_in_metres,
-    northingInMetres: boreholeData.northing_in_metres,
-    reducedLevelInMetres: boreholeData.reduced_level_in_metres,
-    drillerName: boreholeData.driller_name,
-    verifierName: boreholeData.verifier_name,
-    verifierSignatureBase64: boreholeData.verifier_signature_base64,
-    verifierSignDate: null,
-  };
+  return mapBoreholeRow(boreholeData);
 }
 
 export default function BoreholePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { role } = useAuth();
   const { projectCode, boreholeName } = useParams<{
     projectCode: string;
     boreholeName: string;
@@ -88,9 +89,19 @@ export default function BoreholePage() {
   const boreholeFromRouterState = location.state as BoreholePageLocationState;
 
   const [borehole, setBorehole] = useState<Borehole | null>(null);
+  const [project, setProject] = useState<ReportProject | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [photoZipProgress, setPhotoZipProgress] = useState<string | null>(null);
+  // Deliberately not `errorMessage`: the guard below renders an error card *instead of*
+  // the log, so a failed download would take the borehole off the screen.
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [photosByBlockId, setPhotosByBlockId] = useState<
+    Map<string, BlockPhoto[]>
+  >(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isEditBoreholeModalOpen, setIsEditBoreholeModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchBoreholeAndBlocks = async () => {
@@ -104,11 +115,15 @@ export default function BoreholePage() {
       setErrorMessage(null);
 
       try {
+        const { id: projectId, project: fetchedProject } =
+          await fetchProjectByCode(projectCode);
+        setProject(fetchedProject);
+
         let currentBorehole = boreholeFromRouterState;
 
         if (!currentBorehole) {
-          currentBorehole = await fetchBoreholeByProjectCodeAndName(
-            projectCode,
+          currentBorehole = await fetchBoreholeByProjectIdAndName(
+            projectId,
             boreholeName,
           );
         }
@@ -133,7 +148,26 @@ export default function BoreholePage() {
 
         // Blocks carry no stored order, so the list is sorted by depth and each
         // type's counter renumbered from 1 on every read, exactly as mobile does.
-        setBlocks(sortAndReindexAllBlocks((blockData ?? []).map(mapBlockRow)));
+        const sortedBlocks = sortAndReindexAllBlocks(
+          (blockData ?? []).map(mapBlockRow),
+        );
+
+        setBlocks(sortedBlocks);
+
+        // Photos are a garnish on the log, so their own try/catch: a Storage outage or a
+        // policy that denies the bucket must not blank out the borehole the engineer came
+        // here to read. They ride along with this load rather than getting a second
+        // loading state, since it is only two more round trips.
+        try {
+          setPhotosByBlockId(
+            await fetchBlockPhotosByBlockIds(
+              sortedBlocks.map((block) => block.id),
+            ),
+          );
+        } catch (photoError) {
+          console.error('Could not load block photos:', photoError);
+          setPhotosByBlockId(new Map());
+        }
       } catch (error) {
         const message =
           error instanceof Error
@@ -185,6 +219,17 @@ export default function BoreholePage() {
     );
   }
 
+  // Built for the whole borehole in one pass rather than per row: the counter in a photo's
+  // name is scoped to the depth interval, so it can run across two blocks that share one.
+  // No useMemo — the React Compiler is enabled for this app.
+  const photoFilenames = buildPhotoFilenames(
+    projectCode ?? '',
+    borehole.name,
+    blocks,
+    photosByBlockId,
+  );
+  const photoCount = photoFilenames.size;
+
   return (
     <div className="min-h-full bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:h-full lg:overflow-hidden">
       <div className="mx-auto flex min-h-full w-full max-w-full flex-col px-4 py-3 sm:px-6 lg:h-full lg:min-h-0 lg:px-6 lg:py-8">
@@ -203,9 +248,94 @@ export default function BoreholePage() {
             </h1>
           </div>
 
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              type="button"
+              disabled={photoZipProgress !== null || photoCount === 0}
+              onClick={async () => {
+                setDownloadError(null);
+                setPhotoZipProgress(`Zipping 0/${photoCount}...`);
+                try {
+                  // Dynamic import for the same reason as the PDF below, if less
+                  // dramatically: fflate is ~8 KB that most visits never need.
+                  const { downloadBlockPhotosZip } = await import(
+                    '../utils/downloadBlockPhotosZip'
+                  );
+                  await downloadBlockPhotosZip(
+                    `${sanitiseFilename(projectCode ?? '')}-${sanitiseFilename(borehole.name)}-photos.zip`,
+                    blocks.flatMap((block) =>
+                      (photosByBlockId.get(block.id) ?? []).map((photo) => ({
+                        filename: photoFilenames.get(photo.id) ?? `${photo.id}.jpg`,
+                        signedUrl: photo.signedUrl,
+                      })),
+                    ),
+                    (completed, total) => {
+                      setPhotoZipProgress(`Zipping ${completed}/${total}...`);
+                    },
+                  );
+                } catch (error) {
+                  console.error('Photo download failed:', error);
+                  setDownloadError(
+                    error instanceof Error
+                      ? error.message
+                      : 'Could not download the photos.',
+                  );
+                } finally {
+                  setPhotoZipProgress(null);
+                }
+              }}
+              className="shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              {photoZipProgress ?? 'Download photos'}
+            </button>
+
+            <button
+              type="button"
+              disabled={isExporting || project === null || blocks.length === 0}
+              onClick={async () => {
+                if (project === null) {
+                  return;
+                }
+                setDownloadError(null);
+                setIsExporting(true);
+                try {
+                  // Dynamic import: pdf-lib + fontkit are ~1.1 MB, and a static import would
+                  // put them in the main bundle for every page load.
+                  const { downloadBorelogPdf } = await import('../utils/downloadBorelogPdf');
+                  await downloadBorelogPdf(project, borehole, blocks);
+                } catch (error) {
+                  console.error('PDF generation failed:', error);
+                  setDownloadError(
+                    error instanceof Error ? error.message : 'Could not generate the PDF.',
+                  );
+                } finally {
+                  setIsExporting(false);
+                }
+              }}
+              className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isExporting ? 'Generating...' : 'Download PDF'}
+            </button>
+          </div>
         </header>
 
-        <BoreholeDetailStrip borehole={borehole} />
+        {downloadError !== null && (
+          <p className="mb-3 shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+            {downloadError}
+          </p>
+        )}
+
+        <BoreholeDetailStrip
+          borehole={borehole}
+          // Owners and admins only. Passing undefined is what hides the pencil;
+          // the rule and the policy it is stricter than are documented on
+          // canEditBoreholeDetails.
+          onEdit={
+            canEditBoreholeDetails(role)
+              ? () => setIsEditBoreholeModalOpen(true)
+              : undefined
+          }
+        />
 
         <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-5 py-3 dark:border-slate-800">
@@ -238,15 +368,32 @@ export default function BoreholePage() {
             </div>
           ) : (
             <div className="min-h-0 flex-1 overflow-auto">
-              <div className="min-w-[680px] border-t border-slate-200 dark:border-slate-800">
+              {/* Widened from 680px by the 200px photo column on the right of every row. */}
+              <div className="min-w-[900px] border-t border-slate-200 dark:border-slate-800">
                 {blocks.map((block) => (
-                  <BlockRow key={block.id} block={block} />
+                  <BlockRow
+                    key={block.id}
+                    block={block}
+                    photos={photosByBlockId.get(block.id) ?? []}
+                    photoFilenames={photoFilenames}
+                  />
                 ))}
               </div>
             </div>
           )}
         </section>
       </div>
+
+      {/* The save does not touch projectCode, boreholeName or the router state,
+          so the fetch effect above does not re-run and overwrite this — the same
+          reasoning ProjectPage records for its own modals. */}
+      {isEditBoreholeModalOpen && (
+        <EditBoreholeModal
+          borehole={borehole}
+          onClose={() => setIsEditBoreholeModalOpen(false)}
+          onBoreholeUpdated={setBorehole}
+        />
+      )}
     </div>
   );
 }

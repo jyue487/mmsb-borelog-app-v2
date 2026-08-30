@@ -1,4 +1,5 @@
 import type { Borehole } from '@mmsb/core';
+import { Pencil } from 'lucide-react';
 
 // Labels and number formatting are taken from the report header
 // (apps/mobile/src/utils/pdf/renderHeaderToHtml.ts:50-68) so the dashboard and the
@@ -41,11 +42,29 @@ function DetailItem({ label, value }: DetailItemProps) {
 
 type BoreholeDetailStripProps = {
   borehole: Borehole;
+  // Omitted for anyone who may not edit, which is what hides the pencil. The
+  // `pr-12` clearance below is unconditional so the strip does not reflow
+  // between a viewer and an admin looking at the same borehole.
+  onEdit?: () => void;
 };
 
-export default function BoreholeDetailStrip({ borehole }: BoreholeDetailStripProps) {
+export default function BoreholeDetailStrip({
+  borehole,
+  onEdit,
+}: BoreholeDetailStripProps) {
   return (
-    <section className="mb-3 shrink-0 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section className="group relative mb-3 shrink-0 rounded-2xl border border-slate-200 bg-white px-5 py-4 pr-12 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      {onEdit && (
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label="Edit borehole details"
+          className="absolute right-3 top-3 z-10 rounded-lg p-2 text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+        >
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
+
       <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-7">
         <DetailItem label="Type of Boring" value={borehole.typeOfBoring} />
 

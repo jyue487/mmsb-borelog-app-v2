@@ -4,6 +4,7 @@ import { Layers, Settings, Users } from 'lucide-react';
 import { NavLink, useMatch } from 'react-router';
 
 import { useAuth } from '../context/auth';
+import { canViewMembers } from '../data/memberRoles';
 
 const ACTIVE_CLASSES =
   'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300';
@@ -26,7 +27,7 @@ type AppSidebarProps = {
 };
 
 export default function AppSidebar({ onNavigate }: AppSidebarProps) {
-  const { email } = useAuth();
+  const { email, role } = useAuth();
 
   // Derived from the URL alone, so the tree needs no data fetching. Params
   // arrive already decoded, so they are display-ready but must be re-encoded
@@ -95,12 +96,17 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
             )}
           </li>
 
-          <li>
-            <NavLink to="/members" onClick={onNavigate} className={navLinkClassName}>
-              <Users className="size-4 shrink-0" aria-hidden="true" />
-              Members
-            </NavLink>
-          </li>
+          {/* Viewers do not get the member directory. The route is gated too —
+              RequireRole in main.tsx — so hiding the link is the affordance, not
+              the guard. */}
+          {canViewMembers(role) && (
+            <li>
+              <NavLink to="/members" onClick={onNavigate} className={navLinkClassName}>
+                <Users className="size-4 shrink-0" aria-hidden="true" />
+                Members
+              </NavLink>
+            </li>
+          )}
 
           <li>
             <NavLink

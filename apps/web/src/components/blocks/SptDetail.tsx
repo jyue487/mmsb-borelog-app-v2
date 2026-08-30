@@ -54,7 +54,7 @@ export default function SptDetail({ block }: SptDetailProps) {
         <p className="whitespace-pre-wrap break-words">{block.description}</p>
       )}
 
-      <div className="grid grid-cols-[2fr_4fr_1fr_1.5fr] divide-x divide-slate-300 text-xs tabular-nums dark:divide-slate-700">
+      <div className="grid max-w-md grid-cols-[2fr_4fr_1fr_1.5fr] divide-x divide-slate-300 text-xs tabular-nums dark:divide-slate-700">
         <Column heading="Seating">
           <div className="grid w-full grid-cols-2">
             <Increment

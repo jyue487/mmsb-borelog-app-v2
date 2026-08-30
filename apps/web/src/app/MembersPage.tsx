@@ -10,7 +10,7 @@ import {
     canManageMembers,
     MEMBER_ROLE_BADGE_CLASSES,
     MEMBER_ROLE_LABELS,
-    memberRoleRank,
+    sortMembersByRank,
 } from '../data/memberRoles';
 import { mapMemberRow, MEMBER_COLUMNS } from '../supabase/memberRow';
 import { supabase } from '../supabase/supabase.server';
@@ -26,24 +26,6 @@ const ADDED_DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', {
 // `new Date(...)`. One bad row must not take the whole table down.
 function formatAddedDate(date: Date): string {
   return Number.isNaN(date.getTime()) ? '—' : ADDED_DATE_FORMATTER.format(date);
-}
-
-// Sorts a copy. The caller's array must not be reordered in place — `members`
-// is React state.
-//
-// Ordering is by role rank then name rather than by a SQL `.order()`, because
-// rank is a client-side notion: it comes from the position of the role in
-// MEMBER_ROLE_LIST, not from anything stored on the row.
-function sortMembers(members: Member[]): Member[] {
-  return [...members].sort((a, b) => {
-    const rankDifference = memberRoleRank(a.role) - memberRoleRank(b.role);
-
-    if (rankDifference !== 0) {
-      return rankDifference;
-    }
-
-    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-  });
 }
 
 // Removed members sort by when they were removed, most recent first — the
@@ -80,12 +62,20 @@ export default function MembersPage() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      // No `.is('deleted_at', null)` filter any more — both tabs come from one
-      // round trip and are split below. The read policy on user_to_role covers
-      // removed rows too, so nothing extra is needed server-side.
-      const { data, error } = await supabase
-        .from('user_to_role')
-        .select(MEMBER_COLUMNS);
+      // One round trip for both tabs, split client-side below — the read policy
+      // on user_to_role returns removed rows too, so a manager needs no second
+      // query to fill the Removed tab.
+      //
+      // Everyone else gets the filter, because they have no Removed tab to put
+      // those rows in. Supervisors can read them (the policy admits roles 1-3)
+      // but never see them, so pulling them into the browser is pointless — and
+      // who lost access is administrative history. This is tidiness, not a
+      // boundary: the boundary is the policy.
+      const query = supabase.from('user_to_role').select(MEMBER_COLUMNS);
+
+      const { data, error } = await (canManage
+        ? query
+        : query.is('deleted_at', null));
 
       if (error) {
         console.error('Error fetching members:', error);
@@ -97,7 +87,7 @@ export default function MembersPage() {
       const allMembers = (data ?? []).map(mapMemberRow);
 
       setMembers(
-        sortMembers(allMembers.filter((member) => member.deletedAt === null)),
+        sortMembersByRank(allMembers.filter((member) => member.deletedAt === null)),
       );
       setRemovedMembers(
         sortRemovedMembers(
@@ -109,7 +99,9 @@ export default function MembersPage() {
     };
 
     void fetchAllMembers();
-  }, []);
+    // `canManage` is derived from the role, which is already resolved and fixed
+    // by the time ProtectedRoute renders this page — so this does not refetch.
+  }, [canManage]);
 
   // Who had access and lost it is administrative history, so the tab is only
   // offered to the people who can act on it. Everyone else sees the page exactly
@@ -137,6 +129,10 @@ export default function MembersPage() {
       return 'Owners are managed in the database, not from here';
     }
 
+    // No longer reachable through this page: the whole Action column is hidden
+    // when !canManage, so a supervisor never sees a button to disable. Kept
+    // because this function states the rule, and the missing column is only the
+    // affordance for it.
     if (!canManage) {
       return 'Only owners and admins can manage members';
     }
@@ -276,9 +272,16 @@ export default function MembersPage() {
                       {isRemovedTab ? 'Removed' : 'Added'}
                     </th>
 
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      Action
-                    </th>
+                    {/* Supervisors can read this page but manage nobody, so
+                        the column would be nothing but disabled buttons all the
+                        way down. The per-row disabled state below still earns
+                        its place for owners and admins, where it explains one
+                        row among many. */}
+                    {canManage && (
+                      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Action
+                      </th>
+                    )}
                   </tr>
                 </thead>
 
@@ -325,40 +328,43 @@ export default function MembersPage() {
                           )}
                         </td>
 
-                        <td className="whitespace-nowrap px-5 py-4 text-right">
-                          {isRemovedTab ? (
-                            // Read-only for now. Adding them back is the Add
-                            // member flow on the Active tab, which finds this
-                            // row by email, lifts the ban and revives it — so a
-                            // Restore button here would be a shortcut, not new
-                            // capability.
-                            <span className="text-sm text-slate-400 dark:text-slate-600">
-                              No access
-                            </span>
-                          ) : blockedReason !== null ? (
-                            // Disabled rather than hidden, so the reason is
-                            // discoverable instead of the button just missing.
-                            <button
-                              type="button"
-                              disabled
-                              title={blockedReason}
-                              className="cursor-not-allowed rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-400 dark:text-slate-600"
-                            >
-                              Edit
-                            </button>
-                          ) : (
-                            // Not styled as destructive any more: removal moved
-                            // behind the modal's danger zone, and this row
-                            // button now also leads to the password controls.
-                            <button
-                              type="button"
-                              onClick={() => setMemberBeingEdited(member)}
-                              className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-indigo-400 dark:hover:bg-indigo-950/50"
-                            >
-                              Edit
-                            </button>
-                          )}
-                        </td>
+                        {canManage && (
+                          <td className="whitespace-nowrap px-5 py-4 text-right">
+                            {isRemovedTab ? (
+                              // Read-only for now. Adding them back is the Add
+                              // member flow on the Active tab, which finds this
+                              // row by email, lifts the ban and revives it — so
+                              // a Restore button here would be a shortcut, not
+                              // new capability.
+                              <span className="text-sm text-slate-400 dark:text-slate-600">
+                                No access
+                              </span>
+                            ) : blockedReason !== null ? (
+                              // Disabled rather than hidden, so the reason is
+                              // discoverable instead of the button just missing.
+                              <button
+                                type="button"
+                                disabled
+                                title={blockedReason}
+                                className="cursor-not-allowed rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-400 dark:text-slate-600"
+                              >
+                                Edit
+                              </button>
+                            ) : (
+                              // Not styled as destructive any more: removal
+                              // moved behind the modal's danger zone, and this
+                              // row button now also leads to the password
+                              // controls.
+                              <button
+                                type="button"
+                                onClick={() => setMemberBeingEdited(member)}
+                                className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-indigo-400 dark:hover:bg-indigo-950/50"
+                              >
+                                Edit
+                              </button>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
@@ -375,7 +381,7 @@ export default function MembersPage() {
         existingMembers={members}
         onMemberAdded={(member) => {
           setMembers((currentMembers) =>
-            sortMembers([...currentMembers, member]),
+            sortMembersByRank([...currentMembers, member]),
           );
           // Adding someone by an email that was previously removed revives that
           // same row rather than inserting a new one, so they have to leave the

@@ -71,9 +71,11 @@ service role key never leaves Supabase's servers and must never enter this repo 
 | `functions/set-member-password/` | Replaces a supervisor's password. |
 | `functions/remove-member/` | Bans the auth account, then soft-deletes the membership row. |
 | `policies/user_to_role.sql` | RLS policies. **Reference SQL, run by hand** in the Supabase SQL editor — there is no migration tooling in this repo. Additive: it uses the project's existing `get_current_user_role()` helper and leaves the existing owner policy alone. Read its STEP 1 header before running it. |
-| `policies/blocks.sql` | **Not SQL to run** — a record of the policies already deployed on `blocks`, which the dashboard (select) and the field app (insert/update/delete) both depend on. Read it before narrowing anything there: tightening `blocks` breaks the *field app's uploads*, not the dashboard. |
+| `policies/project_to_user.sql` | RLS policies for the project assignment table, plus two fixes to the deployed policies on `projects` and `boreholes`. **Reference SQL, run by hand.** Unlike `user_to_role.sql` this one is *not* purely additive — it narrows `projects` and widens the owner bypass to admins. Read its header before running it. |
+| `policies/blocks.sql` | RLS policies for `blocks`. **Reference SQL, run by hand.** Owners and admins read every block; supervisors read and write on their assigned projects; viewers read on theirs. Defines `is_assigned_to_borehole_project()`, since `blocks` has no `project_id` and has to correlate through `boreholes`. |
+| `policies/block_photos.sql` | RLS policies for `block_photos` **and for the objects in the `Testing` Storage bucket** — both halves of a photo, in one file, because either alone leaves a photo that exists and cannot be seen. **Reference SQL, run by hand**, and the only file here that writes outside the `public` schema: `storage.objects` is owned by `supabase_storage_admin`, so if the CLI ever refuses it, run that step from the dashboard. Read its header before running; its last step is a narrowing one. |
 
-All three leave `verify_jwt` at its default (on) and authorize the caller themselves; see the header
+All three edge functions leave `verify_jwt` at its default (on) and authorize the caller themselves; see the header
 comment in each. Deploying a function does **not** apply anything under `policies/` — those are a
 separate manual step.
 
@@ -91,8 +93,11 @@ Deleting the account instead would be simpler, and is the wrong trade here. Ever
 ```
 user_to_role.user_id       -> CASCADE   (the membership row and its audit trail)
 project_to_user.user_id    -> CASCADE   (project assignments)
-borehole_to_user.user_id   -> CASCADE   (borehole assignments)
 ```
+
+(`borehole_to_user` used to be a third line here. It was dropped when assignment moved to the
+project — see `policies/project_to_user.sql`. `apps/mobile` has not caught up and still writes it;
+`docs/follow-ups.md` item 0b.)
 
 and all eight `public` tables carry `created_by` / `updated_by` / `deleted_by` with **no** foreign
 key at all — so a delete succeeds silently and leaves every one of them pointing at a user that no

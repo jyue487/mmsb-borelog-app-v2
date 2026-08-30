@@ -1,7 +1,7 @@
 // ProjectPage.tsx
 
-import type { Borehole, Project } from '@mmsb/core';
-import { Pencil } from 'lucide-react';
+import type { Borehole, Member, Project } from '@mmsb/core';
+import { Pencil, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   useLocation,
@@ -10,8 +10,17 @@ import {
 } from 'react-router';
 
 import AddBulkBoreholesModal from '../components/AddBulkBoreholesModal';
+import AddPeopleModal from '../components/AddPeopleModal';
 import EditProjectModal from '../components/EditProjectModal';
 import EditTerminationCriteriaModal from '../components/EditTerminationCriteriaModal';
+import { useAuth } from '../context/auth';
+import {
+  canManageProjectPeople,
+  MEMBER_ROLE_BADGE_CLASSES,
+  MEMBER_ROLE_LABELS,
+} from '../data/memberRoles';
+import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
+import { fetchProjectPeople } from '../supabase/projectPeople';
 import { mapProjectRow, PROJECT_COLUMNS } from '../supabase/projectRow';
 import { supabase } from '../supabase/supabase.server';
 
@@ -23,6 +32,7 @@ export default function ProjectPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { projectCode } = useParams<{ projectCode: string }>();
+  const { role } = useAuth();
 
   // Derived on each effect run rather than seeded into state once. `useState`'s
   // initialiser only runs on mount, so going straight from one project to another
@@ -37,6 +47,17 @@ export default function ProjectPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAddBulkModalOpen, setIsAddBulkModalOpen] = useState(false);
   const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
+  const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
+  const [people, setPeople] = useState<Member[]>([]);
+  const [isPeopleLoading, setIsPeopleLoading] = useState(true);
+  const [peopleErrorMessage, setPeopleErrorMessage] = useState<string | null>(
+    null,
+  );
+  // Bumped after a save to re-run the fetch below. The modal cannot hand back
+  // the new list itself: it only ever loaded supervisors and viewers, so any
+  // owner or admin holding an assignment row would vanish from the panel until
+  // the next reload.
+  const [peopleRefreshToken, setPeopleRefreshToken] = useState(0);
   const [
     isEditTerminationCriteriaModalOpen,
     setIsEditTerminationCriteriaModalOpen,
@@ -79,21 +100,7 @@ export default function ProjectPage() {
 
         const { data: boreholeData, error: boreholeError } = await supabase
           .from('boreholes')
-          .select(`
-            id,
-            project_id,
-            name,
-            type_of_boring,
-            type_of_rig,
-            diameter_of_boring,
-            easting_in_metres,
-            northing_in_metres,
-            reduced_level_in_metres,
-            driller_name,
-            verifier_name,
-            verifier_signature_base64,
-            verifier_sign_date
-          `)
+          .select(BOREHOLE_COLUMNS)
           .eq('project_id', currentProject.id)
           .order('name', { ascending: true });
 
@@ -102,23 +109,7 @@ export default function ProjectPage() {
         }
 
         const mappedBoreholes: Borehole[] = (boreholeData ?? [])
-          .map(
-            (row): Borehole => ({
-              id: row.id,
-              projectId: row.project_id,
-              name: row.name,
-              typeOfBoring: row.type_of_boring,
-              typeOfRig: row.type_of_rig,
-              diameterOfBoring: row.diameter_of_boring,
-              eastingInMetres: row.easting_in_metres,
-              northingInMetres: row.northing_in_metres,
-              reducedLevelInMetres: row.reduced_level_in_metres,
-              drillerName: row.driller_name,
-              verifierName: row.verifier_name,
-              verifierSignatureBase64: row.verifier_signature_base64,
-              verifierSignDate: null,
-            }),
-          )
+          .map(mapBoreholeRow)
           .sort((a, b) =>
             a.name.localeCompare(b.name, undefined, {
               numeric: true,
@@ -142,6 +133,56 @@ export default function ProjectPage() {
     void fetchProjectAndBoreholes();
   }, [projectCode, projectFromRouterState]);
 
+  // Its own effect, keyed on the resolved project id rather than folded into the
+  // one above. That effect's catch sets `errorMessage`, which replaces the whole
+  // page with "Unable to load project" — a failure to read the assignment table
+  // must cost the People panel, not the boreholes table.
+  useEffect(() => {
+    const projectId = project?.id;
+
+    if (!projectId) {
+      return;
+    }
+
+    // Guards against the response for the project we just navigated away from
+    // landing after the one we navigated to. Two fetches are in flight whenever
+    // the URL changes, and they can finish in either order.
+    let isCurrent = true;
+
+    const fetchPeople = async () => {
+      setIsPeopleLoading(true);
+      setPeopleErrorMessage(null);
+
+      try {
+        const projectPeople = await fetchProjectPeople(projectId);
+
+        if (isCurrent) {
+          setPeople(projectPeople);
+        }
+      } catch (error) {
+        console.error('Error fetching project people:', error);
+
+        if (isCurrent) {
+          setPeopleErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Unable to load the people on this project.',
+          );
+        }
+      } finally {
+        if (isCurrent) {
+          setIsPeopleLoading(false);
+        }
+      }
+    };
+
+    void fetchPeople();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [project?.id, peopleRefreshToken]);
+
   const openBorehole = (borehole: Borehole) => {
     if (!project || !projectCode) {
       return;
@@ -156,14 +197,6 @@ export default function ProjectPage() {
       },
     );
   };
-
-  const involvedTeams = [
-    { id: 'team-1', name: 'YEW' },
-    { id: 'team-2', name: 'FAIZAN' },
-    { id: 'team-3', name: 'THONG' },
-    { id: 'team-4', name: 'BHARAT' },
-    { id: 'team-5', name: 'GUAN' },
-  ];
 
   const completedBoreholes =
     boreholes.length === 0
@@ -273,7 +306,7 @@ export default function ProjectPage() {
           {/* Top middle */}
           <DashboardPanel
             title="Termination Criteria"
-            className="lg:col-span-6"
+            className="lg:col-span-5"
             bodyClassName="min-h-0 overflow-y-auto pr-2"
             onEdit={() => setIsEditTerminationCriteriaModalOpen(true)}
             editLabel="Edit termination criteria"
@@ -291,26 +324,60 @@ export default function ProjectPage() {
 
           {/* Top right */}
           <DashboardPanel
-            title="Teams"
-            className="lg:col-span-2"
+            title="People"
+            className="lg:col-span-3"
             bodyClassName="min-h-0 overflow-y-auto"
-          >
-            <ol className="space-y-2">
-              {involvedTeams.map((team, index) => (
-                <li
-                  key={team.id}
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 dark:border-slate-700"
+            headerAction={
+              // Owners and admins only, matching the write rule in
+              // packages/supabase/policies/project_to_user.sql. Everyone else
+              // gets the same panel, read-only.
+              canManageProjectPeople(role) ? (
+                <button
+                  type="button"
+                  onClick={() => setIsAddPeopleModalOpen(true)}
+                  className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700"
                 >
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                    {index + 1}
-                  </span>
+                  <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                  Add people
+                </button>
+              ) : undefined
+            }
+          >
+            {isPeopleLoading ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Loading people...
+              </p>
+            ) : peopleErrorMessage ? (
+              <p
+                role="alert"
+                className="text-sm font-medium text-red-600 dark:text-red-400"
+              >
+                {peopleErrorMessage}
+              </p>
+            ) : people.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Nobody is assigned to this project yet.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {people.map((person) => (
+                  <li
+                    key={person.id}
+                    className="rounded-lg border border-slate-200 px-3 py-2.5 dark:border-slate-700"
+                  >
+                    <p className="truncate text-sm font-semibold text-slate-950 dark:text-white">
+                      {person.name || person.email || '—'}
+                    </p>
 
-                  <span className="truncate text-sm font-semibold text-slate-950 dark:text-white">
-                    {team.name}
-                  </span>
-                </li>
-              ))}
-            </ol>
+                    <span
+                      className={`mt-1.5 inline-block rounded-md px-2 py-0.5 text-xs font-semibold ${MEMBER_ROLE_BADGE_CLASSES[person.role]}`}
+                    >
+                      {MEMBER_ROLE_LABELS[person.role]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </DashboardPanel>
 
           {/* Bottom left: boreholes */}
@@ -482,6 +549,18 @@ export default function ProjectPage() {
         />
       )}
 
+      {isAddPeopleModalOpen && (
+        <AddPeopleModal
+          projectId={project.id}
+          assignedPeople={people}
+          onClose={() => setIsAddPeopleModalOpen(false)}
+          onPeopleSaved={() => {
+            setPeopleRefreshToken((token) => token + 1);
+            setIsAddPeopleModalOpen(false);
+          }}
+        />
+      )}
+
       {isEditTerminationCriteriaModalOpen && (
         <EditTerminationCriteriaModal
           project={project}
@@ -516,6 +595,11 @@ type DashboardPanelProps = {
   bodyClassName?: string;
   onEdit?: () => void;
   editLabel?: string;
+  // A control rendered in the header beside the title. Separate from `onEdit`
+  // because that one is a hover-revealed pencil, which is right for "change
+  // something already on screen" and wrong for a panel's primary action — a
+  // hover-only button is undiscoverable on the one panel that starts empty.
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -525,6 +609,7 @@ function DashboardPanel({
   bodyClassName = '',
   onEdit,
   editLabel = 'Edit',
+  headerAction,
   children,
 }: DashboardPanelProps) {
   return (
@@ -532,9 +617,11 @@ function DashboardPanel({
       className={`group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${className}`}
     >
       <div className="mb-3 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
-        <h2 className="text-lg font-bold text-slate-950 dark:text-white">
+        <h2 className="truncate text-lg font-bold text-slate-950 dark:text-white">
           {title}
         </h2>
+
+        {headerAction}
 
         {onEdit && (
           <button

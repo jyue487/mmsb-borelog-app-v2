@@ -31,7 +31,7 @@ export default function CoringDetail({ block }: CoringDetailProps) {
         <p className="whitespace-pre-wrap break-words">{block.description}</p>
       )}
 
-      <div className="grid grid-cols-[4fr_3fr_3fr] divide-x divide-slate-300 text-xs tabular-nums dark:divide-slate-700">
+      <div className="grid max-w-md grid-cols-[4fr_3fr_3fr] divide-x divide-slate-300 text-xs tabular-nums dark:divide-slate-700">
         <Metric heading="Core Run (m)" value={block.coreRunInMetres.toFixed(2)} />
 
         <Metric heading="C.R.%" value={String(block.coreRecoveryInPercentage)} />

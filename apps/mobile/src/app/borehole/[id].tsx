@@ -13,6 +13,7 @@ import { Block } from '@/src/interfaces/Block';
 import { Borehole } from '@/src/interfaces/Borehole';
 import { Project } from '@/src/interfaces/Project';
 import { sortAndReindexAllBlocks } from '@/src/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks';
+import { describeWarnings, sharePdf } from '@/src/utils/pdf/sharePdf';
 import LoadingScreen from '../loading';
 // import { shareExcel } from '@/utils/excel/shareExcel';
 
@@ -27,6 +28,7 @@ export default function BoreholeScreen() {
   const [borehole, setBorehole] = useState<Borehole | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
+  const [isSharingPdf, setIsSharingPdf] = useState<boolean>(false);
 
   useEffect(() => {
     const init = async () => {
@@ -92,10 +94,25 @@ export default function BoreholeScreen() {
           />
         )
       }
-      {/* <Button
-        title='Share PDF'
-        onPress={() => sharePdf(project, borehole, blocks)}
-      /> */}
+      <Button
+        title={isSharingPdf ? 'Generating PDF...' : 'Share PDF'}
+        disabled={isSharingPdf || blocks.length === 0}
+        onPress={async () => {
+          setIsSharingPdf(true);
+          try {
+            const { warnings } = await sharePdf(project, borehole, blocks);
+            const message = describeWarnings(warnings);
+            if (message !== null) {
+              alert(message);
+            }
+          } catch (error) {
+            console.error('PDF generation or sharing failed:', error);
+            alert('Could not generate the PDF.\n\n' + error);
+          } finally {
+            setIsSharingPdf(false);
+          }
+        }}
+      />
       {/* <Button 
         title='Share Excel'
         onPress={() => shareExcel(blocks)} // TODO: Implement shareJson instead

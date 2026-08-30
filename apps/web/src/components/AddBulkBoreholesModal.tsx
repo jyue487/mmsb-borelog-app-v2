@@ -1,6 +1,7 @@
 import type { Borehole } from '@mmsb/core';
 import { useMemo, useState } from 'react';
 
+import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
 import { supabase } from '../supabase/supabase.server';
 
 type AddBulkBoreholesModalProps = {
@@ -181,43 +182,16 @@ export default function AddBulkBoreholesModal({
       const { data, error } = await supabase
         .from('boreholes')
         .insert(rowsToInsert)
-        .select(`
-          id,
-          project_id,
-          name,
-          type_of_boring,
-          type_of_rig,
-          diameter_of_boring,
-          easting_in_metres,
-          northing_in_metres,
-          reduced_level_in_metres,
-          driller_name,
-          verifier_name,
-          verifier_signature_base64,
-          verifier_sign_date
-        `);
+        .select(BOREHOLE_COLUMNS);
 
       if (error) {
         throw error;
       }
 
-      const newBoreholes: Borehole[] = (
-        data ?? []
-      ).map((row) => ({
-        id: row.id,
-        projectId: row.project_id,
-        name: row.name,
-        typeOfBoring: row.type_of_boring,
-        typeOfRig: row.type_of_rig,
-        diameterOfBoring: row.diameter_of_boring,
-        eastingInMetres: row.easting_in_metres,
-        northingInMetres: row.northing_in_metres,
-        reducedLevelInMetres: row.reduced_level_in_metres,
-        drillerName: row.driller_name,
-        verifierName: row.verifier_name,
-        verifierSignatureBase64: row.verifier_signature_base64,
-        verifierSignDate: row.verifier_sign_date,
-      }));
+      // verifierSignDate goes from `row.verifier_sign_date` to a hardcoded null
+      // via mapBoreholeRow. Not a behaviour change: every row here is inserted
+      // with `verifier_sign_date: null`, so that is the only value it read back.
+      const newBoreholes: Borehole[] = (data ?? []).map(mapBoreholeRow);
 
       onBoreholesAdded(newBoreholes);
       closeModal();

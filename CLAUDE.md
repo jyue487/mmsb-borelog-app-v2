@@ -13,6 +13,8 @@ Two clients over one Supabase backend:
 - `apps/mobile` — Expo/React Native app used offline in the field. The primary app: data entry + PDF generation.
 - `apps/web` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
 - `packages/core` — shared TypeScript types. Only partially migrated (see Rough edges).
+- `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
+  both apps. Platform-free.
 - `packages/supabase` — the shared backend: Deno edge functions and RLS policy SQL. **Not** at the
   repo root, which is where the Supabase CLI expects to find it — see the warning below.
 
@@ -144,7 +146,7 @@ exhaustive `Record<BlockTypeId, …>` will point you at most of them:
 | Renumbering | `src/utils/block/reindexBlocksFunctions/reindex<Type>Blocks.ts` |
 | Read-only display | `src/components/blockComponents/<Type>BlockComponent.tsx` |
 | Entry form | `src/components/blockDetailsInputForms/<group>/<type>/…` |
-| PDF row | `src/utils/pdf/render<Type>BlockToHtml.ts`, dispatched in `generatePdfPages.ts` |
+| PDF row | one entry in `BLOCK_ROW_SPECS` in `packages/report/src/rows/blockRowSpec.ts` |
 
 `checkAndReturn*` is the validation convention throughout: input forms keep every field as a
 `string` in state, and the check function parses/validates and either throws or returns a fully
@@ -157,16 +159,60 @@ Required In-situ Tests / End of Borehole / Others). The mapping lives in
 
 ### PDF generation
 
-The report is produced as an HTML string and handed to `expo-print`. `sharePdf()` picks
-`generateBorelogPdf{Android,Ios}` — two separate near-duplicate generators because the platforms'
-print engines disagree on layout; a fix to one usually needs mirroring in the other. Fonts and the
-MMSB logo are inlined as base64 data URIs so the print engine has no external fetches.
+The report lives in `packages/report` and is **drawn directly with pdf-lib**, not rendered through
+a browser. Both apps call one function, `renderBorelogPdf(input, assets)`, so the field app and the
+dashboard produce byte-identical output. There is no WebView and no `expo-print` in the path.
+
+The package is strictly platform-free — no `expo-*`, no `react-native`, no DOM, no `fs`, no
+`fetch`. Hosts hand in asset bytes (`apps/mobile/src/utils/pdf/loadReportAssets.ts`,
+`apps/web/src/utils/downloadBorelogPdf.ts`) and get bytes back. That is what makes the whole layout
+runnable and testable in Node with no device and no PDF.
+
+Two tiers, and the seam between them is the point:
+
+- **`ReportInput` → `ReportDoc`** (`src/layout`, `src/rows`, `src/build`) decides *what* goes where.
+  `ReportDoc` is plain JSON — a list of `DrawNode`s with resolved coordinates.
+- **`ReportDoc` → PDF** (`src/render/pdfLibBackend.ts`) is the only pdf-lib-aware code.
 
 Layout is driven by a **depth scale in ticks: 1 tick = 0.1 m, 90 ticks = one A4 page (9 m)**.
-`generatePdfPages.ts` threads a mutable `scaleTickIndexWrapper: number[]` (a one-element array used
-as an out-param) through every renderer so each block knows how many ticks it may consume before
-the page break at `pageIndex * 90`. It also special-cases blocks that overlap — e.g. a permeability
-test starting inside an SPT interval renders as a combined row.
+`paginate()` is pure: it returns where every block lands rather than threading a mutable counter
+through the renderers, so a block can be measured without being drawn. It special-cases blocks that
+overlap — a permeability test starting inside an SPT interval folds onto the sample's own row
+(`collapsePairs.ts`).
+
+Two things are load-bearing and easy to break:
+
+- **The tick pitch is derived**, `bodyHeightPt / 90` (`layout/pageGeometry.ts`). Never hardcode it —
+  the predecessor measured the ruler in `px` while the page box was in `mm`, and they drifted.
+- **Column geometry is per-row.** Rows are 14 columns wide, but coring/cavity/Lugeon rows merge
+  columns 5-10 into three double-width cells, so interior vertical rules must come from the row,
+  not the table. `assertRowOccupancy()` enforces the 14-column tiling.
+
+Description text is fitted with **real font metrics** (`text/fitTextToBox.ts` binary-searches a size
+ladder against `widthOfTextAtSize`). The fonts are pre-subsetted offline by
+`scripts/subsetFonts.sh` and embedded with `subset: false`, because pdf-lib's runtime subsetter
+mis-maps glyphs for NotoSans. `<i>` in a description is semantic — it marks an in-situ test — which
+is why a third (italic) face is embedded.
+
+There is no test runner. Verification is by committed snapshot and differential check:
+
+```bash
+pnpm --filter @mmsb/report pagination   # where every block lands, vs a committed snapshot
+pnpm --filter @mmsb/report oracle       # diff against a transliteration of the old HTML loop
+pnpm --filter @mmsb/report rows         # every block type, asserting 14-column occupancy
+pnpm --filter @mmsb/report text         # the size-fitting kernel against real metrics
+pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
+```
+
+Output is deterministic (creation date and producer are pinned), so the acceptance check for
+"does it look the same everywhere" is `shasum -a 256` across devices, not visual inspection.
+
+**The old HTML + `expo-print` pipeline is still present but not referenced**, kept as a fallback
+until the new renderer has been validated against real boreholes: 29 `render*ToHtml.ts` files plus
+`generateBorelogPdf{Android,Ios}.ts` and `generatePdfPages.ts` under `src/utils/pdf/`, entered via
+`sharePdfLegacyHtml.ts`. To switch back, import `sharePdfLegacyHtml` instead of `sharePdf` in
+`borehole/[id].tsx` (it returns void, so drop the `warnings` handling). Delete the whole set —
+and `expo-print`, and `src/constants/textSize.ts` — once the new path is proven.
 
 ### Web dashboard
 
@@ -203,6 +249,9 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
 - `src/db/db.ts`, `src/db/initDb.ts`, `src/db/runMigrationsAsync.ts` and `src/db/migrations/**` are
   **dead code** from the pre-PowerSync `expo-sqlite` era. Nothing imports them. PowerSync owns the
   schema now (`AppSchema.ts`) — do not add migrations there.
-- `src/utils/excel/shareExcel.ts` and the Excel/PDF buttons in `borehole/[id].tsx` are commented out.
+- `src/utils/excel/shareExcel.ts` and its button in `borehole/[id].tsx` are commented out. (The PDF
+  button next to it is live again as of the `packages/report` migration.)
+- `src/utils/pdf/` holds two pipelines: the live `sharePdf.ts` → `@mmsb/report`, and the parked
+  legacy HTML one behind `sharePdfLegacyHtml.ts`. Only the first is referenced.
 - Further deferred defects and debt — most of them latent, with the trigger that would make each one
   bite — are recorded in `docs/follow-ups.md`.

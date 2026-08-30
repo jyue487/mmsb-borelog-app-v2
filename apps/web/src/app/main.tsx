@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from "react-router";
 import { AuthContextProvider } from '../context/auth.tsx';
+import { canViewMembers } from '../data/memberRoles.ts';
 import AppLayout from './AppLayout.tsx';
 import LoginPage from './auth/LoginPage.tsx';
 import BoreholePage from './BoreholePage.tsx';
@@ -10,6 +11,7 @@ import MembersPage from './MembersPage.tsx';
 import ProjectListPage from './ProjectListPage.tsx';
 import ProjectPage from './ProjectPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
+import { RequireRole } from './RequireRole.tsx';
 import SettingsPage from './SettingsPage.tsx';
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -23,7 +25,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Route path="/projects" element={<ProjectListPage />} />
               <Route path="/projects/:projectCode" element={<ProjectPage />} />
               <Route path="/projects/:projectCode/boreholes/:boreholeName" element={<BoreholePage />} />
-              <Route path="/members" element={<MembersPage />} />
+              <Route element={<RequireRole allow={canViewMembers} />}>
+                <Route path="/members" element={<MembersPage />} />
+              </Route>
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>

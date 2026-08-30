@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // Local Imports
@@ -23,6 +23,7 @@ export default function ProjectScreen() {
   const projectTitle: string = title;
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     const init = async () => {
@@ -86,7 +87,7 @@ export default function ProjectScreen() {
       verifierSignatureBase64: row.verifier_signature_base64,
       verifierSignDate: (row.verifier_sign_date === null) ? null : deserializeDateTime(row.verifier_sign_date),
     }));
-    setBoreholes(boreholes);
+    setBoreholes(boreholes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })));
   };
 
   const renderFooter = () => {
@@ -109,6 +110,17 @@ export default function ProjectScreen() {
     );
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchAllBoreholes();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <>
       <Stack.Screen
@@ -129,6 +141,8 @@ export default function ProjectScreen() {
           ListFooterComponent={renderFooter()}
           contentContainerStyle={{ paddingBottom: 500 }}
           style={{ flexGrow: 0, width: '100%' }}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
         />
       </KeyboardAvoidingView>
     </>

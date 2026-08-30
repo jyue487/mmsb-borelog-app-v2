@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@mmsb/core": "workspace:*",
+    "@mmsb/report": "workspace:*",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.110.8",
     "@tailwindcss/vite": "^4.3.3",
+    "fflate": "^0.8.3",
     "lucide-react": "^1.28.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

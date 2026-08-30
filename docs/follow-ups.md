@@ -8,92 +8,198 @@ Nothing here is a live user-facing bug. That is deliberate: live bugs get fixed,
 
 ## Known defects and debt
 
-### 0. Boreholes created from the dashboard are orphaned — **highest priority**
+### 0. Four orphaned objects in the Storage bucket
 
-Access to projects, boreholes and blocks is scoped to `borehole_to_user` assignment, deliberately: a
-user sees the work assigned to them and nothing else. All four `blocks` policies use
+All that is left of the old item 0, which was `block_photos` having RLS enabled with no policies at
+all. That is fixed — see 0e.
 
-```sql
-exists (select 1 from borehole_to_user bu
-        where bu.borehole_id = blocks.borehole_id and bu.user_id = auth.uid())
+Four objects in the `Testing` bucket have no `block_photos` row, so under the new Storage SELECT
+policy nothing can name them and nobody can reach them:
+
+```
+5e530da9-6a2b-4b4d-957d-b5ac22149700.jpg
+81bda8d0-ae7f-49d7-87f5-37d7bc39bf7c.jpg
+9601d9ba-fec4-43e3-8bf5-37791555bf5e.jpg
+fbce2ff4-3001-4bd2-bf4a-ad304f2af7d0.jpg
 ```
 
-The only code that ever creates an assignment row is
-`apps/mobile/src/db/borehole/addBoreholeDbAsync.ts:63-68`, in the same transaction as the borehole.
-`apps/web/src/components/AddBulkBoreholesModal.tsx:181-183` inserts into `boreholes` only — no
-assignment row, and no `created_by` either.
+Re-derive rather than trusting that list — deleting a file is the one step here with no undo:
 
-So a dashboard-created borehole has **zero** assignment rows and nobody satisfies the predicate for it,
-including the person who created it. Because the same predicate gates insert/update/delete, that stops
-**writes** as well as reads: mobile's reads bypass RLS via PowerSync, but the Connector uploads with the
-user's session, so a block insert against such a borehole is denied. `Connector.ts` rethrows instead of
-calling `transaction.complete()` — which is what makes PowerSync retry — so it retries indefinitely and
-the data stays on the device.
+```sql
+select o.name from storage.objects o
+where o.bucket_id = 'Testing'
+  and o.name <> '.emptyFolderPlaceholder'
+  and not exists (select 1 from public.block_photos bp
+                  where bp.id::text = split_part(o.name, '.', 1));
+```
 
-*Still to verify:* whether PowerSync's sync rules (configured in the PowerSync dashboard, not this repo)
-deliver an unassigned borehole to a device at all. If they don't, nothing gets stuck — but the
-Add Boreholes button then produces boreholes no field engineer can use. Either way the bulk-add path
-needs an assignment.
+**Delete them from the dashboard** — Storage → Testing → select → Delete.
 
-*Measured 2026-08-20:* an owner added boreholes from the dashboard and they survived a hard reload. So
-`boreholes` is **not** gated by `borehole_to_user` the way `blocks` is — at minimum there is an owner
-bypass, of the kind `user_to_role` already carries
-(`using (get_current_user_role() = 1)`). The two tables therefore disagree: you can list a borehole
-whose log you cannot read.
+Two ways not to do it. `delete from storage.objects` removes only the metadata row and strands the
+actual file in the storage backend, still billed and referenced by nothing. And
+`pnpm sb storage rm ss:///Testing/<name>` **silently does nothing** on CLI 2.x for objects at the
+bucket root: it reports `{"deleted":[]}` with no error and exits 0. Confirmed 2026-08-25 that this is
+not an RLS refusal — it still no-ops with a wide-open delete policy on the exact object, so it is a
+CLI bug. `pnpm sb storage ls ss:///Testing/` does work, with the trailing slash.
 
-That makes the read side a *consistency* problem rather than a data-loss one, and it has a UI cost —
-see item 0c.
+Leave `.emptyFolderPlaceholder`; the dashboard creates it and the bucket renders oddly without it.
 
-The **write** side is unaffected by any owner bypass and remains the serious part: with no assignment
-row, the `blocks` insert policy denies everyone, so a field engineer cannot log against a
-dashboard-created borehole at all.
+### 0e. Resolved: the `blocks` and `block_photos` policies
 
-**Do not fix this by writing `borehole_to_user` rows from the web.** The intended direction is to drop
-`borehole_to_user` entirely and scope on a `project_to_user` table instead — see "Planned: assignment
-moves to the project" below. Under that model this whole class of bug disappears, because a borehole
-inherits access from its project and needs no per-row grant. Building an assignment UI for
-`borehole_to_user`, or teaching `AddBulkBoreholesModal` to populate it, is investment in a table that is
-being removed.
+Recorded because the previous version of this file said `blocks` was wide open in the deny-everything
+sense, and anything written against that is out of date.
 
-If the Add Boreholes button is needed before that migration lands, the least-bad stopgap is to have the
-modal assign the creating user the way `addBoreholeDbAsync` does — accepting that those rows are
-throwaway and that it puts office staff in a table meaning "who is drilling this". Otherwise, hold off
-using the button until the migration.
+Applied 2026-08-25, from `packages/supabase/policies/blocks.sql`, which is now runnable reference SQL
+rather than a record:
 
-See `packages/supabase/policies/blocks.sql` for the deployed predicate.
+|            | select            | insert / update / delete |
+| ---------- | ----------------- | ------------------------ |
+| owner      | every block       | no                       |
+| admin      | every block       | no                       |
+| supervisor | assigned projects | assigned projects        |
+| viewer     | assigned projects | no                       |
+
+Owners and admins are read-only **deliberately**: the dashboard has no write path to `blocks` at all
+(`BoreholePage.tsx` only reads), and granting a write nobody makes would be an untested policy. When
+editing on web lands, add those policies then.
+
+`blocks` has no `project_id`, so the correlation runs through `boreholes` via a new `security
+definer` helper, `public.is_assigned_to_borehole_project(uuid)`. Definer for the same reason as
+`shares_a_project_with()`: RLS applies to tables named inside a policy expression, so an inline
+subquery would silently couple this policy to whatever the policies on `boreholes` and
+`project_to_user` happen to be, failing as an empty result rather than an error.
+
+Verified by simulating each role under RLS: owner and admin see all 10 blocks, supervisor and viewer
+see 0 (neither is assigned to anything yet), an unassigned supervisor's insert is denied with 42501,
+an assigned supervisor's succeeds, and both a viewer's and an owner's are denied.
+
+#### `block_photos` and the Storage bucket, same day
+
+`packages/supabase/policies/block_photos.sql` covers **both** halves of a photo, because either one
+alone leaves a photo that exists and cannot be seen. `block_photos` mirrors the `blocks` table above
+exactly, one correlation further out. `storage.objects` gets:
+
+| | select | insert / delete |
+| --- | --- | --- |
+| owner / admin | every object | no |
+| supervisor | assigned projects | any object in the bucket |
+| viewer | assigned projects | no |
+
+The two `select` rules match on purpose: a synced-down `block_photos` row is what makes the
+attachment queue download a file, so a role that can read the row and not the object gets a silent
+403 and no photo.
+
+Storage `insert` and `delete` are role-gated with **no per-object lookup**, and that is the one place
+this deviates from the table. A photo's bytes and its row travel over two independent queues with no
+ordering guarantee, so a project-scoped check would deny whichever one won the race — and on delete
+that is unrecoverable, because `onDeleteError` retries forever against an object whose row is already
+gone. Object names are client-generated v4 UUIDs and listing goes through the project-scoped `select`,
+so there is nothing to enumerate.
+
+There is no Storage `update` policy: `uploadFile` never passes `upsert` and the queue treats
+*"The resource already exists"* as non-retryable, so no code path updates an object in place.
+
+Two new `security definer` helpers, `is_assigned_to_block(uuid)` and
+`is_assigned_to_photo_object(text)`. Note the second: the correlation from an object back to a
+project is a **lookup, not a path parse** — the attachment queue writes files flat at the bucket root
+as `<block_photos.id>.jpg`, with no project or borehole anywhere in the name.
+
+Applied in two passes — the scoped policies first, which changed nothing because the old wide-open
+policy still OR'd over them, then every role simulated, then the drop. What was dropped:
+`"Enable ALL for authenticated users only"` (`using(true) with check(true)` for every authenticated
+user, on every bucket) and four `"folder 407ca8_*"` policies that had never matched anything, since
+they required a `private/` prefix that no file has.
+
+Verified after the drop: owner and admin see all 9 objects, an assigned supervisor or viewer sees the
+4 on their project, an unassigned one sees none; and on `block_photos`, only an assigned supervisor
+can insert.
+
+### 0b. Mobile still reads and writes `borehole_to_user`, which no longer exists
+
+`borehole_to_user` was dropped from the database when assignment moved to `project_to_user`. Mobile
+was never updated:
+
+- `apps/mobile/src/powersync/AppSchema.ts:5,53-66,116` still declares the table and registers it in
+  the schema.
+- `apps/mobile/src/db/borehole/addBoreholeDbAsync.ts:63-68` still inserts a row into it, in the same
+  transaction as the borehole.
+
+That insert enters the PowerSync CRUD queue and is uploaded against a table Postgres does not have.
+`Connector.ts` rethrows on failure by design, so the entry is never acknowledged and **every later
+upload queues behind it**. Adding one borehole on the device is enough to stall the whole sync.
+
+*Fix:* delete the insert, drop the table from `AppSchema`, and drop the bucket from PowerSync's sync
+rules (which live in the PowerSync dashboard, not this repo — they have to move in step or the field
+app and the backend disagree about who can see what).
 
 ### 0c. `BoreholePage` reports "no data" when it means "no permission"
 
 `apps/web/src/app/BoreholePage.tsx` renders *"No blocks logged — Nothing has been recorded for this
-borehole yet"* whenever the blocks query returns an empty array. RLS returns an empty array rather than
-an error, so a user who can list a borehole but is not assigned to it gets that message and goes looking
-for missing field data.
+borehole yet"* whenever the blocks query returns an empty array. RLS returns an empty array rather
+than an error, so a user who can list a borehole but cannot read its blocks gets that message and
+goes looking for missing field data.
 
-Item 0 establishes this is reachable: `boreholes` admits an owner to boreholes that `blocks` will not.
+Still reachable after the 0e fix, and now for a reason that will come up routinely: `boreholes` lets
+a user list a borehole they created (`created_by::uuid = auth.uid()`), while `blocks` has no such
+clause — so a supervisor who created a borehole and was then unassigned from its project sees the
+borehole and an empty log. The gap reappears any time the predicates on the two tables drift, which
+they already have.
 
 The page should tell the two apart rather than guess — for example by checking assignment explicitly
-when the result is empty, and showing a permission message instead. Worth doing whichever way the
-consistency question in item 0 is settled, since the same gap reappears any time the predicates on the
-two tables drift.
+when the result is empty, and showing a permission message instead.
 
-### 0b. Planned: assignment moves from borehole to project
+### 0d. Resolved: assignment moved from the borehole to the project
 
-`borehole_to_user` is to be dropped in favour of a `project_to_user` table, so a user is assigned to a
-*project* and sees every borehole and block within it. `project_to_user` does not exist yet; the current
-schema (`apps/mobile/src/powersync/AppSchema.ts`) has only `borehole_to_user`.
+Recorded because the previous version of this file said the opposite, and anything written against
+it will be wrong.
 
-Anything that touches assignment should be planned against that end state rather than the current one.
-Known consequences when it happens:
+`borehole_to_user` is **gone** and `project_to_user` **exists**:
 
-- The `blocks` policies — all four — need their predicate rewritten, as do the equivalents on `projects`
-  and `boreholes`. `packages/supabase/policies/blocks.sql` records the current ones and will need
-  updating in the same pass.
-- PowerSync's sync rules key off the same assignment concept and live in the PowerSync dashboard, not
-  this repo. They have to move in step, or the field app and the backend will disagree about who can see
-  what.
-- `addBoreholeDbAsync.ts:63-68` writes the assignment row on mobile and should stop doing so.
-- `packages/supabase/README.md` documents `borehole_to_user.user_id -> CASCADE` in its foreign-key
-  notes; that section needs revisiting.
+```
+project_to_user(project_id uuid, user_id uuid, created_at, created_by, updated_at, updated_by,
+                deleted_at, deleted_by)
+  PRIMARY KEY (project_id, user_id)
+  project_id -> projects(id)   ON DELETE CASCADE
+  user_id    -> auth.users(id) ON DELETE CASCADE
+```
+
+`boreholes` correlates against it correctly. What was still outstanding as of 2026-08-25, and was
+closed by the People panel work, is recorded in `packages/supabase/policies/project_to_user.sql`:
+
+- `project_to_user` had a single policy, `select using (user_id = auth.uid())` — you could see your
+  own assignment row and nobody else's, and no policy permitted a write at all.
+- Both `projects` predicates were missing `pu.project_id = projects.id`, so one assignment granted
+  select and update over **every** project.
+- The bypass on `projects` and `boreholes` was `get_current_user_role() = 1`, owner only, so admins
+  held their access purely through that missing correlation.
+
+Still outstanding: the `blocks` policies (item 0) and the mobile side (item 0b). The soft-delete
+columns on `project_to_user` are also unused and currently unusable — every predicate that reads the
+table tests only for the row's existence, so a soft-deleted assignment would revoke nothing.
+Unassigning therefore hard-deletes. Honouring `deleted_at` would mean teaching all four predicates
+and PowerSync's sync rules about it in one pass.
+
+### 0f. The borehole edit gate is stricter in the UI than in the database
+
+`canEditBoreholeDetails()` in `apps/web/src/data/memberRoles.ts` admits owners and admins, and
+`BoreholePage` passes `onEdit` to `BoreholeDetailStrip` only for them — so supervisors and viewers
+see no pencil. The database is wider: the assignment-scoped update policy on `boreholes`, quoted in
+`packages/supabase/policies/project_to_user.sql:202-215` as *"Users can only edit involved
+boreholes"*, tests only for a `project_to_user` row, and that table carries no role. Any user
+assigned to the project may update any of its boreholes.
+
+*Why it is harmless now:* the dashboard is the only client that reads the role at all, and it does
+not offer the control. Mobile is a supervisor's tool and is *meant* to write these fields — that
+same policy is what makes the field app work.
+
+*What makes it bite:* the moment the gap is treated as enforcement — a "viewers cannot change
+anything" claim in a spec, or an auditor asking who could have edited a borehole. The answer today
+is "anyone assigned to the project", not "owners and admins".
+
+*Fix:* decide which of the two is the intended rule before changing either. Narrowing the policy to
+`get_current_user_role() in (1, 2)` would lock mobile out of its own writes, so it is not a
+one-liner; widening `canEditBoreholeDetails` to supervisors is the cheaper reconciliation if the
+policy is the intended rule. The comment on the function records the same choice.
 
 ### 1. The web blocks query has no deterministic order
 
@@ -115,10 +221,14 @@ establish what it actually is before picking, otherwise the two clients will dis
 
 ### 2. `verifierSignDate` is hardcoded to null
 
-`apps/web/src/app/ProjectPage.tsx:119` and `apps/web/src/app/BoreholePage.tsx:73` both select
-`verifier_sign_date` and then discard it, assigning `null` to the mapped `Borehole`. Left as-is
+`BOREHOLE_COLUMNS` in `apps/web/src/supabase/boreholeRow.ts` selects `verifier_sign_date` and
+`mapBoreholeRow` right below it discards it, assigning `null` to the mapped `Borehole`. Left as-is
 deliberately — changing it would silently alter behaviour — but one of the two is wrong: either the
 column should be mapped, or it should stop being selected.
+
+Now a one-line fix rather than a three-site one: the column list and the mapping used to be
+copy-pasted into `ProjectPage`, `BoreholePage` and `AddBulkBoreholesModal`, and were consolidated
+when the borehole edit modal needed a fourth copy.
 
 ### 3. `deserializeDateTime` turns null into the epoch
 
@@ -175,13 +285,23 @@ left alone on purpose.
 The web port follows the **reindexer**, since that is what reaches the PDF, and prints `*` whenever the
 index is negative — so it cannot render `D-1` even if the two rules ever diverge.
 
-### 6. `ProjectPage` shows fabricated data
+*Note 2026-08-29:* `packages/report` now owns the printed row and follows the **component's** rule
+(`recoveryInPercentage === 0`), which is what the old PDF renderers used — see `sampleNumber()` in
+`rows/blockRowSpec.ts`. So the report and the web log can still disagree if the two fields ever
+diverge. Still deliberately left alone; the fix is to pick one field.
 
-`apps/web/src/app/ProjectPage.tsx:168` derives completion from `Math.round(boreholes.length * 0.7)`, and
-the team list at line 160 is five hardcoded names. Placeholder pending a real way to classify a borehole
-as complete. Worth removing or labelling before anyone reads the dashboard as reporting.
+### 6. `ProjectPage`'s progress summary is fabricated
+
+`apps/web/src/app/ProjectPage.tsx` derives completion from `Math.round(boreholes.length * 0.7)` and
+feeds it to both the donut and the Completed/Remaining stats, and the boreholes table's status column
+reads off the same number — so 70% of every project is always "Completed". Placeholder pending a real
+way to classify a borehole as complete. Worth removing or labelling before anyone reads the dashboard
+as reporting.
 
 The borehole log page deliberately has no status badge rather than invent a second fake one.
+
+*Half resolved 2026-08-25:* the hardcoded five-name team list is gone. The panel is now **People** and
+reads `project_to_user`. The fabricated completion figures are untouched.
 
 ### 7. `packages/core` is still duplicated into `apps/mobile`
 
@@ -189,17 +309,45 @@ Core now exports the block domain (interfaces, `*_BLOCK_TYPE_ID` constants, `Day
 the web app consumes it. `apps/mobile` still keeps its own hand-synced copy of all of that **and** the 18
 per-type deserializers under `src/json/**`.
 
-Finishing it means adding a `metro.config.js` and a `@mmsb/core` dependency to mobile so Metro will
-resolve and transpile the workspace package — real risk to the dev and EAS builds, which is why it was
-kept out of the web work. See the fuller note in `CLAUDE.md` under "Rough edges to know about".
+*Half resolved 2026-08-29:* the risky half is done. `apps/mobile/metro.config.js` now exists and mobile
+depends on `@mmsb/core` and `@mmsb/report`; workspace resolution through pnpm's symlinks is proven on a
+real device. Note `disableHierarchicalLookup` is deliberately NOT set — pdf-lib resolves via
+`packages/report/node_modules`, which that flag would break.
+
+What remains is only the mechanical part: making `apps/mobile/src/interfaces/**` re-export from
+`@mmsb/core` instead of duplicating it, plus the 18 per-type deserializers under `src/json/**`. The
+diff is now known to be import-style only, apart from `Project.terminationCriteria`.
+
+Also still dead: `packages/core/src/constants/textSize.ts` — not exported from `index.ts` and not
+deep-imported anywhere. It exists only for the old HTML PDF font sizing. Mobile's copy is still in
+use by the parked legacy pipeline; remove both when that pipeline goes.
+
+### 8. The old HTML PDF pipeline is parked, not deleted
+
+`apps/mobile/src/utils/pdf/` still contains the pre-2026-08 HTML + `expo-print` renderer — 29
+`render*ToHtml.ts` files plus the two platform generators and `generatePdfPages.ts` — entered via
+`sharePdfLegacyHtml.ts`. Nothing references it; it is kept only as a fallback until `@mmsb/report`
+has been validated against real boreholes on real devices.
+
+Deleting it is ~2,000 lines and also retires `expo-print` and `apps/mobile/src/constants/textSize.ts`.
+Do it once the cross-device `shasum` check has passed on production data.
 
 ## Deferred features
 
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would
   need write access to `blocks`, which is a product decision rather than plumbing.
-- **PDF generation on web.** Where page-flipping becomes relevant again: the report is genuinely
-  paginated at 90 ticks = 9 m per A4 page, and that tick arithmetic currently lives only in the mobile
-  generator's `scaleTickIndexWrapper` threading.
-- **Block photos on web.** Needs a policy on `block_photos` *and* a separate policy on the Storage
-  bucket — they are two systems, and granting one does not grant the other. Note that mobile's log view
-  does not render photos either; they only appear in the camera component.
+- ~~**PDF generation on web.**~~ *Done 2026-08-29.* The tick arithmetic moved out of the mobile
+  generator into `packages/report`, which is platform-free, so `apps/web` now generates the identical
+  report. `scaleTickIndexWrapper` is gone — `paginate()` is pure. The renderer is behind a dynamic
+  `import()` because pdf-lib + fontkit are ~1.1 MB.
+- ~~**Block photos on web.**~~ *Done 2026-08-30.* The backend half was already in place — the two
+  policies this entry asked for both landed on 2026-08-25 (see *`block_photos` and the Storage bucket*
+  above), so this was web client code only. Each log row grew a fixed 200px third column of thumbnails
+  with a `+N` badge for overflow, and clicking one opens a block-scoped gallery. The whole address
+  scheme is that the attachment queue writes files flat at the bucket root as `<block_photos.id>.jpg`,
+  so `apps/web/src/supabase/blockPhotos.ts` derives the storage key from the row id and batch-signs
+  with `createSignedUrls` — signed URLs work whether or not the bucket is public, which is what keeps
+  the bucket's dashboard-only privacy flag from mattering. Two wrinkles worth remembering: the
+  `block_photos` query is chunked at 100 block ids because `.in()` serialises into the URL, and a row
+  whose bytes have not uploaded yet fails on its own path and is skipped rather than failing the batch.
+  Mobile's log view still does not render photos; they only appear in the camera component.

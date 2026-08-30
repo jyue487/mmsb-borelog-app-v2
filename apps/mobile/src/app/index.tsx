@@ -1,6 +1,6 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 import { Stack, router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 // Local imports
@@ -21,6 +21,7 @@ export default function ProjectListScreen() {
   const [isPowersyncReady, setIsPowersyncReady] = useState<boolean>(false);
   const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     const init = async () => {
@@ -125,6 +126,17 @@ export default function ProjectListScreen() {
     );
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchAllProjects();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   if (isSignIn && !isPowersyncReady) {
     console.log("Signed in but powersync is not ready");
     return <LoadingScreen displayText="Signing In" />;
@@ -157,6 +169,8 @@ export default function ProjectListScreen() {
           // ListFooterComponent={renderFooter()}
           contentContainerStyle={{ paddingBottom: 500 }}
           style={{ flexGrow: 0, width: '100%' }}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
         />
       </KeyboardAvoidingView>
     </>

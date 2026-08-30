@@ -19,7 +19,11 @@ import {
   WASH_BORING_BLOCK_TYPE_ID,
   type Block,
 } from '@mmsb/core';
+import { useState } from 'react';
 
+import type { BlockPhoto } from '../../supabase/blockPhotos';
+import BlockPhotoLightbox from './BlockPhotoLightbox';
+import BlockPhotoStrip from './BlockPhotoStrip';
 import { BLOCK_GUTTER_SPECS } from './blockGutterSpec';
 import CoringDetail from './CoringDetail';
 import DayWorkStatusLines from './DayWorkStatusLines';
@@ -78,11 +82,49 @@ function BlockDetail({ block }: { block: Block }) {
 
 type BlockRowProps = {
   block: Block;
+  photos: BlockPhoto[];
+  /**
+   * Download filenames for the whole borehole, keyed by photo id. Built once by the page
+   * rather than per row, because the counter in a name is scoped to the depth interval and
+   * so can span two blocks that happen to share one.
+   */
+  photoFilenames: Map<string, string>;
 };
 
-export default function BlockRow({ block }: BlockRowProps) {
+export default function BlockRow({
+  block,
+  photos,
+  photoFilenames,
+}: BlockRowProps) {
   const gutterSpec = BLOCK_GUTTER_SPECS[block.blockTypeId];
   const labels = gutterSpec.labels(block);
+
+  // The gallery belongs to the row rather than to the page: only one can be open at a
+  // time anyway, since opening one takes a click, and keeping it here spares BoreholePage
+  // a piece of state it would otherwise thread back down.
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  // Caption the photos with the same label and depths the gutter prints, by reading the
+  // gutter spec again instead of adding a second per-type table.
+  const depthParts: string[] = [];
+
+  if (gutterSpec.showsTopDepth(block)) {
+    depthParts.push(block.topDepthInMetres.toFixed(3));
+  }
+
+  if (gutterSpec.showsBaseDepth(block)) {
+    depthParts.push(block.baseDepthInMetres.toFixed(3));
+  }
+
+  const interval = depthParts.length > 0 ? `${depthParts.join(' – ')} m` : '';
+  const sampleLabel = labels.join(' / ');
+
+  // Twelve of the eighteen types carry no sample label, and a custom block can hide both
+  // of its depths, so fall back label → interval → a plain word rather than captioning a
+  // photo with an empty string.
+  const photoLabel = sampleLabel || interval || 'Block';
+  const photoTitle =
+    sampleLabel && interval ? `${sampleLabel} · ${interval}` : photoLabel;
 
   return (
     <div className="flex border-b border-slate-200 text-sm text-slate-900 dark:border-slate-800 dark:text-slate-100">
@@ -115,6 +157,22 @@ export default function BlockRow({ block }: BlockRowProps) {
 
         <BlockDetail block={block} />
       </div>
+
+      <BlockPhotoStrip
+        photos={photos}
+        onOpen={setLightboxIndex}
+        label={photoLabel}
+      />
+
+      {lightboxIndex !== null && (
+        <BlockPhotoLightbox
+          photos={photos}
+          startIndex={lightboxIndex}
+          title={photoTitle}
+          filenames={photoFilenames}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   );
 }
