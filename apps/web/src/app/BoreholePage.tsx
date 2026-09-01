@@ -91,6 +91,7 @@ export default function BoreholePage() {
   const [borehole, setBorehole] = useState<Borehole | null>(null);
   const [project, setProject] = useState<ReportProject | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [photoZipProgress, setPhotoZipProgress] = useState<string | null>(null);
   // Deliberately not `errorMessage`: the guard below renders an error card *instead of*
   // the log, so a failed download would take the borehole off the screen.
@@ -287,6 +288,42 @@ export default function BoreholePage() {
               className="shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {photoZipProgress ?? 'Download photos'}
+            </button>
+
+            <button
+              type="button"
+              disabled={isExportingExcel || project === null || blocks.length === 0}
+              onClick={async () => {
+                if (project === null || projectCode === undefined) {
+                  return;
+                }
+                setDownloadError(null);
+                setIsExportingExcel(true);
+                try {
+                  // Dynamic import for the same reason as the PDF: this pulls in fflate and
+                  // fetches a 2.4 MB template that most visits never need.
+                  const { agsWorkbookFilename, downloadAgsExcel } = await import(
+                    '../utils/downloadAgsExcel'
+                  );
+                  await downloadAgsExcel(
+                    { code: projectCode, ...project },
+                    [{ borehole, blocks }],
+                    agsWorkbookFilename(projectCode, borehole.name),
+                  );
+                } catch (error) {
+                  console.error('Excel export failed:', error);
+                  setDownloadError(
+                    error instanceof Error
+                      ? error.message
+                      : 'Could not generate the Excel workbook.',
+                  );
+                } finally {
+                  setIsExportingExcel(false);
+                }
+              }}
+              className="shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              {isExportingExcel ? 'Exporting...' : 'Export Excel'}
             </button>
 
             <button

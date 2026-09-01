@@ -47,6 +47,8 @@ export default function ProjectPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAddBulkModalOpen, setIsAddBulkModalOpen] = useState(false);
   const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [exportErrorMessage, setExportErrorMessage] = useState<string | null>(null);
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
   const [people, setPeople] = useState<Member[]>([]);
   const [isPeopleLoading, setIsPeopleLoading] = useState(true);
@@ -259,10 +261,66 @@ export default function ProjectPage() {
             </h1>
           </div>
 
-          <div className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
-            Active project
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              type="button"
+              disabled={isExportingExcel || boreholes.length === 0}
+              onClick={async () => {
+                setExportErrorMessage(null);
+                setIsExportingExcel(true);
+                try {
+                  // Blocks are not loaded with the page — this view never shows them, and a
+                  // project can hold thousands. They are fetched on demand, in one query.
+                  const { fetchBlocksByBoreholeIds } = await import(
+                    '../supabase/fetchBlocksByBoreholeIds'
+                  );
+                  const { agsWorkbookFilename, downloadAgsExcel } = await import(
+                    '../utils/downloadAgsExcel'
+                  );
+
+                  const blocksByBoreholeId =
+                    await fetchBlocksByBoreholeIds(boreholes);
+
+                  await downloadAgsExcel(
+                    project,
+                    // Boreholes with no blocks are dropped rather than written as empty
+                    // rows: every sheet stops at its first blank row, so a hole with
+                    // nothing logged would truncate the sheet for the holes after it.
+                    boreholes
+                      .map((borehole) => ({
+                        borehole,
+                        blocks: blocksByBoreholeId.get(borehole.id) ?? [],
+                      }))
+                      .filter((entry) => entry.blocks.length > 0),
+                    agsWorkbookFilename(project.code, null),
+                  );
+                } catch (error) {
+                  console.error('Excel export failed:', error);
+                  setExportErrorMessage(
+                    error instanceof Error
+                      ? error.message
+                      : 'Could not generate the Excel workbook.',
+                  );
+                } finally {
+                  setIsExportingExcel(false);
+                }
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              {isExportingExcel ? 'Exporting...' : 'Export Excel'}
+            </button>
+
+            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
+              Active project
+            </div>
           </div>
         </header>
+
+        {exportErrorMessage !== null && (
+          <p className="mb-3 shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+            {exportErrorMessage}
+          </p>
+        )}
 
         <div className="grid flex-1 grid-cols-1 gap-3 lg:min-h-0 lg:grid-cols-12 lg:grid-rows-[minmax(0,1.0fr)_minmax(0,1.4fr)]">
           {/* Top left: no panel title and no repeated project code */}

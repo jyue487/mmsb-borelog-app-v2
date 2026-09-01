@@ -49,3 +49,8 @@ app-example
 
 # xlsx
 *.xlsx
+# ...except the AGS export template. The Excel exporter patches a copy of it, so it is a
+# runtime input like the report's fonts in apps/web/public/report, not a scratch
+# spreadsheet. Without this the file is invisible to git and the feature cannot be built
+# by anyone else.
+!apps/web/public/ags/template.xlsx

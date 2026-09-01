@@ -15,6 +15,8 @@ Two clients over one Supabase backend:
 - `packages/core` — shared TypeScript types. Only partially migrated (see Rough edges).
 - `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
   both apps. Platform-free.
+- `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the separate
+  Python program that renders the professional report from it. Platform-free, like `report`.
 - `packages/supabase` — the shared backend: Deno edge functions and RLS policy SQL. **Not** at the
   repo root, which is where the Supabase CLI expects to find it — see the warning below.
 
@@ -213,6 +215,70 @@ until the new renderer has been validated against real boreholes: 29 `render*ToH
 `sharePdfLegacyHtml.ts`. To switch back, import `sharePdfLegacyHtml` instead of `sharePdf` in
 `borehole/[id].tsx` (it returns void, so drop the `warnings` handling). Delete the whole set —
 and `expo-print`, and `src/constants/textSize.ts` — once the new path is proven.
+
+### Excel export (AGS)
+
+`packages/report` is not the only renderer of a borelog. A separate Python program — currently in
+its own repo, `github.com/jyue487/mmsb_excel2borelog` — reads a filled **AGS workbook** and draws
+the professional report with reportlab. `packages/ags-excel` fills that workbook from Supabase data
+so nobody has to type it in.
+
+The template is `apps/web/public/ags/template.xlsx` (2.4 MB, committed — note the `!` negation in
+`.gitignore`, which otherwise excludes every `*.xlsx`). It is the Keynetix AGS workbook: eleven
+sheets, and **its worksheet formulas are the program**. There are 120,310 shared formulas on the SPT
+sheet alone, turning a typed grid into hidden AGS `GROUP`/`HEADING`/`UNIT`/`DATA` rows. It is
+`.xlsx`, not `.xlsm` — there is no VBA anywhere in it.
+
+So a copy is **patched, never regenerated**:
+
+- `src/xlsx/patchWorkbook.ts` unzips, rewrites only the worksheet parts it injects into, and copies
+  every other zip entry through byte for byte. An ExcelJS-style round trip would re-serialise all
+  those formulas plus data validation, VML comment drawings and seven `printerSettings` blobs, and
+  silently drop whatever it does not model.
+- `src/xlsx/cells.ts` splices values into cells that **already exist** — the template pre-declares
+  every input cell as an empty styled `<c r="B7" s="54"/>` on every usable row, so nothing is
+  inserted in column order and no style is invented.
+
+**The one thing that will break it if forgotten.** The Python side loads with
+`openpyxl.load_workbook(data_only=True)`, and openpyxl never evaluates a formula — it returns the
+`<v>` Excel last cached. The blank template's caches are stale: SPT's "Reported Result" caches the
+literal string `0 (,)`. So the exporter writes correct caches *beside* the untouched `<f>` for every
+formula cell the report reads — column A (`PROJ_ID`) on each sheet, and SPT's S and T.
+`src/map/sptResult.ts` reproduces that formula chain in TypeScript. Change a blow-count rule there
+and the workbook lies until someone opens it in Excel.
+
+Two data-format rules that are easy to get wrong, both taken from real workbooks: **percentages are
+stored as fractions** (0.9, not 90 — the cells are percent-formatted), and **dates are Excel serials
+while times are bare integers** (`46037` in a date-styled cell, but `900` and `1730` as plain
+numbers).
+
+Rows must be **contiguous from each sheet's first data row**, because every sheet stops its own AGS
+output at the first blank row (`A6 = IF(AND(B6="",C6=""),"STOP",$A$7)`) and the Python parsers stop
+the same way. The first data row is 7 on SPT and 6 everywhere else; `src/xlsx/sheetLayout.ts` holds
+that and the row caps, and throws rather than truncating.
+
+Eight of the eleven sheets are filled: Project, Holes, Progress, SPT, Geology, Samples, Core and
+Water Strike. Two things about that set are not obvious. `Water Strike - AGS` has no source of its
+own — nothing in the data model records a strike as an event — so it is *derived* from the Progress
+rows, taking the shift boundaries that recorded a numeric water level and dropping the `NIL`/`FULL`
+ones. And `Geology - AGS` deliberately contains **overlapping** intervals: an in-situ test gets its
+own row even though it sits inside its host block's interval, because `GEOL_DESC` is where the
+report reads the description column from. Detail Description and Backfill are still unfilled.
+
+Like `@mmsb/report`, the package is strictly platform-free — and here the compiler enforces it:
+`tsconfig.json` (what `build` uses, covering `src` alone) has no node types, so an
+`import 'node:fs'` in the package is a compile error. `tsconfig.check.json` adds them for the dev
+scripts and fixtures only.
+
+```bash
+pnpm --filter @mmsb/ags-excel fill          # fixture -> out/fixture.xlsx
+pnpm --filter @mmsb/ags-excel check-types   # src + fixtures + scripts
+python3 packages/ags-excel/scripts/verify.py     # read it back the way the report does
+python3 packages/ags-excel/scripts/integrity.py  # only intended parts changed; formulas intact
+```
+
+`integrity.py` is the check that matters: it fails if any zip entry outside the eight patched
+sheets differs, or if a formula count changes.
 
 ### Web dashboard
 

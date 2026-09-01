@@ -332,6 +332,39 @@ has been validated against real boreholes on real devices.
 Deleting it is ~2,000 lines and also retires `expo-print` and `apps/mobile/src/constants/textSize.ts`.
 Do it once the cross-device `shasum` check has passed on production data.
 
+### 9. Four rock legend codes point at images that do not exist
+
+`apps/mobile/src/constants/rock.ts:167-170` (and the identical copy in `packages/core`) defines
+`GRANITE_ROCK_CODE = 840`, `SCHIST_ROCK_CODE = 873`, and `PHYLLITE_ROCK_CODE = SLATE_ROCK_CODE = 872`.
+The legend images the borelog report draws from are numbered 801-817 in the 8xx range, so none of
+those four resolve. A real workbook uses **810** for granite. The other nine rock codes are correct
+(claystone/mudstone 801, siltstone 802, sandstone 803, limestone 804, breccia 807, conglomerate 808,
+gneiss 814, shale 817, others 999), and every soil code checks out against real logs — `SILT` +
+`sandy` -> 303, `SAND` + `clayey` -> 402, and so on.
+
+This went unnoticed because until the Excel exporter nothing *read* these codes: the input forms
+write `soilCode`/`rockCode`, the deserializers revive them, and `packages/report` never touches
+them. `@mmsb/ags-excel` is their first consumer, and it writes them into `GEOL_LEG`, which is what
+selects each stratum's hatch image. So every cored borehole currently exports a legend code with no
+image behind it.
+
+Only granite (810) is evidenced. Confirm the other three against the legend set before changing them
+rather than inferring from one workbook.
+
+### 10. `SoilProperties` cannot express two secondary soil types
+
+Real logs use legend code `407` for "Silty/Clayey SAND", but `getSoilCode` can never emit it:
+`SoilProperties` carries a single `secondarySoilType`, so it can say silty *or* clayey, not both.
+The Excel exporter writes 403 or 402 where a human wrote 407. Harmless today — it picks a real,
+adjacent legend — but it is a modelling gap, not a rounding decision.
+
+### 11. Hand-auger samples have no recovered length
+
+`HaBlock` has no penetration or recovery field, so the Samples sheet gets the block's full interval
+where a human writes the actual recovery: a real workbook has `HA1` spanning 1.0-1.3 m, and the
+exporter writes 1.0-2.0. Every other sample type has a real source — SPT is top plus total
+penetration, UD/MZ/PS is `penetrationDepthInMetres`, coring is the block interval.
+
 ## Deferred features
 
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would
@@ -351,3 +384,45 @@ Do it once the cross-device `shasum` check has passed on production data.
   `block_photos` query is chunked at 100 block ids because `.in()` serialises into the URL, and a row
   whose bytes have not uploaded yet fails on its own path and is skipped rather than failing the batch.
   Mobile's log view still does not render photos; they only appear in the camera component.
+- **Excel export for mobile.** `@mmsb/ags-excel` is platform-free by construction — the build
+  tsconfig has no node types, so an `import 'node:fs'` in `src` is a compile error — and it takes
+  template bytes in and gives workbook bytes back. The field app could reuse it as-is by loading the
+  template through `expo-asset` the way `loadReportAssets.ts` loads the report's fonts. Not done
+  because the office is where the AGS submission is assembled.
+- ~~**Water Strike sheet.**~~ *Done 2026-09-01.* It is derived from the Progress rows rather than
+  mapped from blocks: `buildProgressRows` already resolves one entry per shift boundary with the
+  `NIL`/`FULL` sentinels turned into null, so `toWaterStrikeRows` is a filter over that. The
+  awkwardness this entry warned about is still real and now just implicit — nothing records a strike
+  as a distinct event, so what the sheet reports is the standing water level at each shift boundary,
+  not the depth at which water was first met. Columns G (`WSTK_NMIN`), H (`WSTK_SEAL`) and I
+  (`WSTK_FLOW`) have no source and are left alone.
+- **`Water Strike - AGS` column G has a leftover autofill formula.** From row 422 down, `WSTK_NMIN`
+  is `IF(AND(B422="",C422=""),"",20)` — 4,579 formula cells the template's author left behind. The
+  exporter does not write column G, so a workbook with more than 416 water-strike rows will show a
+  spurious `20` in every row past that point *if someone opens it in Excel*. The Python consumer
+  reads the cached blank and never sees it, so this is latent. It bites at ~105 boreholes in one
+  workbook (four shift boundaries each). The fix, if it ever matters, is to write an explicit blank
+  into G on the rows we fill.
+- **Detail Description and Backfill sheets.** The template has both; the exporter fills neither,
+  because the borelog report's Python has no parser for either — nothing reads what they would
+  contain. Each is one more row-mapper in `packages/ags-excel/src/map/`.
+- **`Geology - AGS` intervals no longer partition the hole.** *Changed 2026-09-01.* In-situ tests
+  (the three permeability tests, Lugeon, vane shear, pressuremeter) now get their own row, because
+  `GEOL_DESC` is what the report draws the description column from and dropping them lost text a
+  human had entered. But a test sits *inside* its host block's interval — the PDF folds it onto the
+  host's row via `collapsePairs.ts` — so `GEOL_TOP`/`GEOL_BASE` now overlap. Anything downstream
+  that treats the Geology rows as a non-overlapping partition of the borehole (a stratum-thickness
+  sum, a legend-hatch fill that walks top-to-base) will double-count. The report's own parser reads
+  the rows in order and does not, which is why this was acceptable.
+- **One workbook per project, on the report's side.** The exporter already emits multi-hole
+  workbooks — every sheet is keyed by `HOLE_ID` and the ProjectPage button fills every borehole.
+  The consuming Python still assumes one hole: its borehole parser reads row 6 and stops, while
+  every other parser already loops.
+- **Fields the AGS sheets want that the data model has no source for**, all left blank for a human
+  rather than invented: `HOLE_TYPE` (an AGS code such as `RC`, where `typeOfBoring` is free text),
+  `HOLE_BACD`, `HOLE_STAT`, `CORE_SREC`, `CORE_DIAM`, `SAMP_DIA`, `SAMP_DESC`, `WSTK_NMIN`,
+  `WSTK_SEAL`, `WSTK_FLOW`, and the Project sheet's contractor, date and remarks. Real human-filled
+  workbooks leave most of these blank too. Two came off this list on 2026-09-01: `HOLE_TYPE` is now
+  the constant `RC` (the template already pre-filled `RC` from row 7 down, so only the first hole was
+  ever actually blank), and `PROJ_ENG` is the project's consultant — it had been going to `PROJ_CONT`
+  via the Project sheet's D9 instead of D7.

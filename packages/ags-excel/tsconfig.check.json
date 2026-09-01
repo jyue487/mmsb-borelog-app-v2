@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "allowImportingTsExtensions": true,
+    // Only the dev scripts may touch Node APIs. `tsconfig.json` — which is what `build`
+    // uses, and which covers `src` alone — deliberately has no node types, so an
+    // `import 'node:fs'` sneaking into the package itself is a compile error there. That
+    // is what keeps @mmsb/ags-excel runnable in a browser as well as in Node.
+    "types": ["node"]
+  },
+  "include": ["src", "fixtures", "scripts"]
+}

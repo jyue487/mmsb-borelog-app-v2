@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mmsb/ags-excel": "workspace:*",
     "@mmsb/core": "workspace:*",
     "@mmsb/report": "workspace:*",
     "@supabase/ssr": "^0.12.4",
