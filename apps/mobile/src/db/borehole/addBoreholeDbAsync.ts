@@ -9,9 +9,14 @@ export async function addBoreholeDbAsync(
   addBoreholeParams: AddBoreholeParams
 ): Promise<Borehole> {
   const id = randomUUID();
-  await db.writeTransaction(async (tx) => {
-    await tx.execute(
-      `
+  // A single statement, so no transaction. This used to be a writeTransaction
+  // wrapping this insert and a second one into `borehole_to_user`, which existed
+  // only to make the pair atomic. That table was dropped from Postgres when
+  // assignment moved to `project_to_user`, and the insert had been failing in the
+  // CRUD queue ever since — Connector.ts rethrows by design, so the unacknowledged
+  // entry blocked every later upload behind it. See docs/follow-ups.md item 0b.
+  await db.execute(
+    `
         INSERT INTO boreholes (
           id,
           project_id,
@@ -59,14 +64,7 @@ export async function addBoreholeDbAsync(
         addBoreholeParams.verifierSignDate?.toISOString() ?? null,
         userId
       ]
-    );
-    await tx.execute(
-      `
-      INSERT INTO borehole_to_user (id, borehole_id, user_id) 
-      VALUES (uuid(), ?, ?)
-      `, [id, userId]
-    );
-  });
+  );
   return {
     id: id,
     projectId: projectId,

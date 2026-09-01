@@ -8,6 +8,7 @@ import { styles } from "@/src/constants/styles";
 import { ASPHALT_BLOCK_TYPE_ID, Block, BlockTypeId, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
 import { addBlockAsync } from "@/src/utils/block/addBlockFunctions/addBlockAsync";
 import { deleteBlockAsync } from "@/src/utils/block/deleteBlockFunctions/deleteBlockAsync";
+import { editBlockAsync } from "@/src/utils/block/editBlockFunctions/editBlockAsync";
 import { sortAndReindexAllBlocks } from "@/src/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks";
 import { reindexBlock } from "@/src/utils/block/reindexBlocksFunctions/reindexBlock";
 import { TrashDeleteButton } from "../buttons/TrashDeleteButton";
@@ -79,8 +80,16 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
     setBlocks(reindexedBlocks);
     setIsVisible(false);
   };
-  const onSubmitAsync = async (newBlock: Block) => {
-    const unsortedBlocks = await addBlockAsync((inputBlock === null) ? blocks : await deleteBlockAsync(blocks, inputBlock.id), newBlock);
+  // An edit updates the row in place; only an add inserts. This used to be
+  // delete-then-add for both, which was two bugs at once: the new block carried a
+  // fresh randomUUID() from checkAndReturnBlock, so every photo already on it was
+  // left pointing at the deleted row and disappeared — and the CRUD queue carried
+  // a DELETE followed by an INSERT, so a crash between them lost the block
+  // outright. See docs/follow-ups.md item 4.
+  const onSubmitAsync = async (submittedBlock: Block) => {
+    const unsortedBlocks = (inputBlock === null)
+      ? await addBlockAsync(blocks, submittedBlock)
+      : await editBlockAsync(blocks, submittedBlock);
     const sortedBlocks = sortAndReindexAllBlocks(unsortedBlocks);
     setBlocks(sortedBlocks);
   };
@@ -149,8 +158,15 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
                 if (checkAndReturnBlock !== null) {
                   console.log('checkAndReturnBlock running');
                   const newBlock = checkAndReturnBlock();
-                  newBlockId = newBlock.id;
-                  await onSubmitAsync(newBlock);
+                  // Every checkAndReturn* mints a fresh randomUUID(), which is
+                  // right for an add and wrong for an edit: the id is what
+                  // block_photos rows point at, so changing it orphans them.
+                  // Overridden here, in one place, rather than in all 18 of them.
+                  const submittedBlock = (inputBlock === null)
+                    ? newBlock
+                    : { ...newBlock, id: inputBlock.id };
+                  newBlockId = submittedBlock.id;
+                  await onSubmitAsync(submittedBlock);
                 }
                 if (blockPhotosOnConfirmAsync !== null) {
                   console.log('blockPhotosOnConfirmAsync running');

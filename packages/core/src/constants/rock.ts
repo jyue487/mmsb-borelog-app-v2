@@ -164,10 +164,10 @@ export const SEDIMENTARY_BRECCIA_ROCK_CODE = 807 as const;
 export const CONGLOMERATE_ROCK_CODE = 808 as const;
 export const LIMESTONE_ROCK_CODE = 804 as const;
 export const SHALE_ROCK_CODE = 817 as const;
-export const GRANITE_ROCK_CODE = 840 as const;
-export const SCHIST_ROCK_CODE = 873 as const;
-export const PHYLLITE_ROCK_CODE = 872 as const;
-export const SLATE_ROCK_CODE = 872 as const;
+export const GRANITE_ROCK_CODE = 810 as const;
+export const SCHIST_ROCK_CODE = 812 as const;
+export const PHYLLITE_ROCK_CODE = 812 as const;
+export const SLATE_ROCK_CODE = 812 as const;
 export const GNEISS_ROCK_CODE = 814;
 export const OTHERS_ROCK_CODE = VOID_CODE;
 

@@ -1,8 +1,8 @@
 // ProjectPage.tsx
 
 import type { Borehole, Member, Project } from '@mmsb/core';
-import { Pencil, UserPlus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Map, Pencil, UserPlus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import {
   useLocation,
   useNavigate,
@@ -15,13 +15,28 @@ import EditProjectModal from '../components/EditProjectModal';
 import EditTerminationCriteriaModal from '../components/EditTerminationCriteriaModal';
 import { useAuth } from '../context/auth';
 import {
+  BOREHOLE_STATUS_BADGE_BASE_CLASSES,
+  BOREHOLE_STATUS_BADGE_CLASSES,
+  BOREHOLE_STATUS_LABELS,
+  countBoreholeStatuses,
+  type BoreholeStatus,
+} from '../data/boreholeStatus';
+import {
   canManageProjectPeople,
+  canManageSitePlan,
   MEMBER_ROLE_BADGE_CLASSES,
   MEMBER_ROLE_LABELS,
 } from '../data/memberRoles';
 import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
+import { fetchBoreholeStatuses } from '../supabase/fetchBoreholeStatuses';
 import { fetchProjectPeople } from '../supabase/projectPeople';
 import { mapProjectRow, PROJECT_COLUMNS } from '../supabase/projectRow';
+import {
+  deleteSitePlan,
+  fetchSitePlanUrl,
+  hasSitePlan,
+  uploadSitePlan,
+} from '../supabase/sitePlan';
 import { supabase } from '../supabase/supabase.server';
 
 type ProjectPageLocationState = {
@@ -49,6 +64,15 @@ export default function ProjectPage() {
   const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [exportErrorMessage, setExportErrorMessage] = useState<string | null>(null);
+  // null while the blocks query is in flight, so the table can paint before the
+  // statuses arrive rather than holding the whole page behind a second round trip.
+  const [boreholeStatuses, setBoreholeStatuses] = useState<Map<
+    string,
+    BoreholeStatus
+  > | null>(null);
+  const [statusErrorMessage, setStatusErrorMessage] = useState<string | null>(
+    null,
+  );
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
   const [people, setPeople] = useState<Member[]>([]);
   const [isPeopleLoading, setIsPeopleLoading] = useState(true);
@@ -64,6 +88,19 @@ export default function ProjectPage() {
     isEditTerminationCriteriaModalOpen,
     setIsEditTerminationCriteriaModalOpen,
   ] = useState(false);
+  // null while the existence check is in flight, so the row shows a placeholder
+  // rather than "Not uploaded" — which would read as an answer, and would send a
+  // manager to upload a plan that is already there.
+  const [projectHasSitePlan, setProjectHasSitePlan] = useState<boolean | null>(
+    null,
+  );
+  const [sitePlanErrorMessage, setSitePlanErrorMessage] = useState<
+    string | null
+  >(null);
+  // One flag for all three operations. They share a row and none can overlap:
+  // whichever is running, every control in the row is disabled.
+  const [isSitePlanBusy, setIsSitePlanBusy] = useState(false);
+  const sitePlanInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const fetchProjectAndBoreholes = async () => {
@@ -135,6 +172,51 @@ export default function ProjectPage() {
     void fetchProjectAndBoreholes();
   }, [projectCode, projectFromRouterState]);
 
+  // Its own effect for the same reason the people fetch below is: a failure here
+  // must cost the Status column, not the page. The borehole effect above sets
+  // `errorMessage`, which replaces everything with "Unable to load project".
+  //
+  // It also runs after the boreholes rather than alongside them, because it needs
+  // their ids — `blocks` has no project_id of its own to scope by.
+  useEffect(() => {
+    // Same guard as the people fetch: two of these are in flight whenever the URL
+    // changes, and the one for the project we left can land after the one we
+    // arrived at.
+    let isCurrent = true;
+
+    // Nothing is reset before the fetch: the map left in state is keyed by the
+    // previous project's borehole ids, so every row of this one already reads as
+    // pending through `statusOf`, and no state is written until the response is
+    // in. That keeps this effect free of the cascading render a synchronous
+    // setState in an effect body causes.
+    const loadStatuses = async () => {
+      try {
+        const statuses = await fetchBoreholeStatuses(boreholes);
+
+        if (isCurrent) {
+          setBoreholeStatuses(statuses);
+          setStatusErrorMessage(null);
+        }
+      } catch (error) {
+        console.error('Error fetching borehole statuses:', error);
+
+        if (isCurrent) {
+          setStatusErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Unable to work out how far along these boreholes are.',
+          );
+        }
+      }
+    };
+
+    void loadStatuses();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [boreholes]);
+
   // Its own effect, keyed on the resolved project id rather than folded into the
   // one above. That effect's catch sets `errorMessage`, which replaces the whole
   // page with "Unable to load project" — a failure to read the assignment table
@@ -185,6 +267,166 @@ export default function ProjectPage() {
     };
   }, [project?.id, peopleRefreshToken]);
 
+  // Its own effect, for the third time and the same reason: a project with no
+  // site plan is the common case, and a bucket that cannot be reached at all must
+  // cost this one row rather than replace the page with "Unable to load project".
+  useEffect(() => {
+    const projectId = project?.id;
+
+    if (!projectId) {
+      return;
+    }
+
+    // Same guard as the two effects above: two of these are in flight whenever
+    // the URL changes, and they can finish in either order.
+    let isCurrent = true;
+
+    const loadSitePlan = async () => {
+      try {
+        const exists = await hasSitePlan(projectId);
+
+        if (isCurrent) {
+          setProjectHasSitePlan(exists);
+          setSitePlanErrorMessage(null);
+        }
+      } catch (error) {
+        console.error('Error checking for a site plan:', error);
+
+        if (isCurrent) {
+          // false rather than null: the row stops saying "Checking..." forever,
+          // and a manager can still upload. The message below says why the view
+          // button is missing.
+          setProjectHasSitePlan(false);
+          setSitePlanErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Unable to check whether this project has a site plan.',
+          );
+        }
+      }
+    };
+
+    void loadSitePlan();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [project?.id]);
+
+  const openSitePlan = async () => {
+    if (!project) {
+      return;
+    }
+
+    // Opened synchronously, before the await. A window.open() issued after one is
+    // no longer attributable to the click and popup blockers stop it — so the tab
+    // is claimed now and pointed at the URL once it arrives.
+    //
+    // `noopener` cannot go in the feature string here: it makes window.open
+    // return null in Chrome and Firefox, leaving nothing to navigate. Clearing
+    // `opener` afterwards severs the same reference.
+    const tab = window.open('', '_blank');
+
+    if (tab === null) {
+      setSitePlanErrorMessage(
+        'The site plan could not be opened. Allow pop-ups for this site and try again.',
+      );
+      return;
+    }
+
+    tab.opener = null;
+
+    setSitePlanErrorMessage(null);
+    setIsSitePlanBusy(true);
+
+    try {
+      const url = await fetchSitePlanUrl(project.id);
+
+      if (url === null) {
+        // Removed by someone else since this page loaded. Correct the row rather
+        // than leaving a button that fails the same way again.
+        tab.close();
+        setProjectHasSitePlan(false);
+        setSitePlanErrorMessage('This project no longer has a site plan.');
+        return;
+      }
+
+      tab.location.href = url;
+    } catch (error) {
+      console.error('Error opening the site plan:', error);
+      tab.close();
+      setSitePlanErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to open the site plan.',
+      );
+    } finally {
+      setIsSitePlanBusy(false);
+    }
+  };
+
+  const changeSitePlan = async (file: File) => {
+    if (!project) {
+      return;
+    }
+
+    // Checked here as well as by the bucket's MIME restriction, which rejects the
+    // upload with a message about the storage API rather than about the file the
+    // person just picked.
+    if (file.type !== 'application/pdf') {
+      setSitePlanErrorMessage('The site plan must be a PDF.');
+      return;
+    }
+
+    setSitePlanErrorMessage(null);
+    setIsSitePlanBusy(true);
+
+    try {
+      await uploadSitePlan(project.id, file);
+      setProjectHasSitePlan(true);
+    } catch (error) {
+      console.error('Error uploading the site plan:', error);
+      setSitePlanErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to upload the site plan.',
+      );
+    } finally {
+      setIsSitePlanBusy(false);
+    }
+  };
+
+  const removeSitePlan = async () => {
+    if (!project) {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        'Remove the site plan for this project? Anyone on the project will lose access to it.',
+      )
+    ) {
+      return;
+    }
+
+    setSitePlanErrorMessage(null);
+    setIsSitePlanBusy(true);
+
+    try {
+      await deleteSitePlan(project.id);
+      setProjectHasSitePlan(false);
+    } catch (error) {
+      console.error('Error removing the site plan:', error);
+      setSitePlanErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to remove the site plan.',
+      );
+    } finally {
+      setIsSitePlanBusy(false);
+    }
+  };
+
   const openBorehole = (borehole: Borehole) => {
     if (!project || !projectCode) {
       return;
@@ -200,15 +442,26 @@ export default function ProjectPage() {
     );
   };
 
-  const completedBoreholes =
-    boreholes.length === 0
-      ? 0
-      : Math.max(1, Math.round(boreholes.length * 0.7));
+  // A borehole missing from the map is pending, not "not started": between two
+  // projects the map is briefly the previous one's. Rendered as a placeholder.
+  const statusOf = (borehole: Borehole): BoreholeStatus | null =>
+    boreholeStatuses?.get(borehole.id) ?? null;
+
+  // Only tallied once every borehole has a real status, so the panel never shows
+  // a percentage computed from a half-loaded map.
+  const resolvedStatuses = boreholes
+    .map(statusOf)
+    .filter((status): status is BoreholeStatus => status !== null);
+
+  const statusCounts =
+    resolvedStatuses.length === boreholes.length
+      ? countBoreholeStatuses(resolvedStatuses)
+      : null;
 
   const completionPercentage =
-    boreholes.length === 0
+    statusCounts === null || boreholes.length === 0
       ? 0
-      : Math.round((completedBoreholes / boreholes.length) * 100);
+      : Math.round((statusCounts.completed / boreholes.length) * 100);
 
   if (isLoading) {
     return (
@@ -322,6 +575,12 @@ export default function ProjectPage() {
           </p>
         )}
 
+        {statusErrorMessage !== null && (
+          <p className="mb-3 shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+            Could not load borehole progress: {statusErrorMessage}
+          </p>
+        )}
+
         <div className="grid flex-1 grid-cols-1 gap-3 lg:min-h-0 lg:grid-cols-12 lg:grid-rows-[minmax(0,1.0fr)_minmax(0,1.4fr)]">
           {/* Top left: no panel title and no repeated project code */}
           <section className="group relative min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-4">
@@ -347,6 +606,99 @@ export default function ProjectPage() {
                   value={project.location}
                   scrollable
                 />
+
+                {/*
+                  Not a ProjectDetail: the value is a set of controls rather than
+                  text. The wrapper repeats that component's row classes so the
+                  divider rhythm of the list is unbroken.
+
+                  "Site Plan" rather than "View Map" — it is what the document is
+                  called on a geotechnical job, and it does not promise an
+                  interactive map. See docs/follow-ups.md for why plotting the
+                  boreholes themselves is parked.
+                */}
+                <div className="border-b border-slate-200 py-3 first:pt-0 last:border-b-0 last:pb-0 dark:border-slate-800">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Site Plan
+                  </dt>
+
+                  <dd className="mt-1 flex flex-wrap items-center gap-2">
+                    {projectHasSitePlan === null ? (
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        Checking...
+                      </span>
+                    ) : projectHasSitePlan ? (
+                      <button
+                        type="button"
+                        onClick={() => void openSitePlan()}
+                        disabled={isSitePlanBusy}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Map className="h-3.5 w-3.5" aria-hidden="true" />
+                        View
+                      </button>
+                    ) : (
+                      <span className="text-sm font-semibold text-slate-950 dark:text-slate-100">
+                        Not uploaded
+                      </span>
+                    )}
+
+                    {canManageSitePlan(role) && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => sitePlanInputRef.current?.click()}
+                          disabled={isSitePlanBusy}
+                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          {isSitePlanBusy
+                            ? 'Working...'
+                            : projectHasSitePlan
+                              ? 'Replace'
+                              : 'Upload'}
+                        </button>
+
+                        {projectHasSitePlan === true && (
+                          <button
+                            type="button"
+                            onClick={() => void removeSitePlan()}
+                            disabled={isSitePlanBusy}
+                            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                          >
+                            Remove
+                          </button>
+                        )}
+
+                        {/*
+                          The input is never shown; the styled button above drives
+                          it. `value` is cleared on every change so that picking
+                          the same file twice — after a failed upload — still
+                          fires.
+                        */}
+                        <input
+                          ref={sitePlanInputRef}
+                          type="file"
+                          accept="application/pdf,.pdf"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = '';
+
+                            if (file) {
+                              void changeSitePlan(file);
+                            }
+                          }}
+                        />
+                      </>
+                    )}
+                  </dd>
+
+                  {sitePlanErrorMessage !== null && (
+                    <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                      {sitePlanErrorMessage}
+                    </p>
+                  )}
+                </div>
 
                 <ProjectDetail
                   label="Client"
@@ -492,8 +844,8 @@ export default function ProjectPage() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                    {boreholes.map((borehole, index) => {
-                      const isCompleted = index < completedBoreholes;
+                    {boreholes.map((borehole) => {
+                      const status = statusOf(borehole);
 
                       return (
                         <tr
@@ -523,13 +875,17 @@ export default function ProjectPage() {
                           </td>
 
                           <td className="px-6 py-3">
-                            {isCompleted ? (
-                              <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
-                                Completed
+                            {status === null ? (
+                              <span
+                                className={`${BOREHOLE_STATUS_BADGE_BASE_CLASSES} border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600`}
+                              >
+                                &mdash;
                               </span>
                             ) : (
-                              <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-400">
-                                In progress
+                              <span
+                                className={`${BOREHOLE_STATUS_BADGE_BASE_CLASSES} ${BOREHOLE_STATUS_BADGE_CLASSES[status]}`}
+                              >
+                                {BOREHOLE_STATUS_LABELS[status]}
                               </span>
                             )}
                           </td>
@@ -577,21 +933,18 @@ export default function ProjectPage() {
 
               <div className="mt-5 grid w-full grid-cols-3 gap-2">
                 <ProgressStat
-                  label="Completed"
-                  value={completedBoreholes}
+                  label={BOREHOLE_STATUS_LABELS.completed}
+                  value={statusCounts?.completed ?? '—'}
                 />
 
                 <ProgressStat
-                  label="Remaining"
-                  value={Math.max(
-                    boreholes.length - completedBoreholes,
-                    0,
-                  )}
+                  label={BOREHOLE_STATUS_LABELS.inProgress}
+                  value={statusCounts?.inProgress ?? '—'}
                 />
 
                 <ProgressStat
-                  label="Total"
-                  value={boreholes.length}
+                  label={BOREHOLE_STATUS_LABELS.notStarted}
+                  value={statusCounts?.notStarted ?? '—'}
                 />
               </div>
             </div>
@@ -732,7 +1085,9 @@ function ProjectDetail({
 
 type ProgressStatProps = {
   label: string;
-  value: number;
+  // A string so the tiles can show a placeholder while the statuses are still
+  // being fetched, rather than a 0 that reads as a real count.
+  value: number | string;
 };
 
 function ProgressStat({

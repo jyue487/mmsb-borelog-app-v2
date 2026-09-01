@@ -44,6 +44,28 @@ CLI bug. `pnpm sb storage ls ss:///Testing/` does work, with the trailing slash.
 
 Leave `.emptyFolderPlaceholder`; the dashboard creates it and the bucket renders oddly without it.
 
+*Where they may have come from (2026-09-01).* Item 4 was editing a block by deleting its row and
+inserting a new one under a new id, which left its photos behind. Whether that produced *these*
+orphans — objects with no `block_photos` row — depends on something not recorded in this repo: whether
+`block_photos.block_id` carries `ON DELETE CASCADE` to `blocks`. With a cascade, the block delete
+syncing to Postgres takes the photo rows with it and strands exactly this shape of object, since
+nothing deletes from Storage. Without one, the same edit leaves *dangling rows* instead — a different
+orphan class, and these four came from something else. Settle it before assuming:
+
+```sql
+select confdeltype from pg_constraint
+where conrelid = 'public.block_photos'::regclass and contype = 'f';
+-- 'c' = cascade, 'a' = no action
+```
+
+Either way item 4's fix stops new ones. If the answer is "no cascade", also check for rows whose
+`block_id` names no block — those are invisible photos rather than unreachable files:
+
+```sql
+select bp.id, bp.block_id from public.block_photos bp
+where not exists (select 1 from public.blocks b where b.id = bp.block_id);
+```
+
 ### 0e. Resolved: the `blocks` and `block_photos` policies
 
 Recorded because the previous version of this file said `blocks` was wide open in the deny-everything
@@ -114,7 +136,7 @@ Verified after the drop: owner and admin see all 9 objects, an assigned supervis
 4 on their project, an unassigned one sees none; and on `block_photos`, only an assigned supervisor
 can insert.
 
-### 0b. Mobile still reads and writes `borehole_to_user`, which no longer exists
+### 0b. Resolved: mobile no longer reads or writes `borehole_to_user`
 
 `borehole_to_user` was dropped from the database when assignment moved to `project_to_user`. Mobile
 was never updated:
@@ -128,9 +150,15 @@ That insert enters the PowerSync CRUD queue and is uploaded against a table Post
 `Connector.ts` rethrows on failure by design, so the entry is never acknowledged and **every later
 upload queues behind it**. Adding one borehole on the device is enough to stall the whole sync.
 
-*Fix:* delete the insert, drop the table from `AppSchema`, and drop the bucket from PowerSync's sync
-rules (which live in the PowerSync dashboard, not this repo — they have to move in step or the field
-app and the backend disagree about who can see what).
+*Fixed 2026-09-01.* The insert is gone from `addBoreholeDbAsync` — with one statement left, the
+`writeTransaction` collapsed to a plain `db.execute`, since the transaction existed only to make the
+pair atomic — and the table, its exported name constant and its `Schema` entry are gone from
+`AppSchema.ts`. The PowerSync sync rules were moved separately in the dashboard, which is where they
+live.
+
+**This does not unstick a device that already queued one.** The failing op sits in PowerSync's local
+`ps_crud` queue, and removing the table from `AppSchema` does not clear it — an already-wedged device
+needs its app data cleared or a reinstall. No app-code change can reach it.
 
 ### 0c. `BoreholePage` reports "no data" when it means "no permission"
 
@@ -257,7 +285,7 @@ is a string at runtime despite being typed `Date | null`. Nothing renders it.
 
 The web parser (`apps/web/src/blocks/parseBlockPayload.ts`) handles this correctly and is unaffected.
 
-### 4. `editBlockDbAsync` has its bind parameters in the wrong order
+### 4. Resolved: the edit path re-minted the block id and orphaned its photos
 
 `apps/mobile/src/db/blocks/editBlockDbAsync.ts`:
 
@@ -272,9 +300,32 @@ and saves nothing.
 *Why it is harmless now:* it has no callers. Editing goes through delete-then-add at
 `BlockDetailsInputForm.tsx:83`.
 
-*What makes it bite:* the moment anyone wires it up. Edits would appear to work — the in-memory list
-updates — and vanish on reload. Either fix the order or delete the file; it sits alongside the known
-dead `db/db.ts` family.
+*Fixed 2026-09-01, and the dead function turned out to be hiding a live bug.* Asking whether it was
+safe to delete surfaced what the delete-then-add path it had been standing in for was actually doing.
+
+Every `checkAndReturn*` ends in `id: randomUUID()` — all 18 of them — so an edit deleted the block row
+and inserted a **new one under a new id**. Meanwhile `CameraComponent.tsx:110` loads existing photos as
+`isNew: false, deletedAt: null`; its first loop handles `isNew && !deleted` and its second
+`!isNew && deleted`, so **a kept existing photo matched neither** and nothing re-pointed its
+`block_photos.block_id`. Editing a block therefore stranded every photo already on it: not deleted,
+orphaned on a block id that no longer existed, invisible in both apps. And because
+`is_assigned_to_photo_object()` resolves an object through `block_photos -> blocks`, an orphaned row
+returns NULL and the Storage read policy denies it, so the file became unreachable while still being
+billed. This is a candidate explanation for item 0's four orphaned objects, but only under one
+condition — see the note there before treating it as the answer.
+
+The fix was the root cause rather than the symptom: the id is preserved on an edit (overridden once in
+`BlockDetailsInputForm`'s confirm handler, rather than in all 18 check functions), `editBlockDbAsync` is
+now a real `UPDATE` with its binds in the right order, and a new `editBlockAsync` sits beside
+`addBlockAsync`/`deleteBlockAsync`. `block_type_id` is in the SET list because the form lets the
+operation type change on an edit. No third loop in `CameraComponent` was needed — with the id stable,
+the photos were never detached.
+
+Two further consequences went with it: `created_at` no longer resets on every edit, and the CRUD queue
+no longer carries a DELETE followed by an INSERT, a window in which a crash lost the block outright.
+
+Still not set: `updated_by`. `addBlockDbAsync` does not set `created_by` either, and populating one half
+of that pair would be inconsistent — both belong in one later pass.
 
 ### 5. SPT sample numbering is gated on two different fields
 
@@ -290,7 +341,7 @@ index is negative — so it cannot render `D-1` even if the two rules ever diver
 `rows/blockRowSpec.ts`. So the report and the web log can still disagree if the two fields ever
 diverge. Still deliberately left alone; the fix is to pick one field.
 
-### 6. `ProjectPage`'s progress summary is fabricated
+### 6. Resolved: `ProjectPage`'s progress summary is derived from the blocks
 
 `apps/web/src/app/ProjectPage.tsx` derives completion from `Math.round(boreholes.length * 0.7)` and
 feeds it to both the donut and the Completed/Remaining stats, and the boreholes table's status column
@@ -300,8 +351,20 @@ as reporting.
 
 The borehole log page deliberately has no status badge rather than invent a second fake one.
 
-*Half resolved 2026-08-25:* the hardcoded five-name team list is gone. The panel is now **People** and
-reads `project_to_user`. The fabricated completion figures are untouched.
+*Half resolved 2026-08-25:* the hardcoded five-name team list went. The panel is now **People** and
+reads `project_to_user`.
+
+*Fully resolved 2026-09-01.* `apps/web/src/supabase/fetchBoreholeStatuses.ts` derives the status from
+the blocks — no blocks is `notStarted`, an End of Borehole block is `completed`, anything else is
+`inProgress` — and `apps/web/src/data/boreholeStatus.ts` holds the labels, badge classes and tallies.
+The donut, the Completed/Remaining tiles and the table's status column now all read the same derived
+map, so they cannot disagree.
+
+Two things about it worth keeping: the status is derived on every read rather than stored on the
+borehole row, because the main writer of blocks is the offline app draining a CRUD queue and a stored
+copy would sit there labelled wrong after a failed sync with nothing to notice. And the read is
+**paged** at 1000 — it is the one query in the web app that already does what item *`fetchBlocksByBoreholeIds`
+reads only the first page* asks for, and is the worked example to copy.
 
 ### 7. `packages/core` is still duplicated into `apps/mobile`
 
@@ -348,8 +411,38 @@ them. `@mmsb/ags-excel` is their first consumer, and it writes them into `GEOL_L
 selects each stratum's hatch image. So every cored borehole currently exports a legend code with no
 image behind it.
 
-Only granite (810) is evidenced. Confirm the other three against the legend set before changing them
-rather than inferring from one workbook.
+*Fixed for new data 2026-09-01.* The codes are now granite 810 and schist/phyllite/slate all 812,
+confirmed against the legend set — the three metamorphics deliberately share one hatch.
+
+The trap worth recording, because fixing only half of it looks like fixing it: **`rockCode` is written
+into the stored payload at data-entry time**, by `RockPropertiesInputQuestions.tsx:30` ->
+`getRockCode()` -> `ROCK_TYPE_CODE_MAP` in **`apps/mobile/src/constants/rock.ts`**, and
+`@mmsb/ags-excel` reads `block.rockProperties.rockCode` off the payload (`blockFacts.ts:88`), never the
+constant. So core's copy has no runtime consumer at all; editing it alone changes nothing. Both copies
+now carry the new values — which is item 7's hand-sync debt in miniature.
+
+**Still outstanding: the backfill.** Every borehole logged before this keeps 840/873/872 in its
+payload and still exports a legend code with no image behind it. Size it first:
+
+```sql
+select payload->'rockProperties'->>'rockCode' as code, count(*)
+from blocks
+where payload->'rockProperties'->>'rockCode' in ('840', '873', '872')
+group by 1;
+```
+
+then rewrite, one code at a time so each pass is countable and reversible from a backup:
+
+```sql
+update blocks
+set payload = jsonb_set(payload::jsonb, '{rockProperties,rockCode}', '810'::jsonb)::text
+where payload->'rockProperties'->>'rockCode' = '840';
+-- then 873 -> 812, and 872 -> 812
+```
+
+Note `payload` is `text`, not `jsonb`, so the cast in and back out is load-bearing. Run it while no
+device is mid-sync: a queued block write carrying the old code would land after the update and put it
+back.
 
 ### 10. `SoilProperties` cannot express two secondary soil types
 
@@ -426,3 +519,38 @@ penetration, UD/MZ/PS is `penetrationDepthInMetres`, coring is the block interva
   the constant `RC` (the template already pre-filled `RC` from row 7 down, so only the first hole was
   ever actually blank), and `PROJ_ENG` is the project's consultant — it had been going to `PROJ_CONT`
   via the Project sheet's D9 instead of D7.
+- **`fetchBlocksByBoreholeIds` reads only the first page.** PostgREST caps rows per response (1000
+  by default) and truncates *silently* — a short page is indistinguishable from the end of the
+  table. The project-wide Excel export selects every block of every borehole in one unpaged
+  `.in()`, so a project past that cap exports a workbook that is quietly missing blocks, and
+  `sortAndReindexAllBlocks` then renumbers what survived, so the sample references come out wrong
+  rather than merely incomplete. It bites at roughly 1000 blocks per project — a handful of
+  well-logged boreholes. `apps/web/src/supabase/fetchBoreholeStatuses.ts` shows the fix: loop
+  `.order('id').range(offset, offset + PAGE_SIZE - 1)` until a short page arrives. Not done here
+  because the export additionally deserializes every payload, so paging it deserves a look at
+  whether the whole thing should stream.
+- ~~**The site plan on web.**~~ *Done 2026-09-01.* The borehole location plan the client supplies as a
+  PDF, one per project, behind a "Site Plan" row in the ProjectPage detail card. It is stored with
+  **no schema change at all**: the object key is `site-plans/<projects.id>.pdf` in a new `documents`
+  bucket, so the project id is *in* the path and nothing in Postgres records that a plan exists.
+  `packages/supabase/policies/documents.sql` carries the four policies, and two of its choices are
+  worth knowing before changing them. Writes are role-only (`role in (1, 2)`) and deliberately **not**
+  assignment-scoped: owners and admins hold no `project_to_user` row, so a project-scoped write
+  predicate would deny every upload the feature exists to allow — assignment scoping is meaningful on
+  read, where supervisors and viewers reach the policy, and meaningless on write, where they never do.
+  And unlike the photo bucket there **is** an UPDATE policy, because reissuing a revised drawing
+  overwrites the same key through `upsert: true`, which is an UPDATE rather than an INSERT.
+  A second bucket rather than `Testing` because `is_assigned_to_photo_object()` encodes the
+  assumption that every object in that bucket is a block photo.
+- **Plotting the boreholes themselves on a map.** Parked, and not for want of a library. `Borehole`
+  carries `eastingInMetres` / `northingInMetres`, but **nothing in this repo records which datum
+  those metres are in** — no EPSG code, no proj4, no lat/lng anywhere. Google Maps takes lat/lng
+  only, so a pin needs a projection conversion, and which conversion depends on an answer nobody has
+  written down: GDM2000 / Peninsular Malaysia RSO (EPSG:3375) and the Cassini-Soldner state grids are
+  both convertible, but a surveyor's arbitrary site grid with a local origin is **not convertible at
+  all** without a control point, and those are common on construction sites. It is also a per-project
+  property, not a global one — different clients hand over different grids. So the blocker is a
+  question for a human with the survey paperwork, not an implementation task. The site plan above is
+  what the field actually asked for, and it sidesteps this entirely by being a document rather than a
+  computation. If this is ever picked up, the datum has to become recorded data before any code is
+  written.

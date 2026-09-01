@@ -29,6 +29,24 @@ export function canManageProjectPeople(role: MemberRole | null): boolean {
   return role === 'owner' || role === 'admin';
 }
 
+// Who may upload, replace or remove a project's site plan. Owners and admins,
+// and its own function for the same reason as the two above.
+//
+// Unlike canEditBoreholeDetails below, this one matches the database exactly:
+// the write policies in packages/supabase/policies/documents.sql are
+// `get_current_user_role() in (1, 2)`, with no assignment clause. Anyone else
+// gets a 42501 from Storage, so hiding the control here only saves them the
+// error.
+//
+// Note the asymmetry with reading, which is deliberate and lives in the policy
+// rather than here: supervisors and viewers assigned to the project can open the
+// plan, they just cannot change it. There is no canViewSitePlan() to go with
+// this, because the page never has to ask — a viewer who may not read it gets
+// `null` back from fetchSitePlanUrl and sees "Not uploaded".
+export function canManageSitePlan(role: MemberRole | null): boolean {
+  return role === 'owner' || role === 'admin';
+}
+
 // Who may edit a borehole's details from the dashboard. Owners and admins, the
 // same `role_id in (1, 2)` shape as the two above, and its own function for the
 // same reason: it answers a third question.

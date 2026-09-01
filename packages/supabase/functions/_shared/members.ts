@@ -142,8 +142,8 @@ const BAN_FOREVER = '876000h'; // ~100 years
 //
 // Deliberately not deleteUser: every foreign key into auth.users in this project
 // is ON DELETE CASCADE, so a hard delete would take the user_to_role row (and
-// its deleted_at/deleted_by trail), plus every project_to_user and
-// borehole_to_user assignment, with it — and leave created_by/updated_by on all
+// its deleted_at/deleted_by trail), plus every project_to_user assignment, with
+// it — and leave created_by/updated_by on all
 // eight tables pointing at a user that no longer exists, since those columns
 // carry no foreign key to complain. A ban is the reversible version.
 export async function setUserBanned(

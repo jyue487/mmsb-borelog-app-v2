@@ -2,7 +2,6 @@ import { AttachmentTable, column, Schema, Table } from '@powersync/react-native'
 
 export const PROJECTS_TABLE = 'projects' as const;
 export const BOREHOLES_TABLE = 'boreholes' as const;
-export const BOREHOLE_TO_USER_TABLE = 'borehole_to_user' as const;
 export const BLOCK_TYPES_TABLE = 'block_types' as const;
 export const BLOCKS_TABLE = 'blocks' as const;
 export const BLOCK_PHOTOS_TABLE = 'block_photos' as const;
@@ -40,21 +39,6 @@ const boreholes = new Table(
     verifier_name: column.text,
     verifier_signature_base64: column.text,
     verifier_sign_date: column.text,
-    created_at: column.text,
-    created_by: column.text,
-    updated_at: column.text,
-    updated_by: column.text,
-    deleted_at: column.text,
-    deleted_by: column.text
-  },
-  { indexes: {} }
-);
-
-const borehole_to_user = new Table(
-  {
-    id: column.text,
-    borehole_id: column.text,
-    user_id: column.text,
     created_at: column.text,
     created_by: column.text,
     updated_at: column.text,
@@ -113,7 +97,6 @@ const block_photos = new Table(
 export const AppSchema = new Schema({
   projects,
   boreholes,
-  borehole_to_user,
   block_types,
   blocks,
   block_photos,
