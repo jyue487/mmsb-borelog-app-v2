@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, CORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { CoringBlock, createDefaultCoringBlock } from "@/src/interfaces/CoringBlock";
-import { RockProperties } from "@/src/interfaces/RockProperties";
+import {
+  BaseBlock,
+  ColourProperties,
+  CORING_BLOCK_TYPE_ID,
+  CoringBlock,
+  createDefaultCoringBlock,
+  DayWorkStatus,
+  RockProperties,
+} from '@mmsb/core';
 import { checkAndReturnCoringBlock } from "@/src/utils/block/checkFunctions/checkAndReturnCoringBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { isNonNegative, roundToDecimalPoint } from "@/src/utils/numbers";

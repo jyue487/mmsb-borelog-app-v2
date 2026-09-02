@@ -5,7 +5,28 @@ import { CoringAndCavityBlockDetailsInputForm } from '@/src/components/blockDeta
 import { OthersInputForm } from "@/src/components/blockDetailsInputForms/others/OthersInputForm";
 import { UndisturbedSampleInputForm } from '@/src/components/blockDetailsInputForms/undisturbedSample/UndisturbedSampleInputForm';
 import { styles } from "@/src/constants/styles";
-import { ASPHALT_BLOCK_TYPE_ID, Block, BlockTypeId, CAVITY_BLOCK_TYPE_ID, CONCRETE_SLAB_BLOCK_TYPE_ID, CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID, CUSTOM_BLOCK_TYPE_ID, END_OF_BOREHOLE_BLOCK_TYPE_ID, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, HA_BLOCK_TYPE_ID, LUGEON_TEST_BLOCK_TYPE_ID, MZ_BLOCK_TYPE_ID, PRESSUREMETER_TEST_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID, SPT_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID, VANE_SHEAR_TEST_BLOCK_TYPE_ID, WASH_BORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
+import {
+  ASPHALT_BLOCK_TYPE_ID,
+  Block,
+  BlockTypeId,
+  CAVITY_BLOCK_TYPE_ID,
+  CONCRETE_SLAB_BLOCK_TYPE_ID,
+  CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  CORING_BLOCK_TYPE_ID,
+  CUSTOM_BLOCK_TYPE_ID,
+  END_OF_BOREHOLE_BLOCK_TYPE_ID,
+  FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  HA_BLOCK_TYPE_ID,
+  LUGEON_TEST_BLOCK_TYPE_ID,
+  MZ_BLOCK_TYPE_ID,
+  PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+  PS_BLOCK_TYPE_ID,
+  RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  SPT_BLOCK_TYPE_ID,
+  UD_BLOCK_TYPE_ID,
+  VANE_SHEAR_TEST_BLOCK_TYPE_ID,
+  WASH_BORING_BLOCK_TYPE_ID,
+} from '@mmsb/core';
 import { addBlockAsync } from "@/src/utils/block/addBlockFunctions/addBlockAsync";
 import { deleteBlockAsync } from "@/src/utils/block/deleteBlockFunctions/deleteBlockAsync";
 import { editBlockAsync } from "@/src/utils/block/editBlockFunctions/editBlockAsync";

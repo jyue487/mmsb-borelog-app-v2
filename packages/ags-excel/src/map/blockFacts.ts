@@ -148,10 +148,18 @@ export interface SampleFacts {
  * Codes and reference formats are taken from real workbooks: an SPT at 3.0 m appears as
  * type `D`, reference `D1/P1`, spanning 3.0–3.45. Note the reference puts the disturbed
  * sample first, the reverse of the `P3/D3` label the PDF prints.
+ *
+ * A negative sample index means the reindexer withheld a number because nothing was
+ * recovered — the PDF prints `*` there. Nothing recovered is no sample, so those take
+ * the null path rather than minting a reference: `D-1/P3` is not a reference any human
+ * would write, and a second no-recovery sample in the same hole would repeat it.
  */
 export function sampleOf(block: Block): SampleFacts | null {
 	switch (block.blockTypeId) {
 		case SPT_BLOCK_TYPE_ID:
+			if (block.disturbedSampleIndex < 0) {
+				return null;
+			}
 			return {
 				sampleType: DISTURBED_SAMPLE_SYMBOL,
 				sampleReference: `${DISTURBED_SAMPLE_SYMBOL}${block.disturbedSampleIndex}/${SPT_SYMBOL}${block.sptIndex}`,
@@ -161,6 +169,9 @@ export function sampleOf(block: Block): SampleFacts | null {
 		case UD_BLOCK_TYPE_ID:
 		case MZ_BLOCK_TYPE_ID:
 		case PS_BLOCK_TYPE_ID: {
+			if (block.sampleIndex < 0) {
+				return null;
+			}
 			const symbol =
 				block.blockTypeId === UD_BLOCK_TYPE_ID
 					? UD_SYMBOL
@@ -176,6 +187,9 @@ export function sampleOf(block: Block): SampleFacts | null {
 			};
 		}
 		case CORING_BLOCK_TYPE_ID:
+			if (block.rockSampleIndex < 0) {
+				return null;
+			}
 			return {
 				sampleType: CORING_SYMBOL,
 				sampleReference: `${CORING_SYMBOL}${block.rockSampleIndex}`,

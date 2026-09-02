@@ -4,10 +4,8 @@ import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { ColourPropertiesInputQuestions } from "@/src/components/inputQuestions/ColourPropertiesInputQuestions";
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
 import { SoilPropertiesInputQuestions } from "@/src/components/inputQuestions/SoilPropertiesInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
+import { ColourProperties, DayWorkStatus, SoilProperties } from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
 import { stringToDecimalPoint } from "@/src/utils/numbers";
 
 type Params = {

@@ -1,7 +1,5 @@
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { CavityBlock } from "@/src/interfaces/CavityBlock";
+import { BaseBlock, Block, CAVITY_BLOCK_TYPE_ID, CavityBlock, DayWorkStatus } from '@mmsb/core';
 import { checkAndReturnDayWorkStatus } from "@/src/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat } from "@/src/utils/numbers";

@@ -1,5 +1,5 @@
-import * as BlockFile from "@/src/interfaces/Block";
-import { Block, BlockTypeId } from "@/src/interfaces/Block";
+import * as BlockFile from '@mmsb/core';
+import { Block, BlockTypeId } from '@mmsb/core';
 import { reindexConstantHeadPermeabilityTestBlocks } from "./reindexConstantHeadPermeabilityTestBlocks";
 import { reindexCoringBlocks } from "./reindexCoringBlocks";
 import { reindexFallingHeadPermeabilityTestBlocks } from "./reindexFallingHeadPermeabilityTestBlocks";

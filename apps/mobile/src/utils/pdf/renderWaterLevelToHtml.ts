@@ -1,4 +1,4 @@
-import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from "@/src/constants/DayWorkStatus";
+import { DAY_CONTINUE_WORK_TYPE, DayWorkStatus } from '@mmsb/core';
 
 export function renderWaterLevelToHtml(dayWorkStatus: DayWorkStatus) {
   if (dayWorkStatus.dayWorkStatusType === DAY_CONTINUE_WORK_TYPE) {

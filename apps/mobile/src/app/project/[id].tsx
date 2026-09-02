@@ -8,8 +8,7 @@ import { BoreholeComponent } from '@/src/components/borehole/BoreholeComponent';
 import { useAuth } from '@/src/context/AuthContextProvider';
 import { addBoreholeDbAsync } from '@/src/db/borehole/addBoreholeDbAsync';
 import { editBoreholeDbAsync } from '@/src/db/borehole/editBoreholeDbAsync';
-import { AddBoreholeParams, Borehole, EditBoreholeParams } from '@/src/interfaces/Borehole';
-import { deserializeDateTime } from '@/src/json/deserializeDateTime';
+import { AddBoreholeParams, Borehole, EditBoreholeParams, toDate } from '@mmsb/core';
 import { powersync, setupPowerSync } from '@/src/powersync/system';
 import { throwError } from '@/src/utils/error/throwError';
 
@@ -82,7 +81,7 @@ export default function ProjectScreen() {
       drillerName: row.driller_name,
       verifierName: row.verifier_name,
       verifierSignatureBase64: row.verifier_signature_base64,
-      verifierSignDate: (row.verifier_sign_date === null) ? null : deserializeDateTime(row.verifier_sign_date),
+      verifierSignDate: toDate(row.verifier_sign_date),
     }));
     setBoreholes(boreholes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })));
   };

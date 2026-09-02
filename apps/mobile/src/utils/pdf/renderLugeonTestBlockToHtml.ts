@@ -1,6 +1,4 @@
-import { LUGEON_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { LugeonTestBlock } from "@/src/interfaces/LugeonTestBlock";
+import { BaseBlock, LUGEON_TEST_SYMBOL, LugeonTestBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

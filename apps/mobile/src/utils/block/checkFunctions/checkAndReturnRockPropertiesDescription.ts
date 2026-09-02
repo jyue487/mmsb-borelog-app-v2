@@ -1,4 +1,4 @@
-import { RockProperties } from "@/src/interfaces/RockProperties";
+import { RockProperties } from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 
 export function checkAndReturnRockPropertiesDescription({

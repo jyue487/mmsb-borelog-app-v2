@@ -109,8 +109,14 @@ const REINDEX_RULES: Record<BlockTypeId, ReindexRule[]> = {
 };
 
 export function sortAndReindexAllBlocks(blocks: Block[]): Block[] {
+  // Depth first, then id. Ties on depth are normal here — a permeability test starts
+  // inside its host SPT's interval — and `Array.prototype.sort` is stable, so without a
+  // second key a tie keeps whatever order the transport returned, which Postgres does
+  // not promise. `id` is the only key that is total, non-null and identical on both
+  // clients; apps/mobile's sortBlocks uses the same pair. docs/follow-ups.md item 1.
   const sortedBlocks = [...blocks].sort(
-    (first, second) => first.topDepthInMetres - second.topDepthInMetres,
+    (first, second) =>
+      first.topDepthInMetres - second.topDepthInMetres || first.id.localeCompare(second.id),
   );
 
   // Each counter is per (block type, field): the three permeability tests share the

@@ -1,6 +1,10 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, Block, WASH_BORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { WashBoringBlock } from "@/src/interfaces/WashBoringBlock";
+import {
+  BaseBlock,
+  Block,
+  DayWorkStatus,
+  WASH_BORING_BLOCK_TYPE_ID,
+  WashBoringBlock,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

@@ -1,4 +1,4 @@
-import { AddBoreholeParams, Borehole } from "@/src/interfaces/Borehole";
+import { AddBoreholeParams, Borehole } from '@mmsb/core';
 import { PowerSyncDatabase } from "@powersync/react-native";
 import { randomUUID } from "expo-crypto";
 

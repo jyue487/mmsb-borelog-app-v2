@@ -1,4 +1,4 @@
-import { MEMBER_ROLE_LIST, type Member, type MemberRole } from "@mmsb/core";
+import { MEMBER_ROLE_LIST, toDate, type Member, type MemberRole } from "@mmsb/core";
 
 // Single source of truth for the user_to_role columns every query selects. As
 // with PROJECT_COLUMNS, there are no generated DB types, so a column missing
@@ -64,9 +64,9 @@ export function mapMemberRow(row: MemberRow): Member {
     // Intl.DateTimeFormat, which throws RangeError on anything that is not a
     // real Date — so the revive has to happen here.
     createdAt: new Date(row.created_at),
-    // Stays null for a current member. `?? null` rather than a bare cast because
-    // a column missing from MEMBER_COLUMNS arrives as `undefined`, and an
-    // undefined here would read as "removed" in every `!== null` test.
-    deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+    // Stays null for a current member. toDate rather than a bare cast because a column
+    // missing from MEMBER_COLUMNS arrives as `undefined`, and an undefined here would
+    // read as "removed" in every `!== null` test.
+    deletedAt: toDate(row.deleted_at),
   };
 }

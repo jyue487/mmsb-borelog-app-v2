@@ -1,8 +1,12 @@
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from "@/src/components/inputQuestions/DayWorkStatusInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { createDefaultPressuremeterTestBlock, PressuremeterTestBlock } from "@/src/interfaces/PressuremeterTestBlock";
+import {
+  BaseBlock,
+  createDefaultPressuremeterTestBlock,
+  DayWorkStatus,
+  PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+  PressuremeterTestBlock,
+} from '@mmsb/core';
 import { checkAndReturnPressuremeterTestBlock } from "@/src/utils/block/checkFunctions/checkAndReturnPressuremeterTestBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { useEffect, useState } from "react";

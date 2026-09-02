@@ -1,7 +1,10 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { LUGEON_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, LUGEON_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { LugeonTestBlock } from "@/src/interfaces/LugeonTestBlock";
+import {
+  BaseBlock,
+  DayWorkStatus,
+  LUGEON_TEST_BLOCK_TYPE_ID,
+  LUGEON_TEST_SYMBOL,
+  LugeonTestBlock,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

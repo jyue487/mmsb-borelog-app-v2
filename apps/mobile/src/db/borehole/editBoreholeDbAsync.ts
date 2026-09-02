@@ -1,4 +1,4 @@
-import { EditBoreholeParams } from "@/src/interfaces/Borehole";
+import { EditBoreholeParams } from '@mmsb/core';
 import { PowerSyncDatabase } from "@powersync/react-native";
 
 // `name` is deliberately absent from the SET list even though EditBoreholeParams

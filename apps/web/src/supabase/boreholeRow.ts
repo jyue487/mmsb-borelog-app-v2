@@ -1,4 +1,4 @@
-import type { Borehole } from '@mmsb/core';
+import { toDate, type Borehole } from '@mmsb/core';
 
 // Single source of truth for the boreholes columns every query selects, the same
 // role projectRow.ts plays for projects. There are no generated DB types, so a
@@ -51,9 +51,9 @@ export function mapBoreholeRow(row: BoreholeRow): Borehole {
     drillerName: row.driller_name ?? '',
     verifierName: row.verifier_name ?? '',
     verifierSignatureBase64: row.verifier_signature_base64 ?? '',
-    // Hardcoded null, matching what ProjectPage and BoreholePage each did with
-    // their own copy of this mapping. `verifier_sign_date` is still selected and
-    // still discarded; docs/follow-ups.md item 2 is unchanged by the extraction.
-    verifierSignDate: null,
+    // The report's footer draws this (packages/report/src/build/buildFooter.ts), so a
+    // web-generated PDF used to print a blank verifier date where the same borehole
+    // exported from mobile printed it. Mobile maps the column the same way.
+    verifierSignDate: toDate(row.verifier_sign_date),
   };
 }

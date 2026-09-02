@@ -3,9 +3,13 @@ import { Text, TextInput, View } from "react-native";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { AsphaltBlock, createDefaultAsphaltBlock } from "@/src/interfaces/AsphaltBlock";
-import { ASPHALT_BLOCK_TYPE_ID, BaseBlock } from "@/src/interfaces/Block";
+import {
+  ASPHALT_BLOCK_TYPE_ID,
+  AsphaltBlock,
+  BaseBlock,
+  createDefaultAsphaltBlock,
+  DayWorkStatus,
+} from '@mmsb/core';
 import { checkAndReturnAsphaltBlock } from "@/src/utils/block/checkFunctions/checkAndReturnAsphaltBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 

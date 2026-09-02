@@ -4,7 +4,9 @@ Deferred work, triaged out of the review of the web borehole log page (August 20
 what is wrong, **why it is currently harmless**, and what would make it bite — because most of these
 are latent, and knowing the trigger is the point.
 
-Nothing here is a live user-facing bug. That is deliberate: live bugs get fixed, not filed.
+Mostly nothing here is a live user-facing bug — live bugs get fixed, not filed. Twice now an entry
+filed as latent turned out not to be (items 2 and 12), so "why it is currently harmless" is a claim to
+re-check, not to inherit.
 
 ## Known defects and debt
 
@@ -44,27 +46,31 @@ CLI bug. `pnpm sb storage ls ss:///Testing/` does work, with the trailing slash.
 
 Leave `.emptyFolderPlaceholder`; the dashboard creates it and the bucket renders oddly without it.
 
-*Where they may have come from (2026-09-01).* Item 4 was editing a block by deleting its row and
-inserting a new one under a new id, which left its photos behind. Whether that produced *these*
-orphans — objects with no `block_photos` row — depends on something not recorded in this repo: whether
-`block_photos.block_id` carries `ON DELETE CASCADE` to `blocks`. With a cascade, the block delete
-syncing to Postgres takes the photo rows with it and strands exactly this shape of object, since
-nothing deletes from Storage. Without one, the same edit leaves *dangling rows* instead — a different
-orphan class, and these four came from something else. Settle it before assuming:
+*Where they came from — answered 2026-09-02.* **Every foreign key in the `public` schema cascades**,
+`user_to_role.role_id -> roles` alone excepted:
+
+| child | constraint | parent | on delete |
+| --- | --- | --- | --- |
+| `block_photos.block_id` | `block_photos_block_id_fkey` | `blocks` | cascade |
+| `blocks.borehole_id` | `blocks_borehole_id_fkey` | `boreholes` | cascade |
+| `blocks.block_type_id` | `blocks_block_type_id_fkey` | `block_types` | cascade |
+| `boreholes.project_id` | `boreholes_project_id_fkey` | `projects` | cascade |
+| `project_to_user.project_id` / `.user_id` | | `projects`, `auth.users` | cascade |
+| `user_to_role.user_id` | | `auth.users` | cascade |
+| `user_to_role.role_id` | `profiles_role_id_fkey` | `roles` | no action |
 
 ```sql
-select confdeltype from pg_constraint
-where conrelid = 'public.block_photos'::regclass and contype = 'f';
+select conrelid::regclass::text as child, conname, confrelid::regclass::text as parent, confdeltype
+from pg_constraint where contype = 'f' and connamespace = 'public'::regnamespace order by 1;
 -- 'c' = cascade, 'a' = no action
 ```
 
-Either way item 4's fix stops new ones. If the answer is "no cascade", also check for rows whose
-`block_id` names no block — those are invisible photos rather than unreachable files:
-
-```sql
-select bp.id, bp.block_id from public.block_photos bp
-where not exists (select 1 from public.blocks b where b.id = bp.block_id);
-```
+So item 4's edit path is a sufficient explanation for these four: the block delete synced to Postgres,
+the cascade took the `block_photos` rows with it, and nothing deletes from Storage — the only deleter
+is a *device* noticing its own row disappear (`SupabaseRemoteStorageAdapter.ts`), which never fires
+for a delete that happened server-side. Item 4's fix stops new ones from that direction; a cascade
+from any other direction still strands bytes, which is the whole of the borehole-delete entry below.
+There is no dangling-row class to look for — with a cascade there cannot be one.
 
 ### 0e. Resolved: the `blocks` and `block_photos` policies
 
@@ -162,19 +168,33 @@ needs its app data cleared or a reinstall. No app-code change can reach it.
 
 ### 0c. `BoreholePage` reports "no data" when it means "no permission"
 
-`apps/web/src/app/BoreholePage.tsx` renders *"No blocks logged — Nothing has been recorded for this
-borehole yet"* whenever the blocks query returns an empty array. RLS returns an empty array rather
-than an error, so a user who can list a borehole but cannot read its blocks gets that message and
-goes looking for missing field data.
+*Re-analysed 2026-09-02, and the trigger this entry used to give does not exist. Left open, because
+the defect underneath it does — but it is a different one, and narrower than it looked.*
 
-Still reachable after the 0e fix, and now for a reason that will come up routinely: `boreholes` lets
-a user list a borehole they created (`created_by::uuid = auth.uid()`), while `blocks` has no such
-clause — so a supervisor who created a borehole and was then unassigned from its project sees the
-borehole and an empty log. The gap reappears any time the predicates on the two tables drift, which
-they already have.
+`apps/web/src/app/BoreholePage.tsx:390-405` renders *"No blocks logged — Nothing has been recorded
+for this borehole yet"* whenever the blocks query returns an empty array. RLS returns an empty array
+rather than an error, so nothing distinguishes "no field data" from "not yours to read".
 
-The page should tell the two apart rather than guess — for example by checking assignment explicitly
-when the result is empty, and showing a permission message instead.
+The scenario this entry claimed — a supervisor who created a borehole, was unassigned, and sees the
+borehole with an empty log — **cannot happen through this page.** The effect reads `projects` first
+(`:119`, `fetchProjectByCode`), and the `projects` SELECT policy is assignment-only with no
+`created_by` clause and no role fallback (`policies/project_to_user.sql:133-144`). An unassigned
+supervisor therefore fails at the *project* query, whose `.single()` throws PGRST116, and lands in
+the "Unable to load borehole" card. Walking the four roles: owner and admin bypass all three tables;
+an assigned supervisor or viewer passes all three; an unassigned one never reaches the blocks query;
+and a removed member (`get_current_user_role()` null) is stopped earlier still by `ProtectedRoute`.
+
+So the reachable defect is the error path, not the empty one: **that card shows raw PostgREST text**
+(`:172-181` assigns `error.message` verbatim), so "you are not on this project" reads as
+*"JSON object requested, multiple (or no) rows returned"*. Fixing it means `.maybeSingle()` on both
+lookups and a purpose-written "not found, or you do not have access" message.
+
+The empty-blocks lie is still real, just latent: it needs the `boreholes`/`blocks` predicates to
+drift apart *and* something to admit a user the `projects` policy would not. The drift-proof guard,
+if it is ever wanted, is to call the blocks policy's own predicate rather than restate it —
+`is_assigned_to_borehole_project(borehole_id)` is `security definer` and executable by
+`authenticated`, so `supabase.rpc()` reaches it, and combined with a client-side `role in (1, 2)`
+it *is* the SELECT predicate on `blocks`.
 
 ### 0d. Resolved: assignment moved from the borehole to the project
 
@@ -266,61 +286,62 @@ a stalled queue on the first borehole anyone adds. Either keep it off, or add
 `"supervisors insert boreholes on their projects"` alongside the update policy first — and decide
 then whether a supervisor naming a new borehole is consistent with not being able to rename one.
 
-### 1. The web blocks query has no deterministic order
+### 1. Resolved: block order is deterministic on both clients
 
-`apps/web/src/app/BoreholePage.tsx:121` selects blocks with no `ORDER BY`, and
-`apps/web/src/blocks/sortAndReindexAllBlocks.ts` sorts on `topDepthInMetres` with a stable sort. Postgres
-makes no promise about row order without `ORDER BY`, so blocks sharing a top depth are left in whatever
-order the database happened to return and can swap between page loads.
+Neither client had an order worth matching. Web sorted on `topDepthInMetres` alone with a stable sort
+over rows Postgres returned for a query with no `ORDER BY`; mobile did the same over
+`SELECT * FROM blocks WHERE borehole_id = ?`, which on device is a full scan of a PowerSync view
+declared with `{ indexes: {} }` over `json_extract` columns — so its tie order is local rowid order,
+i.e. whatever order sync happened to insert rows in, and it changes on reinstall.
 
-*Why it is harmless now:* ties are between blocks of different types, which only affects display order,
-not numbering.
+*Fixed 2026-09-02* by adding the same second sort key to both copies: depth, then `id`. `id` is the
+only key that is total, non-null and identical on both clients, and
+`apps/web/src/supabase/fetchBoreholeStatuses.ts` already used it as the stable key for `blocks`. The
+two implementations agree on numbering for a given array order — web's single-pass rule table and
+mobile's per-type loop both consume the array in order — so one shared tiebreak is the whole fix.
+`apps/mobile/src/utils/block/sortBlocksFunctions/sortBlocks.ts` also stopped sorting the caller's
+array in place, which web never did.
 
-*What makes it bite:* two blocks of the **same** type at the same top depth would get their indices
-swapped, so `P4`/`P5` could trade places between loads. Overlapping blocks are normal in this domain — a
-permeability test starting inside an SPT interval is called out in `CLAUDE.md`.
+The two web queries that had no `ORDER BY` (`BoreholePage.tsx` and `fetchBlocksByBoreholeIds.ts`) now
+carry `.order('id')` as well. That is for reproducibility while debugging, not correctness — the
+in-memory sort is what the numbering depends on.
 
-*Fix:* add a tiebreak that matches mobile's effective order. Mobile reads via
-`SELECT * FROM blocks WHERE borehole_id = ?` against local SQLite, so its order is incidental too —
-establish what it actually is before picking, otherwise the two clients will disagree.
+### 2. Resolved: `verifierSignDate` is mapped
 
-### 2. `verifierSignDate` is hardcoded to null
+`BOREHOLE_COLUMNS` in `apps/web/src/supabase/boreholeRow.ts` selected `verifier_sign_date` and
+`mapBoreholeRow` right below it assigned `null` regardless.
 
-`BOREHOLE_COLUMNS` in `apps/web/src/supabase/boreholeRow.ts` selects `verifier_sign_date` and
-`mapBoreholeRow` right below it discards it, assigning `null` to the mapped `Borehole`. Left as-is
-deliberately — changing it would silently alter behaviour — but one of the two is wrong: either the
-column should be mapped, or it should stop being selected.
+This was filed as latent and was not: `packages/report/src/build/buildFooter.ts:167` draws the
+verifier date, and web has generated PDFs since 2026-08-29 — so the same borehole exported from the
+dashboard and from the field app disagreed. What hid it is that nothing has ever written the column
+(all 17 rows are null as of 2026-09-02), so the two outputs happened to match.
 
-Now a one-line fix rather than a three-site one: the column list and the mapping used to be
-copy-pasted into `ProjectPage`, `BoreholePage` and `AddBulkBoreholesModal`, and were consolidated
-when the borehole edit modal needed a fourth copy.
+*Fixed 2026-09-02.* The mapping is `toDate(row.verifier_sign_date)`, the same shape mobile uses at
+`fetchBoreholeByIdAsync.ts`. `toDate` is now shared — see item 3.
 
-### 3. `deserializeDateTime` turns null into the epoch
+### 3. Resolved: `deserializeDateTime` turned null into the epoch
 
-`apps/mobile/src/json/deserializeDateTime.ts` is `new Date(datetime)`. `new Date(null)` is
-1970-01-01T00:00:00Z, not `null`, so any nullable `Date` deserialises to the epoch and contradicts its
-own declared type.
+`apps/mobile/src/json/deserializeDateTime.ts` was `new Date(datetime)` typed `Date`. `new Date(null)`
+is 1970-01-01T00:00:00Z, not `null`, so every nullable `Date` deserialised to the epoch and
+contradicted its own declared type.
 
-*Why it is harmless now:* every render path for `installationDate` checks `otherInstallations !== NONE`
-first — `renderEndOfBoreholeBlockToHtml.ts:15` returns an empty cell, and
-`EndOfBoreholeBlockComponent.tsx:25` sits inside that guard — and
-`checkAndReturnEndOfBoreholeBlock.ts:44` refuses to build such a block unless both dates are present.
-A consequence worth noting: this makes the two inner null-guards, and the
-`throwError('Installation Date and Time is Required')` at `renderEndOfBoreholeBlockToHtml.ts:19`,
-**unreachable code**.
+It was reachable, not theoretical. Editing is a payload rewrite seeded from the deserialised block
+(`EndOfBoreholeBlockDetailsInputForm.tsx`), and the installations dropdown is the only thing that
+nulls the dates (`EndOfBoreholeInputQuestions.tsx`) — so opening an existing `NONE` end-of-borehole
+block, changing the remarks and saving without touching the dropdown wrote the epoch into the payload
+where `null` used to be. Nothing looked different. Checked before the fix: 0 of 21 stored payloads
+carry an epoch, so no data was corrupted.
 
-*What makes it bite:* editing is delete-then-re-add (`BlockDetailsInputForm.tsx:83`) and the edit form
-seeds its state from the deserialised block (`EndOfBoreholeBlockDetailsInputForm.tsx:15`). The
-installations dropdown only nulls the dates in its `onChange`. So opening an existing `NONE`
-end-of-borehole block, changing the remarks, and saving without touching the dropdown writes the epoch
-into the stored payload where `null` used to be. Nothing looks different; the data is just wrong from
-then on.
+*Fixed 2026-09-02*, by deleting the function rather than patching it — see item 7's Layer C. Both
+clients now parse through `toDate` in `@mmsb/core`, which returns `Date | null` and also maps an
+Invalid Date to null instead of letting it render as `NaN/NaN/NaN`. Two consequences worth knowing:
 
-The same one-liner also makes every block's `updatedAt` an epoch, which
-`fetchAllBlocksByBoreholeIdDbAsync` then overwrites with the raw column *string* — so `Block.updatedAt`
-is a string at runtime despite being typed `Date | null`. Nothing renders it.
-
-The web parser (`apps/web/src/blocks/parseBlockPayload.ts`) handles this correctly and is unaffected.
+- The same change removed `fetchAllBlocksByBoreholeIdDbAsync`'s habit of overwriting `createdAt` and
+  `updatedAt` with the raw column *strings* on top of the deserialised value, so `Block.updatedAt` is
+  no longer a string at runtime despite being typed `Date | null`.
+- The two inner null-guards this entry used to call unreachable — `EndOfBoreholeBlockComponent.tsx`
+  and the `throwError('Installation Date and Time is Required')` in `renderEndOfBoreholeBlockToHtml.ts`
+  — are reachable again, because a `NONE` block now really does carry `null`.
 
 ### 4. Resolved: the edit path re-minted the block id and orphaned its photos
 
@@ -364,19 +385,35 @@ no longer carries a DELETE followed by an INSERT, a window in which a crash lost
 Still not set: `updated_by`. `addBlockDbAsync` does not set `created_by` either, and populating one half
 of that pair would be inconsistent — both belong in one later pass.
 
-### 5. SPT sample numbering is gated on two different fields
+### 5. Resolved: one field decides a sample number
 
-`reindexSptBlocks.ts` skips `disturbedSampleIndex` when `recoveryLengthInMillimetres === 0`;
-`SptBlockComponent.tsx` prints `*` when `recoveryInPercentage === 0`. They normally agree, so this was
-left alone on purpose.
+Three places decided independently whether a sample gets a number or a `*`:
+`reindexSptBlocks.ts` withheld the index when `recoveryLengthInMillimetres === 0`;
+`SptBlockComponent.tsx` and `packages/report`'s `sampleNumber()` printed `*` when
+`recoveryInPercentage === 0`; and `apps/web`'s `blockGutterSpec.ts` printed `*` when the index was
+negative. The first two normally agree because the percentage is *derived* from the length — but
+through `.toFixed(1)` (`checkAndReturnSptBlock.ts`), so a nonzero length under 0.05 % of penetration
+rounds to `0` and they part company. The defaults part company too: both fields seed `-1`, which
+satisfies neither rule.
 
-The web port follows the **reindexer**, since that is what reaches the PDF, and prints `*` whenever the
-index is negative — so it cannot render `D-1` even if the two rules ever diverge.
+*Fixed 2026-09-02.* `recoveryLengthInMillimetres` wins, and every consumer now reads it the way web
+already did — **off the reindexer's output** (`index < 0`) rather than re-deriving the rule. That
+makes the reindexer the single decision point, and it generalises: UD/MZ/PS and coring keep their own
+`recoveryInPercentage` / `coreRecoveryInPercentage` rules without a special case, because their
+reindexers encode them.
 
-*Note 2026-08-29:* `packages/report` now owns the printed row and follows the **component's** rule
-(`recoveryInPercentage === 0`), which is what the old PDF renderers used — see `sampleNumber()` in
-`rows/blockRowSpec.ts`. So the report and the web log can still disagree if the two fields ever
-diverge. Still deliberately left alone; the fix is to pick one field.
+Changed: `sampleNumber()` in `packages/report/src/rows/blockRowSpec.ts` (now takes the index alone,
+covering SPT, UD/MZ/PS and coring) and the five `src/components/blockComponents/*BlockComponent.tsx`
+that printed the star.
+
+A fourth consumer had no rule at all: `packages/ags-excel`'s `sampleOf()` emitted the literal
+reference `D-1/P3` into the Samples sheet for a zero-recovery SPT. It now returns `null` for a
+negative index — nothing recovered is no sample — which is the path it already took for a hand-auger
+interval with `requireSample` false. Returning a `D*` reference instead was rejected: `SAMP_REF` is a
+key, and a second no-recovery sample in the same hole would repeat it.
+
+`apps/mobile/src/utils/pdf/renderSptBlockToHtml.ts` and its siblings were **not** changed — see item
+8, they are the parked pipeline and now disagree with the live one.
 
 ### 6. Resolved: `ProjectPage`'s progress summary is derived from the blocks
 
@@ -403,24 +440,67 @@ copy would sit there labelled wrong after a failed sync with nothing to notice. 
 **paged** at 1000 — it is the one query in the web app that already does what item *`fetchBlocksByBoreholeIds`
 reads only the first page* asks for, and is the worked example to copy.
 
-### 7. `packages/core` is still duplicated into `apps/mobile`
+### 7. Resolved: `apps/mobile` no longer duplicates `packages/core`
 
-Core now exports the block domain (interfaces, `*_BLOCK_TYPE_ID` constants, `DayWorkStatus`, symbols) and
-the web app consumes it. `apps/mobile` still keeps its own hand-synced copy of all of that **and** the 18
-per-type deserializers under `src/json/**`.
+The repo's main structural debt, closed 2026-09-02 in three layers.
 
-*Half resolved 2026-08-29:* the risky half is done. `apps/mobile/metro.config.js` now exists and mobile
-depends on `@mmsb/core` and `@mmsb/report`; workspace resolution through pnpm's symlinks is proven on a
-real device. Note `disableHierarchicalLookup` is deliberately NOT set — pdf-lib resolves via
-`packages/report/node_modules`, which that flag would break.
+**Layer A — constants.** `packages/core/src/index.ts` now exports `colour`, `rock`, `soil` and
+`textSize` alongside the four it already did, and mobile's eight copies are gone. Six of the eight
+were byte-identical; `DayWorkStatus.ts` differed only in `import type`. `rock.ts` differed in
+`SCHIST_ROCK_CODE` — 812 in mobile, 813 in core, drifted apart in `fbbf41f` — which is exactly the
+failure this entry existed to stop. Core's 813 won; see item 9.
 
-What remains is only the mechanical part: making `apps/mobile/src/interfaces/**` re-export from
-`@mmsb/core` instead of duplicating it, plus the 18 per-type deserializers under `src/json/**`. The
-diff is now known to be import-style only, apart from `Project.terminationCriteria`.
+**Layer B — interfaces.** `apps/mobile/src/interfaces/**` is deleted and its ~203 importers rewritten
+to `@mmsb/core`. Two files stayed: `Project.ts`, because mobile must not gain `terminationCriteria`,
+and `Migration.ts`, which imports `expo-sqlite` and is part of the dead pre-PowerSync `src/db/**`
+tree. Everything else differed from core by import style alone.
 
-Also still dead: `packages/core/src/constants/textSize.ts` — not exported from `index.ts` and not
-deep-imported anywhere. It exists only for the old HTML PDF font sizing. Mobile's copy is still in
-use by the parked legacy pipeline; remove both when that pipeline goes.
+**Layer C — the JSON tree.** This turned out to be a deletion, not a move. All 44 files under
+`apps/mobile/src/json/**` were pure field copying — the 18 serializers were one line of
+`JSON.stringify(block)` each, and the per-type deserializers copied every field verbatim. The only
+semantic work in the tree was `Date` revival, which `apps/web/src/blocks/parseBlockPayload.ts` already
+did generically and exhaustively. That file moved into `packages/core/src/json/` as `parseBlock`,
+`serializeBlock`, `parseUntilObject` and `toDate`; both clients call it; the 44 files and
+`src/utils/json/parseUntilObject.ts` are gone. Only six mobile files imported from that tree.
+
+Being explicit field-by-field was itself the hazard this entry warned about: a hand-written copy omits
+a new field silently, where a spread carries it.
+
+*Still dead:* `packages/core/src/constants/textSize.ts` has exactly one consumer, the parked HTML PDF
+pipeline. It is exported now so mobile stopped carrying a second copy; delete it with that pipeline.
+
+#### The EAS question, answered
+
+*Can the mobile app still be built through EAS with the domain living in a workspace package?* **Yes,
+and it already was** — `@mmsb/core`'s raw TypeScript has been in the device bundle since the
+`@mmsb/report` migration, because report imports runtime constants (not just types) from core in five
+files on the live `sharePdf` path. Direct imports only add a second edge to a node already in the
+graph. Verified with a full `npx expo export --platform android`: 1,895 modules, bundled clean.
+
+What makes it work is `apps/mobile/metro.config.js`: `watchFolders = [workspaceRoot]` puts
+`packages/*/src/*.ts` inside Metro's project scope, so `babel-preset-expo` transpiles it like app
+source. Nothing resolves to `dist/` — it is gitignored, untracked, and EAS runs no build step before
+bundling (`apps/mobile` has no `build` task, and there are no `eas-build-*` or `postinstall` hooks
+anywhere in the repo).
+
+Three traps, all of which fail at your desk rather than on EAS if you run the pre-flight:
+
+1. **No deep imports.** `@mmsb/core`'s exports map is `{".": "./src/index.ts"}` with no subpath
+   pattern, so `@mmsb/core/interfaces/Block` fails in Metro (`unstable_enablePackageExports` defaults
+   to true) *and* in tsc (`resolvePackageJsonExports`, via `expo/tsconfig.base`). Anything mobile
+   needs must be in `src/index.ts`.
+2. **Do not set `resolver.disableHierarchicalLookup`.** It would break `pdf-lib` resolving from
+   `packages/report/node_modules`; the comment in `metro.config.js` says so.
+3. **Do not point core's `main` at `dist/`.** It would never reach the EAS builder.
+
+Pre-flight, in order: `pnpm --filter apps/mobile check-types`, then
+`cd apps/mobile && npx expo export --platform android`. `pnpm build` does not cover the second — it
+never touches the mobile app.
+
+One more thing core's compiler settings enforce, discovered while moving the parser in:
+`@mmsb/ags-excel` compiles core's `src` under `lib: ["ES2020"]` with no node and no DOM types. So
+`console` is out of scope in `packages/core`, and so is `new Error(msg, { cause })`, which is ES2022.
+Core's own tsconfig inherits nothing and would not have caught either.
 
 ### 8. The old HTML PDF pipeline is parked, not deleted
 
@@ -429,8 +509,14 @@ use by the parked legacy pipeline; remove both when that pipeline goes.
 `sharePdfLegacyHtml.ts`. Nothing references it; it is kept only as a fallback until `@mmsb/report`
 has been validated against real boreholes on real devices.
 
-Deleting it is ~2,000 lines and also retires `expo-print` and `apps/mobile/src/constants/textSize.ts`.
-Do it once the cross-device `shasum` check has passed on production data.
+Deleting it is ~2,000 lines and also retires `expo-print` and `packages/core/src/constants/textSize.ts`
+(mobile's copy went with item 7; core's is exported for this pipeline alone).
+
+*It now disagrees with the live renderer.* Item 5 moved sample numbering onto the reindexer's index
+everywhere except here, so `renderSptBlockToHtml.ts` and its UD/MZ/PS/coring siblings still print `*`
+from `recoveryInPercentage === 0`. Left deliberately — the point of a parked fallback is that it is
+not touched — but anyone who switches back to `sharePdfLegacyHtml` should know the two differ for a
+recovery length that rounds to 0.0 %.
 
 ### 9. Four rock legend codes point at images that do not exist
 
@@ -448,8 +534,13 @@ them. `@mmsb/ags-excel` is their first consumer, and it writes them into `GEOL_L
 selects each stratum's hatch image. So every cored borehole currently exports a legend code with no
 image behind it.
 
-*Fixed for new data 2026-09-01.* The codes are now granite 810 and schist/phyllite/slate all 812,
-confirmed against the legend set — the three metamorphics deliberately share one hatch.
+*Fixed for new data 2026-09-01.* The codes became granite 810 and schist/phyllite/slate all 812,
+confirmed against the legend set.
+
+*Amended 2026-09-02:* schist is **813**, its own hatch; phyllite and slate stay on 812. That value
+was set on core's copy in `fbbf41f` and never reached mobile — which, since only mobile's copy has a
+runtime consumer, meant the field app kept writing 812. Item 7 collapsed the two copies, so 813 is
+now what gets written. Blocks logged before that carry 812 and join the backfill below.
 
 The trap worth recording, because fixing only half of it looks like fixing it: **`rockCode` is written
 into the stored payload at data-entry time**, by `RockPropertiesInputQuestions.tsx:30` ->
@@ -472,14 +563,17 @@ then rewrite, one code at a time so each pass is countable and reversible from a
 
 ```sql
 update blocks
-set payload = jsonb_set(payload::jsonb, '{rockProperties,rockCode}', '810'::jsonb)::text
+set payload = jsonb_set(payload, '{rockProperties,rockCode}', '810'::jsonb)
 where payload->'rockProperties'->>'rockCode' = '840';
--- then 873 -> 812, and 872 -> 812
+-- then 873 -> 813, 872 -> 812, and 812 -> 813 for schist only
 ```
 
-Note `payload` is `text`, not `jsonb`, so the cast in and back out is load-bearing. Run it while no
-device is mid-sync: a queued block write carrying the old code would land after the update and put it
-back.
+The last of those is not expressible as a code rewrite — 812 is correct for phyllite and slate and
+wrong for schist, so it has to key on `payload->'rockProperties'->>'rockType'`.
+
+Note `blocks.payload` is **`jsonb`**, not `text` — an earlier version of this entry said otherwise and
+cast in and back out, which would fail on assignment. Run it while no device is mid-sync: a queued
+block write carrying the old code would land after the update and put it back.
 
 ### 10. `SoilProperties` cannot express two secondary soil types
 
@@ -494,6 +588,30 @@ adjacent legend — but it is a modelling gap, not a rounding decision.
 where a human writes the actual recovery: a real workbook has `HA1` spanning 1.0-1.3 m, and the
 exporter writes 1.0-2.0. Every other sample type has a real source — SPT is top plus total
 penetration, UD/MZ/PS is `penetrationDepthInMetres`, coring is the block interval.
+
+### 12. The rendered PDF is not byte-deterministic
+
+`CLAUDE.md` says the report's output is deterministic — "creation date and producer are pinned" — and
+offers `shasum -a 256` across devices as the acceptance check for "does it look the same everywhere".
+It is not, and that check cannot work as written.
+
+`packages/report/src/render/pdfLibBackend.ts` calls `PDFDocument.create()` and `pdf.save()` without
+touching the document's metadata, so pdf-lib stamps `CreationDate` and `ModDate` with the current
+time. Two renders of the same fixture seconds apart differ in 234 bytes, all inside one compressed
+object stream near the tail, carrying a value of the form `D:20260902103501Z`.
+
+*Why it is harmless now:* nothing in the app compares PDF bytes. The check it breaks is a human one.
+
+*What makes it bite:* the moment someone runs the documented cross-device comparison, which item 8
+names as the precondition for deleting the ~2,000-line legacy pipeline. It will report a mismatch
+between two identical reports, which is the worst possible answer — it looks like a real difference.
+
+*Fix:* pin them in `pdfLibBackend.ts` — `pdf.setCreationDate(FIXED)` and `pdf.setModificationDate(FIXED)`
+against a constant epoch, next to wherever the producer would be set. Then the property `CLAUDE.md`
+already claims becomes true, and the `render` script's `sha256` line becomes a usable regression test
+rather than noise. Verified 2026-09-02 that nothing else varies: with the timestamp aside, two renders
+are identical, and `@mmsb/ags-excel`'s workbook has the same shape of drift from zip entry mtimes
+while its unzipped entries compare equal byte for byte.
 
 ## Deferred features
 
@@ -624,19 +742,13 @@ penetration, UD/MZ/PS is `penetrationDepthInMetres`, coring is the block interva
   it needs the same one-pass fix: every predicate *and* the sync rules learning about `deleted_at`
   together.
 
-  *The unrecorded fact that decides it* is whether `blocks.borehole_id` cascades. Item 0 already asks
-  this for `block_photos.block_id` and it is still unanswered; settle both at once:
-
-  ```sql
-  select conrelid::regclass as child, confrelid::regclass as parent, confdeltype
-  from pg_constraint
-  where contype = 'f'
-    and conrelid in ('public.blocks'::regclass, 'public.block_photos'::regclass);
-  -- 'c' = cascade, 'a' = no action
-  ```
-
-  No cascade means a hard delete either fails with an FK violation or leaves dangling blocks, and
-  walking the tree by hand is the one thing an owner holds no policy to do.
+  *The fact that decides it, answered 2026-09-02:* **both cascade.** `blocks.borehole_id -> boreholes`
+  and `block_photos.block_id -> blocks` are `ON DELETE CASCADE`, as is `boreholes.project_id ->
+  projects` (full table in item 0). So a hard delete will not fail on an FK and will not leave
+  dangling rows — it will silently do the thing the paragraph above describes, in full: every block
+  and every photo row of the borehole removed through a path that bypasses RLS, and every JPEG left
+  in the bucket. The verdict is now confirmed rather than conditional. Deleting a project is the same
+  hazard one level up, and nothing in the dashboard offers that either.
 
   *Mobile's existing delete is not the precedent it looks like.* `app/project/[id].tsx:44-52` is a
   bare `DELETE FROM boreholes`, which `Connector.ts:70-74` turns into a real PostgREST delete. But

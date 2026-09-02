@@ -1,6 +1,8 @@
-import { RISING_HEAD_PERMEABILITY_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { RisingHeadPermeabilityTestBlock } from "@/src/interfaces/RisingHeadPermeabilityTestBlock";
+import {
+    BaseBlock,
+    RISING_HEAD_PERMEABILITY_TEST_SYMBOL,
+    RisingHeadPermeabilityTestBlock,
+} from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

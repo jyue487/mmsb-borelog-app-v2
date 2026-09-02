@@ -1,5 +1,4 @@
-import { BaseBlock, Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { VaneShearTestBlock } from "@/src/interfaces/VaneShearTestBlock";
+import { BaseBlock, Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID, VaneShearTestBlock } from '@mmsb/core';
 
 export function reindexVaneShearTestBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

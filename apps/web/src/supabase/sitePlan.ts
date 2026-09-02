@@ -4,6 +4,8 @@
 // per project. Read and written from the dashboard only — mobile has no site
 // plan feature.
 
+import { toDate } from '@mmsb/core';
+
 import { supabase } from './supabase.server';
 
 /**
@@ -126,7 +128,7 @@ export async function fetchSitePlan(
   }
 
   return {
-    updatedAt: file.updated_at === null ? null : new Date(file.updated_at),
+    updatedAt: toDate(file.updated_at),
     sizeInBytes: file.metadata?.size ?? null,
   };
 }

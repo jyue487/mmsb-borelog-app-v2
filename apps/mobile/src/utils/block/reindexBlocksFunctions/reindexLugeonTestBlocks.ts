@@ -1,5 +1,4 @@
-import { BaseBlock, Block, LUGEON_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { LugeonTestBlock } from "@/src/interfaces/LugeonTestBlock";
+import { BaseBlock, Block, LUGEON_TEST_BLOCK_TYPE_ID, LugeonTestBlock } from '@mmsb/core';
 
 export function reindexLugeonTestBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

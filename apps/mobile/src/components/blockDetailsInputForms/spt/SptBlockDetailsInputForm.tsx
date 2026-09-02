@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { SptBlockInputQuestions } from "@/src/components/inputQuestions/SptBlockInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, SPT_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
-import { createDefaultSptBlock, SptBlock } from "@/src/interfaces/SptBlock";
+import {
+  BaseBlock,
+  ColourProperties,
+  createDefaultSptBlock,
+  DayWorkStatus,
+  SoilProperties,
+  SPT_BLOCK_TYPE_ID,
+  SptBlock,
+} from '@mmsb/core';
 import { checkAndReturnSptBlock } from "@/src/utils/block/checkFunctions/checkAndReturnSptBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { isNonNegative } from "@/src/utils/numbers";

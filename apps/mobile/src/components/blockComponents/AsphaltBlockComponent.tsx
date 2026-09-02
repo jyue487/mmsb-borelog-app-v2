@@ -1,8 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { AsphaltBlock } from '@/src/interfaces/AsphaltBlock';
-import { BaseBlock, Block } from "@/src/interfaces/Block";
+import { AsphaltBlock, BaseBlock, Block } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type AsphaltBlockProps = ViewProps & {

@@ -1,4 +1,4 @@
-import { DominantSoilType } from "@/src/constants/soil";
+import { DominantSoilType } from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 
 export function checkAndReturnSoilConsistencyDescription(

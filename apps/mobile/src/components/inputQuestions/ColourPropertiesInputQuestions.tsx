@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Keyboard, Text, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
-import { Colour, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from "@/src/constants/colour";
+import { Colour, ColourProperties, DOMINANT_COLOUR_LIST, SECONDARY_COLOUR_LIST } from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
 
 type Props = {
   questionPrefix: string;

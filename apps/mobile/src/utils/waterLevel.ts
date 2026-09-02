@@ -1,4 +1,4 @@
-import { WaterLevelInMetres, stringIsWaterLevelStringType } from "@/src/constants/waterLevel";
+import { stringIsWaterLevelStringType, WaterLevelInMetres } from '@mmsb/core';
 import { throwError } from "./error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "./numbers";
 

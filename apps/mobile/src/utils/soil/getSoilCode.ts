@@ -1,9 +1,9 @@
 import {
-    DominantSoilType,
-    SecondarySoilType,
-    SOIL_TYPE_CODE_MAP_DOUBLE_ENTRY,
-    SOIL_TYPE_CODE_MAP_SINGLE_ENTRY,
-} from '@/src/constants/soil';
+  DominantSoilType,
+  SecondarySoilType,
+  SOIL_TYPE_CODE_MAP_DOUBLE_ENTRY,
+  SOIL_TYPE_CODE_MAP_SINGLE_ENTRY,
+} from '@mmsb/core';
 
 export function getSoilCode(dominantSoilType: DominantSoilType, secondarySoilType: SecondarySoilType | null): number {
   if (secondarySoilType === null) {

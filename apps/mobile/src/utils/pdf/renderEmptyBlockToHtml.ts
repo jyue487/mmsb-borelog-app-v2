@@ -1,4 +1,4 @@
-import { BlockTypeId, CAVITY_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
+import { BlockTypeId, CAVITY_BLOCK_TYPE_ID, CORING_BLOCK_TYPE_ID } from '@mmsb/core';
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";
 
 export function renderEmptyBlockToHtml(numberOfTicksToRender: number, scaleTickIndexWrapper: number[], referenceBlockTypeId: BlockTypeId) {

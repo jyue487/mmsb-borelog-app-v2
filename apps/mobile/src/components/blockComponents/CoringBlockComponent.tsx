@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { CORING_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { CoringBlock } from '@/src/interfaces/CoringBlock';
+import { BaseBlock, Block, CORING_SYMBOL, CoringBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CoringBlockProps = ViewProps & {
@@ -18,7 +16,7 @@ export function CoringBlockComponent({ block, blocks, setBlocks, ...otherProps }
 			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>{CORING_SYMBOL}{(block.coreRecoveryInPercentage === 0) ? '*' : block.rockSampleIndex}</Text>
+				<Text>{CORING_SYMBOL}{(block.rockSampleIndex < 0) ? '*' : block.rockSampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { HaBlockInputQuestions } from "@/src/components/inputQuestions/HaBlockInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, HA_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { createDefaultHaBlock, HaBlock } from "@/src/interfaces/HaBlock";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
+import {
+  BaseBlock,
+  ColourProperties,
+  createDefaultHaBlock,
+  DayWorkStatus,
+  HA_BLOCK_TYPE_ID,
+  HaBlock,
+  SoilProperties,
+} from '@mmsb/core';
 import { checkAndReturnHaBlock } from "@/src/utils/block/checkFunctions/checkAndReturnHaBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 

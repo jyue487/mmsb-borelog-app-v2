@@ -1,4 +1,9 @@
-import { DAY_CONTINUE_WORK_TYPE, DAY_END_WORK_TYPE, DAY_START_WORK_TYPE, DayWorkStatus } from "@/src/constants/DayWorkStatus";
+import {
+    DAY_CONTINUE_WORK_TYPE,
+    DAY_END_WORK_TYPE,
+    DAY_START_WORK_TYPE,
+    DayWorkStatus,
+} from '@mmsb/core';
 import { getDate, getTime } from "@/src/utils/datetime";
 
 export function renderDayWorkStatusToHtml(dayWorkStatus: DayWorkStatus) {

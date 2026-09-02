@@ -1,5 +1,4 @@
-import { BaseBlock, Block, UD_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { UdBlock } from "@/src/interfaces/UdBlock";
+import { BaseBlock, Block, UD_BLOCK_TYPE_ID, UdBlock } from '@mmsb/core';
 
 export function reindexUdBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

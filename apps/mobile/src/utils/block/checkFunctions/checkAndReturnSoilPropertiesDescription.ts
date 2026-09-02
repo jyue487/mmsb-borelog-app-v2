@@ -1,5 +1,4 @@
-import { CUSTOM, CUSTOM_OTHER_PROPERTIES_FOR_SOIL } from "@/src/constants/soil";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
+import { CUSTOM, CUSTOM_OTHER_PROPERTIES_FOR_SOIL, SoilProperties } from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 
 export function checkAndReturnSoilPropertiesDescription({

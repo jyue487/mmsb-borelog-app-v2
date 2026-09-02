@@ -93,13 +93,15 @@ export function formatDepthInterval(topDepthInMetres: number, baseDepthInMetres:
 /**
  * A sample number, or `*` when nothing was recovered.
  *
- * Note this follows the *component's* rule (`recoveryInPercentage === 0`), not the
- * reindexer's (`recoveryLengthInMillimetres === 0`). The two normally agree and
- * `docs/follow-ups.md:254` records the divergence as deliberately left alone; the PDF has
- * always used this one, so it is preserved.
+ * The recovery rule is read off the index rather than re-derived from a recovery field,
+ * because the reindexer already applied it: it sets the index to -1 for a sample with no
+ * recovery and does not advance that type's counter. Deciding it twice is what let the
+ * PDF (`recoveryInPercentage === 0`) and the reindexer (`recoveryLengthInMillimetres === 0`)
+ * disagree — the two differ when a nonzero length rounds to 0.0 % through the `.toFixed(1)`
+ * in checkAndReturnSptBlock. docs/follow-ups.md item 5.
  */
-function sampleNumber(recoveryInPercentage: number, index: number): string {
-	return recoveryInPercentage === 0 ? '*' : String(index);
+function sampleNumber(index: number): string {
+	return index < 0 ? '*' : String(index);
 }
 
 function plain(text: string): RichToken[] {
@@ -149,7 +151,7 @@ function testSpec(symbolOf: (block: Block) => string, indexOf: (block: Block) =>
 function soilSampleSpec(symbol: string): BlockRowSpec {
 	return {
 		sampleLabels: (block) => [
-			`${symbol}${sampleNumber((block as { recoveryInPercentage: number }).recoveryInPercentage, (block as { sampleIndex: number }).sampleIndex)}`,
+			`${symbol}${sampleNumber((block as { sampleIndex: number }).sampleIndex)}`,
 		],
 		description: (block) => plain(blockDescription(block)),
 		sptLayout: 'six',
@@ -162,7 +164,7 @@ export const BLOCK_ROW_SPECS: Record<BlockTypeId, BlockRowSpec> = {
 	[SPT_BLOCK_TYPE_ID]: {
 		sampleLabels: (block) => {
 			if (block.blockTypeId !== SPT_BLOCK_TYPE_ID) return [];
-			return [`${SPT_SYMBOL}${block.sptIndex}/${DISTURBED_SAMPLE_SYMBOL}${sampleNumber(block.recoveryInPercentage, block.disturbedSampleIndex)}`];
+			return [`${SPT_SYMBOL}${block.sptIndex}/${DISTURBED_SAMPLE_SYMBOL}${sampleNumber(block.disturbedSampleIndex)}`];
 		},
 		description: (block) => plain(blockDescription(block)),
 		sptLayout: 'six',
@@ -198,7 +200,7 @@ export const BLOCK_ROW_SPECS: Record<BlockTypeId, BlockRowSpec> = {
 	[CORING_BLOCK_TYPE_ID]: {
 		sampleLabels: (block) => {
 			if (block.blockTypeId !== CORING_BLOCK_TYPE_ID) return [];
-			return [`${CORING_SYMBOL}${sampleNumber(block.coreRecoveryInPercentage, block.rockSampleIndex)}`];
+			return [`${CORING_SYMBOL}${sampleNumber(block.rockSampleIndex)}`];
 		},
 		description: (block) => plain(blockDescription(block)),
 		sptLayout: 'mergedThree',

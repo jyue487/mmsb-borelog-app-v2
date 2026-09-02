@@ -1,8 +1,12 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, Block, HA_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { HaBlock } from "@/src/interfaces/HaBlock";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
+import {
+  BaseBlock,
+  Block,
+  ColourProperties,
+  DayWorkStatus,
+  HA_BLOCK_TYPE_ID,
+  HaBlock,
+  SoilProperties,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

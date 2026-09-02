@@ -1,6 +1,4 @@
-import { VANE_SHEAR_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { VaneShearTestBlock } from "@/src/interfaces/VaneShearTestBlock";
+import { BaseBlock, VANE_SHEAR_TEST_SYMBOL, VaneShearTestBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

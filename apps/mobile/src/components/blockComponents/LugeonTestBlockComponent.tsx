@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { LUGEON_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { LugeonTestBlock } from '@/src/interfaces/LugeonTestBlock';
+import { BaseBlock, Block, LUGEON_TEST_SYMBOL, LugeonTestBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type LugeonTestBlockProps = ViewProps & {

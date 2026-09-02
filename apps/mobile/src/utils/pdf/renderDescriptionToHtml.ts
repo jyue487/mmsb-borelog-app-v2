@@ -1,4 +1,4 @@
-import { TEXT_SIZE_ANDROID, TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@/src/constants/textSize';
+import { TEXT_SIZE_ANDROID, TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@mmsb/core';
 import { Platform } from 'react-native';
 
 export function renderDescriptionToHtml(numberOfTicksToRender: number, description: string) {

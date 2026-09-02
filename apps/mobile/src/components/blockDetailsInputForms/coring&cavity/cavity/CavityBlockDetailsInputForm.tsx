@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 
 import { CavityBlockInputQuestions } from "@/src/components/inputQuestions/CavityBlockInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, CAVITY_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { CavityBlock, createDefaultCavityBlock } from "@/src/interfaces/CavityBlock";
+import {
+  BaseBlock,
+  CAVITY_BLOCK_TYPE_ID,
+  CavityBlock,
+  createDefaultCavityBlock,
+  DayWorkStatus,
+} from '@mmsb/core';
 import { checkAndReturnCavityBlock } from "@/src/utils/block/checkFunctions/checkAndReturnCavityBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { SpecificBlockDetailsInputFormProps } from "../../BlockDetailsInputForm";

@@ -1,5 +1,4 @@
-import { BaseBlock, Block, HA_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { HaBlock } from "@/src/interfaces/HaBlock";
+import { BaseBlock, Block, HA_BLOCK_TYPE_ID, HaBlock } from '@mmsb/core';
 
 export function reindexHaBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

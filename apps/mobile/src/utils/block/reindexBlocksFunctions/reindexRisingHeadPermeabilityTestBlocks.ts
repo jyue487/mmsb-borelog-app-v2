@@ -1,5 +1,9 @@
-import { BaseBlock, Block, RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { RisingHeadPermeabilityTestBlock } from "@/src/interfaces/RisingHeadPermeabilityTestBlock";
+import {
+    BaseBlock,
+    Block,
+    RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+    RisingHeadPermeabilityTestBlock,
+} from '@mmsb/core';
 
 export function reindexRisingHeadPermeabilityTestBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

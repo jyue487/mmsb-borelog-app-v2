@@ -1,5 +1,4 @@
-import { BaseBlock } from "@/src/interfaces/Block";
-import { CavityBlock } from "@/src/interfaces/CavityBlock";
+import { BaseBlock, CavityBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

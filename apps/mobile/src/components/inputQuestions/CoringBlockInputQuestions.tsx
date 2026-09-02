@@ -2,9 +2,7 @@ import React from "react";
 import { Text, TextInput, View } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { RockProperties } from "@/src/interfaces/RockProperties";
+import { ColourProperties, DayWorkStatus, RockProperties } from '@mmsb/core';
 import { stringToDecimalPoint } from "@/src/utils/numbers";
 import { ColourPropertiesInputQuestions } from "./ColourPropertiesInputQuestions";
 import { RockPropertiesInputQuestions } from "./RockPropertiesInputQuestions";

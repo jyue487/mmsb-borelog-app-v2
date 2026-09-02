@@ -1,6 +1,13 @@
-import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, END_OF_BOREHOLE_OTHER_INSTALLATIONS_STANDPIPE_PIEZOMETER, END_OF_BOREHOLE_OTHER_INSTALLATIONS_WATER_STANDPIPE, endOfBoreholeOtherInstallationsType } from "@/src/constants/endOfBorehole";
+import {
+  Block,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_LIST,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_STANDPIPE_PIEZOMETER,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_WATER_STANDPIPE,
+  endOfBoreholeOtherInstallationsType,
+} from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
-import { Block } from "@/src/interfaces/Block";
 import { stringToDecimalPoint } from "@/src/utils/numbers";
 import { useState } from "react";
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";

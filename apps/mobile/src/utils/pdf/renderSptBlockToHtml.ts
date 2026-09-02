@@ -1,9 +1,12 @@
-import { DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { ConstantHeadPermeabilityTestBlock } from "@/src/interfaces/ConstantHeadPermeabilityTestBlock";
-import { FallingHeadPermeabilityTestBlock } from "@/src/interfaces/FallingHeadPermeabilityTestBlock";
-import { RisingHeadPermeabilityTestBlock } from "@/src/interfaces/RisingHeadPermeabilityTestBlock";
-import { SptBlock } from "@/src/interfaces/SptBlock";
+import {
+    BaseBlock,
+    ConstantHeadPermeabilityTestBlock,
+    DISTURBED_SAMPLE_SYMBOL,
+    FallingHeadPermeabilityTestBlock,
+    RisingHeadPermeabilityTestBlock,
+    SPT_SYMBOL,
+    SptBlock,
+} from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { MZ_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { MzBlock } from '@/src/interfaces/MzBlock';
+import { BaseBlock, Block, MZ_SYMBOL, MzBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type MzBlockProps = ViewProps & {
@@ -18,7 +16,7 @@ export function MzBlockComponent({ block, blocks, setBlocks, ...otherProps }: Mz
 			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>{MZ_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</Text>
+				<Text>{MZ_SYMBOL}{(block.sampleIndex < 0) ? '*' : block.sampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

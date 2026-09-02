@@ -1,4 +1,4 @@
-import { Borehole } from "@/src/interfaces/Borehole";
+import { Borehole } from '@mmsb/core';
 import { getDate } from "../datetime";
 
 export function renderFooterToHtml(borehole: Borehole, dateStarted: Date | null, dateFinished: Date | null) {

@@ -9,8 +9,7 @@ import { BlockDetailsInputForm } from '@/src/components/blockDetailsInputForms/B
 import { fetchAllBlocksByBoreholeIdDbAsync } from '@/src/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/src/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/src/db/project/fetchProjectByIdAsync';
-import { Block } from '@/src/interfaces/Block';
-import { Borehole } from '@/src/interfaces/Borehole';
+import { Block, Borehole } from '@mmsb/core';
 import { Project } from '@/src/interfaces/Project';
 import { sortAndReindexAllBlocks } from '@/src/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks';
 import { describeWarnings, sharePdf } from '@/src/utils/pdf/sharePdf';

@@ -2,8 +2,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { renderBorelogPdf, type ReportWarning } from '@mmsb/report';
 
-import { Block } from '@/src/interfaces/Block';
-import { Borehole } from '@/src/interfaces/Borehole';
+import { Block, Borehole } from '@mmsb/core';
 import { Project } from '@/src/interfaces/Project';
 import { loadReportAssets } from './loadReportAssets';
 

@@ -1,7 +1,9 @@
-import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE } from "@/src/constants/endOfBorehole";
-import { WaterLevelInMetres } from "@/src/constants/waterLevel";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { EndOfBoreholeBlock } from "@/src/interfaces/EndOfBoreholeBlock";
+import {
+    BaseBlock,
+    END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE,
+    EndOfBoreholeBlock,
+    WaterLevelInMetres,
+} from '@mmsb/core';
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";
 import { getDate, getTime } from "../datetime";
 import { throwError } from "../error/throwError";

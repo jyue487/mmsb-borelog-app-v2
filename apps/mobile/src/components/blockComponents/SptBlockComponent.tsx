@@ -2,9 +2,7 @@ import { Text, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusComponent } from "@/src/components/dayWorkStatus/DayWorkStatusComponent";
 import { styles } from "@/src/constants/styles";
-import { DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { SptBlock } from '@/src/interfaces/SptBlock';
+import { BaseBlock, Block, DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL, SptBlock } from '@mmsb/core';
 
 export type SptBlockProps = ViewProps & {
 	block: BaseBlock & SptBlock;
@@ -19,7 +17,7 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{SPT_SYMBOL}{block.sptIndex}</Text>
-				<Text>{DISTURBED_SAMPLE_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.disturbedSampleIndex}</Text>
+				<Text>{DISTURBED_SAMPLE_SYMBOL}{(block.disturbedSampleIndex < 0) ? '*' : block.disturbedSampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

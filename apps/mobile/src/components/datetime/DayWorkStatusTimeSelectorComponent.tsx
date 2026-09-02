@@ -1,7 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Keyboard, Platform, Text, TouchableOpacity } from 'react-native';
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
+import { DayWorkStatus } from '@mmsb/core';
 import { getTime } from '@/src/utils/datetime';
 import { useState } from 'react';
 

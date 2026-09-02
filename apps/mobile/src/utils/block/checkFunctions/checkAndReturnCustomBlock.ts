@@ -1,7 +1,5 @@
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, Block, CUSTOM_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { CustomBlock } from "@/src/interfaces/CustomBlock";
+import { BaseBlock, Block, CUSTOM_BLOCK_TYPE_ID, CustomBlock, DayWorkStatus } from '@mmsb/core';
 import { checkAndReturnDayWorkStatus } from "@/src/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
 import { throwError } from "@/src/utils/error/throwError";
 import { stringToDecimalPoint } from "@/src/utils/numbers";

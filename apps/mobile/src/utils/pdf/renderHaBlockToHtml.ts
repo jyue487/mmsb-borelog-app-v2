@@ -1,6 +1,4 @@
-import { HA_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { HaBlock } from "@/src/interfaces/HaBlock";
+import { BaseBlock, HA_SYMBOL, HaBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

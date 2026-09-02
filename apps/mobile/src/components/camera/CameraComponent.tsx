@@ -1,6 +1,6 @@
 import { useAuth } from '@/src/context/AuthContextProvider';
 import { fetchAllBlockPhotoUrlsByBlockId } from '@/src/db/blockPhotos/fetchAllBlockPhotoUrlsByBlockId';
-import { Block } from '@/src/interfaces/Block';
+import { Block } from '@mmsb/core';
 import { BLOCK_PHOTOS_TABLE } from '@/src/powersync/AppSchema';
 import { photoAttachmentQueue } from '@/src/storage/SupabaseRemoteStorageAdapter';
 import { randomUUID } from 'expo-crypto';

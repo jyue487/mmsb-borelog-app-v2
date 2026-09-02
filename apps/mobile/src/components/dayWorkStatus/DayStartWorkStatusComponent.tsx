@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import { DAY_START_WORK_TYPE } from "@/src/constants/DayWorkStatus";
+import { DAY_START_WORK_TYPE } from '@mmsb/core';
 import { getDateTime } from "@/src/utils/datetime";
 import { DayWorkStatusProps } from "./DayWorkStatusComponent";
 

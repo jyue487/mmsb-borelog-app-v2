@@ -1,7 +1,10 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { FALLING_HEAD_PERMEABILITY_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { FallingHeadPermeabilityTestBlock } from "@/src/interfaces/FallingHeadPermeabilityTestBlock";
+import {
+  BaseBlock,
+  DayWorkStatus,
+  FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  FALLING_HEAD_PERMEABILITY_TEST_SYMBOL,
+  FallingHeadPermeabilityTestBlock,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

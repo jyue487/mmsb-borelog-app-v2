@@ -3,9 +3,13 @@ import { Text, TextInput, View } from "react-native";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, CONCRETE_SLAB_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ConcreteSlabBlock, createDefaultConcreteSlabBlock } from "@/src/interfaces/ConcreteSlabBlock";
+import {
+  BaseBlock,
+  CONCRETE_SLAB_BLOCK_TYPE_ID,
+  ConcreteSlabBlock,
+  createDefaultConcreteSlabBlock,
+  DayWorkStatus,
+} from '@mmsb/core';
 import { checkAndReturnConcreteSlabBlock } from "@/src/utils/block/checkFunctions/checkAndReturnConcreteSlabBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 

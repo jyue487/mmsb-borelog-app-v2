@@ -1,8 +1,12 @@
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from "@/src/components/inputQuestions/DayWorkStatusInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { createDefaultFallingHeadPermeabilityTestBlock, FallingHeadPermeabilityTestBlock } from "@/src/interfaces/FallingHeadPermeabilityTestBlock";
+import {
+  BaseBlock,
+  createDefaultFallingHeadPermeabilityTestBlock,
+  DayWorkStatus,
+  FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+  FallingHeadPermeabilityTestBlock,
+} from '@mmsb/core';
 import { checkAndReturnFallingHeadPermeabilityTestBlock } from "@/src/utils/block/checkFunctions/checkAndReturnFallingHeadPermeabilityTestBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { useEffect, useState } from "react";

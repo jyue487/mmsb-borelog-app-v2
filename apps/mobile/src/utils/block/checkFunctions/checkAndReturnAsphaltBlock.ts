@@ -1,6 +1,4 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { AsphaltBlock } from "@/src/interfaces/AsphaltBlock";
-import { ASPHALT_BLOCK_TYPE_ID, BaseBlock, Block } from "@/src/interfaces/Block";
+import { ASPHALT_BLOCK_TYPE_ID, AsphaltBlock, BaseBlock, Block, DayWorkStatus } from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

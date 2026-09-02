@@ -1,5 +1,4 @@
-import { BaseBlock, Block, MZ_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { MzBlock } from "@/src/interfaces/MzBlock";
+import { BaseBlock, Block, MZ_BLOCK_TYPE_ID, MzBlock } from '@mmsb/core';
 
 export function reindexMzBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

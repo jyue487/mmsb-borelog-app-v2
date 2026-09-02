@@ -1,7 +1,13 @@
-import { createDefaultDayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM, END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE, endOfBoreholeOtherInstallationsType } from "@/src/constants/endOfBorehole";
-import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { EndOfBoreholeBlock } from "@/src/interfaces/EndOfBoreholeBlock";
+import {
+  BaseBlock,
+  Block,
+  createDefaultDayWorkStatus,
+  END_OF_BOREHOLE_BLOCK_TYPE_ID,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_CUSTOM,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE,
+  EndOfBoreholeBlock,
+  endOfBoreholeOtherInstallationsType,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { parseWaterLevelInMetresStr } from "@/src/utils/waterLevel";

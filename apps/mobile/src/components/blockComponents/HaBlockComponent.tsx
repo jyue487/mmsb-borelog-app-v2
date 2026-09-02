@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { HA_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { HaBlock } from '@/src/interfaces/HaBlock';
+import { BaseBlock, Block, HA_SYMBOL, HaBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type HaBlockProps = ViewProps & {

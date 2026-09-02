@@ -1,5 +1,4 @@
-import { BaseBlock, Block, CORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { CoringBlock } from "@/src/interfaces/CoringBlock";
+import { BaseBlock, Block, CORING_BLOCK_TYPE_ID, CoringBlock } from '@mmsb/core';
 
 export function reindexCoringBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

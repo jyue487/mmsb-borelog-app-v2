@@ -1,5 +1,5 @@
 import { editBlockDbAsync } from "@/src/db/blocks/editBlockDbAsync";
-import { Block } from "@/src/interfaces/Block";
+import { Block } from '@mmsb/core';
 
 /**
  * Replaces a block in the list and in the database, matching on its id.

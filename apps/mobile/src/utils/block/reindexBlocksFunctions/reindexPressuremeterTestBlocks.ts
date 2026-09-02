@@ -1,5 +1,9 @@
-import { BaseBlock, Block, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { PressuremeterTestBlock } from "@/src/interfaces/PressuremeterTestBlock";
+import {
+    BaseBlock,
+    Block,
+    PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+    PressuremeterTestBlock,
+} from '@mmsb/core';
 
 export function reindexPressuremeterTestBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

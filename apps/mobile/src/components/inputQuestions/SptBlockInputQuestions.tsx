@@ -2,9 +2,7 @@ import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
+import { ColourProperties, DayWorkStatus, SoilProperties } from '@mmsb/core';
 import { ColourPropertiesInputQuestions } from "./ColourPropertiesInputQuestions";
 import { SoilPropertiesInputQuestions } from "./SoilPropertiesInputQuestions";
 

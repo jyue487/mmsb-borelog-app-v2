@@ -17,7 +17,7 @@ import {
     UD_BLOCK_TYPE_ID,
     VANE_SHEAR_TEST_BLOCK_TYPE_ID,
     WASH_BORING_BLOCK_TYPE_ID,
-} from "@/src/interfaces/Block";
+} from '@mmsb/core';
 import { Migration } from "@/src/interfaces/Migration";
 import { SQLiteDatabase } from "expo-sqlite";
 

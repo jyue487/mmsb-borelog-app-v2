@@ -1,5 +1,4 @@
-import { Borehole } from "@/src/interfaces/Borehole";
-import { deserializeDateTime } from "@/src/json/deserializeDateTime";
+import { Borehole, toDate } from '@mmsb/core';
 import { powersync } from "@/src/powersync/system";
 
 export async function fetchBoreholeByIdAsync(boreholeId: string): Promise<Borehole> {
@@ -20,7 +19,7 @@ export async function fetchBoreholeByIdAsync(boreholeId: string): Promise<Boreho
         drillerName: result.driller_name,
         verifierName: result.verifier_name,
         verifierSignatureBase64: result.verifier_signature_base64,
-        verifierSignDate: (result.verifier_sign_date === null) ? null : deserializeDateTime(result.verifier_sign_date),
+        verifierSignDate: toDate(result.verifier_sign_date),
     };
     return borehole;
 }

@@ -1,5 +1,4 @@
-import { Block } from "@/src/interfaces/Block";
-import { serializeBlock } from "@/src/json/serializeBlock";
+import { Block, serializeBlock } from '@mmsb/core';
 import { powersync } from "@/src/powersync/system";
 
 /**

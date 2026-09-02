@@ -3,7 +3,7 @@ import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { FlatList } from "react-native-gesture-handler";
 
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
+import { DayWorkStatus } from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
 
 type Props = {

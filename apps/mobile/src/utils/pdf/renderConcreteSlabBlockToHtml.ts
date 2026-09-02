@@ -1,5 +1,4 @@
-import { BaseBlock } from "@/src/interfaces/Block";
-import { ConcreteSlabBlock } from "@/src/interfaces/ConcreteSlabBlock";
+import { BaseBlock, ConcreteSlabBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

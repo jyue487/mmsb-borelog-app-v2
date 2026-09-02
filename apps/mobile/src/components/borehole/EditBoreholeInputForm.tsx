@@ -3,7 +3,7 @@ import { Button, Text, TextInput, View } from "react-native";
 
 // Local imports
 import { styles } from '@/src/constants/styles';
-import { Borehole, EditBoreholeParams } from '@/src/interfaces/Borehole';
+import { Borehole, EditBoreholeParams } from '@mmsb/core';
 import { stringIsFloat, stringToDecimalPoint } from '@/src/utils/numbers';
 import { SignatureQuestionComponent } from '../signature/SignatureQuestionComponent';
 

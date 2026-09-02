@@ -3,9 +3,13 @@ import { Text, TextInput, View } from "react-native";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, WASH_BORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { WashBoringBlock, createDefaultWashBoringBlock } from "@/src/interfaces/WashBoringBlock";
+import {
+  BaseBlock,
+  createDefaultWashBoringBlock,
+  DayWorkStatus,
+  WASH_BORING_BLOCK_TYPE_ID,
+  WashBoringBlock,
+} from '@mmsb/core';
 import { checkAndReturnWashBoringBlock } from "@/src/utils/block/checkFunctions/checkAndReturnWashBoringBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 

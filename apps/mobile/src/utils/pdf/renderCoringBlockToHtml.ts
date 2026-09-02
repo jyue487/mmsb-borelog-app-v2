@@ -1,7 +1,4 @@
-import { CORING_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { CoringBlock } from "@/src/interfaces/CoringBlock";
-import { LugeonTestBlock } from "@/src/interfaces/LugeonTestBlock";
+import { BaseBlock, CORING_SYMBOL, CoringBlock, LugeonTestBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

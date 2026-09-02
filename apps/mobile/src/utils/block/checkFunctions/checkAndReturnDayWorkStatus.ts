@@ -1,5 +1,9 @@
-import { DAY_END_WORK_TYPE, DAY_START_AND_END_WORK_TYPE, DAY_START_WORK_TYPE, DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { deserializeDateTime } from "@/src/json/deserializeDateTime";
+import {
+  DAY_END_WORK_TYPE,
+  DAY_START_AND_END_WORK_TYPE,
+  DAY_START_WORK_TYPE,
+  DayWorkStatus,
+} from '@mmsb/core';
 import { getDateTime } from "@/src/utils/datetime";
 import { throwError } from "@/src/utils/error/throwError";
 import { isNonNegative } from "@/src/utils/numbers";
@@ -33,7 +37,10 @@ export function checkAndReturnDayWorkStatus({
     endCasingDepthInMetres = checkAndReturnCasingDepthInMetres(endCasingDepthInMetres);
   }
   if (dayWorkStatusType === DAY_START_AND_END_WORK_TYPE) {
-    if (deserializeDateTime(getDateTime(startDate, startTime)) > deserializeDateTime(getDateTime(endDate, endTime))) {
+    // getDateTime folds a date and a time held in two separate Date objects into one
+    // formatted string, so the pair has to be re-parsed to be compared. Both sides are
+    // non-null here, which is why this is `new Date` and not `toDate`.
+    if (new Date(getDateTime(startDate, startTime)) > new Date(getDateTime(endDate, endTime))) {
       throwError('Start date time ');
     }
   }

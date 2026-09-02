@@ -1,9 +1,11 @@
-import { UD_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { ConstantHeadPermeabilityTestBlock } from "@/src/interfaces/ConstantHeadPermeabilityTestBlock";
-import { FallingHeadPermeabilityTestBlock } from "@/src/interfaces/FallingHeadPermeabilityTestBlock";
-import { RisingHeadPermeabilityTestBlock } from "@/src/interfaces/RisingHeadPermeabilityTestBlock";
-import { UdBlock } from "@/src/interfaces/UdBlock";
+import {
+    BaseBlock,
+    ConstantHeadPermeabilityTestBlock,
+    FallingHeadPermeabilityTestBlock,
+    RisingHeadPermeabilityTestBlock,
+    UD_SYMBOL,
+    UdBlock,
+} from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

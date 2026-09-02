@@ -1,7 +1,11 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { VANE_SHEAR_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { VaneShearTestBlock } from "@/src/interfaces/VaneShearTestBlock";
+import {
+  BaseBlock,
+  Block,
+  DayWorkStatus,
+  VANE_SHEAR_TEST_BLOCK_TYPE_ID,
+  VANE_SHEAR_TEST_SYMBOL,
+  VaneShearTestBlock,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

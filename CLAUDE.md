@@ -12,7 +12,8 @@ Two clients over one Supabase backend:
 
 - `apps/mobile` — Expo/React Native app used offline in the field. The primary app: data entry + PDF generation.
 - `apps/web` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
-- `packages/core` — shared TypeScript types. Only partially migrated (see Rough edges).
+- `packages/core` — the shared domain: interfaces, constants, and the one block parser both clients
+  use. `apps/mobile` and `apps/web` both depend on it; nothing is duplicated any more.
 - `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
   both apps. Platform-free.
 - `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the separate
@@ -105,7 +106,7 @@ Auth is Supabase (`src/db/supabase.ts`, AsyncStorage-backed session). `AuthConte
 
 A borehole is an ordered list of **blocks**, each covering a depth interval. There are 18 block
 types (SPT, coring, cavity, UD/MZ/PS undisturbed samples, permeability tests, etc.), enumerated in
-`src/interfaces/Block.ts` as `*_BLOCK_TYPE_ID` constants plus `BLOCK_TYPE_ID_LIST`.
+`packages/core/src/interfaces/Block.ts` as `*_BLOCK_TYPE_ID` constants plus `BLOCK_TYPE_ID_LIST`.
 
 `Block` is a discriminated union: `BaseBlock & Blocks[K]`, discriminated on `blockTypeId`. Almost
 every block carries `topDepthInMetres`, `baseDepthInMetres`, `description`, and a `dayWorkStatus`
@@ -114,19 +115,28 @@ every block carries `topDepthInMetres`, `baseDepthInMetres`, `description`, and 
 **Storage is a JSON blob, not columns.** The `blocks` table has only `id`, `borehole_id`,
 `block_type_id`, `payload` — where `payload` is the whole block JSON-stringified. So:
 
-- `src/json/serializeBlock.ts` / `deserializeBlock.ts` are switch dispatchers over `blockTypeId`
-  into a per-type module under `src/json/<blockType>/`.
-- Deserialization is explicit field-by-field (not `JSON.parse` cast) because `Date` fields have to
-  be revived — see `deserializeDateTime`, `deserializeDayWorkStatus`, `deserializeSoilProperties`.
-- Changing a block interface means updating its serializer *and* deserializer, or fields silently
-  vanish on read.
+- `packages/core/src/json/block.ts` is the whole of it, for both clients: `parseBlock(row)` and
+  `serializeBlock(block)`. Serializing is `JSON.stringify`; parsing is `JSON.parse` plus the one
+  thing it cannot do, which is reviving `Date`s.
+- **`reviveDatesInPlace` enumerates every `Date` field across all 18 variants** — root
+  `createdAt`/`updatedAt`, the four `dayWorkStatus.*`, and end-of-borehole's nullable
+  `installationDate`/`installationTime`. Adding a `Date` field to a block interface means adding it
+  there too, or it reads back as a string.
+- Nullable timestamps go through `toDate`, never `new Date` — `new Date(null)` is the epoch, which is
+  how `docs/follow-ups.md` item 3 happened.
+- This used to be 44 hand-written per-type files in `apps/mobile/src/json/**`. They copied every field
+  by name, so *forgetting* one dropped it silently on read; that is why they are gone.
 
 ### Block ordering and indices
 
 Blocks have no stored sort order or sequence number. After every fetch and every mutation the list
 is recomputed in memory by `sortAndReindexAllBlocks()`:
 
-1. `sortBlocks` — sort by `topDepthInMetres`.
+1. `sortBlocks` — sort by `topDepthInMetres`, then by `id`. The id tiebreak is load-bearing: ties on
+   depth are normal (a permeability test starts inside its host SPT), `Array.prototype.sort` is
+   stable, and without a second key a tie inherits the transport's order — which neither Postgres nor
+   an unindexed PowerSync view promises. Both clients must use the same pair or their numbering
+   diverges.
 2. `reindexAllBlocks` — for each block type, walk the sorted list and renumber that type's own
    counter (`sptIndex`, `disturbedSampleIndex`, `coringIndex`, …) from 1. `reindexBlock.ts` holds a
    `Record<BlockTypeId, fn>` table; types with no counter map to identity.
@@ -142,8 +152,8 @@ exhaustive `Record<BlockTypeId, …>` will point you at most of them:
 
 | Concern | Location |
 | --- | --- |
-| Type + `createDefault*` | `src/interfaces/<Type>Block.ts`, registered in `Blocks` in `Block.ts` |
-| Persistence | `src/json/<type>/serialize*.ts` + `deserialize*.ts`, wired into the two dispatchers |
+| Type + `createDefault*` | `packages/core/src/interfaces/<Type>Block.ts`, registered in `Blocks` in `Block.ts`, exported from `src/index.ts` |
+| Persistence | nothing, unless the type has a `Date` field — then `reviveDatesInPlace` in `packages/core/src/json/block.ts` |
 | Form → validated block | `src/utils/block/checkFunctions/checkAndReturn<Type>Block.ts` |
 | Renumbering | `src/utils/block/reindexBlocksFunctions/reindex<Type>Blocks.ts` |
 | Read-only display | `src/components/blockComponents/<Type>BlockComponent.tsx` |
@@ -206,8 +216,11 @@ pnpm --filter @mmsb/report text         # the size-fitting kernel against real m
 pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
 ```
 
-Output is deterministic (creation date and producer are pinned), so the acceptance check for
-"does it look the same everywhere" is `shasum -a 256` across devices, not visual inspection.
+The layout is deterministic, but **the PDF bytes are not** — pdf-lib stamps `CreationDate`/`ModDate`
+at render time and nothing pins them, so two renders of the same fixture differ in ~234 bytes. The
+`shasum -a 256` acceptance check this file used to describe therefore does not work yet; see
+`docs/follow-ups.md` item 12 for the two-line fix that would make it work. Until then, compare the
+deterministic dumps (`pagination`, `rows`, `text`) rather than the file.
 
 **The old HTML + `expo-print` pipeline is still present but not referenced**, kept as a fallback
 until the new renderer has been validated against real boreholes: 29 `render*ToHtml.ts` files plus
@@ -290,8 +303,9 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
 
 ## Conventions
 
-- `@/*` in `apps/mobile` maps to the app root, so imports look like `@/src/interfaces/Block`
-  (note the `src` segment) and `@/assets/...`. Web uses relative imports only.
+- `@/*` in `apps/mobile` maps to the app root, so imports look like `@/src/db/blocks/...` (note the
+  `src` segment) and `@/assets/...`. The domain types and constants are **not** under that alias —
+  they come from `@mmsb/core`. Web uses relative imports, plus `@mmsb/*` for the packages.
 - `snake_case` in SQL/Supabase, `camelCase` in TypeScript. The translation happens in `src/db/**`
   (mobile) or inline in the page component (web) — there is no shared mapper.
 - IDs are client-generated `randomUUID()` from `expo-crypto`, never DB sequences — required for
@@ -301,17 +315,19 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
 
 ## Rough edges to know about
 
-- **`packages/core` is a copy-paste of the mobile tree, and mobile does not depend on it.**
-  `packages/core/src/interfaces/**` is byte-identical to `apps/mobile/src/interfaces/**` (with one
-  deliberate exception: `Project.terminationCriteria` exists only in core — see the note in
-  `apps/mobile/src/interfaces/Project.ts` for why mobile must not gain it), but
-  `apps/mobile/package.json` has no `@mmsb/core` dependency — so the two copies are kept in sync by
-  hand, and only `Project.ts` and `Borehole.ts` are exported from `src/index.ts`. This is the
-  repo's main structural debt: `Block` is an 18-variant union persisted as a JSON blob with
-  field-by-field deserializers, so drift between the copies shows up as fields silently vanishing
-  on read rather than as a type error. Fixing it means moving the pure domain types into core
-  (they have no react-native dependency), leaving the RN-flavoured constants in mobile, and making
-  `apps/mobile/src/interfaces/**` re-export from `@mmsb/core`.
+- **`@mmsb/core` has no subpath exports**, so `@mmsb/core/interfaces/Block` fails to resolve — in
+  Metro (package exports are on by default) *and* in tsc (`resolvePackageJsonExports`, inherited from
+  `expo/tsconfig.base`). Anything a client needs must be exported from `packages/core/src/index.ts`.
+  Core ships **raw TypeScript**: `main`/`types`/`exports` all point at `./src/index.ts`, and the
+  `dist/` on disk is gitignored and resolved by nothing. Metro transpiles it because
+  `apps/mobile/metro.config.js` puts the workspace root in `watchFolders`. Do not "fix" any of that
+  by pointing `main` at `dist/` — EAS runs no build step before bundling.
+  `apps/mobile/src/interfaces/` still holds two files that must stay there: `Project.ts`, which
+  deliberately omits core's `terminationCriteria`, and the dead `Migration.ts`, which imports
+  `expo-sqlite`. `docs/follow-ups.md` item 7 has the rest.
+- **`packages/core` is compiled by `@mmsb/ags-excel` under `lib: ["ES2020"]` with no node and no DOM
+  types**, so `console` and `new Error(msg, { cause })` are both out of scope inside core. Core's own
+  tsconfig inherits nothing and will not catch either — `pnpm build` will.
 - `src/db/db.ts`, `src/db/initDb.ts`, `src/db/runMigrationsAsync.ts` and `src/db/migrations/**` are
   **dead code** from the pre-PowerSync `expo-sqlite` era. Nothing imports them. PowerSync owns the
   schema now (`AppSchema.ts`) — do not add migrations there.

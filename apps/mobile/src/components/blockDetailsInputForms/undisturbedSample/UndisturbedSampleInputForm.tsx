@@ -6,8 +6,8 @@ import { MzBlockDetailsInputForm } from "@/src/components/blockDetailsInputForms
 import { PsBlockDetailsInputForm } from "@/src/components/blockDetailsInputForms/undisturbedSample/ps/PsBlockDetailsInputForm";
 import { UdBlockDetailsInputForm } from "@/src/components/blockDetailsInputForms/undisturbedSample/ud/UdBlockDetailsInputForm";
 import { styles } from "@/src/constants/styles";
-import * as BlockFile from "@/src/interfaces/Block";
-import { BlockTypeId } from "@/src/interfaces/Block";
+import * as BlockFile from '@mmsb/core';
+import { BlockTypeId } from '@mmsb/core';
 
 const UD = 'UD' as const;
 const MZ = 'MZ' as const;

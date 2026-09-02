@@ -1,6 +1,4 @@
-import type { Block } from '@mmsb/core';
-
-import { parseBlockPayload } from '../blocks/parseBlockPayload';
+import { parseBlock, type Block } from '@mmsb/core';
 
 // Single source of truth for the blocks columns every query selects. There are no
 // generated DB types, so a column missing from this list fails silently as
@@ -18,5 +16,5 @@ export type BlockRow = {
 };
 
 export function mapBlockRow(row: BlockRow): Block {
-  return parseBlockPayload(row);
+  return parseBlock(row);
 }

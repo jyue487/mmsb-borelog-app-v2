@@ -1,6 +1,8 @@
-import { CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { ConstantHeadPermeabilityTestBlock } from "@/src/interfaces/ConstantHeadPermeabilityTestBlock";
+import {
+    BaseBlock,
+    CONSTANT_HEAD_PERMEABILITY_TEST_SYMBOL,
+    ConstantHeadPermeabilityTestBlock,
+} from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

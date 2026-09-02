@@ -1,5 +1,4 @@
-import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { SptBlock } from "@/src/interfaces/SptBlock";
+import { BaseBlock, Block, SPT_BLOCK_TYPE_ID, SptBlock } from '@mmsb/core';
 
 export function reindexSptBlocks(blocks: Block[]): Block[] {
 	const updatedBlocks: Block[] = [];

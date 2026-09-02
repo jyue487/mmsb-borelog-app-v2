@@ -1,9 +1,13 @@
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, Block, SPT_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
-import { SptBlock } from "@/src/interfaces/SptBlock";
+import {
+  BaseBlock,
+  Block,
+  ColourProperties,
+  DayWorkStatus,
+  SoilProperties,
+  SPT_BLOCK_TYPE_ID,
+  SptBlock,
+} from '@mmsb/core';
 import { checkAndReturnDayWorkStatus } from '@/src/utils/block/checkFunctions/checkAndReturnDayWorkStatus';
 import { stringIsNonNegativeFloat, stringIsNonNegativeInteger, stringToDecimalPoint } from '@/src/utils/numbers';
 import { randomUUID } from "expo-crypto";

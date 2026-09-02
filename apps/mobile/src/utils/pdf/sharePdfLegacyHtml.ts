@@ -16,8 +16,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Platform } from "react-native";
 
-import { Block } from "@/src/interfaces/Block";
-import { Borehole } from '@/src/interfaces/Borehole';
+import { Block, Borehole } from '@mmsb/core';
 import { Project } from '@/src/interfaces/Project';
 import { generateBorelogPdfAndroid } from './generateBorelogPdfAndroid';
 import { generateBorelogPdfIos } from "./generateBorelogPdfIos";

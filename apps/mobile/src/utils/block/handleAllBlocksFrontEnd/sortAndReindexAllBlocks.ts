@@ -1,4 +1,4 @@
-import { Block } from "@/src/interfaces/Block";
+import { Block } from '@mmsb/core';
 import { reindexAllBlocks } from "../reindexBlocksFunctions/reindexBlock";
 import { sortBlocks } from "../sortBlocksFunctions/sortBlocks";
 

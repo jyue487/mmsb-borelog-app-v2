@@ -1,7 +1,10 @@
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { PRESSUREMETER_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, PRESSUREMETER_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { PressuremeterTestBlock } from "@/src/interfaces/PressuremeterTestBlock";
+import {
+  BaseBlock,
+  DayWorkStatus,
+  PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+  PRESSUREMETER_TEST_SYMBOL,
+  PressuremeterTestBlock,
+} from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";
 import { randomUUID } from "expo-crypto";

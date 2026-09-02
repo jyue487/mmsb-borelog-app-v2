@@ -4,7 +4,7 @@ import { Pressable, Text } from "react-native";
 
 // Local imports
 import { styles } from '@/src/constants/styles';
-import { Borehole, EditBoreholeParams } from '@/src/interfaces/Borehole';
+import { Borehole, EditBoreholeParams } from '@mmsb/core';
 import { EditBoreholeInputForm } from './EditBoreholeInputForm';
 
 type BoreholeComponentProps = {

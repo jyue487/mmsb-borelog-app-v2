@@ -1,8 +1,7 @@
-import { Block } from '@/src/interfaces/Block';
+import { Block, Borehole } from '@mmsb/core';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { Borehole } from '@/src/interfaces/Borehole';
 import { Project } from '@/src/interfaces/Project';
 import { throwError } from '../error/throwError';
 import { generatePdfPages } from './generatePdfPages';

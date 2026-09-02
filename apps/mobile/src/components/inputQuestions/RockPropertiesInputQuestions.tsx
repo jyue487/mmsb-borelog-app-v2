@@ -2,9 +2,14 @@ import React, { useState } from "react";
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
-import { OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE, OTHERS_ROCK_CODE, ROCK_TYPE_LIST, RockType } from "@/src/constants/rock";
+import {
+  OTHER_PROPERTIES_LIST_BASED_ON_ROCK_TYPE,
+  OTHERS_ROCK_CODE,
+  ROCK_TYPE_LIST,
+  RockProperties,
+  RockType,
+} from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
-import { RockProperties } from "@/src/interfaces/RockProperties";
 import { getRockCode } from "@/src/utils/rock/getRockCode";
 
 type Props = {

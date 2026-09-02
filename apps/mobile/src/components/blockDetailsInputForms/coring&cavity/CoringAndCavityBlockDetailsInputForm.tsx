@@ -5,8 +5,8 @@ import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetail
 import { CavityBlockDetailsInputForm } from "@/src/components/blockDetailsInputForms/coring&cavity/cavity/CavityBlockDetailsInputForm";
 import { CoringBlockDetailsInputForm } from "@/src/components/blockDetailsInputForms/coring&cavity/coring/CoringBlockDetailsInputForm";
 import { styles } from "@/src/constants/styles";
-import * as BlockFile from "@/src/interfaces/Block";
-import { BlockTypeId } from "@/src/interfaces/Block";
+import * as BlockFile from '@mmsb/core';
+import { BlockTypeId } from '@mmsb/core';
 
 const CORING = 'Coring' as const;
 const CAVITY = 'Cavity' as const;

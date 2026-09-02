@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { PS_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { PsBlock } from '@/src/interfaces/PsBlock';
+import { BaseBlock, Block, PS_SYMBOL, PsBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type PsBlockProps = ViewProps & {
@@ -18,7 +16,7 @@ export function PsBlockComponent({ block, blocks, setBlocks, ...otherProps }: Ps
 			<View style={styles.blockComponentLeftColumn}>
 				<Text>{block.topDepthInMetres.toFixed(3)}</Text>
 				<View style={{ flex: 1 }}></View>
-				<Text>{PS_SYMBOL}{(block.recoveryInPercentage === 0) ? '*' : block.sampleIndex}</Text>
+				<Text>{PS_SYMBOL}{(block.sampleIndex < 0) ? '*' : block.sampleIndex}</Text>
 				<View style={{ flex: 1 }}></View>
 				<Text>{block.baseDepthInMetres.toFixed(3)}</Text>
 			</View>

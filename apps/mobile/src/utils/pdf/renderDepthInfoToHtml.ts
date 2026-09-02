@@ -1,4 +1,4 @@
-import { Block } from "@/src/interfaces/Block";
+import { Block } from '@mmsb/core';
 
 export function renderDepthInfoToHtml(block: Block): string {
   if (block.topDepthInMetres === -1 || block.baseDepthInMetres === -1) {

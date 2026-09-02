@@ -2,16 +2,16 @@ import { useState } from "react";
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import {
-    CUSTOM,
-    CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
-    DOMINANT_SOIL_TYPE_LIST,
-    DominantSoilType,
-    OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
-    SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
-    SecondarySoilType
-} from "@/src/constants/soil";
+  CUSTOM,
+  CUSTOM_OTHER_PROPERTIES_FOR_SOIL,
+  DOMINANT_SOIL_TYPE_LIST,
+  DominantSoilType,
+  OTHER_PROPERTIES_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
+  SECONDARY_SOIL_TYPE_LIST_BASED_ON_DOMINANT_SOIL_TYPE,
+  SecondarySoilType,
+  SoilProperties,
+} from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
 import { throwError } from "@/src/utils/error/throwError";
 import { getSoilCode } from "@/src/utils/soil/getSoilCode";
 

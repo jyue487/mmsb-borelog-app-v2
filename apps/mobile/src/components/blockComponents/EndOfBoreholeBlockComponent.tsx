@@ -1,9 +1,12 @@
 import { Text, View, type ViewProps } from "react-native";
 
-import { END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE } from "@/src/constants/endOfBorehole";
+import {
+  BaseBlock,
+  Block,
+  END_OF_BOREHOLE_OTHER_INSTALLATIONS_NONE,
+  EndOfBoreholeBlock,
+} from '@mmsb/core';
 import { styles } from "@/src/constants/styles";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { EndOfBoreholeBlock } from '@/src/interfaces/EndOfBoreholeBlock';
 import { getDateTime } from "@/src/utils/datetime";
 
 export type EndOfBoreholeBlockProps = ViewProps & {

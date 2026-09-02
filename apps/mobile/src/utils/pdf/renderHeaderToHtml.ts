@@ -1,4 +1,4 @@
-import { Borehole } from "@/src/interfaces/Borehole";
+import { Borehole } from '@mmsb/core';
 import { Project } from "@/src/interfaces/Project";
 
 export function renderHeaderToHtml(project: Project, borehole: Borehole, mmsbLogoBase64: string, pageNumber: number, totalNumberOfPages: number) {

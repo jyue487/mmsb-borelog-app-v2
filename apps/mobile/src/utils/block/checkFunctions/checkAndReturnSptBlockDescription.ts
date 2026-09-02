@@ -1,5 +1,4 @@
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
+import { ColourProperties, SoilProperties } from '@mmsb/core';
 import { capitalizeFirstChar } from "@/src/utils/string";
 import { checkAndReturnColourPropertiesDescription } from "./checkAndReturnColourPropertiesDescription";
 import { checkAndReturnSoilConsistencyDescription } from "./checkAndReturnSoilConsistencyDescription";

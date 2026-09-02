@@ -1,8 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { CavityBlock } from '@/src/interfaces/CavityBlock';
+import { BaseBlock, Block, CavityBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type CavityBlockProps = ViewProps & {

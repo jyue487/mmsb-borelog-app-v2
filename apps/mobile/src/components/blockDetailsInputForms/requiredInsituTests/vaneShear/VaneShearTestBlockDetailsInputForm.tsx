@@ -1,8 +1,12 @@
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from "@/src/components/inputQuestions/DayWorkStatusInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, VANE_SHEAR_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { createDefaultVaneShearTestBlock, VaneShearTestBlock } from "@/src/interfaces/VaneShearTestBlock";
+import {
+  BaseBlock,
+  createDefaultVaneShearTestBlock,
+  DayWorkStatus,
+  VANE_SHEAR_TEST_BLOCK_TYPE_ID,
+  VaneShearTestBlock,
+} from '@mmsb/core';
 import { checkAndReturnVaneShearTestBlock } from "@/src/utils/block/checkFunctions/checkAndReturnVaneShearTestBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { useEffect, useState } from "react";

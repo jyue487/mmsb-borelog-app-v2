@@ -1,9 +1,12 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { RISING_HEAD_PERMEABILITY_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { RisingHeadPermeabilityTestBlock } from '@/src/interfaces/RisingHeadPermeabilityTestBlock';
+import {
+	BaseBlock,
+	Block,
+	RISING_HEAD_PERMEABILITY_TEST_SYMBOL,
+	RisingHeadPermeabilityTestBlock,
+} from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type RisingHeadPermeabilityTestBlockProps = ViewProps & {

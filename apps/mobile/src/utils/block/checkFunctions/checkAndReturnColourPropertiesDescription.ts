@@ -1,4 +1,4 @@
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
+import { ColourProperties } from '@mmsb/core';
 import { throwError } from "@/src/utils/error/throwError";
 
 export function checkAndReturnColourPropertiesDescription({

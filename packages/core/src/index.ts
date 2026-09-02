@@ -33,3 +33,15 @@ export * from './constants/DayWorkStatus';
 export * from './constants/endOfBorehole';
 export * from './constants/symbol';
 export * from './constants/waterLevel';
+export * from './constants/colour';
+export * from './constants/rock';
+export * from './constants/soil';
+
+// Only the parked HTML PDF pipeline in apps/mobile reads these. Exported so mobile
+// stops carrying its own copy; delete alongside that pipeline (docs/follow-ups.md item 8).
+export * from './constants/textSize';
+
+// The one place a stored `blocks` row becomes a typed `Block`, shared by both clients.
+export * from './json/block';
+export * from './json/parseUntilObject';
+export * from './json/toDate';

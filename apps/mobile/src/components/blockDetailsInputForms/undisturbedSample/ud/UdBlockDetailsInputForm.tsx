@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { UndisturbedSampleInputQuestions } from "@/src/components/inputQuestions/UndisturbedSampleInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, UD_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
-import { createDefaultUdBlock, UdBlock } from "@/src/interfaces/UdBlock";
+import {
+  BaseBlock,
+  ColourProperties,
+  createDefaultUdBlock,
+  DayWorkStatus,
+  SoilProperties,
+  UD_BLOCK_TYPE_ID,
+  UdBlock,
+} from '@mmsb/core';
 import { checkAndReturnUndisturbedSampleBlock } from "@/src/utils/block/checkFunctions/checkAndReturnUndisturbedSampleBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { isNonNegative, roundToDecimalPoint } from "@/src/utils/numbers";

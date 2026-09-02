@@ -1,8 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { WashBoringBlock } from '@/src/interfaces/WashBoringBlock';
+import { BaseBlock, Block, WashBoringBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type WashBoringBlockProps = ViewProps & {

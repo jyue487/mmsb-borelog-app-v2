@@ -1,5 +1,4 @@
-import { AsphaltBlock } from "@/src/interfaces/AsphaltBlock";
-import { BaseBlock } from "@/src/interfaces/Block";
+import { AsphaltBlock, BaseBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

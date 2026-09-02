@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { PRESSUREMETER_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { PressuremeterTestBlock } from '@/src/interfaces/PressuremeterTestBlock';
+import { BaseBlock, Block, PRESSUREMETER_TEST_SYMBOL, PressuremeterTestBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type PressuremeterTestBlockProps = ViewProps & {

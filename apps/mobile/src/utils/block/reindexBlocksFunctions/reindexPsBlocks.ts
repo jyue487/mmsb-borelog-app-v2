@@ -1,5 +1,4 @@
-import { BaseBlock, Block, PS_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { PsBlock } from "@/src/interfaces/PsBlock";
+import { BaseBlock, Block, PS_BLOCK_TYPE_ID, PsBlock } from '@mmsb/core';
 
 export function reindexPsBlocks(blocks: Block[]): Block[] {
   const updatedBlocks: Block[] = [];

@@ -1,5 +1,4 @@
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { RockProperties } from "@/src/interfaces/RockProperties";
+import { ColourProperties, RockProperties } from '@mmsb/core';
 import { capitalizeFirstChar } from "@/src/utils/string";
 import { checkAndReturnColourPropertiesDescription } from "./checkAndReturnColourPropertiesDescription";
 import { checkAndReturnRockPropertiesDescription } from "./checkAndReturnRockPropertiesDescription";

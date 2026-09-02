@@ -1,6 +1,4 @@
-import { PRESSUREMETER_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock } from "@/src/interfaces/Block";
-import { PressuremeterTestBlock } from "@/src/interfaces/PressuremeterTestBlock";
+import { BaseBlock, PRESSUREMETER_TEST_SYMBOL, PressuremeterTestBlock } from '@mmsb/core';
 import { renderDayWorkStatusToHtml } from "@/src/utils/pdf/renderDayWorkStatusToHtml";
 import { renderDepthInfoToHtml } from "@/src/utils/pdf/renderDepthInfoToHtml";
 import { renderScaleTicksToHtml } from "@/src/utils/pdf/renderScaleTicksToHtml";

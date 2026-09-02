@@ -1,9 +1,7 @@
-import { Block } from '@/src/interfaces/Block';
+import { Block, Borehole, TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@mmsb/core';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { TEXT_SIZE_IOS, TEXT_SIZE_UNIT } from '@/src/constants/textSize';
-import { Borehole } from '@/src/interfaces/Borehole';
 import { Project } from '@/src/interfaces/Project';
 import { generatePdfPages } from './generatePdfPages';
 

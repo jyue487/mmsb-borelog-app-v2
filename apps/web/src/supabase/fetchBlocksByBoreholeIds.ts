@@ -32,7 +32,11 @@ export async function fetchBlocksByBoreholeIds(
 		)
 		// Defensive, matching BoreholePage: blocks are hard deleted today, so this matches
 		// every row. It is here so the export is already right if they move to soft deletion.
-		.is('deleted_at', null);
+		.is('deleted_at', null)
+		// Blocks carry no stored order and are re-sorted in memory, but an ORDER BY here
+		// keeps the wire order reproducible when debugging. `id` is the tiebreak both
+		// clients sort on — see sortAndReindexAllBlocks. docs/follow-ups.md item 1.
+		.order('id');
 
 	if (error) {
 		throw error;

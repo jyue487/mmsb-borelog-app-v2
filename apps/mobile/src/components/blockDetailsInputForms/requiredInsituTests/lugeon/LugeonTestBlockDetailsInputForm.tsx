@@ -1,8 +1,12 @@
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { DayWorkStatusInputQuestions } from "@/src/components/inputQuestions/DayWorkStatusInputQuestions";
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, LUGEON_TEST_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { createDefaultLugeonTestBlock, LugeonTestBlock } from "@/src/interfaces/LugeonTestBlock";
+import {
+  BaseBlock,
+  createDefaultLugeonTestBlock,
+  DayWorkStatus,
+  LUGEON_TEST_BLOCK_TYPE_ID,
+  LugeonTestBlock,
+} from '@mmsb/core';
 import { checkAndReturnLugeonTestBlock } from "@/src/utils/block/checkFunctions/checkAndReturnLugeonTestBlock";
 import { depthInMetresToString } from "@/src/utils/depth";
 import { useEffect, useState } from "react";

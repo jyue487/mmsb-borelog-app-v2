@@ -1,9 +1,7 @@
 import { Text, View, type ViewProps } from "react-native";
 
 import { styles } from "@/src/constants/styles";
-import { VANE_SHEAR_TEST_SYMBOL } from "@/src/constants/symbol";
-import { BaseBlock, Block } from "@/src/interfaces/Block";
-import { VaneShearTestBlock } from '@/src/interfaces/VaneShearTestBlock';
+import { BaseBlock, Block, VANE_SHEAR_TEST_SYMBOL, VaneShearTestBlock } from '@mmsb/core';
 import { DayWorkStatusComponent } from "../dayWorkStatus/DayWorkStatusComponent";
 
 export type VaneShearTestBlockProps = ViewProps & {

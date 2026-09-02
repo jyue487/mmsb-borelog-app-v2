@@ -1,9 +1,11 @@
-// NOTE: this interface intentionally diverges from @mmsb/core's copy — core has
-// a `terminationCriteria` field that mobile does not. The projects table has a
-// `termination_criteria` column, but only the web dashboard reads or writes it.
-// Do not add it here without also handling it in editProjectDbAsync: that
-// UPDATE would otherwise sync an empty string back and wipe what the office
-// entered.
+// The one interface mobile still declares for itself. Every other file that used to
+// live in this directory now comes from @mmsb/core; this one cannot, because core's
+// Project has a `terminationCriteria` field that mobile must not gain. The projects
+// table has a `termination_criteria` column, but only the web dashboard reads or
+// writes it, and AppSchema.ts does not sync it. Adding it here would be a compile
+// error today rather than a data loss — addProjectDbAsync and editProjectDbAsync both
+// name their columns explicitly — but the moment someone widened that SET list the
+// UPDATE would sync an empty string back and wipe what the office entered.
 export interface Project {
     id: string; // must
     code: string; // must

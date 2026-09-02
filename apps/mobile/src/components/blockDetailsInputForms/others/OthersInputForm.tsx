@@ -3,8 +3,8 @@ import { Keyboard, Text, TouchableOpacity, View } from "react-native";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { styles } from "@/src/constants/styles";
-import * as BlockFile from "@/src/interfaces/Block";
-import { BlockTypeId } from "@/src/interfaces/Block";
+import * as BlockFile from '@mmsb/core';
+import { BlockTypeId } from '@mmsb/core';
 import { AsphaltBlockDetailsInputForm } from "./asphalt/AsphaltBlockDetailsInputForm";
 import { ConcreteSlabBlockDetailsInputForm } from "./concreteSlab/ConcreteSlabBlockDetailsInputForm";
 import { CustomBlockDetailsInputForm } from "./custom/CustomBlockDetailsInputForm";

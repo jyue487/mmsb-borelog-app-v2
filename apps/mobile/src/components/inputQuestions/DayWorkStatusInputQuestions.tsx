@@ -1,6 +1,13 @@
 import { Keyboard, Text, TouchableOpacity, View } from "react-native";
 
-import { DAY_END_WORK_TYPE, DAY_START_AND_END_WORK_TYPE, DAY_START_WORK_TYPE, DAY_WORK_STATUS_TYPE_LIST, DayWorkStatus, DayWorkStatusType } from "@/src/constants/DayWorkStatus";
+import {
+  DAY_END_WORK_TYPE,
+  DAY_START_AND_END_WORK_TYPE,
+  DAY_START_WORK_TYPE,
+  DAY_WORK_STATUS_TYPE_LIST,
+  DayWorkStatus,
+  DayWorkStatusType,
+} from '@mmsb/core';
 import { styles } from '@/src/constants/styles';
 import { useState } from 'react';
 import { DayEndWorkStatusInputQuestions } from "./DayEndWorkStatusInputQuestions";

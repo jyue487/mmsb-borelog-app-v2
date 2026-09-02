@@ -1,11 +1,16 @@
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, MZ_BLOCK_TYPE_ID, PS_BLOCK_TYPE_ID, UD_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { MzBlock } from "@/src/interfaces/MzBlock";
-import { PsBlock } from "@/src/interfaces/PsBlock";
-import { SoilProperties } from "@/src/interfaces/SoilProperties";
-import { UdBlock } from "@/src/interfaces/UdBlock";
+import {
+  BaseBlock,
+  ColourProperties,
+  DayWorkStatus,
+  MZ_BLOCK_TYPE_ID,
+  MzBlock,
+  PS_BLOCK_TYPE_ID,
+  PsBlock,
+  SoilProperties,
+  UD_BLOCK_TYPE_ID,
+  UdBlock,
+} from '@mmsb/core';
 import { checkAndReturnDayWorkStatus } from "@/src/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
 import { checkAndReturnUndisturbedSampleDescription } from "@/src/utils/block/checkFunctions/checkAndReturnUndisturbedSampleDescription";
 import { throwError } from "@/src/utils/error/throwError";

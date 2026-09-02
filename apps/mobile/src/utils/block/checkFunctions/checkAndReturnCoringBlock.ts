@@ -1,9 +1,13 @@
 
-import { DayWorkStatus } from "@/src/constants/DayWorkStatus";
-import { BaseBlock, Block, CORING_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { ColourProperties } from "@/src/interfaces/ColourProperties";
-import { CoringBlock } from "@/src/interfaces/CoringBlock";
-import { RockProperties } from "@/src/interfaces/RockProperties";
+import {
+  BaseBlock,
+  Block,
+  ColourProperties,
+  CORING_BLOCK_TYPE_ID,
+  CoringBlock,
+  DayWorkStatus,
+  RockProperties,
+} from '@mmsb/core';
 import { checkAndReturnDayWorkStatus } from "@/src/utils/block/checkFunctions/checkAndReturnDayWorkStatus";
 import { throwError } from "@/src/utils/error/throwError";
 import { stringIsNonNegativeFloat, stringToDecimalPoint } from "@/src/utils/numbers";

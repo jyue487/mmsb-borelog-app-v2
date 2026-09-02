@@ -141,7 +141,11 @@ export default function BoreholePage() {
           // this matches every row. It is here so the dashboard is already right
           // if blocks move to soft deletion like every other table in the schema.
           // See packages/supabase/policies/blocks.sql.
-          .is('deleted_at', null);
+          .is('deleted_at', null)
+          // Blocks carry no stored order and are re-sorted in memory below, but an
+          // ORDER BY here keeps the wire order reproducible when debugging. `id` is the
+          // tiebreak both clients sort on. docs/follow-ups.md item 1.
+          .order('id');
 
         if (blockError) {
           throw blockError;

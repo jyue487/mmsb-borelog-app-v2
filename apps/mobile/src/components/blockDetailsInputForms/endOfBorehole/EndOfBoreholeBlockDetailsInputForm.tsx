@@ -1,8 +1,13 @@
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { EndOfBoreholeInputQuestions } from "@/src/components/inputQuestions/EndOfBoreholeInputQuestions";
-import { endOfBoreholeOtherInstallationsType } from "@/src/constants/endOfBorehole";
-import { BaseBlock, Block, END_OF_BOREHOLE_BLOCK_TYPE_ID } from "@/src/interfaces/Block";
-import { createDefaultEndOfBoreholeBlock, EndOfBoreholeBlock } from "@/src/interfaces/EndOfBoreholeBlock";
+import {
+    BaseBlock,
+    Block,
+    createDefaultEndOfBoreholeBlock,
+    END_OF_BOREHOLE_BLOCK_TYPE_ID,
+    EndOfBoreholeBlock,
+    endOfBoreholeOtherInstallationsType,
+} from '@mmsb/core';
 import { checkAndReturnEndOfBoreholeBlock } from "@/src/utils/block/checkFunctions/checkAndReturnEndOfBoreholeBlock";
 import { waterLevelInMetresToString } from "@/src/utils/waterLevel";
 import { useEffect, useState } from "react";
