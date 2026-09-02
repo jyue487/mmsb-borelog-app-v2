@@ -4,9 +4,9 @@ Deferred work, triaged out of the review of the web borehole log page (August 20
 what is wrong, **why it is currently harmless**, and what would make it bite — because most of these
 are latent, and knowing the trigger is the point.
 
-Mostly nothing here is a live user-facing bug — live bugs get fixed, not filed. Twice now an entry
-filed as latent turned out not to be (items 2 and 12), so "why it is currently harmless" is a claim to
-re-check, not to inherit.
+Mostly nothing here is a live user-facing bug — live bugs get fixed, not filed. But an entry filed as
+latent has twice turned out not to be (items 2 and 12), so "why it is currently harmless" is a claim
+to re-check, not to inherit.
 
 ## Known defects and debt
 
@@ -589,29 +589,28 @@ where a human writes the actual recovery: a real workbook has `HA1` spanning 1.0
 exporter writes 1.0-2.0. Every other sample type has a real source — SPT is top plus total
 penetration, UD/MZ/PS is `penetrationDepthInMetres`, coring is the block interval.
 
-### 12. The rendered PDF is not byte-deterministic
+### 12. Resolved: the rendered PDF is byte-deterministic
 
-`CLAUDE.md` says the report's output is deterministic — "creation date and producer are pinned" — and
-offers `shasum -a 256` across devices as the acceptance check for "does it look the same everywhere".
-It is not, and that check cannot work as written.
+`CLAUDE.md` claimed the report's output was deterministic — "creation date and producer are pinned" —
+and offered `shasum -a 256` across devices as the acceptance check for "does it look the same
+everywhere". Neither was true. `pdfLibBackend.ts` called `PDFDocument.create()` and `pdf.save()`
+without touching metadata, so pdf-lib stamped `CreationDate` and `ModDate` with the current time:
+two renders of the same fixture seconds apart differed in 234 bytes, all inside one compressed object
+stream near the tail, carrying a value of the form `D:20260902103501Z`.
 
-`packages/report/src/render/pdfLibBackend.ts` calls `PDFDocument.create()` and `pdf.save()` without
-touching the document's metadata, so pdf-lib stamps `CreationDate` and `ModDate` with the current
-time. Two renders of the same fixture seconds apart differ in 234 bytes, all inside one compressed
-object stream near the tail, carrying a value of the form `D:20260902103501Z`.
+Nothing in the app compares PDF bytes, so what this broke was a human check — the one item 8 names as
+the precondition for deleting the ~2,000-line legacy pipeline. It would have reported a mismatch
+between two identical reports, which is the worst kind of wrong answer.
 
-*Why it is harmless now:* nothing in the app compares PDF bytes. The check it breaks is a human one.
+*Fixed 2026-09-02.* `renderReportDoc` now sets `CreationDate` and `ModDate` to a fixed
+`2000-01-01T00:00:00Z`, and sets `Producer`/`Creator` to `@mmsb/report` so the claim about the
+producer is true as well. The date is arbitrary and nothing reads it — a borehole log's own dates are
+drawn on the page. Verified across all twelve fixtures: each renders the same hash on every run, and
+twelve different hashes, so it is stable rather than constant.
 
-*What makes it bite:* the moment someone runs the documented cross-device comparison, which item 8
-names as the precondition for deleting the ~2,000-line legacy pipeline. It will report a mismatch
-between two identical reports, which is the worst possible answer — it looks like a real difference.
-
-*Fix:* pin them in `pdfLibBackend.ts` — `pdf.setCreationDate(FIXED)` and `pdf.setModificationDate(FIXED)`
-against a constant epoch, next to wherever the producer would be set. Then the property `CLAUDE.md`
-already claims becomes true, and the `render` script's `sha256` line becomes a usable regression test
-rather than noise. Verified 2026-09-02 that nothing else varies: with the timestamp aside, two renders
-are identical, and `@mmsb/ags-excel`'s workbook has the same shape of drift from zip entry mtimes
-while its unzipped entries compare equal byte for byte.
+The `render` script's `sha256` line is therefore now a usable check, but it is deliberately **not**
+snapshotted the way `pagination` is: it changes on any legitimate layout change, and the pagination
+snapshot already covers that with a `--snap` workflow. Its job is comparing one build across devices.
 
 ## Deferred features
 

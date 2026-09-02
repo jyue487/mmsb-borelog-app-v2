@@ -62,9 +62,26 @@ async function embedImage(doc: PDFDocument, asset: AssetBytes): Promise<PDFImage
 	return doc.embedPng(asset);
 }
 
+/**
+ * A fixed timestamp for the document's metadata.
+ *
+ * pdf-lib stamps CreationDate and ModDate with `new Date()` unless they are set, which made
+ * two renders of the same report differ in a couple of hundred bytes and defeated the whole
+ * point of `shasum`ing the output across devices. The value is arbitrary — 2000-01-01 UTC —
+ * because a borehole log's own dates are drawn on the page, and nothing reads this one.
+ * docs/follow-ups.md item 12.
+ */
+const FIXED_TIMESTAMP = new Date(Date.UTC(2000, 0, 1));
+
 export async function renderReportDoc(doc: ReportDoc, assets: ReportAssets): Promise<Uint8Array> {
 	const pdf = await PDFDocument.create();
 	pdf.registerFontkit(fontkit);
+
+	// Every input to this function is fixed, so the output should be too.
+	pdf.setCreationDate(FIXED_TIMESTAMP);
+	pdf.setModificationDate(FIXED_TIMESTAMP);
+	pdf.setProducer('@mmsb/report');
+	pdf.setCreator('@mmsb/report');
 
 	// subset:false is deliberate — pdf-lib's runtime subsetter mis-maps glyphs for NotoSans.
 	// The faces are pre-subsetted offline by scripts/subsetFonts.sh, which is both smaller

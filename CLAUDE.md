@@ -216,11 +216,11 @@ pnpm --filter @mmsb/report text         # the size-fitting kernel against real m
 pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
 ```
 
-The layout is deterministic, but **the PDF bytes are not** — pdf-lib stamps `CreationDate`/`ModDate`
-at render time and nothing pins them, so two renders of the same fixture differ in ~234 bytes. The
-`shasum -a 256` acceptance check this file used to describe therefore does not work yet; see
-`docs/follow-ups.md` item 12 for the two-line fix that would make it work. Until then, compare the
-deterministic dumps (`pagination`, `rows`, `text`) rather than the file.
+Output is deterministic — `renderReportDoc` pins `CreationDate`, `ModDate`, `Producer` and `Creator`,
+which pdf-lib otherwise stamps with the current time — so the acceptance check for "does it look the
+same everywhere" is `shasum -a 256` across devices, not visual inspection. Do not remove those four
+lines; without them two identical reports hash differently and the check silently becomes noise
+(`docs/follow-ups.md` item 12).
 
 **The old HTML + `expo-print` pipeline is still present but not referenced**, kept as a fallback
 until the new renderer has been validated against real boreholes: 29 `render*ToHtml.ts` files plus
