@@ -549,31 +549,62 @@ into the stored payload at data-entry time**, by `RockPropertiesInputQuestions.t
 constant. So core's copy has no runtime consumer at all; editing it alone changes nothing. Both copies
 now carry the new values — which is item 7's hand-sync debt in miniature.
 
-**Still outstanding: the backfill.** Every borehole logged before this keeps 840/873/872 in its
-payload and still exports a legend code with no image behind it. Size it first:
+**The backfill: nothing to do yet, checked 2026-09-02.** No row carries a rock code. All 21 blocks in
+the project are types 1, 4, 7, 8, 11 and 13 — **there is not one coring block**, and coring is the only
+type with `rockProperties`. `payload::text` does not contain the substring `rockCode` anywhere.
+
+That is a reprieve, not a resolution: the codes are wrong from the first cored borehole onward, and
+the first one logged after this will already be right.
+
+**Read this before running it against real data, because the obvious query lies.**
+`blocks.payload` is `jsonb`, but its value is a **JSON string, not a JSON object** —
+`jsonb_typeof(payload)` is `'string'` for all 21 rows. The client writes `JSON.stringify(block)` into
+a `jsonb` column, so Postgres stores one JSON scalar whose text happens to be an object; that is why
+`parseUntilObject` loops on the way back in. The consequence: `payload->'rockProperties'` is **NULL
+for every row**, so the sizing query an earlier version of this entry gave would report zero and read
+as "nothing to fix" whether or not there was.
+
+Decode with `#>> '{}'` on the way in and re-encode with `to_jsonb(...::text)` on the way out. Size it:
 
 ```sql
-select payload->'rockProperties'->>'rockCode' as code, count(*)
-from blocks
-where payload->'rockProperties'->>'rockCode' in ('840', '873', '872')
-group by 1;
+with p as (select id, (payload #>> '{}')::jsonb as obj from blocks)
+select obj->'rockProperties'->>'rockType' as rock_type,
+       obj->'rockProperties'->>'rockCode' as rock_code,
+       count(*)
+from p where obj ? 'rockProperties' group by 1, 2 order by 1, 2;
 ```
 
-then rewrite, one code at a time so each pass is countable and reversible from a backup:
+Survey both columns, not just the code — the schist pass keys on the type. Then rewrite, one pass at a
+time so each is countable and reversible from a backup:
 
 ```sql
 update blocks
-set payload = jsonb_set(payload, '{rockProperties,rockCode}', '810'::jsonb)
-where payload->'rockProperties'->>'rockCode' = '840';
--- then 873 -> 813, 872 -> 812, and 812 -> 813 for schist only
+set payload = to_jsonb(
+  jsonb_set((payload #>> '{}')::jsonb, '{rockProperties,rockCode}', '810'::jsonb)::text)
+where (payload #>> '{}')::jsonb->'rockProperties'->>'rockCode' = '840';
+-- then 873 -> 813 and 872 -> 812, the same shape
 ```
 
-The last of those is not expressible as a code rewrite — 812 is correct for phyllite and slate and
-wrong for schist, so it has to key on `payload->'rockProperties'->>'rockType'`.
+The fourth pass is not a code rewrite. 812 is *correct* for phyllite and slate and wrong only for
+schist, so it keys on the type:
 
-Note `blocks.payload` is **`jsonb`**, not `text` — an earlier version of this entry said otherwise and
-cast in and back out, which would fail on assignment. Run it while no device is mid-sync: a queued
-block write carrying the old code would land after the update and put it back.
+```sql
+update blocks
+set payload = to_jsonb(
+  jsonb_set((payload #>> '{}')::jsonb, '{rockProperties,rockCode}', '813'::jsonb)::text)
+where (payload #>> '{}')::jsonb->'rockProperties'->>'rockCode' = '812'
+  and (payload #>> '{}')::jsonb->'rockProperties'->>'rockType' = 'SCHIST';
+```
+
+Verify the rewrite before trusting it — `jsonb_typeof` of the new value must still be `string`, and it
+must still decode to an object:
+
+```sql
+select jsonb_typeof(payload), jsonb_typeof((payload #>> '{}')::jsonb) from blocks limit 5;
+```
+
+Run it while no device is mid-sync: a queued block write carrying the old code would land after the
+update and put it back.
 
 ### 10. `SoilProperties` cannot express two secondary soil types
 

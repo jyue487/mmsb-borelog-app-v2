@@ -113,7 +113,16 @@ every block carries `topDepthInMetres`, `baseDepthInMetres`, `description`, and 
 (start/end date+time, water level, casing depth — how the log records shift boundaries).
 
 **Storage is a JSON blob, not columns.** The `blocks` table has only `id`, `borehole_id`,
-`block_type_id`, `payload` — where `payload` is the whole block JSON-stringified. So:
+`block_type_id`, `payload` — where `payload` is the whole block JSON-stringified.
+
+**And the column is `jsonb` holding a JSON *string*, not a JSON object** — `jsonb_typeof(payload)` is
+`'string'` for every row, because both clients write `JSON.stringify(block)` into it. So
+`payload->'anything'` is NULL in every query you will ever write against it: decode with
+`payload #>> '{}'` first, and re-encode with `to_jsonb(...::text)` when writing. That is also why
+`parseUntilObject` loops rather than calling `JSON.parse` once. `docs/follow-ups.md` item 9 has a
+worked backfill.
+
+So:
 
 - `packages/core/src/json/block.ts` is the whole of it, for both clients: `parseBlock(row)` and
   `serializeBlock(block)`. Serializing is `JSON.stringify`; parsing is `JSON.parse` plus the one
