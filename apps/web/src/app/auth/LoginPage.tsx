@@ -1,11 +1,76 @@
 // LoginPage.tsx
 
+import type { AuthError } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/auth";
 import { supabase } from "../../supabase/supabase.server";
 
 type LoginStep = "email" | "otp";
+
+/**
+ * The dashboard is invite-only — `signInWithOtp` runs with `shouldCreateUser: false`
+ * — so GoTrue's `otp_disabled` never means "signups are switched off". It means no
+ * `auth.users` row matched this exact address. Passing its own wording straight
+ * through told people the opposite of what had actually happened.
+ */
+function describeSendError(error: AuthError, email: string): string {
+  switch (error.code) {
+    case "otp_disabled":
+      return `No dashboard account matches ${email}. Check the address for typos, or ask an owner or admin to add you.`;
+
+    // Not a missing account, despite the wording GoTrue uses. magic_link.go sets
+    // `isNewUser = !user.IsConfirmed()` and sends new users to Signup, which this
+    // project refuses because "Allow new users to sign up" is off.
+    //
+    // invite-member now confirms on the way in, so this is unreachable for anyone
+    // added since. It survives for accounts invited before that — whose older invite
+    // mail still carries a working link — and for any account created by hand in the
+    // Supabase dashboard.
+    //
+    // An owner, not "an owner or admin". Re-adding alone cannot clear this: a live
+    // user_to_role row returns 409 duplicate, so the member has to be *removed*
+    // first, and only then does the re-add take the revive branch and its
+    // confirmUserEmail call. Removal is gated on callerOutranksRole, which answers
+    // "Only owners can remove admins" — so naming an admin here would send an
+    // unactivated admin to someone who cannot help them. An owner outranks admin,
+    // supervisor and viewer alike, so it is the one answer correct for every role
+    // this message can reach.
+    case "signup_disabled":
+      return "This account has not been activated yet. If you still have your invitation email, follow the link in it. Otherwise ask an owner to remove you and add you again.";
+
+    // Reachable by pressing Resend twice, which the 60s throttle refuses.
+    case "over_email_send_rate_limit":
+    case "over_request_rate_limit":
+      return "Too many code requests. Wait a minute, then try again.";
+
+    case "validation_failed":
+      return "That is not a valid email address.";
+
+    default:
+      return `Unable to send login code: ${error.message}`;
+  }
+}
+
+/**
+ * This used to assert "invalid or has expired" for every failure and log the real
+ * reason to the console, so a rate limit and a revoked account both read as a bad
+ * code. The default stays deliberately vague — it should not hint at whether a
+ * given code was nearly right.
+ */
+function describeVerifyError(error: AuthError): string {
+  switch (error.code) {
+    case "over_request_rate_limit":
+    case "over_email_send_rate_limit":
+      return "Too many attempts. Wait a minute, then try again.";
+
+    case "user_banned":
+      return "This account no longer has access to the dashboard. Ask an owner or admin to add you back.";
+
+    default:
+      return "That code is not valid, or it has expired. Check it and try again, or request a new one.";
+  }
+}
 
 export default function LoginPage() {
   const { userId } = useAuth();
@@ -45,7 +110,7 @@ export default function LoginPage() {
     setIsPending(false);
 
     if (error) {
-      setMessage(`Unable to send login code: ${error.message}`);
+      setMessage(describeSendError(error, normalizedEmail));
       return;
     }
 
@@ -79,12 +144,8 @@ export default function LoginPage() {
     setIsPending(false);
 
     if (error) {
-      console.log(error.message);
-      setMessage(`
-        This verification code is invalid or has expired. 
-        Please check it and try again or request a new code.
-      `);
-
+      console.error("Error verifying login code:", error);
+      setMessage(describeVerifyError(error));
       return;
     }
 

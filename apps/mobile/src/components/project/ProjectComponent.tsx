@@ -1,30 +1,15 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, Text } from "react-native";
 
 // Local imports
 import { styles } from '@/src/constants/styles';
-import { EditProjectParams, Project } from '@/src/interfaces/Project';
-import { EditProjectInputForm } from './EditProjectInputForm';
+import { Project } from '@/src/interfaces/Project';
 
 type ProjectComponentProps = {
   project: Project;
-  editProject: (editProjectParams: EditProjectParams) => void;
-  deleteProject: (projectId: string) => void;
 };
 
-export function ProjectComponent({
-  project,
-  editProject,
-  deleteProject,
-}: ProjectComponentProps) {
-
-  const [isEditState, setIsEditState] = useState<boolean>(false);
-    
-  if (isEditState) {
-    return <EditProjectInputForm oldProject={project} editProject={editProject} deleteProject={deleteProject} setIsEditState={setIsEditState} />
-  }
-
+export function ProjectComponent({ project }: ProjectComponentProps) {
   return (
     <Pressable
       onPress={() =>
@@ -36,7 +21,6 @@ export function ProjectComponent({
           },
         })
       }
-      onLongPress={() => setIsEditState(true)}
       style={({ pressed }) => [
         {
           backgroundColor: pressed ? 'rgb(222, 246, 255)' : 'rgb(255, 255, 255)',

@@ -80,16 +80,36 @@ export async function fetchSitePlanUrl(
 }
 
 /**
- * Whether the project has a site plan at all, without minting a URL for it.
+ * What the panel needs to know about a project's site plan, beyond the fact that
+ * one exists. Declared here rather than reusing storage-js's `FileObject`,
+ * because that type reaches us only as a transitive dependency of
+ * `@supabase/supabase-js` — nothing in apps/web/package.json names it.
  *
- * Used to decide what the panel offers — "View" against "not uploaded" — which is
- * a page-load question, unlike the URL itself.
+ * Both fields are nullable because Storage types them that way: `list` returns
+ * the same row shape for folders, where neither is populated.
+ */
+export type SitePlan = {
+  updatedAt: Date | null;
+  sizeInBytes: number | null;
+};
+
+/**
+ * The project's site plan, or `null` if it has none.
+ *
+ * A page-load question, unlike the URL itself: it decides what the panel offers —
+ * "View" against "Not uploaded" — and what it says about the file.
  *
  * `list` with the project's own filename as the search term rather than a bare
  * folder listing: the folder holds one object per project across the whole
  * organisation, and a manager can read all of them.
+ *
+ * The date and size come out of the same response. Storage returns them on the
+ * listing row, so showing them costs nothing beyond the call already being made,
+ * and no signed URL has to be minted to find them out.
  */
-export async function hasSitePlan(projectId: string): Promise<boolean> {
+export async function fetchSitePlan(
+  projectId: string,
+): Promise<SitePlan | null> {
   const { data, error } = await supabase.storage
     .from(DOCUMENT_BUCKET)
     .list('site-plans', { search: `${projectId}.pdf`, limit: 1 });
@@ -99,7 +119,16 @@ export async function hasSitePlan(projectId: string): Promise<boolean> {
   }
 
   // `search` is a prefix match rather than an exact one, so confirm the name.
-  return (data ?? []).some((entry) => entry.name === `${projectId}.pdf`);
+  const file = (data ?? []).find((entry) => entry.name === `${projectId}.pdf`);
+
+  if (!file) {
+    return null;
+  }
+
+  return {
+    updatedAt: file.updated_at === null ? null : new Date(file.updated_at),
+    sizeInBytes: file.metadata?.size ?? null,
+  };
 }
 
 /**

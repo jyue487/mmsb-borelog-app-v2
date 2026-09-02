@@ -29,14 +29,14 @@
 // `verify_jwt` stays at its default (on).
 
 import {
+  callerOutranksRole,
   CORS_HEADERS,
   errorResponse,
   jsonResponse,
+  OWNER_ROLE_ID,
   requireManagerCaller,
   setUserBanned,
 } from '../_shared/members.ts';
-
-const OWNER_ROLE_ID = 1;
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
@@ -53,7 +53,7 @@ Deno.serve(async (request) => {
     return gate;
   }
 
-  const { admin, callerId } = gate;
+  const { admin, callerId, callerRoleId } = gate;
 
   let body: { userId?: unknown };
 
@@ -104,6 +104,17 @@ Deno.serve(async (request) => {
       'Owners are managed in the database, not from the dashboard.',
       400,
     );
+  }
+
+  // An admin may not remove another admin. Kept after the owner branch above,
+  // which this would otherwise swallow — nobody outranks an owner, and "Owners
+  // are managed in the database" says more than "only owners can remove
+  // admins" does.
+  //
+  // Note where this sits: ahead of setUserBanned. A refused request must not
+  // leave the target banned but still listed.
+  if (!callerOutranksRole(callerRoleId, target.role_id)) {
+    return errorResponse('forbidden', 'Only owners can remove admins.', 403);
   }
 
   const banError = await setUserBanned(admin, userId, true);

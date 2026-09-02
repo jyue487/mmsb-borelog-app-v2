@@ -37,6 +37,29 @@ export const ASSIGNABLE_ROLE_IDS: Record<string, number> = {
 // app with signInWithPassword. Everyone else uses the dashboard's emailed OTP.
 export const SUPERVISOR_ROLE_ID = 3;
 
+// Owners are not handed out or revoked from the dashboard at all; admins are,
+// but only by an owner.
+export const OWNER_ROLE_ID = 1;
+export const ADMIN_ROLE_ID = 2;
+
+// Does the caller sit strictly above this role, and so may act on someone who
+// holds it — remove them, set their password, or grant them the role?
+//
+// Mirrors canManageMemberWithRole in apps/web/src/data/memberRoles.ts and the
+// `role_id > public.get_current_user_role()` clause in
+// ../../policies/user_to_role.sql. All three are the same rule, and all three
+// depend on role_id being ordered by privilege (1 owner, 2 admin, 3 supervisor,
+// 4 viewer) — renumbering the `roles` table silently inverts this.
+//
+// Callers must still have passed requireManagerCaller: a supervisor numerically
+// outranks a viewer, and this function alone would say yes.
+export function callerOutranksRole(
+  callerRoleId: number,
+  targetRoleId: number,
+): boolean {
+  return callerRoleId < targetRoleId;
+}
+
 // Stricter than GoTrue's own default floor of 6, so this is the limit users
 // actually hit. Mirrored in AddMemberModal and EditMemberModal — a shorter
 // password is rejected in the browser first, and here regardless.
@@ -58,6 +81,10 @@ export type ManagerCaller = {
   // unguarded, so authorization has to have happened before you get one.
   admin: SupabaseClient;
   callerId: string;
+  // 1 or 2, having passed the gate below. Handed back so a function can ask
+  // callerOutranksRole about its own target: being a manager is necessary but
+  // not sufficient, since admins may not act on other admins.
+  callerRoleId: number;
 };
 
 // Everything both functions do before they diverge: prove there is a caller,
@@ -108,8 +135,10 @@ export async function requireManagerCaller(
     return errorResponse('server_error', 'Unable to verify your access.', 500);
   }
 
-  // 1 = owner, 2 = admin.
-  if (!callerRole || (callerRole.role_id !== 1 && callerRole.role_id !== 2)) {
+  if (
+    !callerRole ||
+    (callerRole.role_id !== OWNER_ROLE_ID && callerRole.role_id !== ADMIN_ROLE_ID)
+  ) {
     return errorResponse(
       'forbidden',
       'Only owners and admins can manage members.',
@@ -117,7 +146,7 @@ export async function requireManagerCaller(
     );
   }
 
-  return { admin, callerId };
+  return { admin, callerId, callerRoleId: callerRole.role_id };
 }
 
 // GoTrue rejects a password that fails the project's own policy with this code.
@@ -201,6 +230,49 @@ export async function setUserPassword(
 
   console.error('Error setting member password:', error);
   return errorResponse('server_error', 'Unable to set the password.', 500);
+}
+
+// Marks an address confirmed without waiting for the invitee to click anything.
+//
+// inviteUserByEmail leaves email_confirmed_at null until the invite link is opened.
+// That is harmless on a project that allows signups and fatal on this one, because
+// GoTrue's MagicLink handler classifies an unconfirmed account as a brand new signup:
+//
+//     if user != nil { isNewUser = !user.IsConfirmed() }
+//     if isNewUser { ...falls through to Signup... }
+//
+// and Signup refuses while "Allow new users to sign up" is off. So requesting a login
+// code for someone who visibly has both an account and a member row answered
+// 422 signup_disabled, "Signups not allowed for this instance". Note that is a
+// *different* error from 422 otp_disabled, "Signups not allowed for otp", which is
+// what a genuinely unknown address returns — the two read almost identically and are
+// easy to confuse when debugging.
+//
+// Confirming costs nothing in access terms: admins and viewers sign in only with an
+// emailed OTP, so control of the mailbox is proved on every single sign-in.
+// Supervisors are already created with email_confirm: true for signInWithPassword.
+//
+// Caller beware: this clears the invite token. updateUserById({ email_confirm: true })
+// runs user.Confirm(tx), which blanks confirmation_token and calls
+// ClearAllOneTimeTokensForUser — so any link already emailed by inviteUserByEmail is
+// dead afterwards. templates/invite.html therefore points at {{ .SiteURL }} rather
+// than {{ .ConfirmationURL }}; do not reintroduce the latter.
+//
+// Mirrors setUserPassword: a Response on failure, null on success.
+export async function confirmUserEmail(
+  admin: SupabaseClient,
+  userId: string,
+): Promise<Response | null> {
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    email_confirm: true,
+  });
+
+  if (!error) {
+    return null;
+  }
+
+  console.error('Error confirming member email:', error);
+  return errorResponse('server_error', 'Unable to confirm this address.', 500);
 }
 
 // GoTrue's admin API has no get-user-by-email, so this pages through the user

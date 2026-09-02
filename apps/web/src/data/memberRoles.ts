@@ -42,7 +42,7 @@ export function canManageProjectPeople(role: MemberRole | null): boolean {
 // rather than here: supervisors and viewers assigned to the project can open the
 // plan, they just cannot change it. There is no canViewSitePlan() to go with
 // this, because the page never has to ask — a viewer who may not read it gets
-// `null` back from fetchSitePlanUrl and sees "Not uploaded".
+// `null` back from fetchSitePlan and sees "Not uploaded".
 export function canManageSitePlan(role: MemberRole | null): boolean {
   return role === 'owner' || role === 'admin';
 }
@@ -51,13 +51,17 @@ export function canManageSitePlan(role: MemberRole | null): boolean {
 // same `role_id in (1, 2)` shape as the two above, and its own function for the
 // same reason: it answers a third question.
 //
-// Unlike those two, this one is *stricter than the database*. The
-// assignment-scoped update policy on `boreholes` — quoted in
-// packages/supabase/policies/project_to_user.sql, "Users can only edit involved
-// boreholes" — admits anyone with a `project_to_user` row, which carries no
-// role. So hiding the pencil is an affordance only: a supervisor can still issue
-// the update through the API. Narrowing the policy is its own decision with a
-// mobile blast radius; see docs/follow-ups.md.
+// This one used to be *stricter than the database* — the update policy on
+// `boreholes` carried no role, so anyone with a `project_to_user` row, viewers
+// included, could issue the update through the API whether or not they saw a
+// pencil. packages/supabase/policies/boreholes.sql closed that: supervisors now
+// update only the boreholes on their assigned projects, viewers not at all, and
+// the borehole NAME is owner/admin only, enforced by the
+// boreholes_name_immutable trigger rather than by a policy.
+//
+// So the dashboard is still narrower than the database — supervisors may edit
+// these fields, they just do it in the field app — but no longer in a way that
+// leaves an unenforced claim. EditBoreholeModal is the only rename UI there is.
 export function canEditBoreholeDetails(role: MemberRole | null): boolean {
   return role === 'owner' || role === 'admin';
 }
@@ -75,6 +79,39 @@ export function canViewMembers(role: MemberRole | null): boolean {
   return role !== null && memberRoleRank(role) <= memberRoleRank('supervisor');
 }
 
+// Whether one member may act on another: remove them, set their password, or
+// hand them their role in the first place. Admins manage supervisors and
+// viewers; the admin tier itself is the owner's to grant and revoke.
+//
+// Unlike the four owner/admin predicates above, this one deliberately *calls*
+// canManageMembers rather than repeating the literal. Those are separate
+// functions because they answer separate questions; this one asks that exact
+// question and then one more clause, so sharing it is the point — tightening
+// who may manage members at all must tighten this too.
+//
+// A strict rank comparison rather than an `=== 'admin'` carve-out, for the same
+// reason canViewMembers uses one: "outranks" is what MEMBER_ROLE_LIST's ordering
+// already encodes. It subsumes the owner rule (nobody outranks an owner, not
+// even another owner), and a role inserted between admin and supervisor is
+// ranked correctly with no edit here.
+//
+// The database states the same rule numerically — `role_id > current role` in
+// packages/supabase/policies/user_to_role.sql, callerOutranksRole in
+// packages/supabase/functions/_shared/members.ts — which works only because
+// role_id is ordered by privilege (1 owner .. 4 viewer), the same order as
+// MEMBER_ROLE_LIST. Renumbering the `roles` table breaks both of those and not
+// this one.
+export function canManageMemberWithRole(
+  actorRole: MemberRole | null,
+  targetRole: MemberRole,
+): boolean {
+  if (actorRole === null || !canManageMembers(actorRole)) {
+    return false;
+  }
+
+  return memberRoleRank(actorRole) < memberRoleRank(targetRole);
+}
+
 // The roles a member can actually be given from this dashboard. `owner` is
 // deliberately excluded: owners are not handed out or revoked through the UI,
 // only in SQL. The same rule is enforced server-side by the invite-member edge
@@ -84,6 +121,21 @@ export function canViewMembers(role: MemberRole | null): boolean {
 export const ASSIGNABLE_MEMBER_ROLES = MEMBER_ROLE_LIST.filter(
   (role): role is Exclude<MemberRole, 'owner'> => role !== 'owner',
 );
+
+// The roles *this* actor may hand out, as opposed to ASSIGNABLE_MEMBER_ROLES
+// above, which is the roles anyone may hand out from the dashboard at all. An
+// owner gets admin/supervisor/viewer; an admin gets supervisor/viewer.
+//
+// Empty for anyone who is not a manager. AddMemberModal is only ever mounted
+// behind canManageMembers, so that case does not render — but it is the honest
+// answer rather than a special case.
+export function assignableMemberRolesFor(
+  actorRole: MemberRole | null,
+): Exclude<MemberRole, 'owner'>[] {
+  return ASSIGNABLE_MEMBER_ROLES.filter((role) =>
+    canManageMemberWithRole(actorRole, role),
+  );
+}
 
 export const MEMBER_ROLE_LABELS: Record<MemberRole, string> = {
   owner: 'Owner',

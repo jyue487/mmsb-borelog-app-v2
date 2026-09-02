@@ -9,8 +9,10 @@ import {
 import { X } from 'lucide-react';
 import { useEffect, useState, type SubmitEvent } from 'react';
 
+import { useAuth } from '../context/auth';
 import {
-  ASSIGNABLE_MEMBER_ROLES,
+  assignableMemberRolesFor,
+  canManageMemberWithRole,
   MEMBER_ROLE_DESCRIPTIONS,
   MEMBER_ROLE_LABELS,
 } from '../data/memberRoles';
@@ -35,6 +37,12 @@ export default function AddMemberModal({
   existingMembers,
   onMemberAdded,
 }: AddMemberModalProps) {
+  // An admin may not hand out the admin role — that tier is the owner's to
+  // grant. Read here rather than passed in as a prop, so the modal cannot be
+  // mounted with a role that disagrees with the session.
+  const { role: actorRole } = useAuth();
+  const assignableRoles = assignableMemberRolesFor(actorRole);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<MemberRole>('viewer');
@@ -116,6 +124,15 @@ export default function AddMemberModal({
       nextEmailError !== null ||
       nextPasswordError !== null
     ) {
+      return;
+    }
+
+    // Belt and braces. The select cannot offer a role this user may not grant,
+    // and invite-member refuses one server-side regardless — this catches the
+    // case in between, where the session's role changed while the modal sat
+    // open, and turns it into a sentence rather than a 403.
+    if (!canManageMemberWithRole(actorRole, role)) {
+      setSubmitError('You cannot give someone that role.');
       return;
     }
 
@@ -211,10 +228,17 @@ export default function AddMemberModal({
               Add member
             </h2>
 
+            {/*
+              Hedged rather than promised: invite-member sends no mail at all when it
+              revives a removed member (index.ts:161-165) or adopts an auth account
+              that already exists (index.ts:228-279), and both return a member row
+              indistinguishable from a fresh invite. Stating it flatly sent admins
+              looking for an email that was never going to arrive.
+            */}
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {needsPassword
                 ? 'They will sign in to the mobile app with this password.'
-                : 'They will receive an email invitation to the dashboard.'}
+                : 'They will receive an email invitation, unless they already have an account.'}
             </p>
           </div>
 
@@ -320,8 +344,9 @@ export default function AddMemberModal({
               disabled={isSubmitting}
               className={`${FIELD_CLASSES} cursor-pointer disabled:cursor-not-allowed disabled:opacity-60`}
             >
-              {/* Not MEMBER_ROLE_LIST — `owner` is never offered here. */}
-              {ASSIGNABLE_MEMBER_ROLES.map((memberRole) => (
+              {/* Not MEMBER_ROLE_LIST — `owner` is never offered here, and an
+                  admin is not offered `admin` either. */}
+              {assignableRoles.map((memberRole) => (
                 <option key={memberRole} value={memberRole}>
                   {MEMBER_ROLE_LABELS[memberRole]}
                 </option>

@@ -1,7 +1,7 @@
 // ProjectPage.tsx
 
 import type { Borehole, Member, Project } from '@mmsb/core';
-import { Map, Pencil, UserPlus } from 'lucide-react';
+import { FileText, Pencil, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {
   useLocation,
@@ -33,11 +33,44 @@ import { fetchProjectPeople } from '../supabase/projectPeople';
 import { mapProjectRow, PROJECT_COLUMNS } from '../supabase/projectRow';
 import {
   deleteSitePlan,
+  fetchSitePlan,
   fetchSitePlanUrl,
-  hasSitePlan,
+  type SitePlan,
   uploadSitePlan,
 } from '../supabase/sitePlan';
 import { supabase } from '../supabase/supabase.server';
+
+// Same shape as ADDED_DATE_FORMATTER on MembersPage: a site plan's date and a
+// member's join date are read in the same glance and should not differ.
+const SITE_PLAN_DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+// Intl.DateTimeFormat throws RangeError on an Invalid Date, which is what a
+// missing or malformed `updated_at` from Storage produces once it has been
+// through `new Date(...)`. One odd object must not take the panel down.
+function formatSitePlanDate(date: Date | null): string {
+  if (date === null || Number.isNaN(date.getTime())) {
+    return 'Date unknown';
+  }
+
+  return SITE_PLAN_DATE_FORMATTER.format(date);
+}
+
+// Decimal units, matching what a file manager shows for the same PDF, rather
+// than the binary ones. One decimal place below 10 MB and none above it, so the
+// figure stays about as precise as it is useful in a two-column panel.
+function formatFileSize(bytes: number): string {
+  const megabytes = bytes / 1_000_000;
+
+  if (megabytes < 0.1) {
+    return `${Math.max(1, Math.round(bytes / 1_000))} KB`;
+  }
+
+  return `${megabytes.toFixed(megabytes < 10 ? 1 : 0)} MB`;
+}
 
 type ProjectPageLocationState = {
   project?: Project;
@@ -88,11 +121,12 @@ export default function ProjectPage() {
     isEditTerminationCriteriaModalOpen,
     setIsEditTerminationCriteriaModalOpen,
   ] = useState(false);
-  // null while the existence check is in flight, so the row shows a placeholder
-  // rather than "Not uploaded" — which would read as an answer, and would send a
-  // manager to upload a plan that is already there.
-  const [projectHasSitePlan, setProjectHasSitePlan] = useState<boolean | null>(
-    null,
+  // Three states, not two. `undefined` while the check is in flight, so the panel
+  // shows a placeholder rather than "Not uploaded" — which would read as an
+  // answer, and would send a manager to upload a plan that is already there.
+  // `null` is the answer "there is none".
+  const [sitePlan, setSitePlan] = useState<SitePlan | null | undefined>(
+    undefined,
   );
   const [sitePlanErrorMessage, setSitePlanErrorMessage] = useState<
     string | null
@@ -283,20 +317,20 @@ export default function ProjectPage() {
 
     const loadSitePlan = async () => {
       try {
-        const exists = await hasSitePlan(projectId);
+        const plan = await fetchSitePlan(projectId);
 
         if (isCurrent) {
-          setProjectHasSitePlan(exists);
+          setSitePlan(plan);
           setSitePlanErrorMessage(null);
         }
       } catch (error) {
         console.error('Error checking for a site plan:', error);
 
         if (isCurrent) {
-          // false rather than null: the row stops saying "Checking..." forever,
-          // and a manager can still upload. The message below says why the view
-          // button is missing.
-          setProjectHasSitePlan(false);
+          // null rather than undefined: the panel stops saying "Checking..."
+          // forever, and a manager can still upload. The message below says why
+          // the view button is missing.
+          setSitePlan(null);
           setSitePlanErrorMessage(
             error instanceof Error
               ? error.message
@@ -346,7 +380,7 @@ export default function ProjectPage() {
         // Removed by someone else since this page loaded. Correct the row rather
         // than leaving a button that fails the same way again.
         tab.close();
-        setProjectHasSitePlan(false);
+        setSitePlan(null);
         setSitePlanErrorMessage('This project no longer has a site plan.');
         return;
       }
@@ -383,7 +417,10 @@ export default function ProjectPage() {
 
     try {
       await uploadSitePlan(project.id, file);
-      setProjectHasSitePlan(true);
+      // Written from what we just sent rather than re-listing the folder.
+      // `uploadSitePlan` returns nothing, and a second round trip would only
+      // read back the size and timestamp of this very file.
+      setSitePlan({ updatedAt: new Date(), sizeInBytes: file.size });
     } catch (error) {
       console.error('Error uploading the site plan:', error);
       setSitePlanErrorMessage(
@@ -414,7 +451,7 @@ export default function ProjectPage() {
 
     try {
       await deleteSitePlan(project.id);
-      setProjectHasSitePlan(false);
+      setSitePlan(null);
     } catch (error) {
       console.error('Error removing the site plan:', error);
       setSitePlanErrorMessage(
@@ -583,7 +620,7 @@ export default function ProjectPage() {
 
         <div className="grid flex-1 grid-cols-1 gap-3 lg:min-h-0 lg:grid-cols-12 lg:grid-rows-[minmax(0,1.0fr)_minmax(0,1.4fr)]">
           {/* Top left: no panel title and no repeated project code */}
-          <section className="group relative min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-4">
+          <section className="group relative min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-3">
             <button
               type="button"
               onClick={() => setIsEditProjectModalOpen(true)}
@@ -607,99 +644,6 @@ export default function ProjectPage() {
                   scrollable
                 />
 
-                {/*
-                  Not a ProjectDetail: the value is a set of controls rather than
-                  text. The wrapper repeats that component's row classes so the
-                  divider rhythm of the list is unbroken.
-
-                  "Site Plan" rather than "View Map" — it is what the document is
-                  called on a geotechnical job, and it does not promise an
-                  interactive map. See docs/follow-ups.md for why plotting the
-                  boreholes themselves is parked.
-                */}
-                <div className="border-b border-slate-200 py-3 first:pt-0 last:border-b-0 last:pb-0 dark:border-slate-800">
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Site Plan
-                  </dt>
-
-                  <dd className="mt-1 flex flex-wrap items-center gap-2">
-                    {projectHasSitePlan === null ? (
-                      <span className="text-sm text-slate-500 dark:text-slate-400">
-                        Checking...
-                      </span>
-                    ) : projectHasSitePlan ? (
-                      <button
-                        type="button"
-                        onClick={() => void openSitePlan()}
-                        disabled={isSitePlanBusy}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Map className="h-3.5 w-3.5" aria-hidden="true" />
-                        View
-                      </button>
-                    ) : (
-                      <span className="text-sm font-semibold text-slate-950 dark:text-slate-100">
-                        Not uploaded
-                      </span>
-                    )}
-
-                    {canManageSitePlan(role) && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => sitePlanInputRef.current?.click()}
-                          disabled={isSitePlanBusy}
-                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                        >
-                          {isSitePlanBusy
-                            ? 'Working...'
-                            : projectHasSitePlan
-                              ? 'Replace'
-                              : 'Upload'}
-                        </button>
-
-                        {projectHasSitePlan === true && (
-                          <button
-                            type="button"
-                            onClick={() => void removeSitePlan()}
-                            disabled={isSitePlanBusy}
-                            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
-                          >
-                            Remove
-                          </button>
-                        )}
-
-                        {/*
-                          The input is never shown; the styled button above drives
-                          it. `value` is cleared on every change so that picking
-                          the same file twice — after a failed upload — still
-                          fires.
-                        */}
-                        <input
-                          ref={sitePlanInputRef}
-                          type="file"
-                          accept="application/pdf,.pdf"
-                          className="hidden"
-                          onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            event.target.value = '';
-
-                            if (file) {
-                              void changeSitePlan(file);
-                            }
-                          }}
-                        />
-                      </>
-                    )}
-                  </dd>
-
-                  {sitePlanErrorMessage !== null && (
-                    <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-                      {sitePlanErrorMessage}
-                    </p>
-                  )}
-                </div>
-
                 <ProjectDetail
                   label="Client"
                   value={project.client}
@@ -713,10 +657,119 @@ export default function ProjectPage() {
             </div>
           </section>
 
-          {/* Top middle */}
+          {/* Top middle left: the site plan, its own panel rather than a row in
+              the list above. Its value is a set of controls whose shape changes
+              with state, so as a <dl> row it reflowed the whole list every time
+              somebody uploaded or removed a plan. */}
+          <DashboardPanel
+            title="Site Plan"
+            className="lg:col-span-2"
+            bodyClassName="min-h-0 overflow-y-auto"
+          >
+            <div className="flex min-h-full flex-col items-center justify-center gap-3 text-center">
+              <FileText
+                className={`h-9 w-9 ${
+                  sitePlan
+                    ? 'text-indigo-600 dark:text-indigo-400'
+                    : 'text-slate-300 dark:text-slate-700'
+                }`}
+                aria-hidden="true"
+              />
+
+              <div>
+                <p className="text-sm font-semibold text-slate-950 dark:text-slate-100">
+                  {sitePlan === undefined
+                    ? 'Checking...'
+                    : sitePlan === null
+                      ? 'Not uploaded'
+                      : 'Uploaded'}
+                </p>
+
+                {sitePlan && (
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    {formatSitePlanDate(sitePlan.updatedAt)}
+                    {sitePlan.sizeInBytes === null
+                      ? ''
+                      : ` · ${formatFileSize(sitePlan.sizeInBytes)}`}
+                  </p>
+                )}
+              </div>
+
+              {/* Stacked and full width rather than wrapped: at two columns the
+                  row would wrap anyway, so it may as well be deliberate. */}
+              <div className="flex w-full flex-col items-stretch gap-2">
+                {sitePlan && (
+                  <button
+                    type="button"
+                    onClick={() => void openSitePlan()}
+                    disabled={isSitePlanBusy}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    View
+                  </button>
+                )}
+
+                {canManageSitePlan(role) && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => sitePlanInputRef.current?.click()}
+                      disabled={isSitePlanBusy || sitePlan === undefined}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    >
+                      {isSitePlanBusy
+                        ? 'Working...'
+                        : sitePlan
+                          ? 'Replace'
+                          : 'Upload'}
+                    </button>
+
+                    {sitePlan && (
+                      <button
+                        type="button"
+                        onClick={() => void removeSitePlan()}
+                        disabled={isSitePlanBusy}
+                        className="rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                      >
+                        Remove
+                      </button>
+                    )}
+
+                    {/*
+                      The input is never shown; the styled button above drives
+                      it. `value` is cleared on every change so that picking the
+                      same file twice — after a failed upload — still fires.
+                    */}
+                    <input
+                      ref={sitePlanInputRef}
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = '';
+
+                        if (file) {
+                          void changeSitePlan(file);
+                        }
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+
+              {sitePlanErrorMessage !== null && (
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {sitePlanErrorMessage}
+                </p>
+              )}
+            </div>
+          </DashboardPanel>
+
+          {/* Top middle right */}
           <DashboardPanel
             title="Termination Criteria"
-            className="lg:col-span-5"
+            className="lg:col-span-4"
             bodyClassName="min-h-0 overflow-y-auto pr-2"
             onEdit={() => setIsEditTerminationCriteriaModalOpen(true)}
             editLabel="Edit termination criteria"

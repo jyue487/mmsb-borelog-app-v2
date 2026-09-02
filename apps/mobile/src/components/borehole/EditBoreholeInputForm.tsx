@@ -1,28 +1,24 @@
 import React, { useState } from 'react';
-import { Alert, Button, TextInput, View } from "react-native";
+import { Button, Text, TextInput, View } from "react-native";
 
 // Local imports
 import { styles } from '@/src/constants/styles';
 import { Borehole, EditBoreholeParams } from '@/src/interfaces/Borehole';
 import { stringIsFloat, stringToDecimalPoint } from '@/src/utils/numbers';
-import { TrashDeleteButton } from '../buttons/TrashDeleteButton';
 import { SignatureQuestionComponent } from '../signature/SignatureQuestionComponent';
 
 type EditBoreholeInputFormProps = {
   oldBorehole: Borehole;
   editBorehole: (editBoreholeParams: EditBoreholeParams) => Promise<void>;
-  deleteBorehole: (boreholeId: string) => Promise<void>;
   setIsEditState: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function EditBoreholeInputForm ({
   oldBorehole,
   editBorehole,
-  deleteBorehole,
   setIsEditState
 }: EditBoreholeInputFormProps) {
 
-  const [newBoreholeName, setNewBoreholeName] = useState<string>(oldBorehole.name);
   const [typeOfBoring, setTypeOfBoring] = useState<string>(oldBorehole.typeOfBoring);
   const [typeOfRig, setTypeOfRig] = useState<string>(oldBorehole.typeOfRig);
   const [diameterOfBoring, setDiameterOfBoring] = useState<string>(oldBorehole.diameterOfBoring);
@@ -35,13 +31,16 @@ export function EditBoreholeInputForm ({
 
   return (
     <View style={styles.boreholeInputForm}>
-      <TextInput
-        style={styles.projectAndBoreholeTextInput}
-        placeholderTextColor={'rgb(150, 150, 150)'}
-        placeholder='BOREHOLE NAME'
-        value={newBoreholeName}
-        onChangeText={text => setNewBoreholeName(text.toUpperCase())}
-      />
+      {/* The name identifies the borehole — it is the dashboard's URL key and
+          what the report and the AGS export are filed under — so it is not a
+          field here. Renaming is an owner/admin action on the dashboard, and the
+          database enforces that with the boreholes_name_immutable trigger; see
+          packages/supabase/policies/boreholes.sql. Mobile must not even send the
+          column: the trigger RAISES, and Connector.ts rethrows rather than
+          completing the transaction, so one rejected rename would stall every
+          upload queued behind it on this device. */}
+      <Text style={styles.boreholeReadOnlyName}>{oldBorehole.name.toUpperCase()}</Text>
+      <Text style={styles.boreholeReadOnlyCaption}>Borehole name cannot be changed.</Text>
       <TextInput
         style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
@@ -106,10 +105,6 @@ export function EditBoreholeInputForm ({
         title='Confirm'
         color={styles.confirmButton.color}
         onPress={async () => {
-          if (!newBoreholeName.trim()) {
-            alert("Error: Borehole Name Should not be empty");
-            return;
-          }
           if (eastingInMetresStr.trim().length > 0) {
             if (!stringIsFloat(eastingInMetresStr.trim())) {
               alert('Error: Easting');
@@ -132,7 +127,7 @@ export function EditBoreholeInputForm ({
           
           await editBorehole({
             id: oldBorehole.id, 
-            name: newBoreholeName.trim(),
+            name: oldBorehole.name,
             typeOfBoring: typeOfBoring.trim(),
             typeOfRig: typeOfRig.trim(),
             diameterOfBoring: diameterOfBoring.trim(),
@@ -151,20 +146,6 @@ export function EditBoreholeInputForm ({
         title='Cancel'
         color={styles.cancelButton.color}
         onPress={() => setIsEditState(false)}
-      />
-      <TrashDeleteButton 
-        onPress={() => {
-          Alert.alert(
-            "Delete Borehole",
-            `Are you sure you want to delete borehole ${oldBorehole.name}?`,
-            [
-              { text: 'No, go back', style: 'cancel' },
-              { text: 'Delete', style: 'destructive', onPress: async () => await deleteBorehole(oldBorehole.id) },
-            ],
-            { cancelable: true }
-          );
-        }}
-        style={{ position: 'absolute', top: 10, left: 10 }} 
       />
     </View>
   );

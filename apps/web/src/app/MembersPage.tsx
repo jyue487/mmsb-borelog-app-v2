@@ -8,6 +8,7 @@ import EditMemberModal from '../components/EditMemberModal';
 import { useAuth } from '../context/auth';
 import {
     canManageMembers,
+    canManageMemberWithRole,
     MEMBER_ROLE_BADGE_CLASSES,
     MEMBER_ROLE_LABELS,
     sortMembersByRank,
@@ -117,7 +118,7 @@ export default function MembersPage() {
   // lets the disabled button explain itself; order matters, because more than
   // one can apply at once and the most specific should win.
   //
-  // The same three rules cover everything behind the Edit button — setting a
+  // The same four rules cover everything behind the Edit button — setting a
   // password and removing the member alike — so EditMemberModal never has to
   // render a "nothing you can do here" state.
   const manageBlockedReason = (member: Member): string | null => {
@@ -135,6 +136,14 @@ export default function MembersPage() {
     // affordance for it.
     if (!canManage) {
       return 'Only owners and admins can manage members';
+    }
+
+    // Admins manage supervisors and viewers; the admin tier is the owner's to
+    // grant and revoke. Only reachable for an admin acting on another admin —
+    // the owner target and the non-manager caller are both caught above, so
+    // naming admins here is accurate rather than a summary of the rule.
+    if (!canManageMemberWithRole(role, member.role)) {
+      return 'Only owners can manage admins';
     }
 
     return null;

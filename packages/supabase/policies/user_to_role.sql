@@ -106,7 +106,11 @@ alter table public.user_to_role enable row level security;
 
 drop policy if exists "members readable by active members" on public.user_to_role;
 drop policy if exists "members readable by supervisors and above" on public.user_to_role;
+-- Both names: the write policy was renamed when it was tightened from
+-- "non-owners" to "lower roles", and a re-run must not leave the old one behind
+-- alongside the new one, permissively OR-ing the looser rule back in.
 drop policy if exists "owners and admins may soft delete non-owners" on public.user_to_role;
+drop policy if exists "owners and admins may soft delete lower roles" on public.user_to_role;
 
 -- Helper for the third clause of the read policy below: does the caller share a
 -- project with this person?
@@ -195,25 +199,39 @@ create policy "members readable by supervisors and above"
 -- keep write access through their own policy. Left in place deliberately, not
 -- by oversight.
 --
---   get_current_user_role() in (1, 2)  -- owners and admins only
---   role_id <> 1                       -- never an owner row
---   user_id <> auth.uid()              -- never yourself
+--   get_current_user_role() in (1, 2)         -- owners and admins only
+--   role_id > get_current_user_role()         -- strictly below you
+--   user_id <> auth.uid()                     -- never yourself
 --
--- The `with check` repeats `role_id <> 1` so a row cannot be updated *into*
--- being an owner: `using` gates which rows may be touched, `with check` gates
--- what they may become, and without both an admin could promote themselves.
+-- The middle clause used to read `role_id <> 1` — never an owner row — which let
+-- an admin touch another admin's row. It is now a strict rank comparison, which
+-- says that and more: role_id is ordered by privilege (1 owner, 2 admin,
+-- 3 supervisor, 4 viewer), so "greater than mine" is exactly "below me". An
+-- owner still reaches every non-owner row; an admin reaches supervisors and
+-- viewers only. Renumbering the `roles` table inverts this clause silently.
+--
+-- The same rule, stated twice more: canManageMemberWithRole in
+-- apps/web/src/data/memberRoles.ts, and callerOutranksRole in
+-- ../functions/_shared/members.ts. The edge functions are the enforcement that
+-- matters, since their service role client bypasses RLS entirely; this is what
+-- keeps a direct API call bounded by the same rule.
+--
+-- The `with check` repeats the comparison so a row cannot be updated *into* a
+-- rank the caller may not hand out: `using` gates which rows may be touched,
+-- `with check` gates what they may become, and without both an admin could
+-- promote a viewer — or themselves, but for the clause above — to owner.
 --
 -- This exists for admins. Owners already have it via their own policy.
-create policy "owners and admins may soft delete non-owners"
+create policy "owners and admins may soft delete lower roles"
   on public.user_to_role
   for update
   to authenticated
   using (
     public.get_current_user_role() in (1, 2)
-    and role_id <> 1
+    and role_id > public.get_current_user_role()
     and user_id <> auth.uid()
   )
-  with check (role_id <> 1);
+  with check (role_id > public.get_current_user_role());
 
 -- No insert and no delete policy added here, deliberately. Inserts and revivals
 -- happen only in the invite-member edge function, whose service role client
@@ -248,7 +266,20 @@ create policy "owners and admins may soft delete non-owners"
 --   set deleted_at = now()
 --   where user_id = '<some other member>';
 --
--- Signed in as an admin, the same statement against a non-owner must report 1.
+-- Signed in as an admin, the same statement against a SUPERVISOR or VIEWER must
+-- report 1.
+--
+-- Signed in as an admin, against ANOTHER ADMIN's row, it must report 0:
+--
+--   update public.user_to_role
+--   set deleted_at = now()
+--   where user_id = '<another admin>';
+--
+-- Note what 0 rows means here. An update refused by RLS is a silent no-op, not
+-- an error — the statement succeeds and touches nothing. So the check is the
+-- row count, and a test that only looks for an exception passes either way.
+--
+-- Signed in as an OWNER, that same statement against an admin must report 1.
 --
 -- READ. Signed in as a VIEWER:
 --

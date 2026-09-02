@@ -207,27 +207,64 @@ table tests only for the row's existence, so a soft-deleted assignment would rev
 Unassigning therefore hard-deletes. Honouring `deleted_at` would mean teaching all four predicates
 and PowerSync's sync rules about it in one pass.
 
-### 0f. The borehole edit gate is stricter in the UI than in the database
+### 0f. Resolved: who may edit a borehole, and who may rename one
 
-`canEditBoreholeDetails()` in `apps/web/src/data/memberRoles.ts` admits owners and admins, and
-`BoreholePage` passes `onEdit` to `BoreholeDetailStrip` only for them — so supervisors and viewers
-see no pencil. The database is wider: the assignment-scoped update policy on `boreholes`, quoted in
-`packages/supabase/policies/project_to_user.sql:202-215` as *"Users can only edit involved
-boreholes"*, tests only for a `project_to_user` row, and that table carries no role. Any user
-assigned to the project may update any of its boreholes.
+Recorded because the previous version of this entry said the database was wider than the UI and
+asked for the rule to be decided before either side moved. It has been decided.
 
-*Why it is harmless now:* the dashboard is the only client that reads the role at all, and it does
-not offer the control. Mobile is a supervisor's tool and is *meant* to write these fields — that
-same policy is what makes the field app work.
+Applied from `packages/supabase/policies/boreholes.sql`, which is now the single record for that
+table — the owner/admin policy and the two assignment-scoped ones used to be split between
+`project_to_user.sql` and the dashboard:
 
-*What makes it bite:* the moment the gap is treated as enforcement — a "viewers cannot change
-anything" claim in a spec, or an auditor asking who could have edited a borehole. The answer today
-is "anyone assigned to the project", not "owners and admins".
+|                | select            | rename | edit the other fields |
+| -------------- | ----------------- | ------ | --------------------- |
+| owner (1)      | every borehole    | yes    | yes                   |
+| admin (2)      | every borehole    | yes    | yes                   |
+| supervisor (3) | assigned projects | no     | assigned projects     |
+| viewer (4)     | assigned projects | no     | no                    |
 
-*Fix:* decide which of the two is the intended rule before changing either. Narrowing the policy to
-`get_current_user_role() in (1, 2)` would lock mobile out of its own writes, so it is not a
-one-liner; widening `canEditBoreholeDetails` to supervisors is the cheaper reconciliation if the
-policy is the intended rule. The comment on the function records the same choice.
+Two things changed. The update policy *"Users can only edit involved boreholes"* carried no role at
+all, so any assigned user — a viewer included — could change any field of any borehole on their
+project; it is replaced by `"supervisors update boreholes on their projects"`, the same shape as the
+supervisor policies in `blocks.sql`. And the name became immutable below admin.
+
+**The name needed a trigger, not a policy.** A policy predicate sees the old row (`using`) or the
+new row (`with check`), never both, so "this column may not change" is not expressible as one.
+`boreholes_name_immutable` (BEFORE UPDATE OF name) is the first trigger in the `public` schema. Two
+alternatives were rejected and are worth not re-discovering: `revoke update (name)` is a no-op while
+table-level UPDATE is granted, and re-reading the old name in a `with check` subquery rests an
+access rule on statement-snapshot semantics.
+
+*Why the name and not the other fields.* It is the dashboard's URL key
+(`/projects/:projectCode/boreholes/:boreholeName`), it is what the report and the AGS export are
+filed under, and there is **no unique constraint on `(project_id, name)`** — `AddBulkBoreholesModal`
+checks for duplicates only within the batch being pasted. `EditBoreholeModal` now checks the project
+for a clash before renaming and `BoreholePage` replaces the router entry afterwards, but the
+constraint itself is still missing. That is the remaining piece of this: nothing stops two boreholes
+on one project sharing a name if they are created in two separate pastes, which makes
+`fetchBoreholeByProjectIdAndName` ambiguous and one of them unreachable.
+
+*Clients, and the two different failure modes.* RLS on UPDATE and DELETE **filters** rows — a write
+no policy admits affects nothing and reports success — while a trigger **raises**. So:
+
+- Mobile does not send `name` at all. `editBoreholeDbAsync` has no `name = ?` in its SET list and
+  `EditBoreholeInputForm` renders the name as text. A rejected rename would be an error, and
+  `Connector.ts` rethrows rather than calling `transaction.complete()`, so one would stall every
+  upload queued behind it on that device.
+- Mobile's borehole delete button was removed rather than made to work. `boreholes` has no delete
+  policy for supervisors, so the handler removed the row locally, PostgREST reported success having
+  deleted nothing, and the next sync brought the borehole back.
+
+**Still open: mobile cannot create a borehole either.** `boreholes` has no supervisor INSERT policy,
+and insert is the one verb that *does* raise 42501 rather than filtering — so unlike the delete
+above, an add from the field app would stall that device's CRUD queue rather than silently doing
+nothing. Nothing was changed about this, because the Add-borehole footer in
+`apps/mobile/src/app/project/[id].tsx` (`ListFooterComponent={renderFooter()}`, and the reason
+`renderFooter` reads as an unused variable when it is commented out) has been switched on and off
+during development. **Check that line before shipping a build**: live footer plus no insert policy is
+a stalled queue on the first borehole anyone adds. Either keep it off, or add
+`"supervisors insert boreholes on their projects"` alongside the update policy first — and decide
+then whether a supervisor naming a new borehole is consistent with not being able to rename one.
 
 ### 1. The web blocks query has no deterministic order
 
@@ -554,3 +591,68 @@ penetration, UD/MZ/PS is `penetrationDepthInMetres`, coring is the block interva
   what the field actually asked for, and it sidesteps this entirely by being a document rather than a
   computation. If this is ever picked up, the datum has to become recorded data before any code is
   written.
+- **Deleting a borehole on web.** Asked for on the borehole page (2026-09-02) and deferred, because
+  the plumbing is not a `.delete()` call: the two obvious implementations are blocked by different
+  things, and one unrecorded schema fact decides between them.
+
+  *Hard delete* is permitted, at the top. `boreholes` carries `"Owners and admins can manage all
+  boreholes"` — `for all`, `packages/supabase/policies/boreholes.sql` — and the dashboard's existing
+  gate `canEditBoreholeDetails()` (`apps/web/src/data/memberRoles.ts`) is owners and admins too, so
+  for *delete* the UI and the database agree. What it takes with it is the problem. Owners and admins have **no** delete on `blocks` or
+  `block_photos` — both grant delete to `role = 3` alone (`blocks.sql:161-168`,
+  `block_photos.sql:211-218`) — and **no** delete on `storage.objects` (`block_photos.sql:275-282`,
+  role-only for the race described there). So the child rows can only go by FK cascade, which runs as
+  the table owner and **bypasses RLS**, deleting exactly what those policies refuse the same user
+  directly. The JPEGs cannot go at all: nothing anywhere deletes from Storage except a *device*
+  noticing its own `block_photos` row disappear (`SupabaseRemoteStorageAdapter.ts:70-110`), which
+  never fires for a delete that happened server-side. A borehole deleted from the dashboard therefore
+  strands every photo of every one of its blocks in the `Testing` bucket — billed, and unreachable
+  the moment `is_assigned_to_photo_object()` returns NULL for them. That is item 0's four orphans, at
+  borehole scale.
+
+  *Soft delete* has nothing to plug into. `deleted_at`/`deleted_by` are on every table
+  (`AppSchema.ts`), and outside `remove-member` writing them on `user_to_role`, **nothing writes them
+  and nothing reads them**: no mobile query filters `deleted_at`
+  (`fetchAllBlocksByBoreholeIdDbAsync.ts:6` and `app/project/[id].tsx` are bare `SELECT`s, as are the
+  rest), `BOREHOLE_COLUMNS` does not even select the column
+  (`apps/web/src/supabase/boreholeRow.ts:8-22`), and PowerSync's sync rules live in the dashboard
+  rather than this repo. A soft-deleted borehole would stay fully visible and editable on every
+  device and in the web borehole list. It is also the **looser** of the two on permissions: a soft
+  delete is an UPDATE, and the update policy on `boreholes` is assignment-scoped with no role clause,
+  so any assigned viewer could issue one through the API. This is item 0d's situation exactly —
+  `project_to_user.sql:94-100` records why unassigning hard-deletes despite having the columns — and
+  it needs the same one-pass fix: every predicate *and* the sync rules learning about `deleted_at`
+  together.
+
+  *The unrecorded fact that decides it* is whether `blocks.borehole_id` cascades. Item 0 already asks
+  this for `block_photos.block_id` and it is still unanswered; settle both at once:
+
+  ```sql
+  select conrelid::regclass as child, confrelid::regclass as parent, confdeltype
+  from pg_constraint
+  where contype = 'f'
+    and conrelid in ('public.blocks'::regclass, 'public.block_photos'::regclass);
+  -- 'c' = cascade, 'a' = no action
+  ```
+
+  No cascade means a hard delete either fails with an FK violation or leaves dangling blocks, and
+  walking the tree by hand is the one thing an owner holds no policy to do.
+
+  *Mobile's existing delete is not the precedent it looks like.* `app/project/[id].tsx:44-52` is a
+  bare `DELETE FROM boreholes`, which `Connector.ts:70-74` turns into a real PostgREST delete. But
+  mobile's users are supervisors, and `boreholes` has no assignment-scoped **delete** policy — only
+  select and update. RLS applies a delete policy as a row filter, so the statement succeeds having
+  matched nothing and returns 200; the spot-check at `project_to_user.sql:229-235` says so in as many
+  words, and it is why `saveProjectPeople` counts its deleted rows. `Connector.ts` throws only on
+  `result.error`, so it sees success and completes the transaction — the row stays deleted locally
+  and survives on the server, and should reappear on the next full sync. Derived from the policies,
+  not observed: confirm it with a real supervisor account before treating it as either a bug to fix
+  or a pattern to copy.
+
+  *If it is built anyway*, three existing pieces settle the shape. `saveProjectPeople`
+  (`apps/web/src/supabase/projectPeople.ts:103-138`) is the call pattern — `.delete().select('id')`
+  and assert a row came back, because an RLS refusal is a silent success, not an error.
+  `EditMemberModal`'s danger zone (`:297-362`) is the confirmation UI, `autoFocus` on the keep button
+  included. And put the entry point on `ProjectPage`'s borehole row rather than `BoreholePage`: the
+  list updates in place with `setBoreholes(bs => bs.filter(...))`, matching every other mutation in
+  the app, whereas deleting from the detail page has to navigate away and rely on the refetch.

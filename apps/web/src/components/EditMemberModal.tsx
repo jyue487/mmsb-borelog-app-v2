@@ -22,6 +22,7 @@ import { useEffect, useState, type SubmitEvent } from 'react';
 
 import { useAuth } from '../context/auth';
 import {
+  canManageMemberWithRole,
   MEMBER_ROLE_BADGE_CLASSES,
   MEMBER_ROLE_LABELS,
 } from '../data/memberRoles';
@@ -44,7 +45,7 @@ export default function EditMemberModal({
   onClose,
   onMemberRemoved,
 }: EditMemberModalProps) {
-  const { userId } = useAuth();
+  const { userId, role } = useAuth();
 
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -120,7 +121,11 @@ export default function EditMemberModal({
     // The disabled Edit buttons on the members table are the affordance; this
     // is the invariant. The edge function re-checks both rules server-side,
     // which is what holds against a hand-crafted request.
-    if (member.id === userId || member.role === 'owner') {
+    //
+    // canManageMemberWithRole covers the owner case this used to name outright:
+    // nobody outranks an owner. It also stops an admin removing another admin,
+    // which the flat owner test did not.
+    if (member.id === userId || !canManageMemberWithRole(role, member.role)) {
       setRemoveError('This member cannot be removed.');
       return;
     }

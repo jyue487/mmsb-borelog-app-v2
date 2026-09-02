@@ -6,6 +6,17 @@
 // are held as strings and parsed on submit, and the verifier signature is shown
 // but not editable — it is drawn on the mobile signature pad and there is no pad
 // here.
+//
+// This is the ONLY place a borehole can be renamed. BoreholePage passes onEdit
+// only when canEditBoreholeDetails(role), which is owners and admins, so the
+// field needs no role check of its own — and the database backs that up with the
+// boreholes_name_immutable trigger, so a supervisor calling PostgREST directly is
+// refused rather than merely unoffered. See packages/supabase/policies/boreholes.sql.
+//
+// Renaming is not a cosmetic edit: the name is this page's URL key
+// (/projects/:projectCode/boreholes/:boreholeName) and there is no unique
+// constraint behind it, so the submit below checks the project for a clash and
+// BoreholePage moves the router to the new address afterwards.
 
 import type { Borehole } from '@mmsb/core';
 import { X } from 'lucide-react';
@@ -60,6 +71,7 @@ export default function EditBoreholeModal({
 }: EditBoreholeModalProps) {
   const { userId } = useAuth();
 
+  const [name, setName] = useState(borehole.name);
   const [typeOfBoring, setTypeOfBoring] = useState(borehole.typeOfBoring ?? '');
   const [typeOfRig, setTypeOfRig] = useState(borehole.typeOfRig ?? '');
   const [diameterOfBoring, setDiameterOfBoring] = useState(
@@ -102,7 +114,13 @@ export default function EditBoreholeModal({
     const parsedNorthing = parseOptionalNumber(northing);
     const parsedReducedLevel = parseOptionalNumber(reducedLevel);
 
+    const trimmedName = name.trim();
+
     const nextFieldErrors: Record<string, string> = {};
+
+    if (!trimmedName) {
+      nextFieldErrors.name = 'Borehole name is required.';
+    }
 
     if (!parsedEasting.ok) {
       nextFieldErrors.easting = 'Easting must be a number.';
@@ -119,7 +137,12 @@ export default function EditBoreholeModal({
     // Every field is parsed before bailing out, so one bad value does not hide
     // another. Testing the three `ok` flags rather than the size of the map is
     // what narrows the parse results below to their success branch.
-    if (!parsedEasting.ok || !parsedNorthing.ok || !parsedReducedLevel.ok) {
+    if (
+      !trimmedName ||
+      !parsedEasting.ok ||
+      !parsedNorthing.ok ||
+      !parsedReducedLevel.ok
+    ) {
       setFieldErrors(nextFieldErrors);
       return;
     }
@@ -129,9 +152,39 @@ export default function EditBoreholeModal({
     setSubmitError(null);
 
     try {
+      // Nothing in Postgres stops two boreholes on one project sharing a name,
+      // and AddBulkBoreholesModal only looks for duplicates within the batch
+      // being pasted. Since the name is the URL key, a clash makes
+      // fetchBoreholeByProjectIdAndName ambiguous and one of the two boreholes
+      // unreachable — so check before renaming. Only on an actual rename: an
+      // unchanged name would always find itself excluded and cost a round trip
+      // for nothing.
+      if (trimmedName !== borehole.name) {
+        const { data: clashingBoreholes, error: clashError } = await supabase
+          .from('boreholes')
+          .select('id')
+          .eq('project_id', borehole.projectId)
+          .eq('name', trimmedName)
+          .neq('id', borehole.id)
+          .limit(1);
+
+        if (clashError) {
+          throw clashError;
+        }
+
+        if (clashingBoreholes && clashingBoreholes.length > 0) {
+          setFieldErrors({
+            name: 'Another borehole in this project already uses that name.',
+          });
+
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from('boreholes')
         .update({
+          name: trimmedName,
           type_of_boring: typeOfBoring.trim(),
           type_of_rig: typeOfRig.trim(),
           diameter_of_boring: diameterOfBoring.trim(),
@@ -239,22 +292,30 @@ export default function EditBoreholeModal({
         </div>
 
         <div className="space-y-4 overflow-y-auto px-6 py-5">
-          <div>
-            <label htmlFor="edit-borehole-name" className={LABEL_CLASSES}>
-              Borehole name
-            </label>
+          {/* Deliberately not autoFocus — that stays on Type of boring below.
+              The common edit is the details; a rename is the exception, and the
+              cursor should not land in it.
 
-            <input
+              Also deliberately not uppercased on the way in, unlike mobile's old
+              name input: AddBulkBoreholesModal stores what was pasted, so the
+              dashboard is where a borehole's capitalisation comes from and a
+              rename should not quietly change it. Only trimmed, on submit. */}
+          <div>
+            <TextField
               id="edit-borehole-name"
-              type="text"
-              value={borehole.name}
-              readOnly
-              disabled
-              className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:opacity-60`}
+              label="Borehole name"
+              value={name}
+              onChange={(value) => {
+                setName(value);
+                clearErrors('name');
+              }}
+              disabled={isSubmitting}
+              error={fieldErrors.name}
             />
 
             <p className={HELPER_CLASSES}>
-              Borehole name cannot be changed.
+              Renaming changes this page&rsquo;s address and the name the report
+              is filed under. Only owners and admins can do it.
             </p>
           </div>
 

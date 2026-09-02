@@ -421,14 +421,33 @@ export default function BoreholePage() {
         </section>
       </div>
 
-      {/* The save does not touch projectCode, boreholeName or the router state,
-          so the fetch effect above does not re-run and overwrite this — the same
-          reasoning ProjectPage records for its own modals. */}
+      {/* An edit that leaves the name alone touches neither projectCode,
+          boreholeName nor the router state, so the fetch effect above does not
+          re-run and overwrite this — the same reasoning ProjectPage records for
+          its own modals.
+
+          A RENAME is different: the name is this page's URL key, so the address
+          in the bar now points at a borehole that no longer answers to it, and a
+          reload would 404. Replace it — replace, not push, so Back still goes to
+          the project rather than to the stale name — and hand the updated
+          borehole along in router state the way ProjectPage does, so the effect
+          re-run costs one project query rather than a second borehole lookup. */}
       {isEditBoreholeModalOpen && (
         <EditBoreholeModal
           borehole={borehole}
           onClose={() => setIsEditBoreholeModalOpen(false)}
-          onBoreholeUpdated={setBorehole}
+          onBoreholeUpdated={(updatedBorehole) => {
+            setBorehole(updatedBorehole);
+
+            if (updatedBorehole.name !== borehole.name) {
+              navigate(
+                `/projects/${encodeURIComponent(
+                  projectCode ?? '',
+                )}/boreholes/${encodeURIComponent(updatedBorehole.name)}`,
+                { replace: true, state: updatedBorehole },
+              );
+            }
+          }}
         />
       )}
     </div>

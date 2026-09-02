@@ -11,7 +11,7 @@ import { Block } from "@/src/interfaces/Block";
  * what keeps its photos attached; see editBlockDbAsync.
  */
 export async function editBlockAsync(blocks: Block[], updatedBlock: Block): Promise<Block[]> {
-    const updatedBlocks: Block[] = blocks.map(b => (b.id === updatedBlock.id) ? updatedBlock : b);
-    await editBlockDbAsync(updatedBlock);
-    return updatedBlocks;
+  const updatedBlocks: Block[] = blocks.map(b => (b.id === updatedBlock.id) ? updatedBlock : b);
+  await editBlockDbAsync(updatedBlock);
+  return updatedBlocks;
 };

@@ -64,6 +64,17 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     height: 100
   },
+  boreholeReadOnlyName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  boreholeReadOnlyCaption: {
+    marginTop: -12,
+    fontSize: 12,
+    color: 'rgb(110, 110, 110)',
+    textAlign: 'center',
+  },
   projectAndBoreholeTextInput: {
     padding: 10,
     minHeight: 40,

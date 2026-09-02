@@ -1,5 +1,9 @@
 -- Row level security for public.project_to_user, plus two fixes to the policies
--- on public.projects and public.boreholes that this table's predicates depend on.
+-- on public.projects that this table's predicates depend on.
+--
+-- public.boreholes used to be fixed here too. It has its own file now —
+-- policies/boreholes.sql — because the borehole name needed a trigger as well as
+-- policies, and the table deserved one place to read.
 --
 -- This repo has no migration tooling (see CLAUDE.md — the expo-sqlite migration
 -- directory is dead code and PowerSync owns the mobile schema), so this file is
@@ -19,9 +23,9 @@
 -- ---------------------------------------------------------------------------
 --
 -- STEP 1 only adds policies. STEP 2 **narrows** access on public.projects, and
--- STEP 3 **widens** it on public.projects and public.boreholes. Both of those
--- drop and recreate policies this file does not own, so re-running the file is
--- safe but running it is not a no-op for anybody's access.
+-- STEP 3 **widens** it on public.projects. Both of those drop and recreate
+-- policies this file does not own, so re-running the file is safe but running it
+-- is not a no-op for anybody's access.
 --
 -- What changes, in one line each:
 --
@@ -93,7 +97,8 @@ create policy "assignments readable by active members"
 --
 -- Unticking someone in the modal HARD DELETES their row. That is deliberate,
 -- despite the deleted_at/deleted_by columns on this table: every predicate that
--- reads it — the two on projects below, the two on boreholes — tests only for
+-- reads it — the two on projects below, the two on boreholes in
+-- policies/boreholes.sql — tests only for
 -- the row's existence, so a soft-deleted assignment would hide the person from
 -- the UI while leaving their access completely intact. A soft delete here would
 -- need those four predicates and PowerSync's sync rules to learn about
@@ -189,30 +194,17 @@ create policy "Owners and admins can manage all projects"
   using (public.get_current_user_role() in (1, 2))
   with check (public.get_current_user_role() in (1, 2));
 
-drop policy if exists "Owners can manage all boreholes" on public.boreholes;
-drop policy if exists "Owners and admins can manage all boreholes" on public.boreholes;
-
-create policy "Owners and admins can manage all boreholes"
-  on public.boreholes
-  for all
-  to authenticated
-  using (public.get_current_user_role() in (1, 2))
-  with check (public.get_current_user_role() in (1, 2));
-
--- The two assignment-scoped policies on boreholes are left untouched. For
--- reference, they already correlate correctly and are what supervisors and
--- viewers rely on:
+-- public.boreholes moved out of this file.
 --
---   "Users can only see involved boreholes"   for select
---     using ((created_by)::uuid = auth.uid()
---            or exists (select 1 from project_to_user pu
---                       where pu.project_id = boreholes.project_id
---                         and pu.user_id = auth.uid()))
+-- It used to carry the owner/admin `for all` policy here, and to quote the two
+-- assignment-scoped ones in a comment because they had been created in the
+-- dashboard and were being left alone. All three now live in
+-- policies/boreholes.sql, together with the trigger that makes the borehole name
+-- immutable below admin — so there is one file to read for that table, and
+-- running this one no longer half-defines it.
 --
---   "Users can only edit involved boreholes"  for update
---     using / with check (exists (select 1 from project_to_user pu
---                                 where pu.project_id = boreholes.project_id
---                                   and pu.user_id = auth.uid()))
+-- The update policy quoted here previously, "Users can only edit involved
+-- boreholes", carried no role and so let viewers edit. boreholes.sql retires it.
 
 -- ---------------------------------------------------------------------------
 -- Spot checks

@@ -24,6 +24,8 @@
 
 import {
   ASSIGNABLE_ROLE_IDS,
+  callerOutranksRole,
+  confirmUserEmail,
   CORS_HEADERS,
   errorResponse,
   findUserIdByEmail,
@@ -57,7 +59,7 @@ Deno.serve(async (request) => {
     return gate;
   }
 
-  const { admin, callerId } = gate;
+  const { admin, callerId, callerRoleId } = gate;
 
   let body: {
     name?: unknown;
@@ -98,6 +100,12 @@ Deno.serve(async (request) => {
     );
   }
 
+  // Being a manager gets you here; outranking the role you are handing out is
+  // what lets you hand it out. In practice: only an owner may create an admin.
+  if (!callerOutranksRole(callerRoleId, roleId)) {
+    return errorResponse('forbidden', 'Only owners can add admins.', 403);
+  }
+
   const isSupervisor = roleId === SUPERVISOR_ROLE_ID;
 
   if (isSupervisor) {
@@ -136,7 +144,7 @@ Deno.serve(async (request) => {
   // this can reason about.
   const { data: existingRows, error: existingRowError } = await admin
     .from('user_to_role')
-    .select('user_id, deleted_at')
+    .select('user_id, deleted_at, role_id')
     .eq('email', email);
 
   if (existingRowError) {
@@ -158,6 +166,19 @@ Deno.serve(async (request) => {
   }
 
   if (existingRow) {
+    // The row as it stands, not just the role being granted. Without this an
+    // admin could re-add a removed admin *as a supervisor* — the update below
+    // rewrites role_id, so that is an admin changing an admin's role under
+    // another name. Re-adding is the owner's call for exactly the same reason
+    // removing was.
+    if (!callerOutranksRole(callerRoleId, existingRow.role_id)) {
+      return errorResponse(
+        'forbidden',
+        'Only owners can re-add a removed admin.',
+        403,
+      );
+    }
+
     // Previously removed. Their auth.users record still exists — remove-member
     // bans it rather than deleting it — so no invite is needed. But it is still
     // banned, and lifting that is what makes re-adding somebody actually work.
@@ -167,6 +188,14 @@ Deno.serve(async (request) => {
 
     if (unbanError) {
       return unbanError;
+    }
+
+    // A member invited before and never activated is still unconfirmed, and would be
+    // refused a login code however many times they are re-added — see confirmUserEmail.
+    const reviveConfirmError = await confirmUserEmail(admin, existingRow.user_id);
+
+    if (reviveConfirmError) {
+      return reviveConfirmError;
     }
 
     // The account already existing is also why a supervisor's password has to be
@@ -284,6 +313,16 @@ Deno.serve(async (request) => {
       'Creating the account returned no user.',
       500,
     );
+  }
+
+  // Covers both branches above: inviteUserByEmail left an admin or viewer unconfirmed,
+  // and an adopted account may never have been confirmed either. Without this they
+  // cannot request a login code at all. A supervisor was already created with
+  // email_confirm: true, so for them this is a no-op rather than a special case.
+  const confirmError = await confirmUserEmail(admin, userId);
+
+  if (confirmError) {
+    return confirmError;
   }
 
   const { data: created, error: insertError } = await admin

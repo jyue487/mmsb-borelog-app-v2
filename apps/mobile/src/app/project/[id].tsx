@@ -41,15 +41,12 @@ export default function ProjectScreen() {
     }
   };
 
-  const deleteBorehole = async (boreholeId: string) => {
-    try {
-      console.log(`deleting borehole, id: ${boreholeId}`);
-      await powersync.execute('DELETE FROM boreholes WHERE id = ?', [boreholeId]);
-      setBoreholes((prevBoreholes: Borehole[]) => prevBoreholes.filter((bh: Borehole) => bh.id !== boreholeId));
-    } catch (err) {
-      throwError(err);
-    }
-  };
+  // There is deliberately no deleteBorehole here. `boreholes` has no delete
+  // policy for supervisors, and RLS FILTERS rows on delete rather than raising —
+  // so the old handler removed the row locally, PostgREST reported success having
+  // deleted nothing, and the next sync brought the borehole straight back. See
+  // packages/supabase/policies/boreholes.sql. Deleting a borehole is a dashboard
+  // action.
 
   const editBorehole = async (editBoreholeParams: EditBoreholeParams) => {
     try {
@@ -135,10 +132,10 @@ export default function ProjectScreen() {
         <FlatList
           data={boreholes}
           keyExtractor={(borehole: Borehole) => borehole.id}
-          renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} deleteBorehole={deleteBorehole} />}
+          renderItem={({ item }) => <BoreholeComponent projectTitle={projectTitle} borehole={item} editBorehole={editBorehole} />}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          ListFooterComponent={renderFooter()}
+          // ListFooterComponent={renderFooter()}
           contentContainerStyle={{ paddingBottom: 500 }}
           style={{ flexGrow: 0, width: '100%' }}
           refreshing={refreshing}

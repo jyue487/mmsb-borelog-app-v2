@@ -11,20 +11,18 @@ type BoreholeComponentProps = {
   projectTitle: string,
   borehole: Borehole,
   editBorehole: (editBoreholeParams: EditBoreholeParams) => Promise<void>;
-  deleteBorehole: (boreholeId: string) => Promise<void>;
 };
 
 export function BoreholeComponent({
   projectTitle,
   borehole,
   editBorehole,
-  deleteBorehole,
 }: BoreholeComponentProps) {
 
   const [isEditState, setIsEditState] = useState<boolean>(false);
     
   if (isEditState) {
-    return <EditBoreholeInputForm oldBorehole={borehole} editBorehole={editBorehole} deleteBorehole={deleteBorehole} setIsEditState={setIsEditState} />;
+    return <EditBoreholeInputForm oldBorehole={borehole} editBorehole={editBorehole} setIsEditState={setIsEditState} />;
   }
 
   return (

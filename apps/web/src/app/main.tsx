@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { AuthContextProvider } from '../context/auth.tsx';
 import { canViewMembers } from '../data/memberRoles.ts';
 import AppLayout from './AppLayout.tsx';
@@ -19,7 +19,15 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthContextProvider>
         <Routes>
-          <Route index path="/login" element={<LoginPage />} />
+          {/*
+            An invite link and a magic link both land on the Site URL root, which had
+            no route and no catch-all: react-router rendered nothing while
+            `detectSessionInUrl` quietly established the session behind a blank page.
+            ProtectedRoute bounces to /login when there is no session, so sending both
+            here is right whether or not the visitor is signed in.
+          */}
+          <Route path="/" element={<Navigate to="/projects" replace />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/projects" element={<ProjectListPage />} />
@@ -31,6 +39,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
+          <Route path="*" element={<Navigate to="/projects" replace />} />
         </Routes>
       </AuthContextProvider>
     </BrowserRouter>

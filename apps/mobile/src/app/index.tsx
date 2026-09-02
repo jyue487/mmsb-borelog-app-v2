@@ -1,15 +1,11 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons/static";
 import { Stack, router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 // Local imports
-import { AddProjectInputForm } from '@/src/components/project/AddProjectInputForm';
 import { ProjectComponent } from '@/src/components/project/ProjectComponent';
-import { addProjectDbAsync } from '@/src/db/project/addProjectDbAsync';
-import { editProjectDbAsync } from '@/src/db/project/editProjectDbAsync';
-import { AddProjectParams, EditProjectParams, Project } from '@/src/interfaces/Project';
-// import { db } from '@/db/db';
+import { Project } from '@/src/interfaces/Project';
 import { useAuth } from '@/src/context/AuthContextProvider';
 import { supabase } from '@/src/db/supabase';
 import { powersync, setupPowerSync } from '@/src/powersync/system';
@@ -19,7 +15,6 @@ import LoadingScreen from './loading';
 export default function ProjectListScreen() {
   const { isSignIn } = useAuth();
   const [isPowersyncReady, setIsPowersyncReady] = useState<boolean>(false);
-  const [isAddButtonPressed, setIsAddButtonPressed] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -42,50 +37,6 @@ export default function ProjectListScreen() {
     init();
   }, [isPowersyncReady]);
 
-  // TODO: How to make it safe from SQL injections?
-  const addProject = async (addProjectParams: AddProjectParams) => {
-    try {
-      const project: Project = await addProjectDbAsync(powersync, addProjectParams);
-      setProjects((prevProjects: Project[]) => [...prevProjects, project]);
-    } catch (err) {
-      const errMsg = `Error: ${err}`;
-      alert(errMsg);
-      console.log(errMsg);
-    }
-  };
-
-  const deleteProject = async (projectId: string) => {
-    try {
-      console.log(`[deleteProject] powersync connected: ${powersync.connected}`);
-      await powersync.execute(`DELETE FROM projects WHERE id = ?`, [projectId]);
-      setProjects((prevProjects: Project[]) => prevProjects.filter((p: Project) => p.id !== projectId));
-    } catch (err) {
-      const errMsg = `Error: ${err}`;
-      alert(errMsg);
-      console.log(errMsg);
-    }
-  };
-
-  const editProject = async (editProjectParams: EditProjectParams) => {
-    try {
-      await editProjectDbAsync(powersync, editProjectParams);
-      setProjects((prevProjects: Project[]) =>
-        prevProjects.map((p: Project) =>
-          (p.id === editProjectParams.id)
-            ? {
-              ...p,
-              ...editProjectParams
-            }
-            : p
-        )
-      );
-    } catch (err) {
-      const errMsg = `Error: ${err}`;
-      alert(errMsg);
-      console.log(errMsg);
-    }
-  };
-
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
   const fetchAllProjects = async () => {
     console.log(`fetchAllProjects called, powersync.connected ${powersync.connected}`);
@@ -99,31 +50,6 @@ export default function ProjectListScreen() {
       consultant: row.consultant,
     }));
     setProjects(projects);
-  };
-
-  const renderFooter = () => {
-    return (
-      <View style={{ gap: 20 }}>
-        {
-          !isAddButtonPressed && (
-            <Button
-              title='Add Project'
-              onPress={() => {
-                setIsAddButtonPressed(true);
-              }}
-            />
-          )
-        }
-        {
-          isAddButtonPressed && (
-            <AddProjectInputForm
-              addProject={addProject}
-              setIsAddButtonPressed={setIsAddButtonPressed}
-            />
-          )
-        }
-      </View>
-    );
   };
 
   const onRefresh = useCallback(async () => {
@@ -141,8 +67,6 @@ export default function ProjectListScreen() {
     console.log("Signed in but powersync is not ready");
     return <LoadingScreen displayText="Signing In" />;
   }
-
-  // return <CameraComponent />;
 
   return (
     <>
@@ -163,10 +87,9 @@ export default function ProjectListScreen() {
         <FlatList
           data={projects}
           keyExtractor={(project: Project) => project.id.toString()}
-          renderItem={({ item }) => <ProjectComponent project={item} editProject={editProject} deleteProject={deleteProject} />}
+          renderItem={({ item }) => <ProjectComponent project={item} />}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          // ListFooterComponent={renderFooter()}
           contentContainerStyle={{ paddingBottom: 500 }}
           style={{ flexGrow: 0, width: '100%' }}
           refreshing={refreshing}
