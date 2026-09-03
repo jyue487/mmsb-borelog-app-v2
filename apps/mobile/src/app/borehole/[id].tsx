@@ -29,51 +29,44 @@ export default function BoreholeScreen() {
   const [isSharingPdf, setIsSharingPdf] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const fetchedBorehole: Borehole | null = await fetchBoreholeByIdAsync(boreholeId);
-        console.log('fetchedBorehole', fetchedBorehole);
+  const loadAsync = useCallback(async () => {
+    const fetchedBorehole: Borehole | null = await fetchBoreholeByIdAsync(boreholeId);
 
-        if (!fetchedBorehole) {
-          console.log("No borehole found for id:", boreholeId);
-          return;
-        }
+    if (!fetchedBorehole) {
+      console.log("No borehole found for id:", boreholeId);
+      return;
+    }
 
-        const fetchedProject: Project | null = await fetchProjectByIdAsync(fetchedBorehole.projectId);
-        console.log('fetchedProject', fetchedProject);
+    const fetchedProject: Project | null = await fetchProjectByIdAsync(fetchedBorehole.projectId);
 
-        if (!fetchedProject) {
-          console.log("No project found for id:", fetchedBorehole.projectId);
-          return;
-        }
+    if (!fetchedProject) {
+      console.log("No project found for id:", fetchedBorehole.projectId);
+      return;
+    }
 
-        const fetchedBlocks: Block[] = sortAndReindexAllBlocks(await fetchAllBlocksByBoreholeIdDbAsync(boreholeId));
+    const fetchedBlocks: Block[] = sortAndReindexAllBlocks(await fetchAllBlocksByBoreholeIdDbAsync(boreholeId));
 
-        console.log('fetchedBlocks', fetchedBlocks.length);
-
-        setBorehole(fetchedBorehole);
-        setProject(fetchedProject);
-        setBlocks(fetchedBlocks);
-      } catch (error) {
-        console.error("Failed to load borehole page:", error);
-      }
-    };
-
-    init();
+    setBorehole(fetchedBorehole);
+    setProject(fetchedProject);
+    setBlocks(fetchedBlocks);
   }, [boreholeId]);
+
+  useEffect(() => {
+    loadAsync().catch((error: unknown) => {
+      console.error("Failed to load borehole page:", error);
+    });
+  }, [loadAsync]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const fetchedBlocks: Block[] = sortAndReindexAllBlocks(await fetchAllBlocksByBoreholeIdDbAsync(boreholeId));
-      setBlocks(fetchedBlocks);
+      await loadAsync();
     } catch (error) {
-      console.error('Failed to refresh the blocks:', error);
+      console.error('Failed to refresh the borehole page:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [boreholeId]);
+  }, [loadAsync]);
 
   if (!borehole || !project) {
     return (
