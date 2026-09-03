@@ -2,6 +2,8 @@ import { AbstractPowerSyncDatabase, PowerSyncBackendConnector, PowerSyncCredenti
 
 import { supabase } from "@/src/db/supabase";
 
+const POWERSYNC_URL = process.env.EXPO_PUBLIC_POWERSYNC_URL;
+
 export class Connector implements PowerSyncBackendConnector {
   /**
   * Implement fetchCredentials to obtain a JWT from your authentication service.
@@ -16,9 +18,16 @@ export class Connector implements PowerSyncBackendConnector {
 
     console.debug('session expires at', session.expires_at);
 
+    if (!POWERSYNC_URL) {
+      throw new Error(
+        'EXPO_PUBLIC_POWERSYNC_URL is not set. Add it to apps/mobile/.env.local for local ' +
+        'development, and to the EAS environment (eas env:create) for cloud builds.'
+      );
+    }
+
     return {
       // The PowerSync instance URL or self-hosted endpoint
-      endpoint: 'https://6a34ef0b35ca576ca0dde705.powersync.journeyapps.com',
+      endpoint: POWERSYNC_URL,
       /**
       * To get started quickly, use a development token, see:
       * Authentication Setup https://docs.powersync.com/configuration/auth/development-tokens) to get up and running quickly
