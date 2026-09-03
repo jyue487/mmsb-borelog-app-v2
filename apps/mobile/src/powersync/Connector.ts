@@ -1,4 +1,4 @@
-import { AbstractPowerSyncDatabase, PowerSyncBackendConnector, PowerSyncCredentials, UpdateType } from "@powersync/react-native";
+import { CommonPowerSyncDatabase, PowerSyncBackendConnector, PowerSyncCredentials, UpdateType } from "@powersync/react-native";
 
 import { supabase } from "@/src/db/supabase";
 
@@ -41,7 +41,7 @@ export class Connector implements PowerSyncBackendConnector {
   * You can omit this method if you only want to sync data from the database to the client
   * See example implementation here:https://docs.powersync.com/client-sdks/reference/react-native-and-expo#3-integrate-with-your-backend
   */
-  async uploadData(database: AbstractPowerSyncDatabase) {
+  async uploadData(database: CommonPowerSyncDatabase) {
 
     /**
     * For batched crud transactions, use data.getCrudBatch(n);
