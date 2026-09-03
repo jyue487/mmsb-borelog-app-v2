@@ -408,3 +408,44 @@ create policy "Owners and admins can manage all block photos"
   to authenticated
   using (public.get_current_user_role() in (1, 2))
   with check (public.get_current_user_role() in (1, 2));
+
+-- ---------------------------------------------------------------------------
+-- ADDENDUM 2 (September 2026) — the bucket half of the manager fix
+-- ---------------------------------------------------------------------------
+--
+-- Addendum 1 above let roles 1 and 2 write the block_photos row. On its own that
+-- is worse than the gap it closed: storage.objects still restricted INSERT and
+-- DELETE on the Testing bucket to role 3, so a manager taking a photo would get
+-- the row committed and the file rejected — a block_photos row pointing at an
+-- object that never arrives, retried forever by the attachment queue and visible
+-- to everyone else as a broken photo.
+--
+-- The table and the bucket have to move together. SELECT already admitted
+-- managers, so only INSERT and DELETE are added here. No UPDATE policy exists
+-- for this bucket for anyone, which is left alone — photos are replaced by
+-- delete-then-upload, not overwritten in place.
+--
+-- If the intent is instead that managers never take photos, revert addendum 1
+-- rather than adding these: half the permission is the one state that corrupts
+-- data.
+
+drop policy if exists "managers upload photos" on storage.objects;
+drop policy if exists "managers delete photos" on storage.objects;
+
+create policy "managers upload photos"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'Testing'
+    and public.get_current_user_role() in (1, 2)
+  );
+
+create policy "managers delete photos"
+  on storage.objects
+  for delete
+  to authenticated
+  using (
+    bucket_id = 'Testing'
+    and public.get_current_user_role() in (1, 2)
+  );
