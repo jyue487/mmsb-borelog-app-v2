@@ -150,6 +150,28 @@ key from `import.meta.env`, which means Vite bakes it into a publicly downloadab
 is correct and by design — but it means **RLS is the entire security boundary**. Anyone who finds
 the dashboard URL has the anon key. Do this before the site is reachable, not after.
 
+### 0.6 Pin the Node version for EAS builds — **done**
+
+`"node": "24.17.0"` on all three profiles in `apps/mobile/eas.json`.
+
+Nothing in the repo said which Node to use, so EAS used its image default — Node 20 — while local
+development ran Node 24. That went unnoticed until the first cloud build of this cycle died in
+`INSTALL_DEPENDENCIES` before installing a single package:
+
+```
+warn: This version of pnpm requires at least Node.js v22.13
+warn: The current version of Node.js is v20.19.4
+Error [ERR_UNKNOWN_BUILTIN_MODULE]: No such built-in module: node:sqlite
+```
+
+With no version declared, EAS infers pnpm from the lockfile; the inferred 11.18.0 imports
+`node:sqlite`, which exists only from Node 22. The last green build was 2026-07-18, before pnpm
+moved that floor — so this was pure environment drift, and it would have failed the production
+build identically.
+
+Pinned to match the local toolchain exactly rather than merely clearing pnpm's floor, so cloud and
+local resolve the same way.
+
 ## Phase 1 — backend environments
 
 Separate projects per environment is the standard practice, for one concrete reason: there is
@@ -366,8 +388,10 @@ track on the existing one. Consequences worth knowing before you start clicking:
   uploads.
 - **The tester list does not carry over.** Re-add the crews' Google account emails and circulate the
   new opt-in link.
-- The remote `versionCode` counter continues from the old app's build history rather than restarting
-  at 1. Harmless — a new listing accepts any value, it only has to increase from there.
+- The remote `versionCode` counter **restarts at 1**, because EAS holds no version state for the new
+  package id. Confirmed on the first build of `com.mmsb.borelog.dev`, which reported
+  `Version code 1`. Harmless — a new listing accepts any starting value, it only has to increase
+  from there.
 
 Google holds the app signing key; EAS holds the upload key. **Do not lose or rotate the upload
 key** — a signing mismatch forces users to uninstall and reinstall, and an uninstall *is* a real
@@ -388,7 +412,10 @@ Two things they need to hear, because neither is discoverable from inside the ap
 
 - **They will be asked to sign in**, where the old app never asked. Accounts have to exist and be
   assigned to projects via `project_to_user` before anyone tries, or their first experience is an
-  empty list that looks like a bug.
+  empty list that looks like a bug. (An *app-side* cause of that same empty list was found and
+  fixed while testing on device — `isSignIn` never became true on a restored session, so the list
+  read the database before the first sync landed. It only ever showed on a fresh install, which is
+  precisely what every crew member will be doing.)
 - **Their old boreholes will not appear.** Say so explicitly, and say where the exported reports
   live. Otherwise the first reaction to an empty project list is "the app lost my data" — which is
   the wrong conclusion, but a very reasonable one from where they are standing.
