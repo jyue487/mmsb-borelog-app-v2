@@ -12,12 +12,12 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@dr.pogodin/react-native-fs": "^2.40.1",
     "@mmsb/core": "workspace:*",
     "@mmsb/report": "workspace:*",
-    "@op-engineering/op-sqlite": "^15.2.14",
-    "@powersync/attachments-storage-react-native": "^0.0.2",
-    "@powersync/op-sqlite": "^0.9.13",
-    "@powersync/react-native": "^1.35.6",
+    "@op-engineering/op-sqlite": "~18.1.4",
+    "@powersync/attachments-storage-react-native": "~0.1.1",
+    "@powersync/react-native": "~2.2.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-picker/picker": "2.11.1",
@@ -69,6 +69,13 @@
     "eslint-config-expo": "~10.0.0",
     "expo-module-scripts": "^4.1.7",
     "typescript": "~5.9.2"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "@op-engineering/op-sqlite"
+      ]
+    }
   },
   "private": true
 }
