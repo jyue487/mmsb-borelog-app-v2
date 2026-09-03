@@ -10,44 +10,46 @@ to re-check, not to inherit.
 
 ## Known defects and debt
 
-### 0. Four orphaned objects in the Storage bucket
+### 0. Resolved: four orphaned objects in the Storage bucket
 
-All that is left of the old item 0, which was `block_photos` having RLS enabled with no policies at
-all. That is fixed — see 0e.
+Two things in sequence, both now closed. First `block_photos` had RLS enabled with no policies at
+all — fixed, see 0e. That left four objects in the `Testing` bucket with no `block_photos` row, so
+under the new Storage SELECT policy nothing could name them and nobody could reach them.
 
-Four objects in the `Testing` bucket have no `block_photos` row, so under the new Storage SELECT
-policy nothing can name them and nobody can reach them:
+*Resolved 2026-09-03* by the bucket rename (e78a6d8), which did not migrate `Testing`'s 24
+development objects and deleted the bucket. Deleting a bucket deletes its contents, so the four went
+with the other twenty. Verified after the fact:
 
+```bash
+pnpm sb --experimental storage ls                      # ["documents/","block-photos/"] — no Testing
+pnpm sb --experimental storage ls ss:///block-photos/  # {"paths":[]}
 ```
-5e530da9-6a2b-4b4d-957d-b5ac22149700.jpg
-81bda8d0-ae7f-49d7-87f5-37d7bc39bf7c.jpg
-9601d9ba-fec4-43e3-8bf5-37791555bf5e.jpg
-fbce2ff4-3001-4bd2-bf4a-ad304f2af7d0.jpg
-```
 
-Re-derive rather than trusting that list — deleting a file is the one step here with no undo:
+Note the `--experimental` flag, which `storage` now requires; without it the CLI fails with
+`LegacyExperimentalRequiredError`. Two ways *not* to delete an object, if this comes up again for
+`block-photos`. `delete from storage.objects` removes only the metadata row and strands the actual
+file in the storage backend, still billed and referenced by nothing. And
+`pnpm sb --experimental storage rm ss:///<bucket>/<name>` **silently does nothing** on CLI 2.x for
+objects at the bucket root: it reports `{"deleted":[]}` with no error and exits 0. Confirmed
+2026-08-25 that this is not an RLS refusal — it still no-ops with a wide-open delete policy on the
+exact object, so it is a CLI bug. `ls` does work, with the trailing slash. So: the dashboard.
+
+If a bucket needs the orphan query again, it is:
 
 ```sql
 select o.name from storage.objects o
-where o.bucket_id = 'Testing'
+where o.bucket_id = 'block-photos'
   and o.name <> '.emptyFolderPlaceholder'
   and not exists (select 1 from public.block_photos bp
                   where bp.id::text = split_part(o.name, '.', 1));
 ```
 
-**Delete them from the dashboard** — Storage → Testing → select → Delete.
+Leave `.emptyFolderPlaceholder` in any bucket that has one; the dashboard creates it and the bucket
+renders oddly without it.
 
-Two ways not to do it. `delete from storage.objects` removes only the metadata row and strands the
-actual file in the storage backend, still billed and referenced by nothing. And
-`pnpm sb storage rm ss:///Testing/<name>` **silently does nothing** on CLI 2.x for objects at the
-bucket root: it reports `{"deleted":[]}` with no error and exits 0. Confirmed 2026-08-25 that this is
-not an RLS refusal — it still no-ops with a wide-open delete policy on the exact object, so it is a
-CLI bug. `pnpm sb storage ls ss:///Testing/` does work, with the trailing slash.
-
-Leave `.emptyFolderPlaceholder`; the dashboard creates it and the bucket renders oddly without it.
-
-*Where they came from — answered 2026-09-02.* **Every foreign key in the `public` schema cascades**,
-`user_to_role.role_id -> roles` alone excepted:
+*Where they came from — answered 2026-09-02, and the reason the class of bug outlives the four
+files.* **Every foreign key in the `public` schema cascades**, `user_to_role.role_id -> roles` alone
+excepted:
 
 | child | constraint | parent | on delete |
 | --- | --- | --- | --- |
@@ -65,12 +67,12 @@ from pg_constraint where contype = 'f' and connamespace = 'public'::regnamespace
 -- 'c' = cascade, 'a' = no action
 ```
 
-So item 4's edit path is a sufficient explanation for these four: the block delete synced to Postgres,
-the cascade took the `block_photos` rows with it, and nothing deletes from Storage — the only deleter
-is a *device* noticing its own row disappear (`SupabaseRemoteStorageAdapter.ts`), which never fires
-for a delete that happened server-side. Item 4's fix stops new ones from that direction; a cascade
-from any other direction still strands bytes, which is the whole of the borehole-delete entry below.
-There is no dangling-row class to look for — with a cascade there cannot be one.
+So item 4's edit path was a sufficient explanation for those four: the block delete synced to
+Postgres, the cascade took the `block_photos` rows with it, and nothing deletes from Storage — the
+only deleter is a *device* noticing its own row disappear (`SupabaseRemoteStorageAdapter.ts`), which
+never fires for a delete that happened server-side. Item 4's fix stops new ones from that direction;
+a cascade from any other direction still strands bytes, which is the whole of the borehole-delete
+entry below. There is no dangling-row class to look for — with a cascade there cannot be one.
 
 ### 0e. Resolved: the `blocks` and `block_photos` policies
 
@@ -725,8 +727,8 @@ snapshot already covers that with a `--snap` workflow. Its job is comparing one 
   read, where supervisors and viewers reach the policy, and meaningless on write, where they never do.
   And unlike the photo bucket there **is** an UPDATE policy, because reissuing a revised drawing
   overwrites the same key through `upsert: true`, which is an UPDATE rather than an INSERT.
-  A second bucket rather than `Testing` because `is_assigned_to_photo_object()` encodes the
-  assumption that every object in that bucket is a block photo.
+  A second bucket rather than the photo bucket because `is_assigned_to_photo_object()` encodes
+  the assumption that every object in that bucket is a block photo.
 - **Plotting the boreholes themselves on a map.** Parked, and not for want of a library. `Borehole`
   carries `eastingInMetres` / `northingInMetres`, but **nothing in this repo records which datum
   those metres are in** — no EPSG code, no proj4, no lat/lng anywhere. Google Maps takes lat/lng
@@ -754,9 +756,9 @@ snapshot already covers that with a `--snap` workflow. Its job is comparing one 
   directly. The JPEGs cannot go at all: nothing anywhere deletes from Storage except a *device*
   noticing its own `block_photos` row disappear (`SupabaseRemoteStorageAdapter.ts:70-110`), which
   never fires for a delete that happened server-side. A borehole deleted from the dashboard therefore
-  strands every photo of every one of its blocks in the `Testing` bucket — billed, and unreachable
-  the moment `is_assigned_to_photo_object()` returns NULL for them. That is item 0's four orphans, at
-  borehole scale.
+  strands every photo of every one of its blocks in the `block-photos` bucket — billed, and
+  unreachable the moment `is_assigned_to_photo_object()` returns NULL for them. That is the orphan
+  class item 0 closed out, at borehole scale.
 
   *Soft delete* has nothing to plug into. `deleted_at`/`deleted_by` are on every table
   (`AppSchema.ts`), and outside `remove-member` writing them on `user_to_role`, **nothing writes them
