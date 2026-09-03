@@ -7,10 +7,12 @@ import { FlatList, KeyboardAvoidingView, StyleSheet, TouchableOpacity, View } fr
 import { ProjectComponent } from '@/src/components/project/ProjectComponent';
 import { Project } from '@/src/interfaces/Project';
 import { useAuth } from '@/src/context/AuthContextProvider';
-import { supabase } from '@/src/db/supabase';
 import { powersync, setupPowerSync } from '@/src/powersync/system';
 import { photoAttachmentQueue } from "@/src/storage/SupabaseRemoteStorageAdapter";
 import LoadingScreen from './loading';
+
+/** How long to sit on the loading screen before showing local data anyway. */
+const FIRST_SYNC_TIMEOUT_MS = 15_000;
 
 export default function ProjectListScreen() {
   const { isSignIn } = useAuth();
@@ -18,24 +20,54 @@ export default function ProjectListScreen() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  // Connect once. This used to depend on [isPowersyncReady] while also setting
+  // it, so the whole body ran a second time and called connect() on an already
+  // connected database.
   useEffect(() => {
     const init = async () => {
       await setupPowerSync();
-      if (isSignIn) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          console.log('Error: Sign in but no session');
-          throw new Error('Error: Sign in but no session');
-        }
-        await powersync.waitForFirstSync();
-        setIsPowersyncReady(true);
-      }
       await photoAttachmentQueue.startSync();
+      // Show whatever is already in the local database straight away, so a warm
+      // start is instant and works with no signal.
       await fetchAllProjects();
     };
 
     init();
-  }, [isPowersyncReady]);
+  }, []);
+
+  // Then wait for the first sync to land and read again. Keyed on isSignIn
+  // because that arrives asynchronously - the effect above runs before the
+  // stored session has been restored.
+  useEffect(() => {
+    if (!isSignIn) {
+      return;
+    }
+
+    let cancelled = false;
+    // Bound the wait. waitForFirstSync resolves immediately once a device has
+    // synced before, but on a first launch with no signal it would otherwise
+    // never resolve and leave the crew stuck on the loading screen. Aborting
+    // resolves the promise anyway; we then show whatever is in the local
+    // database, which is the offline-first behaviour we want regardless.
+    const giveUp = new AbortController();
+    const timer = setTimeout(() => giveUp.abort(), FIRST_SYNC_TIMEOUT_MS);
+
+    const waitForFirstSync = async () => {
+      await powersync.waitForFirstSync(giveUp.signal);
+      if (cancelled) {
+        return;
+      }
+      setIsPowersyncReady(true);
+      await fetchAllProjects();
+    };
+
+    waitForFirstSync();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isSignIn]);
 
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
   const fetchAllProjects = async () => {

@@ -28,9 +28,11 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
       if (error || !data.user) {
         setUserId(null);
         setEmail(null);
+        setIsSignIn(false);
       } else {
         setUserId(data.user.id);
         setEmail(data.user.email ?? null);
+        setIsSignIn(true);
       }
 
       setLoading(false);
@@ -39,18 +41,20 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     loadUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(event, session);
+      // Never log `session` itself - it carries the access and refresh tokens.
+      console.log('auth event', event);
       const user = session?.user;
 
       setUserId(user?.id ?? null);
       setEmail(user?.email ?? null);
       setLoading(false);
 
-      console.log(event);
-
-      if (event === 'SIGNED_IN') {
-        setIsSignIn(true);
-      }
+      // Derive from whether a session exists rather than from one event name.
+      // A warm start with a stored session emits INITIAL_SESSION, not SIGNED_IN,
+      // so keying off 'SIGNED_IN' left isSignIn false for the whole session and
+      // the project list never waited for the first sync. This also clears the
+      // flag on SIGNED_OUT, which the old branch never did.
+      setIsSignIn(!!session);
     });
 
     return () => {

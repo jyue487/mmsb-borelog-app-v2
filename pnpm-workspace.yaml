@@ -7,3 +7,13 @@ allowBuilds:
   # default, and without these the install "succeeds" with no working binary.
   supabase: true
   deno: true
+# PowerSync v2.2.0 and its siblings were published 2026-09-02, inside the freshness
+# gate's window. Kept deliberately: 2.2.0 is the only self-consistent set (2.1.0 peers
+# op-sqlite ^17 and conflicts with the attachments package over @powersync/common).
+# Once these age past the cutoff, delete this block and re-run `pnpm install`.
+minimumReleaseAgeExclude:
+  - '@powersync/attachments-storage-react-native@0.1.1'
+  - '@powersync/common@2.2.0'
+  - '@powersync/react-native@2.2.0'
+  - '@powersync/react@2.0.1'
+  - '@powersync/shared-internals@1.2.0'
