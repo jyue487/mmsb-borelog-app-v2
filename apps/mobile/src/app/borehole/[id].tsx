@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -14,7 +14,6 @@ import { Project } from '@/src/interfaces/Project';
 import { sortAndReindexAllBlocks } from '@/src/utils/block/handleAllBlocksFrontEnd/sortAndReindexAllBlocks';
 import { describeWarnings, sharePdf } from '@/src/utils/pdf/sharePdf';
 import LoadingScreen from '../loading';
-// import { shareExcel } from '@/utils/excel/shareExcel';
 
 export default function BoreholeScreen() {
   const { id, projectTitle, name } = useLocalSearchParams();
@@ -28,6 +27,7 @@ export default function BoreholeScreen() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [isAddNewBlockButtonPressed, setIsAddNewBlockButtonPressed] = useState<boolean>(false);
   const [isSharingPdf, setIsSharingPdf] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     const init = async () => {
@@ -61,6 +61,18 @@ export default function BoreholeScreen() {
     };
 
     init();
+  }, [boreholeId]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const fetchedBlocks: Block[] = sortAndReindexAllBlocks(await fetchAllBlocksByBoreholeIdDbAsync(boreholeId));
+      setBlocks(fetchedBlocks);
+    } catch (error) {
+      console.error('Failed to refresh the blocks:', error);
+    } finally {
+      setRefreshing(false);
+    }
   }, [boreholeId]);
 
   if (!borehole || !project) {
@@ -112,14 +124,8 @@ export default function BoreholeScreen() {
           }
         }}
       />
-      {/* <Button 
-        title='Share Excel'
-        onPress={() => shareExcel(blocks)} // TODO: Implement shareJson instead
-      /> */}
     </View>
   );
-
-
 
   return (
     <>
@@ -144,6 +150,8 @@ export default function BoreholeScreen() {
             ListFooterComponent={renderFooter}
             contentContainerStyle={{ paddingBottom: 500 }}
             style={{ width: '100%', borderTopWidth: 1 }}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
           />
         </KeyboardAvoidingView>
       </GestureHandlerRootView>

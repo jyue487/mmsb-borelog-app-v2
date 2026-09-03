@@ -340,8 +340,8 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
 - `src/db/db.ts`, `src/db/initDb.ts`, `src/db/runMigrationsAsync.ts` and `src/db/migrations/**` are
   **dead code** from the pre-PowerSync `expo-sqlite` era. Nothing imports them. PowerSync owns the
   schema now (`AppSchema.ts`) — do not add migrations there.
-- `src/utils/excel/shareExcel.ts` and its button in `borehole/[id].tsx` are commented out. (The PDF
-  button next to it is live again as of the `packages/report` migration.)
+- `src/utils/excel/shareExcel.ts` is dead — the file is commented out end to end, and the
+  commented-out button that called it is gone from `borehole/[id].tsx`. Nothing references it.
 - `src/utils/pdf/` holds two pipelines: the live `sharePdf.ts` → `@mmsb/report`, and the parked
   legacy HTML one behind `sharePdfLegacyHtml.ts`. Only the first is referenced.
 - Further deferred defects and debt — most of them latent, with the trigger that would make each one
