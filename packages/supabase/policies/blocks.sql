@@ -245,3 +245,31 @@ create policy "supervisors delete blocks on their projects"
 -- Then the real test, which no SQL can stand in for: record a block on a device
 -- as an assigned supervisor and watch it reach the server, and open that
 -- borehole's log in the dashboard.
+
+-- ---------------------------------------------------------------------------
+-- ADDENDUM (September 2026) — owners and admins can write blocks
+-- ---------------------------------------------------------------------------
+--
+-- The policies above give roles 1 and 2 a read path only: every write predicate
+-- required `get_current_user_role() = 3`, so an owner or admin could open a
+-- borehole and see its blocks but could not add, edit or delete one.
+--
+-- That is worse than a plain permission error on this stack. Mobile writes go
+-- through the PowerSync CRUD queue, and Connector.uploadData deliberately throws
+-- instead of calling transaction.complete() so PowerSync retries. A write
+-- rejected by RLS is therefore retried forever: the block sits in the local
+-- database looking saved, never reaches Supabase, and nothing on the device
+-- reports it. Exactly the failure mode CLAUDE.md describes as looking like data
+-- loss.
+--
+-- Mirrors "Owners and admins can manage all boreholes" in boreholes.sql, and is
+-- purely additive — permissive policies are OR'd, so nobody loses access.
+
+drop policy if exists "Owners and admins can manage all blocks" on public.blocks;
+
+create policy "Owners and admins can manage all blocks"
+  on public.blocks
+  for all
+  to authenticated
+  using (public.get_current_user_role() in (1, 2))
+  with check (public.get_current_user_role() in (1, 2));

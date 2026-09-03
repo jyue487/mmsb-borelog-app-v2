@@ -383,3 +383,28 @@ drop policy if exists "Give users authenticated access to folder 407ca8_3" on st
 -- block_photos row to every device will still do that, and the attachment queue
 -- on a viewer's phone will still try to download files the policies above deny.
 -- RLS governs writes and PostgREST reads. The sync rules have to agree with it.
+
+-- ---------------------------------------------------------------------------
+-- ADDENDUM (September 2026) — owners and admins can write block photos
+-- ---------------------------------------------------------------------------
+--
+-- Same gap, and same reasoning, as the addendum in blocks.sql: every write
+-- predicate here required `get_current_user_role() = 3`, so roles 1 and 2 could
+-- view photos but not attach or remove them.
+--
+-- Photos make the silent-retry problem worse, not better. A photo exists only on
+-- the device until the attachment queue uploads it, so a row the queue can never
+-- insert is the one piece of data with no copy anywhere else.
+--
+-- Note this covers the block_photos table only. The Storage bucket has its own
+-- policies, which key off is_assigned_to_photo_object() — if a manager still
+-- cannot upload the file itself after this, that is the next place to look.
+
+drop policy if exists "Owners and admins can manage all block photos" on public.block_photos;
+
+create policy "Owners and admins can manage all block photos"
+  on public.block_photos
+  for all
+  to authenticated
+  using (public.get_current_user_role() in (1, 2))
+  with check (public.get_current_user_role() in (1, 2));
