@@ -9,7 +9,7 @@ import { supabase } from './supabase.server';
  * `apps/mobile/src/storage/SupabaseRemoteStorageAdapter.ts` and the three occurrences in
  * `packages/supabase/policies/block_photos.sql`; they are kept in sync by hand.
  */
-export const PHOTO_BUCKET = 'Testing';
+export const PHOTO_BUCKET = 'block-photos';
 
 /**
  * PostgREST serialises `.in()` into the query string, so one request covering a deep

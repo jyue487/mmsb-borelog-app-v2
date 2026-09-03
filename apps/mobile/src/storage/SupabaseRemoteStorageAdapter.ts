@@ -65,7 +65,7 @@ export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
 const localStorage = new ExpoFileSystemStorageAdapter();
 const remoteStorage = new SupabaseRemoteStorageAdapter({
   client: supabase,
-  bucket: 'Testing',
+  bucket: 'block-photos',
 });
 export const photoAttachmentQueue = new AttachmentQueue({
   db: powersync,

@@ -449,3 +449,68 @@ create policy "managers delete photos"
     bucket_id = 'Testing'
     and public.get_current_user_role() in (1, 2)
   );
+
+-- ---------------------------------------------------------------------------
+-- ADDENDUM 3 (September 2026) — the bucket is now 'block-photos'
+-- ---------------------------------------------------------------------------
+--
+-- 'Testing' was a placeholder that reached production-readiness by accident. It
+-- is now 'block-photos', matching the block_photos table and BLOCK_PHOTOS_TABLE
+-- in AppSchema.ts, so the storage name and the database name read as one thing.
+--
+-- Supabase has no rename operation for a bucket, and renaming one in SQL is not
+-- equivalent: storage.objects.bucket_id has an ON UPDATE NO ACTION foreign key,
+-- and more importantly objects are addressed by bucket in the storage backend,
+-- so rewriting the column would leave every file under the old key and every
+-- download would 404. A new bucket is the only correct route.
+--
+-- The 24 objects in 'Testing' were development test data and were not migrated,
+-- by decision. Deleting the old bucket has to happen through the dashboard or
+-- the Storage API rather than SQL -- deleting rows from storage.objects removes
+-- the reference but leaves the file in the backing store.
+--
+-- Every policy below is the 'Testing' set re-created against the new bucket,
+-- with no change of meaning. The 'Testing' policies above are left in place and
+-- become inert the moment that bucket is deleted.
+
+drop policy if exists "photos readable by managers and assigned members (block-photos)" on storage.objects;
+drop policy if exists "supervisors upload photos (block-photos)" on storage.objects;
+drop policy if exists "supervisors delete photos (block-photos)" on storage.objects;
+drop policy if exists "managers upload photos (block-photos)" on storage.objects;
+drop policy if exists "managers delete photos (block-photos)" on storage.objects;
+
+create policy "photos readable by managers and assigned members (block-photos)"
+  on storage.objects
+  for select
+  to authenticated
+  using (
+    bucket_id = 'block-photos'
+    and (
+      public.get_current_user_role() in (1, 2)
+      or public.is_assigned_to_photo_object(name)
+    )
+  );
+
+create policy "supervisors upload photos (block-photos)"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (bucket_id = 'block-photos' and public.get_current_user_role() = 3);
+
+create policy "supervisors delete photos (block-photos)"
+  on storage.objects
+  for delete
+  to authenticated
+  using (bucket_id = 'block-photos' and public.get_current_user_role() = 3);
+
+create policy "managers upload photos (block-photos)"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (bucket_id = 'block-photos' and public.get_current_user_role() in (1, 2));
+
+create policy "managers delete photos (block-photos)"
+  on storage.objects
+  for delete
+  to authenticated
+  using (bucket_id = 'block-photos' and public.get_current_user_role() in (1, 2));
