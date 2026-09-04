@@ -169,8 +169,56 @@ paying particular attention to the `project_to_user` scoping.
 
 **Why it belongs in Phase 0:** `apps/web/src/supabase/supabase.server.ts:3-4` reads the publishable
 key from `import.meta.env`, which means Vite bakes it into a publicly downloadable JS bundle. That
-is correct and by design — but it means **RLS is the entire security boundary**. Anyone who finds
-the dashboard URL has the anon key. Do this before the site is reachable, not after.
+is correct and by design — but it means RLS is the security boundary **for the dashboard**. Anyone
+who finds the URL has the anon key. Do this before the site is reachable, not after.
+
+#### The anonymous surface, probed 2026-09-04 — clean
+
+Done after the fact: the first Workers deployment made the site reachable before this was finished.
+Reading policy files proves nothing about the running database, so this tests the live API as the
+threat model describes it — the publishable key, no user session:
+
+```bash
+curl -s "$URL/rest/v1/<table>?select=*&limit=3" -H "apikey: $PUBLISHABLE_KEY"        # read
+curl -s -X POST "$URL/rest/v1/<table>" -H "apikey: $PUBLISHABLE_KEY"      -H 'Content-Type: application/json' -d '{}'                                     # write
+```
+
+`{}` cannot insert anywhere — every table has a NOT NULL client-generated `id` — so it separates
+"RLS refused" from "RLS allowed, constraint refused" with no chance of writing data.
+
+| | anonymous read | anonymous write |
+| --- | --- | --- |
+| `projects`, `boreholes`, `block_types`, `blocks`, `block_photos` | 0 rows | `42501` |
+| `project_to_user`, `user_to_role` | 0 rows | `42501` |
+| `roles` | **3 rows** | `42501` |
+
+The zeroes are refusals rather than empty tables — `blocks` alone holds 10 rows (0e). `roles` is
+readable: static lookup data naming the four roles, no customer information in it, so this is noted
+rather than filed.
+
+**Two tables have no policy file** — `projects` and `block_types` — yet both refuse anonymous
+access, so policies exist in the database and were never written down. That is exactly the drift 0e
+was written about, and it means `packages/supabase/policies/` is not a complete record. Capture them
+when 1.1's baseline migration is taken; a `db pull` picks up policies.
+
+#### RLS is *not* the whole boundary — the correction that matters
+
+**PowerSync does not read through PostgREST and RLS does not apply to it.** It consumes the WAL
+through the `powersync` publication, which replicates rows regardless of policy, and decides what
+reaches a given device with its **sync rules**. So the results above say nothing about the mobile
+app: a table could refuse every anonymous request and still be synced in full to every phone.
+
+Which makes the sync rules a security artifact of equal standing to the policies, and they are
+currently neither in the repo nor reviewed. 1.5 asks for the YAML to be committed for
+*environment-parity* reasons; this is the second and better reason.
+
+**Still outstanding, both needing something this audit could not reach:**
+
+- **Authenticated scoping.** These probes cover the anonymous case only. That a supervisor sees only
+  assigned projects, and a viewer cannot write, is the assignment logic in `project_to_user` — 0e
+  verified it by simulating roles under RLS when the policies were applied, but not since. Needs a
+  real low-privilege login.
+- **The sync rules**, per above.
 
 ### 0.6 Pin the Node version for EAS builds — **done**
 
