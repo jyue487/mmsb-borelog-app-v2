@@ -318,6 +318,29 @@ from pg_replication_slots;
 Connect the repo; build command `pnpm install && pnpm build --filter web`; output directory
 `apps/web/dist`.
 
+The form, in full — the repo is a monorepo, so three of these are not the defaults:
+
+| Field | Value |
+| --- | --- |
+| Repository | `jyue487/mmsb-borelog-app-v2` |
+| Production branch | `main` |
+| Framework preset | **None** — not "Vite". The preset assumes the Vite app is the repo root. |
+| Root directory | `/` (leave empty). Turbo has to run from the workspace root. |
+| Build command | `pnpm install && pnpm build --filter web` |
+| Build output directory | `apps/web/dist` |
+
+Connecting to Git is a browser flow — it installs the Cloudflare GitHub App on the repository — so
+it cannot be scripted, and neither `gh` nor `wrangler` is installed here anyway.
+
+**Two things that decide whether the first build works, both prepared 2026-09-04:**
+
+- **`.node-version` at the repo root, pinning `24.17.0`.** Pages picks a default Node for its build
+  image otherwise, which trails the Node 24 this workspace expects. Pages reads `.node-version` (and
+  `.nvmrc`); EAS pins the same version per profile in `eas.json`, so keep the two in step.
+- **pnpm comes from `packageManager: pnpm@11.18.0`** in the root `package.json`, which Pages honours
+  via corepack. Nothing to configure, but it is the reason `pnpm install` resolves the workspace
+  rather than failing on `workspace:*` dependencies.
+
 **Why not Vercel:** Vercel's Hobby tier is non-commercial only, and internal company tooling is
 commercial use — so it would mean Pro at $20/user/month. Cloudflare Pages permits commercial use on
 the free tier, with unlimited bandwidth and custom domains included. Netlify's free tier is
@@ -345,7 +368,23 @@ has mounted, which is exactly what a CDN 404 prevents.
 ### 2.3 Set the environment variables
 
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, pointed at production. Preview deployments
-can point at development.
+can point at development — but there is no development project until 1.2, so set both scopes to
+production for now and revisit, rather than leaving Preview blank.
+
+**These are build-time, not runtime.** Vite inlines `import.meta.env.VITE_*` by text substitution
+into the bundle, exactly as `babel-preset-expo` does for `EXPO_PUBLIC_*` (0.1). Two consequences
+that catch people:
+
+- They must exist in the Pages project **before the first build**. Adding them afterwards changes
+  nothing until a redeploy — there is no process environment to re-read at runtime.
+- A build with them **unset does not fail**. Vite emits `undefined`, `createClient(undefined,
+  undefined)` throws in the browser, and you get a white page from a green deployment.
+
+`supabase.server.ts` now throws a named error saying which variable is missing, so that failure is
+legible instead of a stack trace inside supabase-js. It is deliberately a *runtime* guard, matching
+`Connector.ts` on mobile: a build-time check would also break `pnpm build` on a fresh clone that has
+no `.env` yet. If a green-but-broken deploy ever actually happens, move the check into
+`vite.config.ts` and take that trade.
 
 ### 2.4 Point a subdomain at it
 
