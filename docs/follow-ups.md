@@ -707,6 +707,47 @@ before its upload queue drains takes those photos with it, and the first sign is
 the report. Item 0's cascade note is the mirror image of this — bytes with no row; this is a row with
 no bytes.
 
+### 14. Adding any dependency today re-resolves the whole native graph
+
+Not a defect — a cost, and one that is invisible until you look at the diff. Recording it because it
+turns "add one dev tool" into a decision about the mobile release.
+
+`supports-color@10.2.2` has aged past the freshness gate that `supports-color@8.1.1` was locked
+under. It is an optional peer of `@babel/core`, which is a peer of `react-native`, which is a peer of
+every native package here. So *any* `pnpm install` that re-resolves — adding a dependency to any
+workspace package, not just `apps/mobile` — rewrites the peer hash of the entire chain:
+
+```
+-  '@powersync/react-native@2.2.0(...(@babel/core@7.29.7(supports-color@8.1.1))...)'
++  '@powersync/react-native@2.2.0(...(@babel/core@7.29.7(supports-color@10.2.2))...)'
+```
+
+**4,888 lines of lockfile diff, and not one package version changes.** What changes is identity:
+every `node_modules/.pnpm/<name>@<version>_<peer hash>` directory is renamed, so every symlink under
+`apps/mobile/node_modules` repoints. Observed 2026-09-04 when wrangler was briefly added to
+`apps/web` — a package `apps/mobile` does not depend on, in an app that does not build for a device.
+
+What it costs:
+
+- **Every open editor reports unresolved imports** until its language server restarts, because it is
+  holding a `.pnpm` path that no longer exists. That is the symptom you will actually notice, and it
+  looks like a broken import rather than a relink.
+- Metro's cache is invalidated.
+- Worth checking, not yet checked: whether it perturbs the EAS **fingerprint** runtime version
+  (`app.config.ts`). `supports-color` has no native code, so it probably does not — but "probably"
+  is doing work there, and a changed fingerprint means existing installs stop accepting OTA updates.
+
+**So do not take this churn incidentally.** Restoring is
+`git checkout <ref> -- pnpm-lock.yaml && pnpm install --frozen-lockfile`, which relinks to the
+recorded resolution; verify with `readlink apps/mobile/node_modules/@powersync/react-native`.
+
+It should be taken **deliberately**, at a point where a device build will be tested afterwards —
+after Phase 3, not during it. `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` is the existing
+precedent for pinning through this gate on purpose, and carries the comment explaining why.
+
+Until then, prefer `npx <tool>@<version>` for anything that only ever runs in CI. That is why 2.1's
+deploy command names a wrangler version rather than depending on one.
+
 ## Deferred features
 
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would

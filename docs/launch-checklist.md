@@ -330,7 +330,33 @@ The form, in full — the repo is a monorepo, so three of these are not the defa
 | Build output directory | `apps/web/dist` |
 
 Connecting to Git is a browser flow — it installs the Cloudflare GitHub App on the repository — so
-it cannot be scripted, and neither `gh` nor `wrangler` is installed here anyway.
+it cannot be scripted.
+
+**Cloudflare no longer creates these as Pages projects.** A new static site is a **Worker with
+static assets**, built by Workers Builds, and the difference is not cosmetic:
+
+| | Classic Pages | Workers Builds (what this is) |
+| --- | --- | --- |
+| Env vars | Settings → Environment variables, with Production/Preview tabs | Settings → **Builds** → Variables and secrets. The *Runtime* section next to it is a different thing — see 2.3. |
+| Publishing | uploads the output directory | runs a **deploy command** you supply |
+| SPA fallback | `_redirects` | `not_found_handling` — see 2.2 |
+
+So there is a third field the Pages form does not have:
+
+| Field | Value |
+| --- | --- |
+| Deploy command | `cd apps/web && npx wrangler@4.128.0 deploy` |
+
+`cd` rather than `--config` so that `assets.directory` is unambiguous — wrangler resolves it
+relative to the config file, and there is no reason to depend on that being true of `--config` too.
+The version is pinned in the command because wrangler is deliberately **not** a devDependency; see
+follow-ups item 14 for why adding one is currently expensive. Bump it here when you want a newer
+one.
+
+**Branch control** governs which branch is the production build. It is `main` today, which holds
+only `Init` — the work is on `jiayue-turborepo`, 137 commits ahead. Non-production branch builds are
+enabled, so pushing `jiayue-turborepo` produces a preview URL and validates the whole pipeline
+without a domain attached to it. Do that before repointing branch control or doing 2.4.
 
 **Two things that decide whether the first build works, both prepared 2026-09-04:**
 
@@ -348,8 +374,23 @@ likewise commercially usable if you prefer its interface.
 
 ### 2.2 Add the SPA fallback — **done**
 
-`apps/web/public/_redirects`, verified to land at `dist/_redirects` by `pnpm build --filter web`
-(Vite copies `public/` to the output root, which is where Cloudflare Pages reads it from):
+On Workers static assets the mechanism is **`not_found_handling` in `apps/web/wrangler.jsonc`**,
+not `_redirects`:
+
+```jsonc
+"assets": {
+  "directory": "./dist",
+  "not_found_handling": "single-page-application"
+}
+```
+
+That serves `index.html` with a 200 for any request matching no file. `wrangler deploy --dry-run`
+confirms the config and reads the asset directory; the routing itself is only observable once
+deployed, so hard-refresh a deep link such as `/projects/<code>/boreholes/BH-1` on the preview URL.
+
+`apps/web/public/_redirects` is kept as well — it is the fallback every other static host
+understands (Pages, Netlify), it costs 19 bytes, and Vite copies `public/` to the output root. But
+on this deployment target it is **not** what does the work, so do not debug routing by editing it:
 
 ```
 /* /index.html 200
@@ -370,6 +411,11 @@ has mounted, which is exactly what a CDN 404 prevents.
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, pointed at production. Preview deployments
 can point at development — but there is no development project until 1.2, so set both scopes to
 production for now and revisit, rather than leaving Preview blank.
+
+**Set them under Builds → Variables and secrets, not Runtime.** Workers Builds shows both, and
+Runtime is the wrong one: it feeds the Worker when a request is served, and nothing here reads an
+environment variable at request time. Proof, from the built bundle — `dist/assets/blockRow-*.js`
+already contains the project URL and the publishable key as literals.
 
 **These are build-time, not runtime.** Vite inlines `import.meta.env.VITE_*` by text substitution
 into the bundle, exactly as `babel-preset-expo` does for `EXPO_PUBLIC_*` (0.1). Two consequences

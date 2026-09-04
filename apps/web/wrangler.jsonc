@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mmsb-borelog-app-v2",
+  "compatibility_date": "2026-09-04",
+  "assets": {
+    "directory": "./dist",
+    // react-router's BrowserRouter owns every path below the root, so a request for
+    // /projects/abc/boreholes/BH-1 matches no file. Serve index.html with a 200 and let
+    // the client router resolve it. Without this a hard refresh or a pasted link 404s.
+    "not_found_handling": "single-page-application"
+  }
+}
