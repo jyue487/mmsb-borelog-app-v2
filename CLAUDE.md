@@ -49,9 +49,17 @@ There are no tests in this repo — no test runner is configured in any package.
 Native builds go through EAS (`apps/mobile/eas.json`): `development` / `preview` / `production`
 profiles, each with a distinct bundle id driven by the `APP_VARIANT` env var in `app.config.ts`.
 
-Env vars are gitignored and must be created locally: `apps/mobile/.env.local`
-(`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY`), `apps/web/.env`
-(`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`).
+Env vars are gitignored and must be created locally. `apps/mobile/.env.local` takes the three names
+in `apps/mobile/.env.example` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY`,
+`EXPO_PUBLIC_POWERSYNC_URL`); `apps/web/.env` takes `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+`.env.local` is for local development only — **cloud builds never read it**. EAS resolves the same
+three names from the EAS environment that the build profile selects (`"environment"` in
+`eas.json`), so per-environment values belong there (`eas env:list`), under the *same* variable
+name. Adding a second name like `EXPO_PUBLIC_POWERSYNC_URL_PRODUCTION` does nothing:
+`babel-preset-expo` only substitutes the literal property accesses that appear in the source, and
+`Connector.ts` reads exactly one of them.
 
 ### Supabase CLI — always go through the package scripts
 
