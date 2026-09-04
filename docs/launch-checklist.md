@@ -49,6 +49,28 @@ What landed alongside it:
 - All three variables created in all three EAS environments (see 0.4 — this turned out to be the
   load-bearing part).
 
+**How EAS actually models this, learned the hard way on 2026-09-04.** "Created in all three
+environments" is one variable *linked to* three environments, not three variables — `eas env:list
+--format long` shows a single id per name with `Environments  development, preview, production`. So
+they share one value, and `eas env:update --variable-environment production` edits **all three**. It
+reports success naming only the project, which is easy to read as having done what you asked.
+
+Diverging one environment therefore means splitting the variable, not editing it:
+
+```bash
+# 1. narrow the existing variable to production, keeping its new value
+pnpm exec eas env:update --variable-name X --variable-environment production \
+  --environment production --non-interactive
+# 2. recreate it for the others (the name is then free in those environments)
+pnpm exec eas env:create --name X --value <other value> \
+  --environment development --environment preview \
+  --visibility plaintext --scope project --non-interactive
+```
+
+Done for `EXPO_PUBLIC_POWERSYNC_URL` when the Production instance was activated. The two Supabase
+variables are still single objects shared by all three environments, and will need the same split
+the moment 1.2's development project exists — that is the step to expect, not a second `env:update`.
+
 **One thing the literal expression depends on:** `babel-preset-expo` inlines `EXPO_PUBLIC_*` by
 static text substitution at build time. `process.env[someKey]` and
 `const { EXPO_PUBLIC_POWERSYNC_URL } = process.env` are *not* substituted and silently yield
