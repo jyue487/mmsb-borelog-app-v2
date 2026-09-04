@@ -359,7 +359,14 @@ from pg_replication_slots;
 
 `wal_status` of `extended` or `lost` means it is already accumulating.
 
-## Phase 2 — web dashboard
+## Phase 2 — web dashboard — **complete 2026-09-04**, except 2.5
+
+The dashboard is deployed and live on its own subdomain. One caveat worth carrying forward: 2.2's
+routing was never observed in a browser. `_redirects` was tried, rejected at upload, and replaced by
+`not_found_handling` — which is the documented mechanism and which deploys cleanly, but nobody has
+hard-refreshed a deep link to watch it work. If a bookmarked
+`/projects/<code>/boreholes/<name>` ever 404s, start there.
+
 
 ### 2.1 Deploy to Cloudflare Pages — **done 2026-09-04**
 
