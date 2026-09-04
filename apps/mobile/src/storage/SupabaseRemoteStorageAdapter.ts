@@ -62,6 +62,16 @@ export class SupabaseRemoteStorageAdapter implements RemoteStorageAdapter {
   }
 }
 
+/**
+ * How long a download 404 is read as "not uploaded yet" rather than "gone for good".
+ *
+ * Generous on purpose: the uploading device has to regain signal before either queue
+ * drains, and a multi-megabyte photo on site connectivity is not quick. Bounded so that
+ * a block_photos row whose object never arrived — a device lost or wiped before its
+ * upload queue drained — stops costing a request every sync cycle, forever.
+ */
+const DOWNLOAD_NOT_FOUND_GRACE_MS = 24 * 60 * 60 * 1000;
+
 const localStorage = new ExpoFileSystemStorageAdapter();
 const remoteStorage = new SupabaseRemoteStorageAdapter({
   client: supabase,
@@ -92,7 +102,20 @@ export const photoAttachmentQueue = new AttachmentQueue({
   errorHandler: {
     onDownloadError: async (attachment: AttachmentRecord, error: Error) => {
       if (error.toString() === 'StorageApiError: Object not found') {
-        return false; // Don't retry
+        // A 404 has two causes and they are indistinguishable from here: the object was
+        // deleted, or the device that took the photo has not finished uploading it yet.
+        // The second is routine rather than exotic — the block_photos row and the JPEG
+        // travel by different queues (the row through PowerSync's CRUD queue, the file
+        // straight to Supabase Storage), and the small row wins the race. A photo taken
+        // offline therefore reaches other devices before its bytes exist.
+        //
+        // Archiving on the first 404 made that permanent: ARCHIVED is excluded from
+        // getActiveAttachments(), so the 30s sync loop never revisits it, and the only
+        // route back is an unrelated change to block_photos re-emitting the watch.
+        // Retry instead, until the record is old enough that a pending upload is no
+        // longer a plausible explanation.
+        const age = Date.now() - (attachment.timestamp ?? Date.now());
+        return age < DOWNLOAD_NOT_FOUND_GRACE_MS;
       }
       return true; // Retry
     },

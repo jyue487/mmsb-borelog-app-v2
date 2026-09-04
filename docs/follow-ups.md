@@ -645,6 +645,68 @@ The `render` script's `sha256` line is therefore now a usable check, but it is d
 snapshotted the way `pagination` is: it changes on any legitimate layout change, and the pagination
 snapshot already covers that with a `--snap` workflow. Its job is comparing one build across devices.
 
+### 13. A photo taken offline could be permanently invisible on every other device
+
+Not latent — this one fired on any photo whose row reached a second device before its bytes did,
+which is the normal case rather than the exotic one. **Fixed 2026-09-04, but not yet confirmed on
+two devices**; the verification is at the end.
+
+A photo travels by two independent queues. The `block_photos` row goes through PowerSync's CRUD
+queue; the JPEG goes straight to Supabase Storage through the attachment queue
+(`SupabaseRemoteStorageAdapter.ts` — `supabase.storage.from(bucket)`, never touching the sync
+service). `saveFile`'s `updateHook` makes the pair atomic *locally*, and nothing makes them atomic
+across the network. The row is a few hundred bytes and the photo is a few megabytes, so the row
+wins.
+
+So device B receives a `block_photos` row, queues a download, and gets `Object not found` because
+device A is still uploading. The old handler returned `false` for exactly that error — reasonable
+against a *deleted* object, and a 404 cannot tell the two apart.
+
+What made it permanent is downstream of that, in `@powersync/common@2.2.0`:
+
+| | |
+| --- | --- |
+| `SyncingService.js:136-141` | `false` from `onDownloadError` sets state `ARCHIVED` |
+| `AttachmentContext.js:41-55` | `getActiveAttachments()` selects `QUEUED_UPLOAD`, `QUEUED_DOWNLOAD`, `QUEUED_DELETE` — **not** `ARCHIVED` |
+| `AttachmentQueue.js:168-187` | an `ARCHIVED` record is restored **only** in the `watchAttachments` reconciliation |
+
+The 30-second periodic sync therefore never revisits it. The reconciliation that would restore it
+runs only when the watcher emits, and this repo's watcher is `SELECT id FROM block_photos` — so it
+emits when that set *changes*. Device A finishing its upload changes nothing in `block_photos`. The
+photo is invisible on device B until some unrelated insert or delete happens to re-emit the watch,
+which is unbounded and silent. Worse, `deleteArchivedAttachments` prunes archived records past
+`archivedCacheLimit` (100), after which the record is gone outright.
+
+Note the failure is one-sided and therefore easy to miss: the device that *took* the photo has the
+file locally and shows it correctly forever. Only everyone else sees a block with a missing photo,
+and nothing anywhere reports an error.
+
+**The fix** keeps retrying a download 404 while the attachment record is younger than
+`DOWNLOAD_NOT_FOUND_GRACE_MS` (24 h), and archives it after. The clock is the record's `timestamp`,
+set when the queue first learns of the row — so it measures "how long since we heard this photo
+exists", which is the right question. The bound matters: a `block_photos` row whose object never
+arrived (a device lost or wiped before its upload queue drained) would otherwise cost a request
+every 30 s forever.
+
+**Why 24 hours and not a retry count.** The window has to cover device A regaining signal, not just
+the upload itself, and a crew can be off-grid for a shift. A count would expire in minutes.
+
+**To verify, which needs two devices and has not been done:**
+
+1. Put device A in airplane mode. Add a block with a photo.
+2. Bring A online and immediately background it, so the row uploads and the JPEG does not finish.
+3. On device B, open the borehole. The photo should appear within a sync cycle or two of A's upload
+   completing — before the fix it would never appear.
+4. `select id, filename, state, timestamp from attachments` on B: state should reach `3` (SYNCED),
+   never resting at `4` (ARCHIVED).
+
+**Still open, and the real asymmetry:** the two queues remain independent, so a device can hold an
+unuploaded photo indefinitely and nothing surfaces that. There is no UI anywhere for "this photo has
+not left the device yet", and `attachments.state` is never read outside the queue. A phone lost
+before its upload queue drains takes those photos with it, and the first sign is a blank photo on
+the report. Item 0's cascade note is the mirror image of this — bytes with no row; this is a row with
+no bytes.
+
 ## Deferred features
 
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would
