@@ -323,18 +323,24 @@ commercial use — so it would mean Pro at $20/user/month. Cloudflare Pages perm
 the free tier, with unlimited bandwidth and custom domains included. Netlify's free tier is
 likewise commercially usable if you prefer its interface.
 
-### 2.2 Add the SPA fallback
+### 2.2 Add the SPA fallback — **done**
 
-Create `apps/web/public/_redirects` containing:
+`apps/web/public/_redirects`, verified to land at `dist/_redirects` by `pnpm build --filter web`
+(Vite copies `public/` to the output root, which is where Cloudflare Pages reads it from):
 
 ```
 /* /index.html 200
 ```
 
-**Why:** routes are declared inline in `apps/web/src/app/main.tsx` via react-router, which is
-client-side only. Without the fallback the site works while navigating within it, but a hard refresh
-or a pasted link to `/projects/abc` returns a 404 from the CDN, because no such file exists. This
+**Why:** routes are declared inline in `apps/web/src/app/main.tsx` via react-router's
+`BrowserRouter`, which is client-side only. Without the fallback the site works while navigating
+within it, but a hard refresh or a pasted link to
+`/projects/abc/boreholes/BH-1` returns a 404 from the CDN, because no such file exists. This
 surfaces the first time somebody bookmarks a page.
+
+Note that `main.tsx` already has a catch-all `<Route path="*">` that redirects to `/projects`. It
+does not help here and is not a substitute: it runs only once `index.html` has loaded and react
+has mounted, which is exactly what a CDN 404 prevents.
 
 ### 2.3 Set the environment variables
 
