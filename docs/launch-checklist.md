@@ -247,6 +247,48 @@ their own project.
 
 Depends on 0.1. Without the env var the second instance is unreachable from the app.
 
+#### Which instance is which
+
+**PowerSync creates the pair for you, named `Development` and `Production`, and the names cannot be
+changed** — so the mapping is forced rather than chosen, and it is recorded here because the
+dashboard is the only other place it exists. The instance id is the whole of the URL:
+`https://<instance id>.powersync.journeyapps.com`.
+
+| Role | Instance | Supabase project | Carried by |
+| --- | --- | --- | --- |
+| Production | `6a34ef0d0ef84ed671a2e6c9` | `ahrbovrexrkzpegtgxit` (the existing project, per 1.2) | EAS `production` |
+| Development | `6a34ef0b35ca576ca0dde705` | the new empty project (1.2) | EAS `development` + `preview`, and `.env.local` |
+
+The consequence of the fixed names is that the **existing** instance is the *Development* one, and it
+is currently replicating from the project 1.2 turns into production. So both instances move:
+
+1. Activate `Production` — connect it to `ahrbovrexrkzpegtgxit`, JWKS from that project, deploy the
+   sync rules.
+2. Repoint `Development` at the new dev project, JWKS from *it*. This drops its replication slot on
+   production — see the warning below.
+3. EAS `production`: `EXPO_PUBLIC_POWERSYNC_URL` → the Production instance. It currently holds the
+   Development one, because until 1.2 there was only one of everything.
+4. EAS `development` + `preview` and `.env.local`: Supabase URL and key → the new dev project. The
+   PowerSync URL there is already correct.
+
+Step 2 discards the Development instance's replicated data. That is fine — bucket storage is derived
+from the source database and rebuilds itself.
+
+**Do not leave the Development instance pointed at production.** It holds a logical replication slot
+there, the free tier deactivates an instance after 1-2 weeks idle, and **Postgres retains WAL for an
+inactive slot indefinitely** — it accumulates until it fills the disk. A dormant free-tier instance
+with a live slot on the production database is a production outage with a slow fuse. Worth asking
+PowerSync whether they drop the slot on deactivation; until that is answered, watch
+`pg_replication_slots`:
+
+```sql
+select slot_name, active, wal_status,
+       pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) as retained
+from pg_replication_slots;
+```
+
+`wal_status` of `extended` or `lost` means it is already accumulating.
+
 ## Phase 2 — web dashboard
 
 ### 2.1 Deploy to Cloudflare Pages
