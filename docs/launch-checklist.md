@@ -420,13 +420,21 @@ That serves `index.html` with a 200 for any request matching no file. `wrangler 
 confirms the config and reads the asset directory; the routing itself is only observable once
 deployed, so hard-refresh a deep link such as `/projects/<code>/boreholes/BH-1` on the preview URL.
 
-`apps/web/public/_redirects` is kept as well — it is the fallback every other static host
-understands (Pages, Netlify), it costs 19 bytes, and Vite copies `public/` to the output root. But
-on this deployment target it is **not** what does the work, so do not debug routing by editing it:
+**`_redirects` must not be present at all** — this was tried and it is not merely inert, it fails
+the upload:
 
 ```
-/* /index.html 200
+✘ [ERROR] Invalid _redirects configuration:
+  Line 1: Infinite loop detected in this rule. This would cause a redirect to strip `.html`
+  or `/index` and end up triggering this rule again. [code: 100324]
 ```
+
+Workers static assets already strip `.html` and `/index` from request paths, so the usual SPA
+catch-all `/* /index.html 200` is a cycle by construction: `/*` sends to `/index.html`, which is
+stripped back to `/`, which matches `/*`. The validator rejects it at deploy time rather than at
+request time, so a `_redirects` file carried over from Pages or Netlify takes the whole deployment
+down rather than being ignored. `apps/web/public/_redirects` was added in aa52501 and removed again
+once this surfaced.
 
 **Why:** routes are declared inline in `apps/web/src/app/main.tsx` via react-router's
 `BrowserRouter`, which is client-side only. Without the fallback the site works while navigating
