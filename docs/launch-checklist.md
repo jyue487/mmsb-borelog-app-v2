@@ -361,7 +361,7 @@ from pg_replication_slots;
 
 ## Phase 2 — web dashboard
 
-### 2.1 Deploy to Cloudflare Pages
+### 2.1 Deploy to Cloudflare Pages — **done 2026-09-04**
 
 Connect the repo; build command `pnpm install && pnpm build --filter web`; output directory
 `apps/web/dist`.
@@ -494,7 +494,7 @@ Note that `main.tsx` already has a catch-all `<Route path="*">` that redirects t
 does not help here and is not a substitute: it runs only once `index.html` has loaded and react
 has mounted, which is exactly what a CDN 404 prevents.
 
-### 2.3 Set the environment variables
+### 2.3 Set the environment variables — **done 2026-09-04**
 
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, pointed at production. Preview deployments
 can point at development — but there is no development project until 1.2, so set both scopes to
@@ -533,6 +533,12 @@ adds nothing to that.
 Free at this scale, and it gates the whole site behind an email-domain login before Supabase auth
 even loads. Defence in depth, given that the dashboard is world-reachable and RLS is otherwise the
 only lock. Skip it if 0.5 left you confident.
+
+0.5's anonymous probe came back clean, which is the confidence that sentence was asking for. Two
+things it did not cover, and they are the ones Access would actually mitigate: the authenticated
+scoping is still unverified against a real low-privilege login, and a `workers.dev` URL is guessable
+in a way a private subdomain is not. Cheap enough that "skip it" should be a decision rather than an
+omission.
 
 ## Phase 3 — mobile release
 
