@@ -3,6 +3,7 @@
 import { Layers, Settings, Users } from 'lucide-react';
 import { NavLink, useMatch } from 'react-router';
 
+import mmsbLogo from '../assets/mmsb-logo.png';
 import { useAuth } from '../context/auth';
 import { canViewMembers } from '../data/memberRoles';
 
@@ -42,14 +43,19 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-slate-900">
-      <div className="shrink-0 px-5 py-5">
-        <p className="text-lg font-bold tracking-tight text-slate-950 dark:text-white">
-          MMSB
-        </p>
+      <div className="flex shrink-0 items-center gap-3 px-5 py-5">
+        {/* Decorative: the wordmark beside it already says MMSB. */}
+        <img src={mmsbLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
 
-        <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-          Dashboard
-        </p>
+        <div className="min-w-0">
+          <p className="text-lg font-bold leading-tight tracking-tight text-slate-950 dark:text-white">
+            MMSB
+          </p>
+
+          <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+            Dashboard
+          </p>
+        </div>
       </div>
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-3">

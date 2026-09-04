@@ -3,6 +3,7 @@
 import type { AuthError } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import mmsbLogo from "../../assets/mmsb-logo.png";
 import { useAuth } from "../../context/auth";
 import { supabase } from "../../supabase/supabase.server";
 
@@ -163,6 +164,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-gray-950 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 rounded-xl border border-gray-200 bg-white p-8 shadow-md dark:border-gray-800 dark:bg-gray-900">
         <div className="text-center">
+          {/* The only branding on the page, so it carries the name itself. */}
+          <img src={mmsbLogo} alt="MMSB" className="mx-auto mb-6 h-14 w-auto" />
+
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             {step === "email" ? "Sign in to your account" : "Check your email"}
           </h1>

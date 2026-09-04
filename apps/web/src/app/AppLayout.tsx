@@ -4,6 +4,7 @@ import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 
+import mmsbLogo from '../assets/mmsb-logo.png';
 import AppSidebar from '../components/AppSidebar';
 
 export default function AppLayout() {
@@ -63,6 +64,8 @@ export default function AppLayout() {
           >
             <Menu className="size-5" aria-hidden="true" />
           </button>
+
+          <img src={mmsbLogo} alt="" aria-hidden="true" className="h-6 w-auto" />
 
           <span className="font-bold tracking-tight text-slate-950 dark:text-white">
             MMSB
