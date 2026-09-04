@@ -366,6 +366,18 @@ So there is a third field the Pages form does not have:
 | Field | Value |
 | --- | --- |
 | Deploy command | `cd apps/web && npx wrangler@4.128.0 deploy` |
+| Version command | `cd apps/web && npx wrangler@4.128.0 versions upload --preview-alias <branch>` |
+
+The **version command** is what non-production branches run instead of the deploy command: it
+uploads a version and returns a preview URL without putting it on production traffic. Pin the same
+wrangler version in both, or previews and production drift onto different tooling — the divergence
+this whole phase exists to prevent. `--preview-alias` is optional and worth it for a long-lived
+branch: without it every push gets a fresh hash-prefixed URL, with it the URL is
+`<alias>-<worker>.<subdomain>.workers.dev` and stays put. It needs wrangler >= 4.21.0, and preview
+URLs need the account's **workers.dev subdomain enabled** at all.
+
+If a branch build runs the *deploy* command rather than the version command, branch control thinks
+that branch is production.
 
 `cd` rather than `--config` so that `assets.directory` is unambiguous — wrangler resolves it
 relative to the config file, and there is no reason to depend on that being true of `--config` too.
