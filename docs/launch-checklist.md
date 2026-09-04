@@ -520,7 +520,7 @@ legible instead of a stack trace inside supabase-js. It is deliberately a *runti
 no `.env` yet. If a green-but-broken deploy ever actually happens, move the check into
 `vite.config.ts` and take that trade.
 
-### 2.4 Point a subdomain at it
+### 2.4 Point a subdomain at it — **done 2026-09-04**
 
 Add a CNAME in the GoDaddy DNS panel: `borelog.<yourcompany>.com` → the Pages hostname.
 
@@ -528,7 +528,7 @@ Add a CNAME in the GoDaddy DNS panel: `borelog.<yourcompany>.com` → the Pages 
 bills for registration and for whatever hosts the existing site — a subdomain served by Cloudflare
 adds nothing to that.
 
-### 2.5 Optional: Cloudflare Access in front of the site
+### 2.5 Optional: Cloudflare Access in front of the site — *deferred, revisit*
 
 Free at this scale, and it gates the whole site behind an email-domain login before Supabase auth
 even loads. Defence in depth, given that the dashboard is world-reachable and RLS is otherwise the
@@ -599,6 +599,26 @@ cannot track individual checkpoints. Both were considered and rejected for this 
 `allowBackup: false` is set in `app.config.ts`, so Android's cloud backup is not a fallback either.
 
 ### 3.2 Verify a preview build against development, end to end
+
+**Blocked on 1.2, which is not obvious from here.** "Against development" assumes a development
+environment exists, and today it does not: the EAS `preview` environment resolves
+`EXPO_PUBLIC_SUPABASE_URL` to `ahrbovrexrkzpegtgxit` — production — and `EXPO_PUBLIC_POWERSYNC_URL`
+to the Development instance, which still replicates from production. There is only one of
+everything.
+
+So running this section as written puts test boreholes in the production database and syncs them to
+every device. Cleaning up afterwards means deleting blocks, which is the cascade that stranded item
+0's photos in Storage. Do not run 3.2 until:
+
+1. **1.2** — the empty development Supabase project exists.
+2. **1.5 step 2** — the Development PowerSync instance is repointed at it, which also removes its
+   replication slot from production.
+3. The two Supabase variables are **split per EAS environment**, the way
+   `EXPO_PUBLIC_POWERSYNC_URL` was — they are still single objects shared by all three. 0.1 has the
+   two commands.
+
+Only then is a preview build isolated, and only then does this section verify what it says it does.
+
 
 Install it on a device that **already has the old app**, because that is the only way to prove 3.1
 actually worked:
