@@ -326,11 +326,31 @@ The form, in full — the repo is a monorepo, so three of these are not the defa
 | Production branch | `main` |
 | Framework preset | **None** — not "Vite". The preset assumes the Vite app is the repo root. |
 | Root directory | `/` (leave empty). Turbo has to run from the workspace root. |
-| Build command | `pnpm install && pnpm build --filter web` |
-| Build output directory | `apps/web/dist` |
+| Build command | `pnpm install --frozen-lockfile && pnpm build --filter web` |
+| Build output directory | **leave empty** — see below |
 
 Connecting to Git is a browser flow — it installs the Cloudflare GitHub App on the repository — so
 it cannot be scripted.
+
+**The build command and the deploy command are separate, and neither implies the other.** A deploy
+command with no build command fails at `wrangler deploy` with
+
+```
+✘ [ERROR] The directory specified by the "assets.directory" field ... does not exist:
+  /opt/buildhome/repo/apps/web/dist
+```
+
+which reads like a wrangler or config problem and is not one — `dist` is a build artifact, and
+nothing built it. Confirmed on the first deploy attempt, 2026-09-04.
+
+`--frozen-lockfile` rather than a bare `pnpm install`: it fails loudly if the lockfile and the
+manifests disagree, instead of re-resolving, which is what follow-ups item 14 is about. Cloudflare
+sets `CI=true`, under which pnpm already defaults to frozen — being explicit means not depending on
+that.
+
+**Build output directory stays empty.** It is a Pages-era field; here `wrangler.jsonc`'s
+`assets.directory` is what decides what gets published, and giving this one a value is at best
+redundant.
 
 **Cloudflare no longer creates these as Pages projects.** A new static site is a **Worker with
 static assets**, built by Workers Builds, and the difference is not cosmetic:
