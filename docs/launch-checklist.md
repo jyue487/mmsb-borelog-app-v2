@@ -542,7 +542,7 @@ omission.
 
 ## Phase 3 — mobile release
 
-### 3.1 The old app is a different app wearing the same package id
+### 3.1 The old app is a different app wearing the same package id — **decided and implemented**
 
 This is the item that matters most in the whole document, and it is not about timing.
 
@@ -600,24 +600,32 @@ cannot track individual checkpoints. Both were considered and rejected for this 
 
 ### 3.2 Verify a preview build against development, end to end
 
-**Blocked on 1.2, which is not obvious from here.** "Against development" assumes a development
-environment exists, and today it does not: the EAS `preview` environment resolves
+**There is no development environment, so read this section in two halves.** 1.2 is deferred
+(decided 2026-09-04), and until it lands the EAS `preview` environment resolves
 `EXPO_PUBLIC_SUPABASE_URL` to `ahrbovrexrkzpegtgxit` — production — and `EXPO_PUBLIC_POWERSYNC_URL`
-to the Development instance, which still replicates from production. There is only one of
-everything.
+to the Development instance, which replicates from it. There is only one of everything.
 
-So running this section as written puts test boreholes in the production database and syncs them to
-every device. Cleaning up afterwards means deleting blocks, which is the cascade that stranded item
-0's photos in Storage. Do not run 3.2 until:
+**The half that needs no backend, and is the one that matters:** install the preview build on a phone
+that already has the old app; confirm two icons; confirm the old app still opens and still lists its
+boreholes. That is the stop-or-go gate for 3.1 and it does not require signing in. Run it today.
 
-1. **1.2** — the empty development Supabase project exists.
-2. **1.5 step 2** — the Development PowerSync instance is repointed at it, which also removes its
-   replication slot from production.
-3. The two Supabase variables are **split per EAS environment**, the way
-   `EXPO_PUBLIC_POWERSYNC_URL` was — they are still single objects shared by all three. 0.1 has the
-   two commands.
+**The half that writes:** sign in, create a borehole, add blocks, go offline and back, PDF, AGS.
+This writes to production. Acceptable *only* because the crews are still on the old app, so the new
+backend holds no field data — it is a staging database wearing a production label. Two conditions
+on that:
 
-Only then is a preview build isolated, and only then does this section verify what it says it does.
+- **Clean the test data out before 3.5.** Deleting a project cascades to boreholes, blocks and
+  `block_photos` but **not** to Storage, so the JPEGs strand — item 0's class, at project scale. The
+  blunt fix is emptying the `block-photos` bucket from the dashboard while nobody real is using it.
+- **The licence expires at 3.5.** From the moment a crew signs in, production carries data that
+  costs a rig mobilisation to recreate, and there is still nowhere else to test. That is the
+  sentence Phase 1 opens with, and deferring 1.2 does not repeal it — it defers it to the worst
+  possible moment.
+
+**A standing trap while this holds:** the `preview` EAS environment is production-connected. Someone
+installing a preview build months from now to try something out will write to live field data with
+no indication that is what they are doing. Splitting the two Supabase variables per environment
+(0.1 has the commands) is the fix, and it needs 1.2 first.
 
 
 Install it on a device that **already has the old app**, because that is the only way to prove 3.1
