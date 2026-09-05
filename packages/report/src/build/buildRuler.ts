@@ -17,7 +17,7 @@ import { line, run, textNode } from './drawText';
  */
 
 const LABEL_SIZE_PT = 4.5;
-const MINOR_TICK_PT = 3.5;
+const MINOR_TICK_PT = 5;
 const LABEL_GAP_PT = 1.5;
 
 export function buildRuler(geometry: PageGeometry, startTick: number): DrawNode[] {
@@ -25,7 +25,6 @@ export function buildRuler(geometry: PageGeometry, startTick: number): DrawNode[
 	const column = COLUMN_COUNT - 1;
 	const x = geometry.columnX(column);
 	const width = geometry.columnWidth(column);
-	const right = x + width;
 
 	for (let i = 0; i <= TICKS_PER_PAGE; i++) {
 		const absoluteTick = startTick + i;
@@ -35,21 +34,21 @@ export function buildRuler(geometry: PageGeometry, startTick: number): DrawNode[
 		// Metre marks run the full column width; the 0.1 m marks are short, as before.
 		nodes.push({
 			kind: 'line',
-			x1: isMetre ? x : right - MINOR_TICK_PT,
+			x1: x,
 			y1: y,
-			x2: right,
+			x2: isMetre ? x + 2.5 * MINOR_TICK_PT : x + MINOR_TICK_PT,
 			y2: y,
 			thicknessPt: isMetre ? HAIRLINE_PT : HAIRLINE_PT * 0.7,
 		});
 
 		// The last tick of a page is the first tick of the next, so its label would collide
 		// with the page boundary rule; the next page draws it.
-		if (isMetre && i < TICKS_PER_PAGE) {
+		if (isMetre && 0 < i && i < TICKS_PER_PAGE) {
 			nodes.push(
 				textNode(
 					[line(run(String(absoluteTick / 10), LABEL_SIZE_PT))],
 					x,
-					y + LABEL_GAP_PT,
+					y - 4 * LABEL_GAP_PT,
 					width - MINOR_TICK_PT - LABEL_GAP_PT,
 					geometry.tickPitchPt,
 					LABEL_SIZE_PT * 1.15,

@@ -53,7 +53,7 @@ export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): Repo
 		const nodes: DrawNode[] = [
 			...buildHeader(input.project, input.borehole, geometry, slice.pageNumber, totalPages, measurer),
 			...buildColumnHeader(geometry),
-			...buildFooter(input.borehole, geometry, dateStarted, dateFinished),
+			...buildFooter(input.borehole, geometry, dateStarted, dateFinished, measurer),
 			...buildRuler(geometry, slice.startTick),
 		];
 

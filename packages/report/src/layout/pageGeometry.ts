@@ -30,7 +30,7 @@ export const HEADER_HEIGHT_PT = 112;
 export const COLUMN_HEADER_HEIGHT_PT = 46;
 
 /** Notes/legend tables, the driller block, and the signature block. */
-export const FOOTER_HEIGHT_PT = 150;
+export const FOOTER_HEIGHT_PT = 100;
 
 export interface PageGeometry {
 	pageWidthPt: number;

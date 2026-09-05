@@ -25,6 +25,12 @@ import { getDate, getTime } from '../format/datetime';
  * Every renderer emitted exactly these columns in this order — verified by counting `<td>`
  * plus colspans across all 19 old files, which all came to 14 — so the order lives here
  * once instead of being retyped per block type.
+ *
+ * Every cell is aligned to the top of the row. A block's row is as tall as its depth
+ * interval, so centring a value in it floats it an arbitrary distance from the sample it
+ * describes; the reader is scanning across a row, and wants the values to start on one
+ * line. DATE & TIME is the exception, and only because it is genuinely two things: the
+ * shift's start pinned to the top and its end pinned to the bottom.
  */
 
 /** `renderWaterLevelToHtml.ts`: four-way null handling, and string values pass through. */
@@ -152,7 +158,7 @@ export function buildBodyRow(placed: PlacedRow, baseFontSizePt: number): BodyRow
 		colSpan: 1,
 		content: spec.sptN === undefined ? { kind: 'empty' } : contentFromDivided(spec.sptN(block)),
 		align: 'center',
-		valign: 'middle',
+		valign: 'top',
 	});
 
 	// 12 — R/r
@@ -162,7 +168,7 @@ export function buildBodyRow(placed: PlacedRow, baseFontSizePt: number): BodyRow
 		colSpan: 1,
 		content: recovery === '' ? { kind: 'empty' } : { kind: 'lines', lines: [recovery] },
 		align: 'center',
-		valign: 'middle',
+		valign: 'top',
 	});
 
 	// 13 — SCALE. The ruler is drawn once per page, not per row, so the cell is a placeholder
@@ -190,7 +196,7 @@ function buildSptColumnCells(
 					? ({ kind: 'empty' } as const)
 					: ({ kind: 'lines', lines: [threeValues[i]] } as const),
 			align: 'center' as const,
-			valign: 'middle' as const,
+			valign: 'top' as const,
 		}));
 	}
 	return Array.from({ length: SPT_COLUMN_COUNT }, (_, i) => ({
@@ -198,7 +204,7 @@ function buildSptColumnCells(
 		colSpan: 1,
 		content: sixValues === undefined ? ({ kind: 'empty' } as const) : contentFromDivided(sixValues[i]),
 		align: 'center' as const,
-		valign: 'middle' as const,
+		valign: 'top' as const,
 	}));
 }
 

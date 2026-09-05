@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 
-import mmsbLogo from '../assets/mmsb-logo.png';
+import mmsbLogo from '../assets/mmsb-logo-transparent.png';
 import AppSidebar from '../components/AppSidebar';
 
 export default function AppLayout() {

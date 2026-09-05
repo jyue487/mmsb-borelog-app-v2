@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- ?v= is a cache buster. Browsers cache favicons by URL and far more
+         aggressively than page assets - Chrome incognito windows even read the
+         main profile's favicon database - so replacing the file in place is not
+         enough to make an updated icon appear. Bump this when the icon changes. -->
+    <link rel="icon" type="image/png" href="/favicon.png?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MMSB Dashboard</title>
   </head>

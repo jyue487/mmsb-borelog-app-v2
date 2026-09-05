@@ -20,10 +20,11 @@ export type CellContent =
 	/**
 	 * A value over a horizontal rule over a second value — the SPT blow-count columns,
 	 * where the lower half only appears once the increment is complete (25 seating blows,
-	 * 50 main blows). The old markup drew the rule unconditionally even when the lower
-	 * value was blank; `hasRule` makes that explicit rather than accidental.
+	 * 50 main blows). The rule is what divides the two, so there is one if and only if
+	 * `bottom` is non-empty; the old markup drew it unconditionally, which underlined a
+	 * blow count for no reason on every incomplete increment.
 	 */
-	| { kind: 'divided'; top: string; bottom: string; hasRule: boolean }
+	| { kind: 'divided'; top: string; bottom: string }
 	/**
 	 * Start-of-day text pinned to the top of the cell and end-of-day text pinned to the
 	 * bottom, however tall the row is. The old renderer did this with `position: absolute`

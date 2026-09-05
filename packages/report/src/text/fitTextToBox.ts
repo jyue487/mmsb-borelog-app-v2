@@ -29,7 +29,10 @@ function layoutAt(
 	lineHeightFactor: number,
 ): { lines: LaidOutLine[]; heightPt: number; lineHeightPt: number } {
 	const lines = breakIntoLines(tokens, boxWidthPt, sizePt, measurer);
-	const lineHeightPt = measurer.lineHeightOf('regular', sizePt) * (lineHeightFactor / DEFAULT_LINE_HEIGHT_FACTOR);
+	// A multiple of the type size, as every other cell computes its leading. This used to be
+	// the font's ascent-to-descent height times the factor, which for NotoSans is 1.36 em —
+	// so the description alone was set a third looser than the columns beside it.
+	const lineHeightPt = sizePt * lineHeightFactor;
 	return { lines, heightPt: lines.length * lineHeightPt, lineHeightPt };
 }
 

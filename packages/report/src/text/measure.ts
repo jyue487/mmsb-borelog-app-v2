@@ -12,13 +12,15 @@ export type FontId = 'regular' | 'bold' | 'italic';
 export interface TextMeasurer {
 	/** Advance width of `text` at `sizePt`, in points. */
 	widthOf(text: string, fontId: FontId, sizePt: number): number;
-	/** Distance between baselines at `sizePt`, in points. */
-	lineHeightOf(fontId: FontId, sizePt: number): number;
-	/** Cap height at `sizePt`, for vertical centring. */
+	/**
+	 * Cap height at `sizePt`. Every vertical placement in the report is expressed against the
+	 * cap box: it is the top of a capital or a digit, which is what a reader sees as the top
+	 * of a line, and unlike the ascender it is what makes two different type sizes look level.
+	 */
 	capHeightOf(fontId: FontId, sizePt: number): number;
 }
 
-/** Matches the old stylesheet's `--base-line-height`. */
+/** Leading as a multiple of the type size; matches the old stylesheet's `--base-line-height`. */
 export const DEFAULT_LINE_HEIGHT_FACTOR = 1.15;
 
 /**
@@ -29,7 +31,6 @@ export const DEFAULT_LINE_HEIGHT_FACTOR = 1.15;
 export function createFixedWidthMeasurer(widthFactor = 0.5): TextMeasurer {
 	return {
 		widthOf: (text, _fontId, sizePt) => text.length * widthFactor * sizePt,
-		lineHeightOf: (_fontId, sizePt) => sizePt * DEFAULT_LINE_HEIGHT_FACTOR,
 		capHeightOf: (_fontId, sizePt) => sizePt * 0.7,
 	};
 }

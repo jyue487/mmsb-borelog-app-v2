@@ -25,9 +25,9 @@ export const MM = 72 / 25.4;
  * the table flush to the paper edge, and iOS used 15mm/5mm but only inside `@media print`.
  * Neither was deliberate.
  */
-export const PAGE_MARGIN_TOP_PT = 5 * MM;
-export const PAGE_MARGIN_BOTTOM_PT = 5 * MM;
-export const PAGE_MARGIN_LEFT_PT = 10 * MM;
+export const PAGE_MARGIN_TOP_PT = 10 * MM;
+export const PAGE_MARGIN_BOTTOM_PT = 10 * MM;
+export const PAGE_MARGIN_LEFT_PT = 20 * MM;
 export const PAGE_MARGIN_RIGHT_PT = 10 * MM;
 
 export const CONTENT_WIDTH_PT = A4_WIDTH_PT - PAGE_MARGIN_LEFT_PT - PAGE_MARGIN_RIGHT_PT;

@@ -17,7 +17,10 @@ export function textNode(
 	h: number,
 	leadingPt: number,
 	align: HAlign = 'left',
-	valign: VAlign = 'top',
+	// `top` is cap-flush (see firstBaselineOffset in the pdf-lib backend), which is what the
+	// body table wants and what a one-line box in the header or footer does not: there the box
+	// IS one line tall, so centring in it is the placement that leaves the leading symmetric.
+	valign: VAlign = 'middle',
 ): DrawNode {
 	return { kind: 'text', x, y, w, h, lines, leadingPt, align, valign };
 }

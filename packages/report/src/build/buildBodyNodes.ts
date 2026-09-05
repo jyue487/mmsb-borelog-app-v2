@@ -1,7 +1,7 @@
 
 import { BASE_FONT_SIZE_PT, HAIRLINE_PT, type PageGeometry } from '../layout/pageGeometry';
 import type { DrawNode, ReportWarning, TextLine } from '../model/doc';
-import type { BodyRow, RowCell } from '../model/table';
+import type { BodyRow, RowCell, VAlign } from '../model/table';
 import { fitTextToBox } from '../text/fitTextToBox';
 import type { TextMeasurer } from '../text/measure';
 import { hRule, line, run, stack, textNode, vRule } from './drawText';
@@ -16,7 +16,34 @@ import { hRule, line, run, stack, textNode, vRule } from './drawText';
  * CORE RUN / T.C.R. / R.Q.D. cell.
  */
 
+/** Left and right breathing room inside a cell, and the clearance above the rule below it. */
 const CELL_PADDING_PT = 1.5;
+
+/**
+ * Gap from a row's top rule down to the cap-top of the first line of every cell in it.
+ *
+ * One number for the whole table, deliberately. Text is placed cap-flush (`valign: 'top'`,
+ * see `firstBaselineOffset` in the pdf-lib backend), so this is the only thing standing
+ * between the rule and the top of the word — which is what makes the columns start level
+ * however their type ended up sized. It is the gap the base 7pt columns already had —
+ * padding plus half a leading — so those did not move.
+ */
+const CELL_TEXT_TOP_INSET_PT = 3;
+
+/**
+ * The DESCRIPTION column is the one cell holding prose rather than a value, so it gets a
+ * text margin instead of a hairline's clearance, and is set a little tighter than the
+ * one-line cells beside it — the lines belong to each other, the cells do not.
+ */
+const DESCRIPTION_PADDING_X_PT = 4;
+const DESCRIPTION_LINE_HEIGHT_FACTOR = 1.1;
+
+/** Mirrors the backend's vertical alignment, for content the builder places itself. */
+function valignOffsetPt(valign: VAlign, boxHeight: number, contentHeight: number): number {
+	if (valign === 'middle') return Math.max(0, (boxHeight - contentHeight) / 2);
+	if (valign === 'bottom') return Math.max(0, boxHeight - contentHeight);
+	return 0;
+}
 
 export function buildBodyNodes(
 	rows: BodyRow[],
@@ -78,10 +105,11 @@ function buildCellNodes(
 	startTick: number,
 	warnings: ReportWarning[],
 ): DrawNode[] {
-	const x = geometry.columnX(cell.column) + CELL_PADDING_PT;
-	const w = geometry.columnWidth(cell.column, cell.colSpan) - CELL_PADDING_PT * 2;
-	const y = rowY + CELL_PADDING_PT;
-	const h = rowH - CELL_PADDING_PT * 2;
+	const paddingX = cell.content.kind === 'rich' ? DESCRIPTION_PADDING_X_PT : CELL_PADDING_PT;
+	const x = geometry.columnX(cell.column) + paddingX;
+	const w = geometry.columnWidth(cell.column, cell.colSpan) - paddingX * 2;
+	const y = rowY + CELL_TEXT_TOP_INSET_PT;
+	const h = rowH - CELL_TEXT_TOP_INSET_PT - CELL_PADDING_PT;
 	const sizePt = cell.fontSizePt ?? BASE_FONT_SIZE_PT;
 
 	if (w <= 0 || h <= 0) {
@@ -99,7 +127,7 @@ function buildCellNodes(
 
 		case 'rich': {
 			// The DESCRIPTION cell — the one place text is fitted rather than placed.
-			const fit = fitTextToBox(cell.content.tokens, w, h, measurer);
+			const fit = fitTextToBox(cell.content.tokens, w, h, measurer, DESCRIPTION_LINE_HEIGHT_FACTOR);
 			if (fit.overflowed) {
 				warnings.push({ kind: 'descriptionClipped', pageNumber, startTick });
 			}
@@ -110,19 +138,24 @@ function buildCellNodes(
 		}
 
 		case 'divided': {
-			// Blow count over a rule over the penetration depth. The rule sits at the vertical
-			// midpoint of the pair, not of the cell, so it stays attached to the numbers however
-			// tall the row is.
-			const nodes: DrawNode[] = [];
-			const pairHeight = sizePt * 1.15 * 2;
-			const pairTop = y + Math.max(0, (h - pairHeight) / 2);
-			nodes.push(textNode([line(run(cell.content.top, sizePt))], x, pairTop, w, pairHeight / 2, sizePt * 1.15, 'center', 'middle'));
-			if (cell.content.hasRule) {
-				nodes.push(hRule(x, pairTop + pairHeight / 2, w, HAIRLINE_PT * 0.7));
-			}
-			if (cell.content.bottom !== '') {
+			// Blow count over a rule over the penetration depth — a two-line stack, aligned in
+			// the cell exactly like any other, so the blow count starts level with the depths and
+			// the description beside it. The rule sits at the midpoint between the upper
+			// baseline and the lower line's cap-top, which keeps it attached to the numbers
+			// however tall the row is.
+			const leadingPt = sizePt * 1.15;
+			const capHeightPt = measurer.capHeightOf('regular', sizePt);
+			const divided = cell.content.bottom !== '';
+			const pairTop = y + valignOffsetPt(cell.valign, h, divided ? leadingPt + capHeightPt : capHeightPt);
+			const nodes: DrawNode[] = [
+				textNode([line(run(cell.content.top, sizePt))], x, pairTop, w, leadingPt, leadingPt, 'center', 'top'),
+			];
+			// Nothing below, nothing to divide: an incomplete increment is one number, not an
+			// underlined one.
+			if (divided) {
+				nodes.push(hRule(x, pairTop + (leadingPt + capHeightPt) / 2, w, HAIRLINE_PT * 0.7));
 				nodes.push(
-					textNode([line(run(cell.content.bottom, sizePt))], x, pairTop + pairHeight / 2, w, pairHeight / 2, sizePt * 1.15, 'center', 'middle'),
+					textNode([line(run(cell.content.bottom, sizePt))], x, pairTop + leadingPt, w, leadingPt, leadingPt, 'center', 'top'),
 				);
 			}
 			return nodes;

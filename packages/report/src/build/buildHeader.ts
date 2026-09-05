@@ -24,6 +24,15 @@ const SHEET_SIZE_PT = 9;
 const FIELD_SIZE_PT = 7;
 const BOREHOLE_NAME_SIZE_PT = 12;
 const LOGO_HEIGHT_PT = 26;
+/**
+ * The logo's own proportions (the asset is 512x257). The box has to match them: the backend
+ * fits an image inside its box and centres it, so a box of the wrong shape pads the logo
+ * with slack that then reads as a gap between it and the wordmark.
+ */
+const LOGO_WIDTH_PT = LOGO_HEIGHT_PT * 1.99;
+/** Logo and wordmark are one lockup in the corner, not two things at opposite ends of a band. */
+const LOGO_INSET_PT = 3;
+const LOGO_GAP_PT = 4;
 const PADDING_PT = 6;
 
 export function buildHeader(
@@ -49,20 +58,21 @@ export function buildHeader(
 	nodes.push({
 		kind: 'image',
 		imageId: 'logo',
-		x: x + PADDING_PT,
-		y: y + (titleBandHeight - LOGO_HEIGHT_PT) / 2,
-		w: LOGO_HEIGHT_PT * 2.2,
+		x: x + LOGO_INSET_PT,
+		y: y + LOGO_INSET_PT,
+		w: LOGO_WIDTH_PT,
 		h: LOGO_HEIGHT_PT,
 	});
+	const wordmarkX = x + LOGO_INSET_PT + LOGO_WIDTH_PT + LOGO_GAP_PT;
 	nodes.push(
 		textNode(
 			[line(run('MAXI MEKAR SDN BHD', TITLE_SIZE_PT, 'bold'))],
-			x + PADDING_PT + LOGO_HEIGHT_PT * 2.2 + PADDING_PT,
+			wordmarkX,
 			y,
-			titleWidth - LOGO_HEIGHT_PT * 2.2 - PADDING_PT * 3,
+			x + titleWidth - wordmarkX - PADDING_PT,
 			titleBandHeight,
 			TITLE_SIZE_PT * 1.15,
-			'center',
+			'left',
 			'middle',
 		),
 	);
@@ -74,7 +84,7 @@ export function buildHeader(
 			width - titleWidth - PADDING_PT * 2,
 			titleBandHeight,
 			SHEET_SIZE_PT * 1.15,
-			'left',
+			'center',
 			'middle',
 		),
 	);

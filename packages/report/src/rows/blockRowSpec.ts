@@ -46,7 +46,6 @@ import { parseRichText, type RichToken } from '../text/richText';
 export interface DividedValue {
 	top: string;
 	bottom: string;
-	hasRule: boolean;
 }
 
 export interface BlockRowSpec {
@@ -113,7 +112,7 @@ function italic(text: string): RichToken[] {
 	return text === '' ? [] : [{ kind: 'text', text, italic: true, bold: false }];
 }
 
-const NO_VALUE: DividedValue = { top: '', bottom: '', hasRule: false };
+const NO_VALUE: DividedValue = { top: '', bottom: '' };
 
 /**
  * An SPT blow-count cell. The lower half shows the penetration only once the increment
@@ -125,7 +124,6 @@ function blowCell(blows: number | null, penetration: number | null, isComplete: 
 	return {
 		top: blows === null ? '' : String(blows),
 		bottom: isComplete && penetration !== null ? `${penetration}mm` : '',
-		hasRule: blows !== null,
 	};
 }
 
@@ -190,7 +188,6 @@ export const BLOCK_ROW_SPECS: Record<BlockTypeId, BlockRowSpec> = {
 			return {
 				top: String(block.sptNValue),
 				bottom: block.sptNValue === 50 ? `${block.totalMainPenetrationInMillimetres}mm` : '',
-				hasRule: true,
 			};
 		},
 		recovery: (block) => (block as { recoveryInPercentage: number }).recoveryInPercentage.toFixed(1),
@@ -323,5 +320,5 @@ export function contentFromDivided(value: DividedValue): CellContent {
 	if (value.top === '' && value.bottom === '') {
 		return { kind: 'empty' };
 	}
-	return { kind: 'divided', top: value.top, bottom: value.bottom, hasRule: value.hasRule };
+	return { kind: 'divided', top: value.top, bottom: value.bottom };
 }

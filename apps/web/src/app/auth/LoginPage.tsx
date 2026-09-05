@@ -3,7 +3,7 @@
 import type { AuthError } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import mmsbLogo from "../../assets/mmsb-logo.png";
+import mmsbLogo from "../../assets/mmsb-logo-transparent.png";
 import { useAuth } from "../../context/auth";
 import { supabase } from "../../supabase/supabase.server";
 
