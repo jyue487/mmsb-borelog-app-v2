@@ -2,7 +2,7 @@ import type { Project } from "@mmsb/core";
 import { X } from "lucide-react";
 import { useEffect, useState, type SubmitEvent } from "react";
 
-import { useAuth } from "../context/auth";
+import { useAuth } from "../context/authContext";
 import { mapProjectRow, PROJECT_COLUMNS } from "../supabase/projectRow";
 import { supabase } from "../supabase/supabase.server";
 

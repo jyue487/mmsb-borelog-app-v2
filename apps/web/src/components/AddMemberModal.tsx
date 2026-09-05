@@ -7,9 +7,10 @@ import {
   type MemberRole,
 } from '@mmsb/core';
 import { X } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
+import { useEscapeKey } from '../utils/useEscapeKey';
 import {
   assignableMemberRolesFor,
   canManageMemberWithRole,
@@ -181,23 +182,7 @@ export default function AddMemberModal({
     onClose();
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeModal();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, isSubmitting]);
+  useEscapeKey(isOpen, closeModal);
 
   if (!isOpen) {
     return null;

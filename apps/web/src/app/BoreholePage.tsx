@@ -9,7 +9,7 @@ import { sortAndReindexAllBlocks } from '../blocks/sortAndReindexAllBlocks';
 import BlockRow from '../components/blocks/BlockRow';
 import BoreholeDetailStrip from '../components/BoreholeDetailStrip';
 import EditBoreholeModal from '../components/EditBoreholeModal';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 import { canEditBoreholeDetails } from '../data/memberRoles';
 import {
   fetchBlockPhotosByBlockIds,

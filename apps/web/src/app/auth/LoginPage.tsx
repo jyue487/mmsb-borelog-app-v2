@@ -4,7 +4,7 @@ import type { AuthError } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import mmsbLogo from "../../assets/mmsb-logo-transparent.png";
-import { useAuth } from "../../context/auth";
+import { useAuth } from "../../context/authContext";
 import { supabase } from "../../supabase/supabase.server";
 
 type LoginStep = "email" | "otp";

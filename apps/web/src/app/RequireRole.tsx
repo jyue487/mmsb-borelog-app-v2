@@ -10,7 +10,7 @@
 import type { MemberRole } from '@mmsb/core';
 import { Navigate, Outlet } from 'react-router';
 
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 
 type RequireRoleProps = {
   // Takes the predicate rather than a role list so the rule lives in

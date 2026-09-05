@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 import AddMemberModal from '../components/AddMemberModal';
 import EditMemberModal from '../components/EditMemberModal';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 import {
     canManageMembers,
     canManageMemberWithRole,

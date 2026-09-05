@@ -22,7 +22,7 @@ import type { Borehole } from '@mmsb/core';
 import { X } from 'lucide-react';
 import { useEffect, useState, type SubmitEvent } from 'react';
 
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
 import { supabase } from '../supabase/supabase.server';
 import {

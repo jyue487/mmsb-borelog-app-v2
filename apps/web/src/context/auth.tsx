@@ -1,28 +1,9 @@
 import type { MemberRole } from '@mmsb/core';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { AuthContext } from './authContext';
 import { memberRoleFromRoleId } from '../supabase/memberRow';
 import { supabase } from '../supabase/supabase.server';
-
-export type AuthContextType = {
-  userId: string | null;
-  email: string | null;
-  // The signed-in user's role, from their live `user_to_role` row. `null` means
-  // either signed out or *revoked* — an auth account with no membership. That
-  // second case is what ProtectedRoute turns into a blocked page, so removing a
-  // member is real revocation rather than just a row disappearing from a list.
-  role: MemberRole | null;
-  isSignIn: boolean;
-  loading: boolean;
-};
-
-const AuthContext = createContext<AuthContextType>({
-  userId: null,
-  email: null,
-  role: null,
-  isSignIn: false,
-  loading: true,
-});
 
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
@@ -136,8 +117,4 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }

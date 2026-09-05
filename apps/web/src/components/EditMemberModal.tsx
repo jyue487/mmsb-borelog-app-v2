@@ -18,9 +18,10 @@ import {
   type Member,
 } from '@mmsb/core';
 import { X } from 'lucide-react';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
+import { useEscapeKey } from '../utils/useEscapeKey';
 import {
   canManageMemberWithRole,
   MEMBER_ROLE_BADGE_CLASSES,
@@ -160,23 +161,7 @@ export default function EditMemberModal({
     setIsRemoving(false);
   };
 
-  useEffect(() => {
-    if (member === null) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeModal();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [member, isBusy]);
+  useEscapeKey(member !== null, closeModal);
 
   if (member === null) {
     return null;

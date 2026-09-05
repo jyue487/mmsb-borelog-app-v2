@@ -1,6 +1,6 @@
 // ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuth } from "../context/auth";
+import { useAuth } from "../context/authContext";
 import { supabase } from "../supabase/supabase.server";
 
 // Signed in, but with no live `user_to_role` row — either removed from the

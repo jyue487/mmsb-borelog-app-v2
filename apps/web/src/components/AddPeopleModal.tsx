@@ -16,7 +16,7 @@ import type { Member } from '@mmsb/core';
 import { X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 import {
   MEMBER_ROLE_BADGE_CLASSES,
   MEMBER_ROLE_LABELS,

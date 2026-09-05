@@ -9,7 +9,7 @@ import AddBulkBoreholesModal from '../components/AddBulkBoreholesModal';
 import AddPeopleModal from '../components/AddPeopleModal';
 import EditProjectModal from '../components/EditProjectModal';
 import EditTerminationCriteriaModal from '../components/EditTerminationCriteriaModal';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 import {
   BOREHOLE_STATUS_BADGE_BASE_CLASSES,
   BOREHOLE_STATUS_BADGE_CLASSES,

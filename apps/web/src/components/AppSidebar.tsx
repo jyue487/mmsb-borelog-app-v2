@@ -4,7 +4,7 @@ import { Layers, Settings, Users } from 'lucide-react';
 import { NavLink, useMatch } from 'react-router';
 
 import mmsbLogo from '../assets/mmsb-logo-transparent.png';
-import { useAuth } from '../context/auth';
+import { useAuth } from '../context/authContext';
 import { canViewMembers } from '../data/memberRoles';
 
 const ACTIVE_CLASSES =
