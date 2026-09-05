@@ -84,5 +84,5 @@ export function createPageGeometry(): PageGeometry {
 }
 
 /** Base body type size. The old stylesheets disagreed: 7pt on Android, 8pt on iOS. */
-export const BASE_FONT_SIZE_PT = 7;
+export const BASE_FONT_SIZE_PT = 6.5;
 export const HAIRLINE_PT = 0.5;

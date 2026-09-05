@@ -10,8 +10,11 @@ import type { RichToken } from './richText';
  * (`Math.floor(11 - description.length / numberOfTicksToRender / 10)`,
  * `renderDescriptionToHtml.ts:7`) produced a different value for almost every block, which
  * is why type size visibly jitters down the page today.
+ *
+ * The top rung tracks `BASE_FONT_SIZE_PT`: a description short enough to set at the ceiling
+ * must not come out larger than the sample label and blow counts on its own row.
  */
-export const DESCRIPTION_SIZE_LADDER = [7, 6.5, 6, 5.5, 5, 4.5, 4, 3.5] as const;
+export const DESCRIPTION_SIZE_LADDER = [6.5, 6, 5.5, 5, 4.5, 4, 3.5] as const;
 
 export interface FitResult {
 	sizePt: number;
