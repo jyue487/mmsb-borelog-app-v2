@@ -43,7 +43,8 @@ export default function ProjectListPage() {
   }, []);
 
   const openProject = (project: Project) => {
-    navigate(`/projects/${encodeURIComponent(project.code)}`, { state: project });
+    // No router state: ProjectPage resolves the project from the code in the URL.
+    navigate(`/projects/${encodeURIComponent(project.code)}`);
   };
 
   return (

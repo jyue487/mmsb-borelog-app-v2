@@ -3,11 +3,7 @@
 import type { Borehole, Member, Project } from '@mmsb/core';
 import { FileText, Pencil, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  useLocation,
-  useNavigate,
-  useParams,
-} from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import AddBulkBoreholesModal from '../components/AddBulkBoreholesModal';
 import AddPeopleModal from '../components/AddPeopleModal';
@@ -72,22 +68,10 @@ function formatFileSize(bytes: number): string {
   return `${megabytes.toFixed(megabytes < 10 ? 1 : 0)} MB`;
 }
 
-type ProjectPageLocationState = {
-  project?: Project;
-};
-
 export default function ProjectPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { projectCode } = useParams<{ projectCode: string }>();
   const { role } = useAuth();
-
-  // Derived on each effect run rather than seeded into state once. `useState`'s
-  // initialiser only runs on mount, so going straight from one project to another
-  // would leave this holding the first: the URL would say B while the page showed
-  // A's details and A's boreholes.
-  const projectFromRouterState =
-    (location.state as ProjectPageLocationState | null)?.project ?? null;
 
   const [project, setProject] = useState<Project | null>(null);
   const [boreholes, setBoreholes] = useState<Borehole[]>([]);
@@ -148,27 +132,28 @@ export default function ProjectPage() {
       setErrorMessage(null);
 
       try {
-        // Router state saves the round trip when arriving from the project list;
-        // a refresh or a pasted link has none, so fall back to the code in the URL.
-        let currentProject = projectFromRouterState;
+        // Always resolved from the code in the URL. ProjectListPage used to hand the
+        // project over in router state to save this round trip, but a value that has
+        // crossed a history entry was built by whichever bundle wrote that entry, so
+        // it cannot be trusted to satisfy `Project` — see the note on
+        // fetchBoreholeByProjectIdAndName in BoreholePage.tsx for the crash that made
+        // the point. (That shortcut was dead in any case: the list sent the project
+        // bare while this read `state.project`, so the fallback always ran.)
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select(PROJECT_COLUMNS)
+          .eq('code', projectCode)
+          .single();
 
-        if (!currentProject) {
-          const { data: projectData, error: projectError } = await supabase
-            .from('projects')
-            .select(PROJECT_COLUMNS)
-            .eq('code', projectCode)
-            .single();
-
-          if (projectError) {
-            throw projectError;
-          }
-
-          currentProject = mapProjectRow(projectData);
+        if (projectError) {
+          throw projectError;
         }
+
+        const currentProject = mapProjectRow(projectData);
 
         // Written on every run, so switching projects replaces the previous one.
         // Edits from the modals below still land here and survive, because this
-        // only re-runs when the URL or the router state changes.
+        // only re-runs when the URL changes.
         setProject(currentProject);
 
         const { data: boreholeData, error: boreholeError } = await supabase
@@ -204,7 +189,7 @@ export default function ProjectPage() {
     };
 
     void fetchProjectAndBoreholes();
-  }, [projectCode, projectFromRouterState]);
+  }, [projectCode]);
 
   // Its own effect for the same reason the people fetch below is: a failure here
   // must cost the Status column, not the page. The borehole effect above sets
@@ -469,13 +454,13 @@ export default function ProjectPage() {
       return;
     }
 
+    // Deliberately without router state. BoreholePage resolves the borehole from the
+    // URL instead; see the note on fetchBoreholeByProjectIdAndName there for why an
+    // object that has crossed the history entry cannot be trusted as a `Borehole`.
     navigate(
       `/projects/${encodeURIComponent(
         projectCode,
       )}/boreholes/${encodeURIComponent(borehole.name)}`,
-      {
-        state: borehole,
-      },
     );
   };
 

@@ -3,7 +3,7 @@
 import type { Block, Borehole } from '@mmsb/core';
 import type { ReportProject } from '@mmsb/report';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { sortAndReindexAllBlocks } from '../blocks/sortAndReindexAllBlocks';
 import BlockRow from '../components/blocks/BlockRow';
@@ -21,12 +21,10 @@ import { supabase } from '../supabase/supabase.server';
 import { buildPhotoFilenames } from '../utils/blockPhotoFilenames';
 import { sanitiseFilename } from '../utils/sanitiseFilename';
 
-type BoreholePageLocationState = Borehole | null;
-
 /**
- * The report header prints title/location/client/consultant, so they are fetched even when
- * the borehole itself arrived in router state — that path used to skip the project query
- * altogether, and the previous version selected only `id`.
+ * The report header prints title/location/client/consultant, so they are fetched on every
+ * load. This used to be skipped whenever the borehole arrived in router state, and the
+ * version before that selected only `id`.
  */
 async function fetchProjectByCode(
   projectCode: string,
@@ -53,8 +51,20 @@ async function fetchProjectByCode(
 }
 
 /**
- * ProjectPage hands the borehole over in router state, but that is gone on a
- * refresh or a pasted link, so fall back to resolving it from the URL.
+ * The borehole is always resolved from the URL, never taken from router state.
+ *
+ * Router state used to be trusted here as a complete `Borehole` handed over by ProjectPage,
+ * which saved this query on a click-through. But `location.state` lives in the browser's
+ * history entry, so it survives a reload *and* a redeploy: a tab whose entry was written by
+ * an older bundle replays an object built by that bundle's mapper. That is how adding
+ * `checkerSignatureBase64` broke the dashboard — such a tab yielded a borehole with the
+ * field simply absent, the page rendered fine because it prints neither, and the PDF export
+ * died on `checkerSignatureBase64.length`. tsc could not see it: reading router state means
+ * casting `unknown`, so the cast promised a field the data never had.
+ *
+ * One query costs less than that. An object crossing history is a value from some past
+ * version of this app, so no typed domain object may be reconstructed from it — which is
+ * also why ProjectPage no longer sends one.
  */
 async function fetchBoreholeByProjectIdAndName(
   projectId: string,
@@ -76,17 +86,11 @@ async function fetchBoreholeByProjectIdAndName(
 
 export default function BoreholePage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { role } = useAuth();
   const { projectCode, boreholeName } = useParams<{
     projectCode: string;
     boreholeName: string;
   }>();
-
-  // Derived on each effect run rather than seeded into state once. `useState`'s
-  // initialiser only runs on mount, so going straight from one borehole to another
-  // would leave this holding the first. Same shape as ProjectPage.
-  const boreholeFromRouterState = location.state as BoreholePageLocationState;
 
   const [borehole, setBorehole] = useState<Borehole | null>(null);
   const [project, setProject] = useState<ReportProject | null>(null);
@@ -120,14 +124,10 @@ export default function BoreholePage() {
           await fetchProjectByCode(projectCode);
         setProject(fetchedProject);
 
-        let currentBorehole = boreholeFromRouterState;
-
-        if (!currentBorehole) {
-          currentBorehole = await fetchBoreholeByProjectIdAndName(
-            projectId,
-            boreholeName,
-          );
-        }
+        const currentBorehole = await fetchBoreholeByProjectIdAndName(
+          projectId,
+          boreholeName,
+        );
 
         setBorehole(currentBorehole);
 
@@ -186,7 +186,7 @@ export default function BoreholePage() {
     };
 
     void fetchBoreholeAndBlocks();
-  }, [projectCode, boreholeName, boreholeFromRouterState]);
+  }, [projectCode, boreholeName]);
 
   if (isLoading) {
     return (
@@ -425,17 +425,16 @@ export default function BoreholePage() {
         </section>
       </div>
 
-      {/* An edit that leaves the name alone touches neither projectCode,
-          boreholeName nor the router state, so the fetch effect above does not
-          re-run and overwrite this — the same reasoning ProjectPage records for
-          its own modals.
+      {/* An edit that leaves the name alone touches neither projectCode nor
+          boreholeName, so the fetch effect above does not re-run and overwrite
+          this — the same reasoning ProjectPage records for its own modals.
 
           A RENAME is different: the name is this page's URL key, so the address
           in the bar now points at a borehole that no longer answers to it, and a
           reload would 404. Replace it — replace, not push, so Back still goes to
-          the project rather than to the stale name — and hand the updated
-          borehole along in router state the way ProjectPage does, so the effect
-          re-run costs one project query rather than a second borehole lookup. */}
+          the project rather than to the stale name. The effect then re-runs on the
+          new name and refetches; `setBorehole` above already put the edit on the
+          screen, so nothing needs to ride along in router state to save that. */}
       {isEditBoreholeModalOpen && (
         <EditBoreholeModal
           borehole={borehole}
@@ -448,7 +447,7 @@ export default function BoreholePage() {
                 `/projects/${encodeURIComponent(
                   projectCode ?? '',
                 )}/boreholes/${encodeURIComponent(updatedBorehole.name)}`,
-                { replace: true, state: updatedBorehole },
+                { replace: true },
               );
             }
           }}
