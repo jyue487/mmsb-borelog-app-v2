@@ -8,6 +8,7 @@ import { buildBodyRow } from '../rows/buildBodyRow';
 import type { TextMeasurer } from '../text/measure';
 import { buildBodyNodes } from './buildBodyNodes';
 import { buildColumnHeader } from './buildColumnHeader';
+import { fitDescriptions, prefitKey } from './fitDescriptions';
 import { buildFooter } from './buildFooter';
 import { buildHeader } from './buildHeader';
 import { buildRuler } from './buildRuler';
@@ -49,6 +50,11 @@ export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): Repo
 	const dateFinished = findDateFinished(input.blocks);
 	const totalPages = slices.length;
 
+	// Blocks whose interval crosses a page break are laid out here, across every page they
+	// touch at once, because the loop below sees one page at a time and their type size has
+	// to be agreed between them. Everything else fits itself, later, in its own cell.
+	const prefits = fitDescriptions(slices, geometry, measurer, warnings);
+
 	const pages: ReportPage[] = slices.map((slice) => {
 		const nodes: DrawNode[] = [
 			...buildHeader(input.project, input.borehole, geometry, slice.pageNumber, totalPages, measurer),
@@ -57,7 +63,13 @@ export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): Repo
 			...buildRuler(geometry, slice.startTick),
 		];
 
-		const rows = slice.rows.map((placed) => buildBodyRow(placed, BASE_FONT_SIZE_PT));
+		const rows = slice.rows.map((placed) =>
+			buildBodyRow(
+				placed,
+				BASE_FONT_SIZE_PT,
+				placed.kind === 'block' ? prefits.get(prefitKey(placed.block.id, placed.partIndex)) : undefined,
+			),
+		);
 		nodes.push(...buildBodyNodes(rows, geometry, slice.startTick, measurer, slice.pageNumber, warnings));
 
 		return { pageNumber: slice.pageNumber, totalPages, nodes };

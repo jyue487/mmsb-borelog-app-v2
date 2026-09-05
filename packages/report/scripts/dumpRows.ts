@@ -53,6 +53,7 @@ import {
 } from '@mmsb/core';
 
 import { COLUMN_COUNT } from '../src/layout/constants.ts';
+import { BASE_FONT_SIZE_PT } from '../src/layout/pageGeometry.ts';
 import { assertRowOccupancy, buildBodyRow } from '../src/rows/buildBodyRow.ts';
 import type { CellContent } from '../src/model/table.ts';
 
@@ -158,15 +159,12 @@ const HEADINGS = ['DATE/TIME', 'SAMPLE', 'DEPTH', 'WL', 'DESCRIPTION', 'S1', 'S2
 
 let failures = 0;
 
-for (const blockTypeId of BLOCK_TYPE_ID_LIST) {
-	const block = populate(FACTORIES[blockTypeId]());
-	const row = buildBodyRow({ kind: 'block', block, testBlock: null, startTick: 20, tickCount: 15 }, 7);
-
+function report(label: string, row: ReturnType<typeof buildBodyRow>): void {
 	try {
 		assertRowOccupancy(row);
 	} catch (error) {
 		failures += 1;
-		console.log(`type ${blockTypeId}: OCCUPANCY FAILURE — ${(error as Error).message}`);
+		console.log(`${label}: OCCUPANCY FAILURE — ${(error as Error).message}`);
 	}
 
 	const byColumn = new Array<string>(COLUMN_COUNT).fill('');
@@ -174,13 +172,49 @@ for (const blockTypeId of BLOCK_TYPE_ID_LIST) {
 		byColumn[cell.column] = describe(cell.content) + (cell.colSpan > 1 ? ` (span ${cell.colSpan})` : '');
 	}
 
-	console.log(`\ntype ${String(blockTypeId).padStart(2)}  ${row.mergedSptColumns ? '[merged SPT columns]' : ''}`);
+	console.log(`\n${label}  ${row.mergedSptColumns ? '[merged SPT columns]' : ''}`);
 	for (let i = 0; i < COLUMN_COUNT; i++) {
 		if (byColumn[i] === '' || byColumn[i] === '·') continue;
 		console.log(`   ${String(i).padStart(2)} ${HEADINGS[i].padEnd(12)} ${byColumn[i]}`);
 	}
 }
 
+for (const blockTypeId of BLOCK_TYPE_ID_LIST) {
+	const block = populate(FACTORIES[blockTypeId]());
+	report(
+		`type ${String(blockTypeId).padStart(2)}`,
+		buildBodyRow(
+			{ kind: 'block', block, testBlock: null, startTick: 20, tickCount: 15, partIndex: 0, isFinalPart: true },
+			BASE_FONT_SIZE_PT,
+		),
+	);
+}
+
+/**
+ * The three faces of a block split across a page break, on the type that shows the most.
+ *
+ * The occupancy assertion is the point: a continuation blanks eleven of its columns, and
+ * blanking them by *omitting* the cells rather than emitting empty ones would take the row's
+ * vertical rules with them. The printed cells are the second point — part 0 keeps the sample
+ * label and blow counts, the last part keeps the end-of-shift pin, and the middle keeps
+ * neither.
+ */
+const splitBlock = populate(FACTORIES[SPT_BLOCK_TYPE_ID]());
+const SPLIT_PARTS: { label: string; partIndex: number; isFinalPart: boolean }[] = [
+	{ label: 'split part 0 (continues)', partIndex: 0, isFinalPart: false },
+	{ label: 'split part 1 (continues)', partIndex: 1, isFinalPart: false },
+	{ label: 'split part 2 (last)', partIndex: 2, isFinalPart: true },
+];
+for (const { label, partIndex, isFinalPart } of SPLIT_PARTS) {
+	report(
+		label,
+		buildBodyRow(
+			{ kind: 'block', block: splitBlock, testBlock: null, startTick: 20, tickCount: 15, partIndex, isFinalPart },
+			BASE_FONT_SIZE_PT,
+		),
+	);
+}
+
 console.log(
-	`\n${failures === 0 ? `All ${BLOCK_TYPE_ID_LIST.length} block types tile 14 columns exactly.` : `${failures} type(s) FAILED occupancy.`}`,
+	`\n${failures === 0 ? `All ${BLOCK_TYPE_ID_LIST.length} block types and 3 split parts tile 14 columns exactly.` : `${failures} row(s) FAILED occupancy.`}`,
 );

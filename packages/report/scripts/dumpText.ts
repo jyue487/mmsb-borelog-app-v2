@@ -14,9 +14,10 @@ import { fileURLToPath } from 'node:url';
 import { PDFDocument } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
-import { CONTENT_WIDTH_PT, COLUMN_FRACTIONS, TICKS_PER_PAGE } from '../src/layout/constants.ts';
+import { CONTENT_WIDTH_PT, COLUMN_FRACTIONS } from '../src/layout/constants.ts';
+import { TICK_PITCH_PT } from '../src/layout/pageGeometry.ts';
 import { createPdfLibMeasurer } from '../src/render/pdfLibMeasurer.ts';
-import { fitTextToBox } from '../src/text/fitTextToBox.ts';
+import { fitTextAcrossBoxes, fitTextToBox } from '../src/text/fitTextToBox.ts';
 import { parseRichText } from '../src/text/richText.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -31,9 +32,9 @@ const measurer = createPdfLibMeasurer({ regular, bold, italic });
 
 const DESCRIPTION_WIDTH_PT = CONTENT_WIDTH_PT * COLUMN_FRACTIONS[4];
 
-// Body height budget used by the spike: 90 ticks between the column header and the footer.
-const BODY_HEIGHT_PT = 505.198;
-const TICK_PITCH_PT = BODY_HEIGHT_PT / TICKS_PER_PAGE;
+// The pitch comes from pageGeometry, not from a number typed here. It used to be a local
+// 505.198 left over from the spike, which is 22pt adrift of the real body band — precisely
+// the ruler-vs-page-box drift the rewrite existed to stop.
 
 /** apps/mobile/src/utils/pdf/renderDescriptionToHtml.ts:5-18, Android branch. */
 function oldFormula(description: string, ticks: number): number {
@@ -94,4 +95,45 @@ const foldedFit = fitTextToBox(folded, DESCRIPTION_WIDTH_PT, CASES[5].ticks * TI
 for (const [i, line] of foldedFit.lines.entries()) {
 	const rendered = line.runs.map((run) => (run.fontId === 'regular' ? run.text : `[${run.fontId}]${run.text}`)).join('');
 	console.log(`  ${String(i + 1).padStart(2)}. ${rendered}   (${line.widthPt.toFixed(1)}pt)`);
+}
+
+// --- the multi-box path: a block whose interval crosses a page break -----------------------
+//
+// The point of the check is that ONE size is chosen for the whole paragraph. Fitting each
+// part on its own would set the 5-tick fragment at the bottom of a page smaller than the
+// 30-tick continuation at the top of the next, and the same sentence would change size
+// mid-word across the fold.
+
+const SPLIT_CASES: { label: string; parts: number[]; description: string }[] = [
+	{
+		label: 'ordinary split 5t + 10t',
+		parts: [5, 10],
+		description: 'Firm to stiff light grey mottled brown silty CLAY with occasional fine sand and rootlets',
+	},
+	{
+		label: 'coring run over 3 pages',
+		parts: [85, 90, 20],
+		description: 'Moderately weathered, moderately strong, grey GRANITE, closely to medium jointed with iron staining along joint surfaces'.repeat(3),
+	},
+	{
+		label: 'first part too short to help',
+		parts: [3, 40],
+		description: 'Very dense light yellowish brown silty fine to coarse SAND with occasional subangular gravel'.repeat(2),
+	},
+];
+
+console.log('\nsplit descriptions (one size across all parts):');
+for (const splitCase of SPLIT_CASES) {
+	const heights = splitCase.parts.map((ticks) => ticks * TICK_PITCH_PT);
+	const tokens = parseRichText(splitCase.description);
+	const fit = fitTextAcrossBoxes(tokens, DESCRIPTION_WIDTH_PT, heights, measurer);
+
+	// Fitting each part alone is what we are NOT doing; show what it would have picked.
+	const perPart = heights.map((h) => fitTextToBox(tokens, DESCRIPTION_WIDTH_PT, h, measurer).sizePt);
+	const dropped = fit.overflowed ? '  CLIPPED + warning' : '';
+
+	console.log(
+		`  ${splitCase.label.padEnd(30)} ${String(fit.sizePt).padStart(4)}pt  lines per part [${fit.perBox.map((lines) => lines.length).join(', ')}]` +
+			`  (fitted separately would pick ${perPart.join('/')}pt)${dropped}`,
+	);
 }

@@ -20,7 +20,13 @@ function describeRow(row: PlacedRow): string {
 		return `    ${span} ${String(row.tickCount).padStart(3)}t  ${metres.padEnd(14)} (filler, geometry of type ${row.referenceBlockTypeId})`;
 	}
 	const folded = row.testBlock === null ? '' : ` + folded ${row.testBlock.id}`;
-	return `    ${span} ${String(row.tickCount).padStart(3)}t  ${metres.padEnd(14)} ${row.block.id} (type ${row.block.blockTypeId})${folded}`;
+	// A whole block prints nothing; a split one prints which part this is and whether the
+	// interval carries on to the next page, since that is what decides the row's contents.
+	const part =
+		row.partIndex === 0 && row.isFinalPart
+			? ''
+			: ` [part ${row.partIndex}${row.isFinalPart ? ', last' : ', continues'}]`;
+	return `    ${span} ${String(row.tickCount).padStart(3)}t  ${metres.padEnd(14)} ${row.block.id} (type ${row.block.blockTypeId})${folded}${part}`;
 }
 
 const lines: string[] = [];

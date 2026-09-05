@@ -209,6 +209,22 @@ through the renderers, so a block can be measured without being drawn. It specia
 overlap — a permeability test starting inside an SPT interval folds onto the sample's own row
 (`collapsePairs.ts`).
 
+**A block that crosses a page break is split, not moved.** As much of it as fits is drawn on the
+page and the rest continues at the top of the next, as a second `PlacedRow` for the same block
+carrying `partIndex`/`isFinalPart`. Only the first part prints the sample label, depths and blow
+counts — repeating them would read as a second sample at a second depth — so a continuation is the
+rest of the description and nothing else, with the shift's end pin moved to the last part. The
+whole block moves to the next page only when what is left of this one is under `MIN_PART_TICKS`
+(3 ticks, derived from one line of base-size text), which is too short to print those values in.
+End of borehole is exempt: `top === base`, so there is no interval to divide, and it fills whatever
+is left. This deliberately diverges from the old HTML loop — see the oracle note below.
+
+Because the description then spans two boxes on two pages, **it is fitted once for the whole
+block** by a pre-pass in `buildReportDoc` (`build/fitDescriptions.ts` → `fitTextAcrossBoxes`), which
+picks one type size for every part and deals the lines out in order. Fitting each part on its own
+would set the same sentence at two sizes across the fold. Blocks that fit on one page are untouched
+and still fit themselves in `buildBodyNodes`.
+
 Two things are load-bearing and easy to break:
 
 - **The tick pitch is derived**, `bodyHeightPt / 90` (`layout/pageGeometry.ts`). Never hardcode it —
@@ -232,6 +248,15 @@ pnpm --filter @mmsb/report rows         # every block type, asserting 14-column 
 pnpm --filter @mmsb/report text         # the size-fitting kernel against real metrics
 pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
 ```
+
+`oracle` no longer expects an exact match, because page breaks deliberately changed. It recognises
+three divergences and fails on anything else: the empty borehole the old code threw on, the runaway
+loop on out-of-order depths, and the page-break split — which it detects by signature rather than
+by fixture name (every row keeps its `startTick` and `tickCount`; only blank filler becomes a block
+part). A row that genuinely moved still fails.
+
+The scripts are **not** type-checked — `tsconfig.json` covers `src` alone, so `tsc` will not catch
+a stale call in `scripts/` or `fixtures/`. Run them after changing a signature they use.
 
 Output is deterministic — `renderReportDoc` pins `CreationDate`, `ModDate`, `Producer` and `Creator`,
 which pdf-lib otherwise stamps with the current time — so the acceptance check for "does it look the

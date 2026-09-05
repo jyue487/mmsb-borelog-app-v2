@@ -139,13 +139,70 @@ pad-retry  —  3 block(s) in, 3 page(s) out
 ==============================================================================
   page 1 (from tick 0) — 2 rows, 90 ticks [ok]
       0..80   80t  0.0-8.0m       spt-1 (type 1)
-     80..90   10t  8.0-9.0m       (filler, geometry of type 1)
+     80..90   10t  8.0-9.0m       spt-2 (type 1) [part 0, continues]
   page 2 (from tick 90) — 1 rows, 90 ticks [ok]
-     90..180  90t  9.0-18.0m      spt-2 (type 1)
+     90..180  90t  9.0-18.0m      spt-2 (type 1) [part 1, continues]
   page 3 (from tick 180) — 3 rows, 90 ticks [ok]
-    180..200  20t  18.0-20.0m     (filler, geometry of type 1)
+    180..200  20t  18.0-20.0m     spt-2 (type 1) [part 2, last]
     200..210  10t  20.0-21.0m     spt-3 (type 1)
     210..270  60t  21.0-27.0m     (filler, geometry of type 1)
+
+==============================================================================
+split-simple  —  3 block(s) in, 2 page(s) out
+==============================================================================
+  page 1 (from tick 0) — 2 rows, 90 ticks [ok]
+      0..85   85t  0.0-8.5m       spt-1 (type 1)
+     85..90    5t  8.5-9.0m       spt-2 (type 1) [part 0, continues]
+  page 2 (from tick 90) — 3 rows, 90 ticks [ok]
+     90..100  10t  9.0-10.0m      spt-2 (type 1) [part 1, last]
+    100..110  10t  10.0-11.0m     spt-3 (type 1)
+    110..180  70t  11.0-18.0m     (filler, geometry of type 1)
+
+==============================================================================
+split-exact  —  3 block(s) in, 2 page(s) out
+==============================================================================
+  page 1 (from tick 0) — 2 rows, 90 ticks [ok]
+      0..87   87t  0.0-8.7m       spt-1 (type 1)
+     87..90    3t  8.7-9.0m       spt-2 (type 1) [part 0, continues]
+  page 2 (from tick 90) — 3 rows, 90 ticks [ok]
+     90..120  30t  9.0-12.0m      spt-2 (type 1) [part 1, last]
+    120..130  10t  12.0-13.0m     spt-3 (type 1)
+    130..180  50t  13.0-18.0m     (filler, geometry of type 1)
+
+==============================================================================
+split-sliver  —  3 block(s) in, 2 page(s) out
+==============================================================================
+  page 1 (from tick 0) — 2 rows, 90 ticks [ok]
+      0..89   89t  0.0-8.9m       spt-1 (type 1)
+     89..90    1t  8.9-9.0m       (filler, geometry of type 1)
+  page 2 (from tick 90) — 3 rows, 90 ticks [ok]
+     90..120  30t  9.0-12.0m      spt-2 (type 1)
+    120..130  10t  12.0-13.0m     spt-3 (type 1)
+    130..180  50t  13.0-18.0m     (filler, geometry of type 1)
+
+==============================================================================
+split-multipage  —  3 block(s) in, 3 page(s) out
+==============================================================================
+  page 1 (from tick 0) — 2 rows, 90 ticks [ok]
+      0..5     5t  0.0-0.5m       spt-1 (type 1)
+      5..90   85t  0.5-9.0m       cor-1 (type 2) [part 0, continues]
+  page 2 (from tick 90) — 1 rows, 90 ticks [ok]
+     90..180  90t  9.0-18.0m      cor-1 (type 2) [part 1, continues]
+  page 3 (from tick 180) — 3 rows, 90 ticks [ok]
+    180..200  20t  18.0-20.0m     cor-1 (type 2) [part 2, last]
+    200..210  10t  20.0-21.0m     spt-2 (type 1)
+    210..270  60t  21.0-27.0m     (filler, geometry of type 1)
+
+==============================================================================
+split-tiny-block  —  3 block(s) in, 2 page(s) out
+==============================================================================
+  page 1 (from tick 0) — 2 rows, 90 ticks [ok]
+      0..89   89t  0.0-8.9m       spt-1 (type 1)
+     89..90    1t  8.9-9.0m       (filler, geometry of type 1)
+  page 2 (from tick 90) — 3 rows, 90 ticks [ok]
+     90..91    1t  9.0-9.1m       spt-2 (type 1)
+     91..101  10t  9.1-10.1m      spt-3 (type 1)
+    101..180  79t  10.1-18.0m     (filler, geometry of type 1)
 
 ==============================================================================
 leading-gap  —  2 block(s) in, 1 page(s) out

@@ -39,8 +39,41 @@ function layoutAt(
 	return { lines, heightPt: lines.length * lineHeightPt, lineHeightPt };
 }
 
+/** How many whole lines of `lineHeightPt` a box of this height can hold. */
+function capacityOf(boxHeightPt: number, lineHeightPt: number): number {
+	if (lineHeightPt <= 0) {
+		return 0;
+	}
+	return Math.max(0, Math.floor(boxHeightPt / lineHeightPt));
+}
+
+/** Fill each box to capacity in turn. Lines with nowhere left to go are dropped. */
+function dealIntoBoxes(
+	lines: LaidOutLine[],
+	boxHeightsPt: readonly number[],
+	lineHeightPt: number,
+): LaidOutLine[][] {
+	const perBox: LaidOutLine[][] = [];
+	let cursor = 0;
+	for (const boxHeightPt of boxHeightsPt) {
+		const take = capacityOf(boxHeightPt, lineHeightPt);
+		perBox.push(lines.slice(cursor, cursor + take));
+		cursor += take;
+	}
+	return perBox;
+}
+
+export interface MultiBoxFitResult {
+	sizePt: number;
+	lineHeightPt: number;
+	/** One entry per box, in order. A box too short for a single line gets none. */
+	perBox: LaidOutLine[][];
+	/** True when even the smallest size overflows the boxes together. */
+	overflowed: boolean;
+}
+
 /**
- * The largest ladder size whose wrapped text fits the box.
+ * The largest ladder size at which the wrapped text fits the given boxes, end to end.
  *
  * This is the fix for the reported symptom. The old code chose a size from character count
  * with no knowledge of the column width or the font, then applied a CSS `scale` transform
@@ -49,9 +82,62 @@ function layoutAt(
  * `font-size: 0` and `width: Infinity%`. Here the text is measured against the real box
  * with real metrics, so no transform and no floor special-case is needed.
  *
- * Wrapped height is monotone non-increasing in size, so the ladder is binary-searchable:
- * ~3 probes instead of 8.
+ * More than one box means a block whose depth interval crosses a page break: its description
+ * continues at the top of the next page. **One size is chosen for all of them**, because a
+ * paragraph that sets at 6.5pt on one page and 5pt on the next reads as two different
+ * paragraphs. Every box is the same column, so there is one wrap per probe however many
+ * pages the block spans.
+ *
+ * Both effects of shrinking — fewer lines, and more of them per box — push the same way, so
+ * `fits` is false for a prefix of the descending ladder and true for the rest: binary
+ * searchable, ~3 probes instead of 8.
  */
+export function fitTextAcrossBoxes(
+	tokens: RichToken[],
+	boxWidthPt: number,
+	boxHeightsPt: readonly number[],
+	measurer: TextMeasurer,
+	lineHeightFactor = DEFAULT_LINE_HEIGHT_FACTOR,
+	ladder: readonly number[] = DESCRIPTION_SIZE_LADDER,
+): MultiBoxFitResult {
+	if (boxWidthPt <= 0 || ladder.length === 0 || boxHeightsPt.length === 0) {
+		return {
+			sizePt: ladder[ladder.length - 1] ?? 0,
+			lineHeightPt: 0,
+			perBox: boxHeightsPt.map(() => []),
+			overflowed: true,
+		};
+	}
+
+	let low = 0;
+	let high = ladder.length - 1;
+	let bestIndex = -1;
+
+	while (low <= high) {
+		const mid = (low + high) >> 1;
+		const { lines, lineHeightPt } = layoutAt(tokens, boxWidthPt, ladder[mid], measurer, lineHeightFactor);
+		const capacity = boxHeightsPt.reduce((sum, boxHeightPt) => sum + capacityOf(boxHeightPt, lineHeightPt), 0);
+		if (lines.length <= capacity) {
+			bestIndex = mid;
+			high = mid - 1;
+		} else {
+			low = mid + 1;
+		}
+	}
+
+	// Nothing fits. Use the smallest size and report it; the caller clips and raises a
+	// warning rather than silently letting text escape its cell.
+	const sizePt = bestIndex === -1 ? ladder[ladder.length - 1] : ladder[bestIndex];
+	const { lines, lineHeightPt } = layoutAt(tokens, boxWidthPt, sizePt, measurer, lineHeightFactor);
+	return {
+		sizePt,
+		lineHeightPt,
+		perBox: dealIntoBoxes(lines, boxHeightsPt, lineHeightPt),
+		overflowed: bestIndex === -1,
+	};
+}
+
+/** The one-box case: a block that fits on a single page, which is nearly all of them. */
 export function fitTextToBox(
 	tokens: RichToken[],
 	boxWidthPt: number,
@@ -60,39 +146,13 @@ export function fitTextToBox(
 	lineHeightFactor = DEFAULT_LINE_HEIGHT_FACTOR,
 	ladder: readonly number[] = DESCRIPTION_SIZE_LADDER,
 ): FitResult {
-	if (boxWidthPt <= 0 || ladder.length === 0) {
-		return { sizePt: ladder[ladder.length - 1] ?? 0, lines: [], lineHeightPt: 0, overflowed: true };
-	}
-
-	// Ladder is descending, so `fits` is false for a prefix and true for a suffix; find the
-	// first index that fits.
-	let low = 0;
-	let high = ladder.length - 1;
-	let bestIndex = -1;
-
-	while (low <= high) {
-		const mid = (low + high) >> 1;
-		const { heightPt } = layoutAt(tokens, boxWidthPt, ladder[mid], measurer, lineHeightFactor);
-		if (heightPt <= boxHeightPt) {
-			bestIndex = mid;
-			high = mid - 1;
-		} else {
-			low = mid + 1;
-		}
-	}
-
-	if (bestIndex === -1) {
-		// Nothing fits. Use the smallest size and report it; the caller clips and raises a
-		// warning rather than silently letting text escape its cell.
-		const smallest = ladder[ladder.length - 1];
-		const { lines, lineHeightPt } = layoutAt(tokens, boxWidthPt, smallest, measurer, lineHeightFactor);
-		const maxLines = lineHeightPt > 0 ? Math.max(0, Math.floor(boxHeightPt / lineHeightPt)) : 0;
-		return { sizePt: smallest, lines: lines.slice(0, maxLines), lineHeightPt, overflowed: true };
-	}
-
-	const sizePt = ladder[bestIndex];
-	const { lines, lineHeightPt } = layoutAt(tokens, boxWidthPt, sizePt, measurer, lineHeightFactor);
-	return { sizePt, lines, lineHeightPt, overflowed: false };
+	const fit = fitTextAcrossBoxes(tokens, boxWidthPt, [boxHeightPt], measurer, lineHeightFactor, ladder);
+	return {
+		sizePt: fit.sizePt,
+		lines: fit.perBox[0] ?? [],
+		lineHeightPt: fit.lineHeightPt,
+		overflowed: fit.overflowed,
+	};
 }
 
 /** Single-line fit for header fields, where the old CSS used `text-overflow: ellipsis`. */

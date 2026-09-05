@@ -1,7 +1,8 @@
 
+import { CELL_PADDING_PT, CELL_TEXT_TOP_INSET_PT, DESCRIPTION_COLUMN } from '../layout/constants';
 import { BASE_FONT_SIZE_PT, HAIRLINE_PT, type PageGeometry } from '../layout/pageGeometry';
 import type { DrawNode, ReportWarning, TextLine } from '../model/doc';
-import type { BodyRow, RowCell, VAlign } from '../model/table';
+import type { BodyRow, PrefitDescription, RowCell, VAlign } from '../model/table';
 import { fitTextToBox } from '../text/fitTextToBox';
 import type { TextMeasurer } from '../text/measure';
 import { hRule, line, run, stack, textNode, vRule } from './drawText';
@@ -16,27 +17,31 @@ import { hRule, line, run, stack, textNode, vRule } from './drawText';
  * CORE RUN / T.C.R. / R.Q.D. cell.
  */
 
-/** Left and right breathing room inside a cell, and the clearance above the rule below it. */
-const CELL_PADDING_PT = 1.5;
-
-/**
- * Gap from a row's top rule down to the cap-top of the first line of every cell in it.
- *
- * One number for the whole table, deliberately. Text is placed cap-flush (`valign: 'top'`,
- * see `firstBaselineOffset` in the pdf-lib backend), so this is the only thing standing
- * between the rule and the top of the word — which is what makes the columns start level
- * however their type ended up sized. It is the gap the base 7pt columns already had —
- * padding plus half a leading — so those did not move.
- */
-const CELL_TEXT_TOP_INSET_PT = 3;
-
 /**
  * The DESCRIPTION column is the one cell holding prose rather than a value, so it gets a
  * text margin instead of a hairline's clearance, and is set a little tighter than the
  * one-line cells beside it — the lines belong to each other, the cells do not.
  */
-const DESCRIPTION_PADDING_X_PT = 4;
-const DESCRIPTION_LINE_HEIGHT_FACTOR = 1.1;
+export const DESCRIPTION_PADDING_X_PT = 4;
+export const DESCRIPTION_LINE_HEIGHT_FACTOR = 1.1;
+
+/**
+ * The usable box inside the DESCRIPTION cell of a row `tickCount` ticks tall.
+ *
+ * Exported because a block split across a page break has to be fitted once against all of
+ * its parts' boxes at once, which happens in `fitDescriptions.ts` — before any row reaches
+ * the code below. Both callers must agree on the insets or the pre-fitted lines would be
+ * measured against one box and drawn into another.
+ */
+export function descriptionBoxPt(
+	tickCount: number,
+	geometry: PageGeometry,
+): { widthPt: number; heightPt: number } {
+	return {
+		widthPt: geometry.columnWidth(DESCRIPTION_COLUMN) - DESCRIPTION_PADDING_X_PT * 2,
+		heightPt: tickCount * geometry.tickPitchPt - CELL_TEXT_TOP_INSET_PT - CELL_PADDING_PT,
+	};
+}
 
 /** Mirrors the backend's vertical alignment, for content the builder places itself. */
 function valignOffsetPt(valign: VAlign, boxHeight: number, contentHeight: number): number {
@@ -126,10 +131,19 @@ function buildCellNodes(
 		}
 
 		case 'rich': {
-			// The DESCRIPTION cell — the one place text is fitted rather than placed.
-			const fit = fitTextToBox(cell.content.tokens, w, h, measurer, DESCRIPTION_LINE_HEIGHT_FACTOR);
-			if (fit.overflowed) {
-				warnings.push({ kind: 'descriptionClipped', pageNumber, startTick });
+			// The DESCRIPTION cell — the one place text is fitted rather than placed. A block
+			// split across a page break arrives already fitted, because its size had to be
+			// agreed with the parts on the other pages; the warning was raised there too, once
+			// for the block rather than once per part.
+			let fit: PrefitDescription;
+			if (cell.content.prefit !== undefined) {
+				fit = cell.content.prefit;
+			} else {
+				const own = fitTextToBox(cell.content.tokens, w, h, measurer, DESCRIPTION_LINE_HEIGHT_FACTOR);
+				if (own.overflowed) {
+					warnings.push({ kind: 'descriptionClipped', pageNumber, startTick });
+				}
+				fit = own;
 			}
 			const lines: TextLine[] = fit.lines.map((laidOut) => ({
 				runs: laidOut.runs.map((r) => run(r.text, fit.sizePt, r.fontId)),

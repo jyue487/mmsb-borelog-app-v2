@@ -1,6 +1,9 @@
+import { DEFAULT_LINE_HEIGHT_FACTOR } from '../text/measure';
 import {
 	A4_HEIGHT_PT,
 	A4_WIDTH_PT,
+	CELL_PADDING_PT,
+	CELL_TEXT_TOP_INSET_PT,
 	COLUMN_FRACTIONS,
 	CONTENT_WIDTH_PT,
 	PAGE_MARGIN_BOTTOM_PT,
@@ -32,6 +35,20 @@ export const COLUMN_HEADER_HEIGHT_PT = 46;
 /** Notes/legend tables, the driller block, and the signature block. */
 export const FOOTER_HEIGHT_PT = 100;
 
+/**
+ * The band the rows live in, and the pitch of one 0.1 m tick within it.
+ *
+ * Module scope rather than inside `createPageGeometry()` because every input is already a
+ * constant, and `paginate()` needs the pitch to answer a question about type size without
+ * being handed a geometry or a font. `createPageGeometry()` returns the same numbers.
+ */
+const BODY_Y_PT = PAGE_MARGIN_TOP_PT + HEADER_HEIGHT_PT + COLUMN_HEADER_HEIGHT_PT;
+const FOOTER_Y_PT = A4_HEIGHT_PT - PAGE_MARGIN_BOTTOM_PT - FOOTER_HEIGHT_PT;
+export const BODY_HEIGHT_PT = FOOTER_Y_PT - BODY_Y_PT;
+
+/** Height of one 0.1 m tick. Derived, never hardcoded. */
+export const TICK_PITCH_PT = BODY_HEIGHT_PT / TICKS_PER_PAGE;
+
 export interface PageGeometry {
 	pageWidthPt: number;
 	pageHeightPt: number;
@@ -53,9 +70,9 @@ export interface PageGeometry {
 export function createPageGeometry(): PageGeometry {
 	const headerY = PAGE_MARGIN_TOP_PT;
 	const columnHeaderY = headerY + HEADER_HEIGHT_PT;
-	const bodyY = columnHeaderY + COLUMN_HEADER_HEIGHT_PT;
-	const footerY = A4_HEIGHT_PT - PAGE_MARGIN_BOTTOM_PT - FOOTER_HEIGHT_PT;
-	const bodyHeightPt = footerY - bodyY;
+	const bodyY = BODY_Y_PT;
+	const footerY = FOOTER_Y_PT;
+	const bodyHeightPt = BODY_HEIGHT_PT;
 
 	if (bodyHeightPt <= 0) {
 		throw new Error('page bands do not fit on A4: header + column header + footer exceed the page');
@@ -77,7 +94,7 @@ export function createPageGeometry(): PageGeometry {
 		bodyY,
 		bodyHeightPt,
 		footerY,
-		tickPitchPt: bodyHeightPt / TICKS_PER_PAGE,
+		tickPitchPt: TICK_PITCH_PT,
 		columnX: (index) => edges[index],
 		columnWidth: (index, colSpan = 1) => edges[index + colSpan] - edges[index],
 	};
@@ -86,3 +103,22 @@ export function createPageGeometry(): PageGeometry {
 /** Base body type size. The old stylesheets disagreed: 7pt on Android, 8pt on iOS. */
 export const BASE_FONT_SIZE_PT = 6.5;
 export const HAIRLINE_PT = 0.5;
+
+/**
+ * The shortest part of a block that is still worth drawing, in ticks.
+ *
+ * A block whose depth interval straddles a page break is split, and the part on the far side
+ * carries only the continued description — its sample label, blow counts and N stay on the
+ * first part, because repeating them reads as a second sample at a second depth. That makes
+ * the first part the *only* place those values are ever printed, so it has to be tall enough
+ * to hold a line of them: less than this and they would appear nowhere at all, and the whole
+ * block belongs on the next page instead.
+ *
+ * Derived rather than chosen. One line costs the top inset, one leading, and the bottom
+ * padding; at both 7pt and 6.5pt that is a shade over two ticks, so the answer is three
+ * (0.3 m) and the type-size change does not move it.
+ */
+export const MIN_PART_TICKS = Math.ceil(
+	(CELL_TEXT_TOP_INSET_PT + BASE_FONT_SIZE_PT * DEFAULT_LINE_HEIGHT_FACTOR + CELL_PADDING_PT) /
+		TICK_PITCH_PT,
+);

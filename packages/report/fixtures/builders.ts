@@ -2,7 +2,7 @@
  * Fixture builders for the pagination snapshots.
  *
  * Synthetic rather than exported from a real borehole, because the cases that matter most
- * here — a zero-block borehole, a block landing just under the half-page retry threshold,
+ * here — a zero-block borehole, a block landing one tick from the bottom of a page,
  * out-of-order depths — are precisely the ones real data rarely contains.
  *
  * Everything is stamped with a fixed date so snapshots are stable.
@@ -151,9 +151,30 @@ export const FIXTURES: Record<string, Block[]> = {
 
 	'eob-no-remarks': [...sptRun(3, 0, 1.5), endOfBorehole('eob-1', 4.5, 4.5)],
 
-	// A tall block starting late on the page: less than half fits, so it should be pushed to
-	// the next page and the remainder padded.
+	// A 12 m block starting late on the page. The old rule pushed it to the next page whole
+	// because less than half of it fitted; now it splits into three parts, 10t + 90t + 20t.
 	'pad-retry': [spt('spt-1', 0, 8.0), spt('spt-2', 8.0, 20.0), spt('spt-3', 20.0, 21.0)],
+
+	// Case 2, the ordinary split: 5 ticks left on the page, a 15-tick block, so 5t here and
+	// 10t continuing on the next page.
+	'split-simple': [spt('spt-1', 0, 8.5), spt('spt-2', 8.5, 10.0), spt('spt-3', 10.0, 11.0)],
+
+	// Case 2 at exactly MIN_PART_TICKS: 3 ticks left, which is the least that can still print
+	// a sample label. One tick less and this would be the case below instead.
+	'split-exact': [spt('spt-1', 0, 8.7), spt('spt-2', 8.7, 12.0), spt('spt-3', 12.0, 13.0)],
+
+	// Case 3: one tick left cannot hold a line of anything, so the block moves to the next
+	// page whole and the tick becomes filler.
+	'split-sliver': [spt('spt-1', 0, 8.9), spt('spt-2', 8.9, 12.0), spt('spt-3', 12.0, 13.0)],
+
+	// A block taller than a whole page: three parts, and the description has to flow across
+	// all three.
+	'split-multipage': [spt('spt-1', 0, 0.5), coring('cor-1', 0.5, 20.0), spt('spt-2', 20.0, 21.0)],
+
+	// The deferred edge case (docs/follow-ups.md item 16): a block shorter than MIN_PART_TICKS
+	// can never satisfy the minimum anywhere, so it is drawn wherever it lands. What matters
+	// here is that it terminates rather than carrying forward for ever.
+	'split-tiny-block': [spt('spt-1', 0, 8.9), spt('spt-2', 8.9, 9.1), spt('spt-3', 9.1, 10.0)],
 
 	// A gap between blocks is absorbed by the block above; a leading gap is padded.
 	'leading-gap': [spt('spt-1', 2.0, 3.0), spt('spt-2', 5.0, 6.0)],

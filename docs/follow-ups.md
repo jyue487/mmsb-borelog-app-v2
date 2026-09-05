@@ -748,6 +748,33 @@ precedent for pinning through this gate on purpose, and carries the comment expl
 Until then, prefer `npx <tool>@<version>` for anything that only ever runs in CI. That is why 2.1's
 deploy command names a wrangler version rather than depending on one.
 
+### 16. Three page-break cases a split block still handles poorly
+
+A block whose depth interval crosses a page break is now drawn in parts: as much as fits on the
+page, the rest continuing at the top of the next (`paginate.ts`). A part must be at least
+`MIN_PART_TICKS` — 3 ticks, 0.3 m, derived in `pageGeometry.ts` as the height of one line of
+base-size text — or the whole block moves to the next page instead, because a part shorter than
+that cannot print the sample label and blow counts that only ever appear on the first part.
+
+That minimum is enforced in one place only, on the decision to split. Three cases slip past it:
+
+- **A short trailing part.** The rule guards the part on *this* page, not the one on the next. A
+  9.1 m block starting with 8.9 m of page left splits 89 + 2 ticks, and the 2-tick continuation is
+  below the minimum. It only carries description text, so nothing is lost — but the text is clipped
+  to one line and `descriptionClipped` fires. Splitting on the *larger* remainder, or pulling a
+  tick back from the first part, would fix it.
+- **A folded sample+test pair on a 3-tick part.** Column 1 then holds two lines (`P3` over
+  `FHPT1`), needing 14.95 pt against the 13.07 pt a 3-tick part has. The second label clips
+  silently — there is no warning for an overflowing `lines` cell, only for the description. Either
+  raise the minimum to two lines (5 ticks) when `testBlock !== null`, or warn.
+- **A block shorter than the minimum.** A 0.2 m operation can never satisfy it anywhere, so it is
+  drawn wherever it lands, including in a 1-tick sliver at the foot of a page. Carrying it forward
+  instead would not help and could loop; the `split-tiny-block` fixture pins the current behaviour.
+
+None of these is reachable without a block landing within 0.3 m of a page boundary, which is why
+they are recorded rather than fixed: the arithmetic that would fix the first two also changes where
+every ordinary block lands, and that wants a real borehole to check against rather than a fixture.
+
 ## Deferred features
 
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would

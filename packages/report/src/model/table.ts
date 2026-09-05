@@ -1,3 +1,4 @@
+import type { LaidOutLine } from '../text/lineBreak';
 import type { RichToken } from '../text/richText';
 
 /**
@@ -11,12 +12,26 @@ import type { RichToken } from '../text/richText';
 export type HAlign = 'left' | 'center' | 'right';
 export type VAlign = 'top' | 'middle' | 'bottom';
 
+/** One part's share of a description that was laid out across several pages at once. */
+export interface PrefitDescription {
+	sizePt: number;
+	lineHeightPt: number;
+	lines: LaidOutLine[];
+}
+
 export type CellContent =
 	| { kind: 'empty' }
 	/** Stacked plain lines, e.g. `P3` over `FHPT1`, or a top/base depth pair. */
 	| { kind: 'lines'; lines: string[] }
-	/** The DESCRIPTION cell: styled runs, auto-fitted to the box. */
-	| { kind: 'rich'; tokens: RichToken[] }
+	/**
+	 * The DESCRIPTION cell: styled runs, auto-fitted to the box.
+	 *
+	 * `prefit` is set only when the block's interval crosses a page break, in which case the
+	 * text was fitted once across every part's box together — a decision no single row can
+	 * make, since the other parts are on other pages. Without it the cell fits itself, which
+	 * is what all but a handful of rows do.
+	 */
+	| { kind: 'rich'; tokens: RichToken[]; prefit?: PrefitDescription }
 	/**
 	 * A value over a horizontal rule over a second value — the SPT blow-count columns,
 	 * where the lower half only appears once the increment is complete (25 seating blows,

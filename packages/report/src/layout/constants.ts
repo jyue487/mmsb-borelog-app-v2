@@ -61,6 +61,29 @@ export const COLUMN_FRACTIONS = [
 
 export const COLUMN_COUNT = COLUMN_FRACTIONS.length;
 
+/**
+ * Left and right breathing room inside a body cell, and the clearance above the rule below it.
+ *
+ * Here rather than beside the drawing code because the pagination minimum is derived from
+ * them: whether a fragment of a split block is tall enough to print anything is a question
+ * about these insets, and `paginate()` must be able to answer it without importing a renderer.
+ */
+export const CELL_PADDING_PT = 1.5;
+
+/**
+ * Gap from a row's top rule down to the cap-top of the first line of every cell in it.
+ *
+ * One number for the whole table, deliberately. Text is placed cap-flush (`valign: 'top'`,
+ * see `firstBaselineOffset` in the pdf-lib backend), so this is the only thing standing
+ * between the rule and the top of the word — which is what makes the columns start level
+ * however their type ended up sized. It is the gap the base columns already had — padding
+ * plus half a leading — so those did not move.
+ */
+export const CELL_TEXT_TOP_INSET_PT = 3;
+
+/** The one column holding prose rather than a value — the only one whose text is fitted. */
+export const DESCRIPTION_COLUMN = 4;
+
 /** The six SPT sub-columns, which the coring family merges into three double-width cells. */
 export const SPT_COLUMN_START = 5;
 export const SPT_COLUMN_COUNT = 6;
