@@ -79,6 +79,30 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           backgroundColor: "#ffffff",
         },
       ],
+      // Turns off Expo's network inspector, which is otherwise on by default.
+      // Its OkHttp network interceptor peeks every response body
+      // (ExpoNetworkInspectOkHttpNetworkInterceptor -> peekResponseBody), and
+      // that peek blocks the interceptor chain until 1 MB has arrived or the
+      // stream ends. PowerSync's /sync/stream never does either, so OkHttp
+      // never delivered onResponse, expo/fetch never resolved, and sync sat at
+      // connecting: true forever with an empty local database and no error.
+      //
+      // The guard that is supposed to skip streams, shouldParseBody(), only
+      // recognises `Transfer-Encoding: chunked` -- a header HTTP/2 never sends,
+      // and every host here is HTTP/2. It also skips only text/event-stream,
+      // not PowerSync's application/vnd.powersync.bson-stream.
+      //
+      // This is why it started with the SDK v2 migration (c6ae1fd): v1 defaulted
+      // to WebSocket, v2 defaults to HTTP streaming when expo/fetch is present.
+      // Disabling the inspector keeps the preferred HTTP transport and keeps
+      // development on the same transport production uses.
+      [
+        "expo-build-properties",
+        {
+          android: { networkInspector: false },
+          ios: { networkInspector: false },
+        },
+      ],
       "expo-sqlite",
       "expo-font",
       "expo-asset",
