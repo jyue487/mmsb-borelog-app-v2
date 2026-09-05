@@ -79,11 +79,12 @@ export default function ProjectScreen() {
       northingInMetres: row.northing_in_metres,
       reducedLevelInMetres: row.reduced_level_in_metres,
       drillerName: row.driller_name,
-      checkerName: row.checker_name,
-      checkerSignatureBase64: row.checker_signature_base64,
+      // See fetchBoreholeByIdAsync for why these four coalesce and the dates do not.
+      checkerName: row.checker_name ?? '',
+      checkerSignatureBase64: row.checker_signature_base64 ?? '',
       checkerSignDate: toDate(row.checker_sign_date),
-      verifierName: row.verifier_name,
-      verifierSignatureBase64: row.verifier_signature_base64,
+      verifierName: row.verifier_name ?? '',
+      verifierSignatureBase64: row.verifier_signature_base64 ?? '',
       verifierSignDate: toDate(row.verifier_sign_date),
     }));
     setBoreholes(boreholes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })));
