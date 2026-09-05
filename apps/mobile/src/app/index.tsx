@@ -9,6 +9,7 @@ import { Project } from '@/src/interfaces/Project';
 import { useAuth } from '@/src/context/AuthContextProvider';
 import { powersync, setupPowerSync } from '@/src/powersync/system';
 import { photoAttachmentQueue } from "@/src/storage/SupabaseRemoteStorageAdapter";
+import { diagnoseSync } from '@/src/powersync/diagnoseSync';
 import LoadingScreen from './loading';
 
 /** How long to sit on the loading screen before showing local data anyway. */
@@ -20,12 +21,21 @@ export default function ProjectListScreen() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  // [DIAG] temporary - remove after debugging the empty project list.
+  console.log('[DIAG] render', { isSignIn, isPowersyncReady });
+
   // Connect once. This used to depend on [isPowersyncReady] while also setting
   // it, so the whole body ran a second time and called connect() on an already
   // connected database.
   useEffect(() => {
     const init = async () => {
+      void diagnoseSync();
+      console.log('[DIAG] init: calling setupPowerSync');
       await setupPowerSync();
+      console.log('[DIAG] init: setupPowerSync returned', {
+        connected: powersync.connected,
+        status: JSON.stringify(powersync.currentStatus),
+      });
       await photoAttachmentQueue.startSync();
       // Show whatever is already in the local database straight away, so a warm
       // start is instant and works with no signal.
@@ -39,7 +49,9 @@ export default function ProjectListScreen() {
   // because that arrives asynchronously - the effect above runs before the
   // stored session has been restored.
   useEffect(() => {
+    console.log('[DIAG] sync effect fired', { isSignIn });
     if (!isSignIn) {
+      console.log('[DIAG] sync effect RETURNING EARLY - isSignIn is false');
       return;
     }
 
@@ -53,8 +65,17 @@ export default function ProjectListScreen() {
     const timer = setTimeout(() => giveUp.abort(), FIRST_SYNC_TIMEOUT_MS);
 
     const waitForFirstSync = async () => {
+      const startedAt = Date.now();
+      console.log('[DIAG] waitForFirstSync: waiting...');
       await powersync.waitForFirstSync(giveUp.signal);
+      console.log('[DIAG] waitForFirstSync: RESOLVED', {
+        afterMs: Date.now() - startedAt,
+        aborted: giveUp.signal.aborted,
+        connected: powersync.connected,
+        status: JSON.stringify(powersync.currentStatus),
+      });
       if (cancelled) {
+        console.log('[DIAG] waitForFirstSync: cancelled, not reading');
         return;
       }
       setIsPowersyncReady(true);
@@ -72,6 +93,14 @@ export default function ProjectListScreen() {
   // `getAllAsync()` is useful when you want to get all results as an array of objects.
   const fetchAllProjects = async () => {
     console.log(`fetchAllProjects called, powersync.connected ${powersync.connected}`);
+    for (const t of ['projects', 'boreholes', 'blocks', 'block_photos']) {
+      try {
+        const c: any = await powersync.getAll(`SELECT count(*) AS n FROM ${t}`);
+        console.log(`[DIAG] local rows in ${t}:`, c?.[0]?.n);
+      } catch (e) {
+        console.log(`[DIAG] local rows in ${t}: QUERY FAILED`, String(e));
+      }
+    }
     const rawProjects = await powersync.getAll('SELECT * FROM projects');
     const projects: Project[] = rawProjects.map((row: any) => ({
       id: row.id,

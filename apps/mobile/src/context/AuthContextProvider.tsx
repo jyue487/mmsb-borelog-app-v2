@@ -25,6 +25,12 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getUser();
 
+      // [DIAG] temporary - remove after debugging the empty project list.
+      console.log('[DIAG] loadUser: getUser returned', {
+        hasUser: !!data?.user,
+        error: error?.message,
+      });
+
       if (error || !data.user) {
         setUserId(null);
         setEmail(null);
@@ -43,6 +49,12 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       // Never log `session` itself - it carries the access and refresh tokens.
       console.log('auth event', event);
+      // [DIAG] temporary.
+      console.log('[DIAG] onAuthStateChange', {
+        event,
+        hasSession: !!session,
+        hasUser: !!session?.user,
+      });
       const user = session?.user;
 
       setUserId(user?.id ?? null);
