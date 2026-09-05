@@ -10,7 +10,7 @@ import type { ReportAssets } from '@mmsb/report';
  * bytes are cached here, so a second export in the same session does no IO at all.
  */
 
-let cached: Omit<ReportAssets, 'signature'> | null = null;
+let cached: Omit<ReportAssets, 'checkerSignature' | 'verifierSignature'> | null = null;
 
 async function loadAssetBytes(moduleRef: number): Promise<Uint8Array> {
 	const asset = Asset.fromModule(moduleRef);
@@ -25,7 +25,7 @@ async function loadAssetBytes(moduleRef: number): Promise<Uint8Array> {
 	return await new File(uri).bytes();
 }
 
-export async function loadReportAssets(): Promise<Omit<ReportAssets, 'signature'>> {
+export async function loadReportAssets(): Promise<Omit<ReportAssets, 'checkerSignature' | 'verifierSignature'>> {
 	if (cached !== null) {
 		return cached;
 	}

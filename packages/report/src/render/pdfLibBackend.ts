@@ -1,7 +1,7 @@
 import { PDFDocument, degrees, rgb, type PDFFont, type PDFImage } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
-import type { DrawNode, ReportDoc, TextLine } from '../model/doc';
+import type { DrawNode, ImageId, ReportDoc, TextLine } from '../model/doc';
 import type { HAlign, VAlign } from '../model/table';
 import type { FontId, TextMeasurer } from '../text/measure';
 import { createPdfLibMeasurer } from './pdfLibMeasurer';
@@ -21,9 +21,14 @@ export interface ReportAssets {
 	fontBold: AssetBytes;
 	fontItalic: AssetBytes;
 	logoPng: AssetBytes;
+	/** `borehole.checkerSignatureBase64`; may be empty. */
+	checkerSignature: AssetBytes | null;
 	/** `borehole.verifierSignatureBase64`; may be empty. */
-	signature: AssetBytes | null;
+	verifierSignature: AssetBytes | null;
 }
+
+/** The asset keys that carry a signature, in the order the footer draws them. */
+const SIGNATURE_IMAGE_IDS = ['checkerSignature', 'verifierSignature'] as const;
 
 const BLACK = rgb(0, 0, 0);
 
@@ -49,6 +54,28 @@ function valignOffset(valign: VAlign, boxHeight: number, contentHeight: number):
 	if (valign === 'middle') return Math.max(0, (boxHeight - contentHeight) / 2);
 	if (valign === 'bottom') return Math.max(0, boxHeight - contentHeight);
 	return 0;
+}
+
+/**
+ * Distance from the top edge of a text node's box down to the baseline of its first line.
+ *
+ * `top` aligns the INK, not the line box: the cap-top of the first line lands exactly on
+ * the box's top edge. That is what makes a row of body cells look level. The CSS model —
+ * stack line boxes and let the glyphs hang half a leading below the top — puts a gap of
+ * `(leading - capHeight) / 2` above the caps, and that gap is proportional to the type
+ * size, so DESCRIPTION (auto-fitted, a different size on almost every row) and DATE & TIME
+ * (two-thirds size) each started at their own height while the fixed-size columns started
+ * at another.
+ *
+ * `middle` and `bottom` keep the line-box model, where that half leading is the cushion
+ * that holds text off the rule below it.
+ */
+function firstBaselineOffset(node: Extract<DrawNode, { kind: 'text' }>, capHeightPt: number): number {
+	if (node.valign === 'top') {
+		return capHeightPt;
+	}
+	const contentHeight = node.lines.length * node.leadingPt;
+	return valignOffset(node.valign, node.h, contentHeight) + (node.leadingPt + capHeightPt) / 2;
 }
 
 async function embedImage(doc: PDFDocument, asset: AssetBytes): Promise<PDFImage> {
@@ -95,12 +122,14 @@ export async function renderReportDoc(doc: ReportDoc, assets: ReportAssets): Pro
 
 	// Embedded once per document and reused on every page. The old renderer inlined the
 	// logo's base64 into each page's HTML.
-	const images: Partial<Record<'logo' | 'signature', PDFImage>> = {
+	const images: Partial<Record<ImageId, PDFImage>> = {
 		logo: await embedImage(pdf, assets.logoPng),
 	};
-	if (assets.signature !== null && assets.signature !== '') {
+	for (const imageId of SIGNATURE_IMAGE_IDS) {
+		const asset = assets[imageId];
+		if (asset === null || asset === '') continue;
 		try {
-			images.signature = await embedImage(pdf, assets.signature);
+			images[imageId] = await embedImage(pdf, asset);
 		} catch {
 			// A malformed signature must not cost the engineer the whole report.
 		}
@@ -148,23 +177,22 @@ export async function renderReportDoc(doc: ReportDoc, assets: ReportAssets): Pro
 				}
 
 				case 'text': {
-					if (node.lines.length === 0) break;
+					const firstLine = node.lines.find((textLine) => textLine.runs.length > 0);
+					if (firstLine === undefined) break;
 
 					if (node.rotate === 90) {
 						drawRotatedLine(pdfPage, doc, node, fonts, measurer);
 						break;
 					}
 
-					const totalHeight = node.lines.length * node.leadingPt;
-					const top = node.y + valignOffset(node.valign, node.h, totalHeight);
+					// One cap height for the whole node, taken from its first line: the lines of a
+					// stack are spaced by the leading, not by their own individual metrics.
+					const capHeight = measurer.capHeightOf(firstLine.runs[0].fontId, firstLine.runs[0].sizePt);
+					const firstBaselineY = node.y + firstBaselineOffset(node, capHeight);
 
 					node.lines.forEach((textLine, index) => {
 						if (textLine.runs.length === 0) return;
-						const sizePt = textLine.runs[0].sizePt;
-						const capHeight = measurer.capHeightOf(textLine.runs[0].fontId, sizePt);
-						// Centre the cap-height box within the line box, so text sits optically
-						// centred rather than hanging from an arbitrary offset.
-						const baselineY = top + index * node.leadingPt + (node.leadingPt + capHeight) / 2;
+						const baselineY = firstBaselineY + index * node.leadingPt;
 
 						let cursorX = node.x + alignOffset(node.align, node.w, lineWidthOf(textLine, measurer));
 						for (const r of textLine.runs) {

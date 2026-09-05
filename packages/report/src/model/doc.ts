@@ -27,6 +27,13 @@ export interface TextLine {
 	runs: TextRun[];
 }
 
+/**
+ * Every image the report can embed. The two signatures are separate ids rather than one
+ * `signature`, because the footer draws both sign-offs on every page and pdf-lib embeds
+ * each image once per document.
+ */
+export type ImageId = 'logo' | 'checkerSignature' | 'verifierSignature';
+
 export type DrawNode =
 	| { kind: 'line'; x1: number; y1: number; x2: number; y2: number; thicknessPt: number }
 	| { kind: 'rect'; x: number; y: number; w: number; h: number; thicknessPt: number }
@@ -43,7 +50,14 @@ export type DrawNode =
 			/** Rotated 90° for the vertical SCALE label. */
 			rotate?: 90;
 	  }
-	| { kind: 'image'; imageId: 'logo' | 'signature'; x: number; y: number; w: number; h: number };
+	| {
+			kind: 'image';
+			imageId: ImageId;
+			x: number;
+			y: number;
+			w: number;
+			h: number;
+	  };
 
 export interface ReportPage {
 	pageNumber: number;

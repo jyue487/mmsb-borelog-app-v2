@@ -26,6 +26,8 @@ export function EditBoreholeInputForm ({
   const [northingInMetresStr, setNorthingInMetersStr] = useState<string>(oldBorehole.northingInMetres?.toFixed(3) ?? '');
   const [reducedLevelInMetresStr, setReducedLevelInMetresStr] = useState<string>(oldBorehole.reducedLevelInMetres?.toFixed(3) ?? '');
   const [drillerName, setDrillerName] = useState<string>(oldBorehole.drillerName);
+  const [checkerName, setCheckerName] = useState<string>(oldBorehole.checkerName);
+  const [checkerSignatureBase64, setCheckerSignatureBase64] = useState<string>(oldBorehole.checkerSignatureBase64);
   const [verifierName, setVerifierName] = useState<string>(oldBorehole.verifierName);
   const [verifierSignatureBase64, setVerifierSignatureBase64] = useState<string>(oldBorehole.verifierSignatureBase64);
 
@@ -93,13 +95,26 @@ export function EditBoreholeInputForm ({
       <TextInput
         style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Checker Name'
+        value={checkerName}
+        onChangeText={setCheckerName}
+      />
+      <SignatureQuestionComponent
+        label='Hold to Add Checker Signature'
+        value={checkerSignatureBase64}
+        setValue={setCheckerSignatureBase64}
+      />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Verifier Name'
         value={verifierName}
         onChangeText={setVerifierName}
       />
-      <SignatureQuestionComponent 
-        verifierSignatureBase64={verifierSignatureBase64} 
-        setVerifierSignatureBase64={setVerifierSignatureBase64} 
+      <SignatureQuestionComponent
+        label='Hold to Add Verifier Signature'
+        value={verifierSignatureBase64}
+        setValue={setVerifierSignatureBase64}
       />
       <Button
         title='Confirm'
@@ -135,9 +150,27 @@ export function EditBoreholeInputForm ({
             northingInMetres: northingInMetres,
             reducedLevelInMetres: reducedLevelInMetres,
             drillerName: drillerName.trim(),
+            checkerName: checkerName.trim(),
+            checkerSignatureBase64: checkerSignatureBase64,
+            // Only a signature that actually CHANGED gets today's date. The state above is
+            // seeded from oldBorehole, so testing `length === 0` alone would re-stamp the
+            // sign-off date every time someone edited an unrelated field — and that date is
+            // printed on the report (packages/report/src/build/buildFooter.ts). The fallback
+            // covers legacy rows that carry a signature but no date.
+            checkerSignDate:
+              checkerSignatureBase64.length === 0
+                ? null
+                : checkerSignatureBase64 !== oldBorehole.checkerSignatureBase64
+                  ? new Date()
+                  : (oldBorehole.checkerSignDate ?? new Date()),
             verifierName: verifierName.trim(),
             verifierSignatureBase64: verifierSignatureBase64,
-            verifierSignDate: (verifierSignatureBase64.length === 0) ? null : new Date(),
+            verifierSignDate:
+              verifierSignatureBase64.length === 0
+                ? null
+                : verifierSignatureBase64 !== oldBorehole.verifierSignatureBase64
+                  ? new Date()
+                  : (oldBorehole.verifierSignDate ?? new Date()),
           })
           setIsEditState(false);
         }}

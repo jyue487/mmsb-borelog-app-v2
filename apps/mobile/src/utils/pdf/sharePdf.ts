@@ -54,7 +54,8 @@ export async function sharePdf(
 		},
 		{
 			...assets,
-			signature: borehole.verifierSignatureBase64.length > 0 ? borehole.verifierSignatureBase64 : null,
+			checkerSignature: borehole.checkerSignatureBase64.length > 0 ? borehole.checkerSignatureBase64 : null,
+			verifierSignature: borehole.verifierSignatureBase64.length > 0 ? borehole.verifierSignatureBase64 : null,
 		},
 	);
 

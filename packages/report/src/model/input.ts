@@ -22,13 +22,3 @@ export interface ReportInput {
 	borehole: Borehole;
 	blocks: Block[];
 }
-
-/**
- * Carried forward from `renderFooterToHtml.ts:21`, where it is a bare literal.
- *
- * There is no field on `Project` or `Borehole` to hold it. Adding one is a full vertical
- * slice — both interface copies, the borehole form, the serializer *and* deserializer under
- * `src/json/**`, a Supabase column, and a migration — which is its own project, so the
- * literal moves across unchanged and the debt stays localised to this one line.
- */
-export const LOGGED_BY_NAME = 'IZWAN';

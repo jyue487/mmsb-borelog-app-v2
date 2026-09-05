@@ -55,6 +55,9 @@ const doc = buildReportDoc(
 			northingInMetres: 345678.456,
 			reducedLevelInMetres: 32.145,
 			drillerName: 'Ahmad bin Ismail',
+			checkerName: 'Nur Aisyah binti Rahman',
+			checkerSignatureBase64: '',
+			checkerSignDate: new Date(0),
 			verifierName: 'Lim Wei Ming',
 			verifierSignatureBase64: '',
 			verifierSignDate: new Date(0),
@@ -69,7 +72,8 @@ const bytes = await renderReportDoc(doc, {
 	fontBold: read('NotoSans-Bold.ttf'),
 	fontItalic: read('NotoSans-Italic.ttf'),
 	logoPng: read('mmsb-logo.png'),
-	signature: null,
+	checkerSignature: null,
+	verifierSignature: null,
 });
 
 const out = resolve(here, `../spike/out-${fixtureName}.pdf`);

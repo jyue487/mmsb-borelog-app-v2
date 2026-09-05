@@ -16,6 +16,9 @@ export const BOREHOLE_COLUMNS = `
   northing_in_metres,
   reduced_level_in_metres,
   driller_name,
+  checker_name,
+  checker_signature_base64,
+  checker_sign_date,
   verifier_name,
   verifier_signature_base64,
   verifier_sign_date
@@ -32,6 +35,9 @@ type BoreholeRow = {
   northing_in_metres: number | null;
   reduced_level_in_metres: number | null;
   driller_name: string | null;
+  checker_name: string | null;
+  checker_signature_base64: string | null;
+  checker_sign_date: string | null;
   verifier_name: string | null;
   verifier_signature_base64: string | null;
   verifier_sign_date: string | null;
@@ -49,6 +55,9 @@ export function mapBoreholeRow(row: BoreholeRow): Borehole {
     northingInMetres: row.northing_in_metres,
     reducedLevelInMetres: row.reduced_level_in_metres,
     drillerName: row.driller_name ?? '',
+    checkerName: row.checker_name ?? '',
+    checkerSignatureBase64: row.checker_signature_base64 ?? '',
+    checkerSignDate: toDate(row.checker_sign_date),
     verifierName: row.verifier_name ?? '',
     verifierSignatureBase64: row.verifier_signature_base64 ?? '',
     // The report's footer draws this (packages/report/src/build/buildFooter.ts), so a

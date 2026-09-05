@@ -25,6 +25,8 @@ export function AddBoreholeInputForm ({
   const [northingInMetresStr, setNorthingInMetersStr] = useState<string>('');
   const [reducedLevelInMetresStr, setReducedLevelInMetresStr] = useState<string>('');
   const [drillerName, setDrillerName] = useState<string>('');
+  const [checkerName, setCheckerName] = useState<string>('');
+  const [checkerSignatureBase64, setCheckerSignatureBase64] = useState<string>('');
   const [verifierName, setVerifierName] = useState<string>('');
   const [verifierSignatureBase64, setVerifierSignatureBase64] = useState<string>('');
 
@@ -89,13 +91,26 @@ export function AddBoreholeInputForm ({
       <TextInput
         style={styles.projectAndBoreholeTextInput}
         placeholderTextColor={'rgb(150, 150, 150)'}
+        placeholder='Checker Name'
+        value={checkerName}
+        onChangeText={setCheckerName}
+      />
+      <SignatureQuestionComponent
+        label='Hold to Add Checker Signature'
+        value={checkerSignatureBase64}
+        setValue={setCheckerSignatureBase64}
+      />
+      <TextInput
+        style={styles.projectAndBoreholeTextInput}
+        placeholderTextColor={'rgb(150, 150, 150)'}
         placeholder='Verifier Name'
         value={verifierName}
         onChangeText={setVerifierName}
       />
-      <SignatureQuestionComponent 
-        verifierSignatureBase64={verifierSignatureBase64} 
-        setVerifierSignatureBase64={setVerifierSignatureBase64} 
+      <SignatureQuestionComponent
+        label='Hold to Add Verifier Signature'
+        value={verifierSignatureBase64}
+        setValue={setVerifierSignatureBase64}
       />
       <Button
         title='Confirm'
@@ -134,6 +149,9 @@ export function AddBoreholeInputForm ({
             northingInMetres: northingInMetres,
             reducedLevelInMetres: reducedLevelInMetres,
             drillerName: drillerName.trim(),
+            checkerName: checkerName.trim(),
+            checkerSignatureBase64: checkerSignatureBase64,
+            checkerSignDate: (checkerSignatureBase64.length === 0) ? null : new Date(),
             verifierName: verifierName.trim(),
             verifierSignatureBase64: verifierSignatureBase64,
             verifierSignDate: (verifierSignatureBase64.length === 0) ? null : new Date(),

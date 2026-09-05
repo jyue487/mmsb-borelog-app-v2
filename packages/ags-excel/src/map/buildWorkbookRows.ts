@@ -80,7 +80,7 @@ function buildHoleRow(entry: AgsBorehole, blocks: readonly Block[]): HoleRow {
 		// Nothing in the data model records when a hole was backfilled.
 		backfillDate: null,
 		// `HOLE_LOG` is the only person on this sheet, and it is the driller — not the
-		// `LOGGED_BY_NAME` the PDF footer prints on its "Logged by:" line.
+		// `checkerName` the PDF footer prints on its "Checked by:" line.
 		logger: borehole.drillerName,
 		location: null,
 		remarks: null,
