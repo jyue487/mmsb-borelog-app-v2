@@ -748,6 +748,48 @@ precedent for pinning through this gate on purpose, and carries the comment expl
 Until then, prefer `npx <tool>@<version>` for anything that only ever runs in CI. That is why 2.1's
 deploy command names a wrangler version rather than depending on one.
 
+### 15. `expo-doctor` fails on two overrides that Expo has since made redundant
+
+`npx expo-doctor` in `apps/mobile` reports 16/18 (checked 2026-09-05, expo-doctor 1.20.4 against
+`expo@~54.0.37`). Neither failure is breakage — both are leftovers that stopped being load-bearing
+when SDK 54 learned to do the same thing itself.
+
+**Metro config.** `metro.config.js` replaces `watchFolders` with a single entry, the workspace root.
+But `getDefaultConfig` already walks the pnpm workspace and returns every member:
+
+```bash
+node -e "const {getDefaultConfig}=require('expo/metro-config');console.log(getDefaultConfig(__dirname).watchFolders)"
+# <root>/node_modules, apps/web, apps/mobile,
+# packages/{supabase,report,core,ags-excel}
+```
+
+Bundling still works — the root is an ancestor of all seven — so the check is what fails, not the
+build. Doctor compares the two lists by membership, and one path that happens to contain the others
+is not the same set. The `resolver.nodeModulesPaths` override below it is redundant in the stronger
+sense: the default is already the identical two paths in the identical order.
+
+So the comment in that file ("Metro must watch the real location or edits to `@mmsb/core` are
+invisible") describes a real failure that upstream now prevents. Deleting both assignments should
+fix the check and *narrow* what Metro crawls — right now it watches the whole repo, `.git`, the
+Python scripts and `packages/ags-excel/out` included.
+
+**`@expo/config-plugins`.** A direct dependency (`~54.0.4`) that nothing imports; `package.json` is
+the only file in the repo that names it. It arrived wholesale with `d5ca422 Migrate files to
+apps/mobile`, and no local plugin needs it — `app.config.ts` lists only published plugins. `expo`
+re-exports the same module as `expo/config-plugins`, which is what doctor is asking for.
+
+*Why it is currently harmless.* Nothing consults doctor's exit code — it is not in CI, not in a
+`pnpm` script, and EAS does not gate a build on it. The app bundles and ships today.
+
+*What would make it bite.* Two things. Adding doctor to CI, which is the obvious one. And less
+obviously: the metro override is a *silent* divergence, so if Expo ever adds a folder to its
+defaults that the workspace root does not cover — a store outside the repo, a linked package — the
+override drops it and the failure looks like a missing module, not a config problem.
+
+*Why deferred rather than done.* The fix is a three-line deletion, but it changes what Metro watches
+and what `pnpm install` resolves, so it wants a device build afterwards to confirm — the same
+timing constraint as item 14. Do both in one pass.
+
 ### 16. Three page-break cases a split block still handles poorly
 
 A block whose depth interval crosses a page break is now drawn in parts: as much as fits on the
