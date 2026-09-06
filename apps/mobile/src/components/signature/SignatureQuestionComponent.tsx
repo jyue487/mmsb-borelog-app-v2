@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Button, Image, Modal, Pressable, Text, View } from "react-native";
+import { Alert, Button, Image, Modal, Pressable, Text, View } from "react-native";
 import SignatureCanvas, { type SignatureViewRef } from 'react-native-signature-canvas';
 
 // Local imports
@@ -105,6 +105,32 @@ export function SignatureQuestionComponent({
     console.log('Signature cleared');
     setValue('');
   };
+  /**
+   * Goes through the pad rather than calling `setValue('')` directly, so the canvas and the
+   * stored value cannot drift apart: `clearSignature()` wipes the ink and posts CLEAR back out
+   * of the WebView, which is what runs `handleClear` above. That handler was unreachable until
+   * this button existed — nothing else in the app calls `clearSignature()`, and `readSignature()`
+   * with `autoClear` clears the pad in-page without posting CLEAR, so confirming a signature
+   * still cannot wipe the capture it just made.
+   *
+   * The modal stays open, which makes the same button 'start over' while drawing. An empty
+   * `value` means there is nothing saved to lose, so only a real signature gets the prompt.
+   */
+  const handleClearButtonPress = () => {
+    if (value.length === 0) {
+      signatureRef.current?.clearSignature();
+      return;
+    }
+    Alert.alert(
+      'Delete Signature',
+      'Are you sure you want to delete this signature?',
+      [
+        { text: 'No, go back', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => signatureRef.current?.clearSignature() },
+      ],
+      { cancelable: true }
+    );
+  };
   const handleError = (error: any) => {
     console.error('Signature pad error:', error);
     setIsLoading(false);
@@ -176,6 +202,11 @@ export function SignatureQuestionComponent({
                 title='Cancel'
                 color={styles.cancelButton.color}
                 onPress={handleCancel}
+              />
+              <Button 
+                title='Clear'
+                color={styles.deleteButton.color}
+                onPress={handleClearButtonPress}
               />
               <Button 
                 title='Confirm'
