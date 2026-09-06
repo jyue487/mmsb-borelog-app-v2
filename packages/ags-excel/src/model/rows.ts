@@ -57,6 +57,7 @@ export interface GeologyRow {
 	/** `GEOL_LEG` — selects the hatch image the report draws for this stratum. */
 	readonly legendCode: number | null;
 	readonly topDepthInMetres: number;
+	/** The *next* row's top depth, not the block's own base — a stratum runs until the next starts. */
 	readonly baseDepthInMetres: number;
 	readonly description: string;
 	readonly stratumReference: string | null;

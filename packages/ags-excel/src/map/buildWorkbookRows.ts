@@ -33,7 +33,11 @@ import { computeSptResult } from './sptResult';
 const HOLE_TYPE_CODE = 'RC';
 
 function byDepth(blocks: readonly Block[]): Block[] {
-	return [...blocks].sort((a, b) => a.topDepthInMetres - b.topDepthInMetres);
+	// The `id` tiebreak is load-bearing, not cosmetic. Ties on depth are normal — an in-situ
+	// test can start exactly at its host's top — and `Geology - AGS` now takes a row's base
+	// depth from its neighbour, so an unstable tie order would change the numbers written,
+	// not just the order they are written in. Same pair the clients sort on.
+	return [...blocks].sort((a, b) => a.topDepthInMetres - b.topDepthInMetres || a.id.localeCompare(b.id));
 }
 
 function startsADay(status: DayWorkStatus): boolean {
@@ -191,22 +195,32 @@ function buildSptRows(holeId: string, blocks: readonly Block[]): SptRow[] {
 		});
 }
 
+/**
+ * A stratum runs until the next one starts, so `GEOL_BASE` is the *next* row's `GEOL_TOP`
+ * rather than this block's own base depth. That is what makes the sheet a contiguous
+ * partition of the hole instead of a list of disjoint intervals with voids between them.
+ * Only the last row of the hole has no successor to take a base from, so it keeps its own.
+ *
+ * Every row chains, in-situ tests included: a test truncates the stratum above it and then
+ * runs on to the next row's top.
+ */
 function buildGeologyRows(holeId: string, blocks: readonly Block[]): GeologyRow[] {
-	return blocks
-		.filter((block) => CONTRIBUTES_STRATUM[block.blockTypeId])
-		.map((block) => {
-			const { description, legendCode } = stratumOf(block);
-			return {
-				holeId,
-				// Blank on every row of every real workbook we have.
-				geologyCode: null,
-				legendCode,
-				topDepthInMetres: block.topDepthInMetres,
-				baseDepthInMetres: block.baseDepthInMetres,
-				description,
-				stratumReference: null,
-			};
-		});
+	const strata = blocks.filter((block) => CONTRIBUTES_STRATUM[block.blockTypeId]);
+
+	return strata.map((block, index) => {
+		const { description, legendCode } = stratumOf(block);
+		const next = strata[index + 1];
+		return {
+			holeId,
+			// Blank on every row of every real workbook we have.
+			geologyCode: null,
+			legendCode,
+			topDepthInMetres: block.topDepthInMetres,
+			baseDepthInMetres: next ? next.topDepthInMetres : block.baseDepthInMetres,
+			description,
+			stratumReference: null,
+		};
+	});
 }
 
 function buildSampleRows(holeId: string, blocks: readonly Block[]): SampleRow[] {

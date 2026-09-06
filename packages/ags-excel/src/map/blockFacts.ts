@@ -42,8 +42,9 @@ import {
  * interval, and the PDF folds them onto the host's own row (`collapsePairs.ts`). They still
  * get a row here, because `GEOL_DESC` is where the consumer reads the description column
  * from, and a log that omits "Falling Head Permeability Test" is missing information a
- * human put there. The cost is that `GEOL_TOP`/`GEOL_BASE` no longer partition the hole:
- * a test's interval overlaps its host's. See `docs/follow-ups.md`.
+ * human put there. The cost is paid in `buildGeologyRows`, which chains every row's base to
+ * the next row's top: a test truncates the stratum it sits inside, so that stratum's row is
+ * shorter than the interval its description was written for. See `docs/follow-ups.md`.
  *
  * End of borehole is a terminator, not a layer, and stays out.
  */

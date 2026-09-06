@@ -353,9 +353,12 @@ Eight of the eleven sheets are filled: Project, Holes, Progress, SPT, Geology, S
 Water Strike. Two things about that set are not obvious. `Water Strike - AGS` has no source of its
 own — nothing in the data model records a strike as an event — so it is *derived* from the Progress
 rows, taking the shift boundaries that recorded a numeric water level and dropping the `NIL`/`FULL`
-ones. And `Geology - AGS` deliberately contains **overlapping** intervals: an in-situ test gets its
-own row even though it sits inside its host block's interval, because `GEOL_DESC` is where the
-report reads the description column from. Detail Description and Backfill are still unfilled.
+ones. And on `Geology - AGS` a row's `GEOL_BASE` is **the next row's `GEOL_TOP`**, not the block's own
+base depth — a stratum runs until the next one starts, so the rows partition the hole with no voids
+between them; only the last row of each hole keeps its own base. Every row chains, including the
+in-situ tests, which get a row of their own even though they sit inside a host block's interval
+(because `GEOL_DESC` is where the report reads the description column from) and therefore truncate
+that host. Detail Description and Backfill are still unfilled.
 
 Like `@mmsb/report`, the package is strictly platform-free — and here the compiler enforces it:
 `tsconfig.json` (what `build` uses, covering `src` alone) has no node types, so an

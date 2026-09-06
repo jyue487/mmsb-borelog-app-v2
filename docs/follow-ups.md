@@ -858,14 +858,19 @@ every ordinary block lands, and that wants a real borehole to check against rath
 - **Detail Description and Backfill sheets.** The template has both; the exporter fills neither,
   because the borelog report's Python has no parser for either — nothing reads what they would
   contain. Each is one more row-mapper in `packages/ags-excel/src/map/`.
-- **`Geology - AGS` intervals no longer partition the hole.** *Changed 2026-09-01.* In-situ tests
-  (the three permeability tests, Lugeon, vane shear, pressuremeter) now get their own row, because
-  `GEOL_DESC` is what the report draws the description column from and dropping them lost text a
-  human had entered. But a test sits *inside* its host block's interval — the PDF folds it onto the
-  host's row via `collapsePairs.ts` — so `GEOL_TOP`/`GEOL_BASE` now overlap. Anything downstream
-  that treats the Geology rows as a non-overlapping partition of the borehole (a stratum-thickness
-  sum, a legend-hatch fill that walks top-to-base) will double-count. The report's own parser reads
-  the rows in order and does not, which is why this was acceptable.
+- **An in-situ test truncates the stratum it sits inside, on `Geology - AGS`.** *Changed 2026-09-01,
+  revised 2026-09-06.* In-situ tests (the three permeability tests, Lugeon, vane shear,
+  pressuremeter) get their own Geology row, because `GEOL_DESC` is what the report draws the
+  description column from and dropping them lost text a human had entered. A test sits *inside* its
+  host block's interval — the PDF folds it onto the host's row via `collapsePairs.ts` — which used
+  to make `GEOL_TOP`/`GEOL_BASE` overlap. `buildGeologyRows` now chains every row's base depth to
+  the next row's top, so the rows partition the hole again and a downstream thickness sum or
+  legend-hatch fill no longer double-counts. What is left is the other side of the same coin: a host
+  stratum's row stops where the test starts and resumes as the test's own row, so the host's
+  interval is shorter than the interval its description was written for, and the test row carries a
+  slice of ground it does not describe. The report reads the rows in order and draws each
+  description against its own interval, so it reads correctly; a consumer that wanted the true
+  extent of a soil layer would need the test rows filtered out first.
 - **One workbook per project, on the report's side.** The exporter already emits multi-hole
   workbooks — every sheet is keyed by `HOLE_ID` and the ProjectPage button fills every borehole.
   The consuming Python still assumes one hole: its borehole parser reads row 6 and stops, while
