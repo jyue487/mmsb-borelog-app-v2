@@ -953,11 +953,21 @@ every ordinary block lands, and that wants a real borehole to check against rath
   runs last for the same reason and is non-fatal: a site plan is an object with no row at all, and
   most projects never have one.
 
-  The three pieces the deferral prescribed were all used: `saveProjectPeople`'s `.delete().select()`
-  and row count (an RLS refusal is a silent success, not an error), `EditMemberModal`'s danger zone
-  for the confirmation UI with `autoFocus` never on the destructive button, and the entry point on
-  the *list* rather than the detail page so the row can be removed in place. Deleting a project asks
-  for its code to be typed back; a single borehole does not.
+  Two of the three pieces the deferral prescribed were used: `saveProjectPeople`'s
+  `.delete().select()` and row count (an RLS refusal is a silent success, not an error), and
+  `EditMemberModal`'s danger zone for the confirmation UI, with `autoFocus` never on the destructive
+  button. Deleting a project asks for its code to be typed back; a single borehole does not.
+
+  The third was tried and reversed. The recommendation was to put the entry point on the *list* so
+  the row could be removed in place, rather than on the detail page, which has to navigate away.
+  Built that way first and it read wrong: a Delete on every row of a table whose rows are themselves
+  the link is a lot of destructive surface for something irreversible, and it made the two pages
+  disagree about what a row does. Both now live on the thing's own page — `ProjectPage` deletes its
+  project, `BoreholePage` deletes its borehole — and navigate back to the parent, which refetches on
+  mount, so no list surgery is needed after all. What that costs is the one thing the deferral was
+  protecting: a warning that survives the navigation. It rides in the history entry as
+  `location.state.notice`, is read once into state, and is then stripped from the entry so a reload
+  does not resurrect it.
 
   Soft delete stayed a non-starter, unchanged: `deleted_at` is on every table and nothing writes or
   reads it, `BOREHOLE_COLUMNS` does not select it, and the sync rules live in the PowerSync

@@ -3,7 +3,7 @@
 import type { Borehole, Member, Project } from '@mmsb/core';
 import { FileText, Pencil, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import AddBulkBoreholesModal from '../components/AddBulkBoreholesModal';
 import AddPeopleModal from '../components/AddPeopleModal';
@@ -19,14 +19,14 @@ import {
   type BoreholeStatus,
 } from '../data/boreholeStatus';
 import {
-  canDeleteBorehole,
+  canDeleteProject,
   canManageProjectPeople,
   canManageSitePlan,
   MEMBER_ROLE_BADGE_CLASSES,
   MEMBER_ROLE_LABELS,
 } from '../data/memberRoles';
 import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
-import { deleteBoreholeAndContents } from '../supabase/deleteCascade';
+import { deleteProjectAndContents } from '../supabase/deleteCascade';
 import { fetchBoreholeStatuses } from '../supabase/fetchBoreholeStatuses';
 import { fetchProjectPeople } from '../supabase/projectPeople';
 import { mapProjectRow, PROJECT_COLUMNS } from '../supabase/projectRow';
@@ -122,15 +122,29 @@ export default function ProjectPage() {
   // whichever is running, every control in the row is disabled.
   const [isSitePlanBusy, setIsSitePlanBusy] = useState(false);
   const sitePlanInputRef = useRef<HTMLInputElement | null>(null);
-  const [boreholePendingDeletion, setBoreholePendingDeletion] =
-    useState<Borehole | null>(null);
-  const [isDeletingBorehole, setIsDeletingBorehole] = useState(false);
-  const [deleteBoreholeError, setDeleteBoreholeError] = useState<string | null>(
-    null,
-  );
+  // Handed over by BoreholePage when deleting a borehole left photo files behind. Read once
+  // into state and dropped from the history entry below, so a reload does not resurrect a
+  // stale warning about a borehole that went hours ago.
+  const location = useLocation();
   const [boreholeNoticeMessage, setBoreholeNoticeMessage] = useState<
     string | null
-  >(null);
+  >(
+    typeof (location.state as { notice?: unknown } | null)?.notice === 'string'
+      ? (location.state as { notice: string }).notice
+      : null,
+  );
+  const [isConfirmingProjectDeletion, setIsConfirmingProjectDeletion] =
+    useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
+  const [deleteProjectError, setDeleteProjectError] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if ((location.state as { notice?: unknown } | null)?.notice !== undefined) {
+      void navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     const fetchProjectAndBoreholes = async () => {
@@ -461,48 +475,37 @@ export default function ProjectPage() {
     }
   };
 
-  const deleteBorehole = async () => {
-    const borehole = boreholePendingDeletion;
-
-    if (borehole === null || isDeletingBorehole) {
+  const deleteProject = async () => {
+    if (project === null || isDeletingProject) {
       return;
     }
 
-    setIsDeletingBorehole(true);
-    setDeleteBoreholeError(null);
+    setIsDeletingProject(true);
+    setDeleteProjectError(null);
 
     try {
-      const { strandedPhotoCount } = await deleteBoreholeAndContents(
-        borehole.id,
-      );
+      const { strandedPhotoCount } = await deleteProjectAndContents(project.id);
 
-      // In place, like every other mutation on this page. It does cost one extra round
-      // trip: `boreholes` is a dependency of the status effect above, so replacing the
-      // array re-runs fetchBoreholeStatuses for the boreholes that are left.
-      setBoreholes((currentBoreholes) =>
-        currentBoreholes.filter(
-          (currentBorehole) => currentBorehole.id !== borehole.id,
-        ),
-      );
-      setBoreholePendingDeletion(null);
-
-      // Reported rather than swallowed: the borehole is gone either way, but the files
-      // are still being paid for and somebody has to know to go and find them.
-      setBoreholeNoticeMessage(
-        strandedPhotoCount === 0
-          ? null
-          : `${borehole.name} was deleted, but ${strandedPhotoCount} photo ` +
-              `${strandedPhotoCount === 1 ? 'file' : 'files'} could not be removed from storage.`,
-      );
+      // Straight back to the list, which refetches on mount, so nothing here has to
+      // reconcile a page whose subject no longer exists. Any warning rides along in the
+      // history entry rather than being shown here and lost on the next paint.
+      void navigate('/projects', {
+        replace: true,
+        state:
+          strandedPhotoCount === 0
+            ? null
+            : {
+                notice:
+                  `${project.code} was deleted, but ${strandedPhotoCount} photo ` +
+                  `${strandedPhotoCount === 1 ? 'file' : 'files'} could not be removed from storage.`,
+              },
+      });
     } catch (error) {
-      console.error('Error deleting the borehole:', error);
-      setDeleteBoreholeError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to delete the borehole.',
+      console.error('Error deleting the project:', error);
+      setDeleteProjectError(
+        error instanceof Error ? error.message : 'Unable to delete the project.',
       );
-    } finally {
-      setIsDeletingBorehole(false);
+      setIsDeletingProject(false);
     }
   };
 
@@ -641,6 +644,19 @@ export default function ProjectPage() {
             >
               {isExportingExcel ? 'Exporting...' : 'Export Excel'}
             </button>
+
+            {canDeleteProject(role) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteProjectError(null);
+                  setIsConfirmingProjectDeletion(true);
+                }}
+                className="cursor-pointer rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900/60 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40"
+              >
+                Delete project
+              </button>
+            )}
 
             <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
               Active project
@@ -911,9 +927,18 @@ export default function ProjectPage() {
             {boreholeNoticeMessage && (
               <div
                 role="alert"
-                className="shrink-0 border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+                className="flex shrink-0 items-start justify-between gap-4 border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
               >
-                {boreholeNoticeMessage}
+                <span>{boreholeNoticeMessage}</span>
+
+                <button
+                  type="button"
+                  onClick={() => setBoreholeNoticeMessage(null)}
+                  aria-label="Dismiss"
+                  className="cursor-pointer font-semibold hover:underline"
+                >
+                  Dismiss
+                </button>
               </div>
             )}
 
@@ -945,14 +970,6 @@ export default function ProjectPage() {
                         <span className="sr-only">Open</span>
                       </th>
 
-                      {/* The whole column goes when the viewer may not delete, rather
-                          than a column of empty cells — the same choice the members
-                          table makes. */}
-                      {canDeleteBorehole(role) && (
-                        <th className="px-6 py-3">
-                          <span className="sr-only">Delete</span>
-                        </th>
-                      )}
                     </tr>
                   </thead>
 
@@ -1009,26 +1026,6 @@ export default function ProjectPage() {
                             </span>
                           </td>
 
-                          {canDeleteBorehole(role) && (
-                            <td className="px-6 py-3 text-right">
-                              {/* stopPropagation because the row itself is the button:
-                                  without it this opens the borehole on the way to the
-                                  dialog. */}
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setDeleteBoreholeError(null);
-                                  setBoreholeNoticeMessage(null);
-                                  setBoreholePendingDeletion(borehole);
-                                }}
-                                aria-label={`Delete borehole ${borehole.name}`}
-                                className="cursor-pointer rounded-lg border border-red-200 px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          )}
                         </tr>
                       );
                     })}
@@ -1086,25 +1083,27 @@ export default function ProjectPage() {
         </div>
       </div>
 
-      {boreholePendingDeletion !== null && (
+      {isConfirmingProjectDeletion && (
         <DeleteConfirmModal
-          title="Delete borehole"
-          confirmLabel="Delete borehole"
-          isDeleting={isDeletingBorehole}
-          errorMessage={deleteBoreholeError}
-          onConfirm={() => void deleteBorehole()}
+          title="Delete project"
+          confirmationText={project.code}
+          confirmLabel="Delete project"
+          isDeleting={isDeletingProject}
+          errorMessage={deleteProjectError}
+          onConfirm={() => void deleteProject()}
           onClose={() => {
-            setBoreholePendingDeletion(null);
-            setDeleteBoreholeError(null);
+            setIsConfirmingProjectDeletion(false);
+            setDeleteProjectError(null);
           }}
         >
           <p>
-            Delete borehole{' '}
-            <span className="font-semibold">
-              {boreholePendingDeletion.name}
-            </span>
-            ? Its whole log goes with it — every block, and every photo attached
-            to them.
+            <span className="font-semibold">{project.code}</span>
+            {project.title ? ` — ${project.title}` : ''} and everything recorded
+            under it will be deleted:{' '}
+            {boreholes.length === 1
+              ? 'its 1 borehole'
+              : `all ${boreholes.length} of its boreholes`}
+            , every block of every log, every photo, and the site plan.
           </p>
 
           <p className="mt-2">This cannot be undone.</p>

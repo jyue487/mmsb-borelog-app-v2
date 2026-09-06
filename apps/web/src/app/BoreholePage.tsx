@@ -8,15 +8,17 @@ import { useNavigate, useParams } from 'react-router';
 import { sortAndReindexAllBlocks } from '../blocks/sortAndReindexAllBlocks';
 import BlockRow from '../components/blocks/BlockRow';
 import BoreholeDetailStrip from '../components/BoreholeDetailStrip';
+import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
 import EditBoreholeModal from '../components/EditBoreholeModal';
 import { useAuth } from '../context/authContext';
-import { canEditBoreholeDetails } from '../data/memberRoles';
+import { canDeleteBorehole, canEditBoreholeDetails } from '../data/memberRoles';
 import {
   fetchBlockPhotosByBlockIds,
   type BlockPhoto,
 } from '../supabase/blockPhotos';
 import { BLOCK_COLUMNS, mapBlockRow } from '../supabase/blockRow';
 import { BOREHOLE_COLUMNS, mapBoreholeRow } from '../supabase/boreholeRow';
+import { deleteBoreholeAndContents } from '../supabase/deleteCascade';
 import { supabase } from '../supabase/supabase.server';
 import { buildPhotoFilenames } from '../utils/blockPhotoFilenames';
 import { sanitiseFilename } from '../utils/sanitiseFilename';
@@ -107,6 +109,45 @@ export default function BoreholePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isEditBoreholeModalOpen, setIsEditBoreholeModalOpen] = useState(false);
+  const [isConfirmingDeletion, setIsConfirmingDeletion] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const deleteBorehole = async () => {
+    if (borehole === null || projectCode === undefined || isDeleting) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const { strandedPhotoCount } = await deleteBoreholeAndContents(
+        borehole.id,
+      );
+
+      // Back to the project, which refetches its borehole list on mount, so nothing here
+      // has to reconcile a page whose subject no longer exists. Any warning rides along in
+      // the history entry rather than being shown here and lost on the next paint.
+      void navigate(`/projects/${encodeURIComponent(projectCode)}`, {
+        replace: true,
+        state:
+          strandedPhotoCount === 0
+            ? null
+            : {
+                notice:
+                  `${borehole.name} was deleted, but ${strandedPhotoCount} photo ` +
+                  `${strandedPhotoCount === 1 ? 'file' : 'files'} could not be removed from storage.`,
+              },
+      });
+    } catch (error) {
+      console.error('Error deleting the borehole:', error);
+      setDeleteError(
+        error instanceof Error ? error.message : 'Unable to delete the borehole.',
+      );
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchBoreholeAndBlocks = async () => {
@@ -357,6 +398,19 @@ export default function BoreholePage() {
             >
               {isExporting ? 'Generating...' : 'Download PDF'}
             </button>
+
+            {canDeleteBorehole(role) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteError(null);
+                  setIsConfirmingDeletion(true);
+                }}
+                className="shrink-0 cursor-pointer rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900/60 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40"
+              >
+                Delete borehole
+              </button>
+            )}
           </div>
         </header>
 
@@ -424,6 +478,30 @@ export default function BoreholePage() {
           )}
         </section>
       </div>
+
+      {isConfirmingDeletion && (
+        <DeleteConfirmModal
+          title="Delete borehole"
+          confirmLabel="Delete borehole"
+          isDeleting={isDeleting}
+          errorMessage={deleteError}
+          onConfirm={() => void deleteBorehole()}
+          onClose={() => {
+            setIsConfirmingDeletion(false);
+            setDeleteError(null);
+          }}
+        >
+          <p>
+            Delete borehole{' '}
+            <span className="font-semibold">{borehole.name}</span>? Its whole log
+            goes with it —{' '}
+            {blocks.length === 1 ? '1 block' : `all ${blocks.length} blocks`}, and
+            every photo attached to them.
+          </p>
+
+          <p className="mt-2">This cannot be undone.</p>
+        </DeleteConfirmModal>
+      )}
 
       {/* An edit that leaves the name alone touches neither projectCode nor
           boreholeName, so the fetch effect above does not re-run and overwrite

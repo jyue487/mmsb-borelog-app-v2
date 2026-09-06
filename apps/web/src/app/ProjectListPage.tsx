@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import type { Project } from "@mmsb/core";
 
 import { mapProjectRow, PROJECT_COLUMNS } from "../supabase/projectRow";
 import { supabase } from "../supabase/supabase.server";
-import { deleteProjectAndContents } from "../supabase/deleteCascade";
 import AddProjectModal from "../components/AddProjectModal";
-import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
-import { useAuth } from "../context/authContext";
-import { canDeleteProject } from "../data/memberRoles";
 
 export default function ProjectListPage() {
   const navigate = useNavigate();
@@ -18,14 +14,24 @@ export default function ProjectListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
-  const [projectPendingDeletion, setProjectPendingDeletion] =
-    useState<Project | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+  // Handed over by ProjectPage when a delete left photo files behind. Read once into state
+  // and dropped from the history entry, so a reload does not resurrect a stale warning about
+  // a project that went hours ago.
+  const location = useLocation();
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(
+    typeof (location.state as { notice?: unknown } | null)?.notice === 'string'
+      ? ((location.state as { notice: string }).notice)
+      : null,
+  );
 
-  const { role } = useAuth();
-  const canDelete = canDeleteProject(role);
+  // Drops the notice from the history entry once it has been read into state above, so that
+  // reloading, or coming back here later, does not show a warning about a project that was
+  // deleted hours ago.
+  useEffect(() => {
+    if ((location.state as { notice?: unknown } | null)?.notice !== undefined) {
+      void navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     const fetchAllProjects = async () => {
@@ -59,46 +65,6 @@ export default function ProjectListPage() {
     navigate(`/projects/${encodeURIComponent(project.code)}`);
   };
 
-  const deleteProject = async () => {
-    const project = projectPendingDeletion;
-
-    if (project === null || isDeleting) {
-      return;
-    }
-
-    setIsDeleting(true);
-    setDeleteError(null);
-
-    try {
-      const { strandedPhotoCount } = await deleteProjectAndContents(project.id);
-
-      setProjects((currentProjects) =>
-        currentProjects.filter(
-          (currentProject) => currentProject.id !== project.id,
-        ),
-      );
-      setProjectPendingDeletion(null);
-
-      // Reported rather than swallowed: the project is gone either way, but the files are
-      // still being paid for and somebody has to know to go and find them.
-      setNoticeMessage(
-        strandedPhotoCount === 0
-          ? null
-          : `${project.code} was deleted, but ${strandedPhotoCount} photo ` +
-              `${strandedPhotoCount === 1 ? 'file' : 'files'} could not be removed from storage.`,
-      );
-    } catch (error) {
-      console.error("Error deleting the project:", error);
-      setDeleteError(
-        error instanceof Error
-          ? error.message
-          : "Unable to delete the project.",
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   return (
     <div className="min-h-full bg-slate-50 px-4 py-8 text-slate-950 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -129,9 +95,18 @@ export default function ProjectListPage() {
         {noticeMessage && (
           <div
             role="alert"
-            className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-300"
+            className="mb-6 flex items-start justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-300"
           >
-            {noticeMessage}
+            <span>{noticeMessage}</span>
+
+            <button
+              type="button"
+              onClick={() => setNoticeMessage(null)}
+              aria-label="Dismiss"
+              className="cursor-pointer font-semibold hover:underline"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 
@@ -207,14 +182,6 @@ export default function ProjectListPage() {
                     <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                       Action
                     </th>
-
-                    {/* The whole column goes when the viewer may not delete, rather than a
-                        column of empty cells — the same choice the members table makes. */}
-                    {canDelete && (
-                      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        <span className="sr-only">Delete</span>
-                      </th>
-                    )}
                   </tr>
                 </thead>
 
@@ -263,26 +230,6 @@ export default function ProjectListPage() {
                           <span aria-hidden="true">→</span>
                         </span>
                       </td>
-
-                      {canDelete && (
-                        <td className="whitespace-nowrap px-5 py-4 text-right">
-                          {/* stopPropagation because the row itself is the link: without it
-                              this navigates into the project on the way to the dialog. */}
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setDeleteError(null);
-                              setNoticeMessage(null);
-                              setProjectPendingDeletion(project);
-                            }}
-                            aria-label={`Delete project ${project.code}`}
-                            className="cursor-pointer rounded-lg border border-red-200 px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -291,34 +238,6 @@ export default function ProjectListPage() {
           )}
         </section>
       </div>
-
-      {projectPendingDeletion !== null && (
-        <DeleteConfirmModal
-          title="Delete project"
-          confirmationText={projectPendingDeletion.code}
-          confirmLabel="Delete project"
-          isDeleting={isDeleting}
-          errorMessage={deleteError}
-          onConfirm={() => void deleteProject()}
-          onClose={() => {
-            setProjectPendingDeletion(null);
-            setDeleteError(null);
-          }}
-        >
-          <p>
-            <span className="font-semibold">
-              {projectPendingDeletion.code}
-            </span>
-            {projectPendingDeletion.title
-              ? ` — ${projectPendingDeletion.title}`
-              : ''}{' '}
-            and everything recorded under it will be deleted: every borehole,
-            every block of every borehole log, every photo, and the site plan.
-          </p>
-
-          <p className="mt-2">This cannot be undone.</p>
-        </DeleteConfirmModal>
-      )}
 
       <AddProjectModal
         isOpen={isAddProjectOpen}
