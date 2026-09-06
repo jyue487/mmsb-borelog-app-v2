@@ -20,6 +20,8 @@ type Props = {
  */
 const SIGNATURE_MAX_EDGE_PX = 640;
 
+const HIDE_BUILT_IN_FOOTER_CSS = '.m-signature-pad--footer { display: none; }';
+
 /**
  * Caps the resolution of the captured signature, inside the pad's own WebView.
  *
@@ -93,43 +95,47 @@ export function SignatureQuestionComponent({
     setIsLoading(false);
     setShowSignatureCanvas(false);
   };
+  /**
+   * Confirming a blank pad is how a signature is removed.
+   *
+   * `readSignature()` posts EMPTY rather than an image when the canvas has no ink
+   * (`h5/js/app.js`), so this is a distinct signal from `onOK` and the two can never race — a
+   * capture and a deletion are different messages, not the same message with different content.
+   *
+   * With nothing stored there is nothing to delete, so an empty confirm just closes: a blank pad
+   * confirmed over a blank value is a cancel, and reads as one.
+   */
   const handleEmpty = () => {
     console.log('Signature is empty');
     setIsLoading(false);
-  };
-  const handleCancel = () => {
-    console.log('Signature cancelled');
-    setShowSignatureCanvas(false);
-  };
-  const handleClear = () => {
-    console.log('Signature cleared');
-    setValue('');
-  };
-  /**
-   * Goes through the pad rather than calling `setValue('')` directly, so the canvas and the
-   * stored value cannot drift apart: `clearSignature()` wipes the ink and posts CLEAR back out
-   * of the WebView, which is what runs `handleClear` above. That handler was unreachable until
-   * this button existed — nothing else in the app calls `clearSignature()`, and `readSignature()`
-   * with `autoClear` clears the pad in-page without posting CLEAR, so confirming a signature
-   * still cannot wipe the capture it just made.
-   *
-   * The modal stays open, which makes the same button 'start over' while drawing. An empty
-   * `value` means there is nothing saved to lose, so only a real signature gets the prompt.
-   */
-  const handleClearButtonPress = () => {
+
     if (value.length === 0) {
-      signatureRef.current?.clearSignature();
+      setShowSignatureCanvas(false);
       return;
     }
+
     Alert.alert(
       'Delete Signature',
       'Are you sure you want to delete this signature?',
       [
+        // Leaves the modal open on the blank pad, so the answer to "did you mean to wipe it?"
+        // being no puts the user back where they can simply draw instead.
         { text: 'No, go back', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => signatureRef.current?.clearSignature() },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setValue('');
+            setShowSignatureCanvas(false);
+          },
+        },
       ],
       { cancelable: true }
     );
+  };
+  const handleCancel = () => {
+    console.log('Signature cancelled');
+    setShowSignatureCanvas(false);
   };
   const handleError = (error: any) => {
     console.error('Signature pad error:', error);
@@ -177,10 +183,19 @@ export function SignatureQuestionComponent({
               onEnd={handleEnd}
               onOK={handleSignature}
               onEmpty={handleEmpty}
-              onClear={handleClear}
               onError={handleError}
               autoClear={true}
               penColor="#000000"
+              // The pad's own HTML always emits a footer holding a blue Clear and a blue
+              // Confirm (`h5/html.js`), and hiding it takes a webStyle — the library offers no
+              // prop for it. This app draws its own controls outside the WebView, so without
+              // this the modal carries two of each, which is confusing on its own and actively
+              // misleading now that Confirm on a blank pad deletes.
+              //
+              // It is also why there is no `onClear` above: CLEAR is only posted by that
+              // built-in button and by `clearSignature()`, which nothing calls, so a handler
+              // for it would be unreachable code that silently blanks the stored value.
+              webStyle={HIDE_BUILT_IN_FOOTER_CSS}
               // Crops to the ink bounding box on an offscreen canvas before posting, so the
               // stored PNG is the signature rather than a mostly-empty pad. It also makes the
               // printed signature bigger: the footer aspect-fits whatever it is given, so any
@@ -193,6 +208,20 @@ export function SignatureQuestionComponent({
                 injectedJavaScript: CAP_SIGNATURE_RESOLUTION_JS,
               }}
             />
+            {/* Removing a signature is otherwise an invisible affordance: the pad opens blank
+                whether or not one is stored, so nothing on screen suggests that confirming it
+                empty is the way to take it off. Shown only when there is something to lose. */}
+            {value.length > 0 && (
+              <Text
+                style={{
+                  color: 'white',
+                  fontSize: 12,
+                  textAlign: 'center',
+                  paddingVertical: 6,
+                }}>
+                Leave the pad blank and press Confirm to remove this signature.
+              </Text>
+            )}
             <View
               style={{
                 flexDirection: "row",
@@ -202,11 +231,6 @@ export function SignatureQuestionComponent({
                 title='Cancel'
                 color={styles.cancelButton.color}
                 onPress={handleCancel}
-              />
-              <Button 
-                title='Clear'
-                color={styles.deleteButton.color}
-                onPress={handleClearButtonPress}
               />
               <Button 
                 title='Confirm'

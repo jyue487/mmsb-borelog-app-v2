@@ -89,9 +89,6 @@ export const styles = StyleSheet.create({
   cancelButton: {
     color: 'red',
   },
-  deleteButton: {
-    color: 'red',
-  },
   textInput: {
     borderLeftWidth: 0.5,
     borderRightWidth: 0.5,
