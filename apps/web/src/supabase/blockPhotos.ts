@@ -48,37 +48,56 @@ function chunk<T>(items: T[], size: number): T[][] {
 }
 
 /**
+ * PostgREST caps rows per response (1000 by default) and truncates *silently* — a short page is
+ * indistinguishable from the end of the table. Chunking by block id does not bound this: one
+ * chunk of 100 well-photographed blocks can carry more than a page between them. A missing page
+ * is a few photos absent from a log, and, since deletePhotoObjects works from these same rows,
+ * a few JPEGs left in the bucket with nothing left to find them by. So each chunk is paged.
+ */
+const PHOTO_ROWS_PER_PAGE = 1000;
+
+/**
  * Chunking is by block id, so every photo of a given block comes back inside a single
  * chunk — the `created_at` ordering therefore still holds per block even though the
  * concatenation of the chunks is not globally sorted.
  */
 async function fetchBlockPhotoRows(blockIds: string[]): Promise<BlockPhotoRow[]> {
   const responses = await Promise.all(
-    chunk(blockIds, BLOCK_IDS_PER_REQUEST).map((blockIdChunk) =>
-      supabase
-        .from('block_photos')
-        .select('id, block_id, created_at')
-        .in('block_id', blockIdChunk)
-        // Defensive, not currently load-bearing, exactly as the `blocks` query in
-        // BoreholePage is: CameraComponent removes a photo with a plain
-        // `DELETE FROM block_photos`, so deleted_at is never populated and this matches
-        // every row. See packages/supabase/policies/block_photos.sql.
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true }),
-    ),
+    chunk(blockIds, BLOCK_IDS_PER_REQUEST).map(async (blockIdChunk) => {
+      const chunkRows: BlockPhotoRow[] = [];
+
+      for (let offset = 0; ; offset += PHOTO_ROWS_PER_PAGE) {
+        const { data, error } = await supabase
+          .from('block_photos')
+          .select('id, block_id, created_at')
+          .in('block_id', blockIdChunk)
+          // Defensive, not currently load-bearing, exactly as the `blocks` query in
+          // BoreholePage is: CameraComponent removes a photo with a plain
+          // `DELETE FROM block_photos`, so deleted_at is never populated and this matches
+          // every row. See packages/supabase/policies/block_photos.sql.
+          .is('deleted_at', null)
+          .order('created_at', { ascending: true })
+          // The tiebreak is what makes the paging sound rather than merely ordered: two
+          // photos of the same block can share a `created_at`, and without a second key the
+          // page boundary between them can repeat a row or skip one.
+          .order('id', { ascending: true })
+          .range(offset, offset + PHOTO_ROWS_PER_PAGE - 1);
+
+        if (error) {
+          throw error;
+        }
+
+        const page = data ?? [];
+        chunkRows.push(...page);
+
+        if (page.length < PHOTO_ROWS_PER_PAGE) {
+          return chunkRows;
+        }
+      }
+    }),
   );
 
-  const rows: BlockPhotoRow[] = [];
-
-  for (const { data, error } of responses) {
-    if (error) {
-      throw error;
-    }
-
-    rows.push(...(data ?? []));
-  }
-
-  return rows;
+  return responses.flat();
 }
 
 /**
