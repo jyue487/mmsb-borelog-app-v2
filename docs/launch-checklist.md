@@ -378,7 +378,7 @@ The form, in full — the repo is a monorepo, so three of these are not the defa
 | Field | Value |
 | --- | --- |
 | Repository | `jyue487/mmsb-borelog-app-v2` |
-| Production branch | `main` |
+| Production branch | `jiayue-turborepo` — **not** `main`. Pushing that branch deploys the live dashboard. |
 | Framework preset | **None** — not "Vite". The preset assumes the Vite app is the repo root. |
 | Root directory | `/` (leave empty). Turbo has to run from the workspace root. |
 | Build command | `pnpm install --frozen-lockfile && pnpm build --filter web` |
