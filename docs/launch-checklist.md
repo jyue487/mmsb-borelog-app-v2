@@ -621,9 +621,11 @@ This writes to production. Acceptable *only* because the crews are still on the 
 backend holds no field data — it is a staging database wearing a production label. Two conditions
 on that:
 
-- **Clean the test data out before 3.5.** Deleting a project cascades to boreholes, blocks and
-  `block_photos` but **not** to Storage, so the JPEGs strand — item 0's class, at project scale. The
-  blunt fix is emptying the `block-photos` bucket from the dashboard while nobody real is using it.
+- **Clean the test data out before 3.5.** The dashboard can now do this: the project list has a
+  Delete for owners and admins, and it removes the photo files as well as the rows
+  (`apps/web/src/supabase/deleteCascade.ts`). Cascade alone would strand the JPEGs — item 0's class,
+  at project scale — so if anything is deleted any other way, empty the `block-photos` bucket from
+  the dashboard while nobody real is using it, or run item 0's orphan query afterwards.
 - **The licence expires at 3.5.** From the moment a crew signs in, production carries data that
   costs a rig mobilisation to recreate, and there is still nowhere else to test. That is the
   sentence Phase 1 opens with, and deferring 1.2 does not repeal it — it defers it to the worst

@@ -167,3 +167,62 @@ export async function fetchBlockPhotosByBlockIds(
 
   return photosByBlockId;
 }
+
+/**
+ * The storage keys of every photo belonging to the given blocks.
+ *
+ * Must be called BEFORE the rows are deleted. Storage does not cascade, but the rows do:
+ * `block_photos.block_id -> blocks` and `blocks.borehole_id -> boreholes` are both
+ * `ON DELETE CASCADE`, so deleting a borehole or a project removes every photo ROW and leaves
+ * the JPEGs behind — billed, and unreachable the moment `is_assigned_to_photo_object()` stops
+ * finding a row that owns them. That is the orphan class of `docs/follow-ups.md` item 0.
+ *
+ * The key is derived from the row and nowhere else, so once the rows are gone there is nothing
+ * left to compute it from. Collecting the paths first is the only order that works.
+ */
+export async function fetchPhotoObjectPathsForBlocks(
+  blockIds: string[],
+): Promise<string[]> {
+  if (blockIds.length === 0) {
+    return [];
+  }
+
+  const rows = await fetchBlockPhotoRows(blockIds);
+
+  return rows.map((row) => `${row.id}.jpg`);
+}
+
+/**
+ * Removes photo objects from the bucket, and returns how many it could NOT remove.
+ *
+ * Only owners and admins can call this successfully: the bucket's delete policy is
+ * `get_current_user_role() in (1, 2)` ("managers delete photos (block-photos)" in
+ * packages/supabase/policies/block_photos.sql). Unlike a refused row delete, a refused object
+ * delete does come back as an error.
+ *
+ * Counting rather than throwing, because callers reach here having already deleted the rows:
+ * failing loudly would report a delete that did in fact happen as a failure. Stranded objects
+ * are recoverable — `docs/follow-ups.md` item 0 has the query that finds them — where a row
+ * pointing at bytes already destroyed would not be.
+ *
+ * A path that never existed is not counted. `remove` omits it from the result without erroring,
+ * and a row whose bytes never finished uploading is a normal state here rather than a failure —
+ * the row and the file travel over two independent queues.
+ */
+export async function deletePhotoObjects(paths: string[]): Promise<number> {
+  let strandedCount = 0;
+
+  // Chunked for a different reason than the reads above — these paths travel in a JSON body,
+  // not the query string — but at the same size: it keeps one failing request from stranding
+  // every photo of a deep borehole.
+  for (const pathChunk of chunk(paths, BLOCK_IDS_PER_REQUEST)) {
+    const { error } = await supabase.storage.from(PHOTO_BUCKET).remove(pathChunk);
+
+    if (error) {
+      console.error('Error removing block photo objects:', error);
+      strandedCount += pathChunk.length;
+    }
+  }
+
+  return strandedCount;
+}

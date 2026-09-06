@@ -918,62 +918,71 @@ every ordinary block lands, and that wants a real borehole to check against rath
   what the field actually asked for, and it sidesteps this entirely by being a document rather than a
   computation. If this is ever picked up, the datum has to become recorded data before any code is
   written.
-- **Deleting a borehole on web.** Asked for on the borehole page (2026-09-02) and deferred, because
-  the plumbing is not a `.delete()` call: the two obvious implementations are blocked by different
-  things, and one unrecorded schema fact decides between them.
+- **Deleting a borehole or a project on web.** *Built 2026-09-06.* Asked for on the borehole page
+  (2026-09-02), deferred on the analysis below, and unblocked four days later by policy work done
+  for an unrelated reason.
+  Kept here rather than deleted, because the reason it was blocked is the reason the implementation
+  looks the way it does.
 
-  *Hard delete* is permitted, at the top. `boreholes` carries `"Owners and admins can manage all
-  boreholes"` — `for all`, `packages/supabase/policies/boreholes.sql` — and the dashboard's existing
-  gate `canEditBoreholeDetails()` (`apps/web/src/data/memberRoles.ts`) is owners and admins too, so
-  for *delete* the UI and the database agree. What it takes with it is the problem. Owners and admins have **no** delete on `blocks` or
-  `block_photos` — both grant delete to `role = 3` alone (`blocks.sql:161-168`,
-  `block_photos.sql:211-218`) — and **no** delete on `storage.objects` (`block_photos.sql:275-282`,
-  role-only for the race described there). So the child rows can only go by FK cascade, which runs as
-  the table owner and **bypasses RLS**, deleting exactly what those policies refuse the same user
-  directly. The JPEGs cannot go at all: nothing anywhere deletes from Storage except a *device*
-  noticing its own `block_photos` row disappear (`SupabaseRemoteStorageAdapter.ts:70-110`), which
-  never fires for a delete that happened server-side. A borehole deleted from the dashboard therefore
-  strands every photo of every one of its blocks in the `block-photos` bucket — billed, and
-  unreachable the moment `is_assigned_to_photo_object()` returns NULL for them. That is the orphan
-  class item 0 closed out, at borehole scale.
+  *What the deferral said.* Hard delete was permitted at the top — `boreholes` and `projects` both
+  carry an owner/admin `for all` — but what it took with it was not. Owners and admins had **no**
+  delete on `blocks`, on `block_photos`, or on `storage.objects`, so the child rows could only go by
+  FK cascade, which runs as the table owner and **bypasses RLS**, deleting exactly what those
+  policies refused the same user directly. And the JPEGs could not go at all: nothing anywhere
+  deletes from Storage except a *device* noticing its own `block_photos` row disappear
+  (`SupabaseRemoteStorageAdapter.ts`), which never fires for a delete that happened server-side. A
+  borehole deleted from the dashboard would have stranded every photo of every one of its blocks in
+  the bucket — billed, and unreachable the moment `is_assigned_to_photo_object()` returned NULL for
+  them. Item 0's orphan class, at borehole scale, and at project scale one level up.
 
-  *Soft delete* has nothing to plug into. `deleted_at`/`deleted_by` are on every table
-  (`AppSchema.ts`), and outside `remove-member` writing them on `user_to_role`, **nothing writes them
-  and nothing reads them**: no mobile query filters `deleted_at`
-  (`fetchAllBlocksByBoreholeIdDbAsync.ts:6` and `app/project/[id].tsx` are bare `SELECT`s, as are the
-  rest), `BOREHOLE_COLUMNS` does not even select the column
-  (`apps/web/src/supabase/boreholeRow.ts:8-22`), and PowerSync's sync rules live in the dashboard
-  rather than this repo. A soft-deleted borehole would stay fully visible and editable on every
-  device and in the web borehole list. It is also the **looser** of the two on permissions: a soft
-  delete is an UPDATE, and the update policy on `boreholes` is assignment-scoped with no role clause,
-  so any assigned viewer could issue one through the API. This is item 0d's situation exactly —
-  `project_to_user.sql:94-100` records why unassigning hard-deletes despite having the columns — and
-  it needs the same one-pass fix: every predicate *and* the sync rules learning about `deleted_at`
-  together.
+  *What changed.* The September 2026 addenda — `blocks.sql` "Owners and admins can manage all
+  blocks", `block_photos.sql` addendum 1, and addendum 2's `"managers delete photos
+  (block-photos)"` on the bucket — gave roles 1 and 2 delete on all three. They were written for a
+  different reason (a manager could view photos but not attach or remove them, and a write RLS
+  refuses is retried forever by the PowerSync queue), but they retire both halves of this blocker at
+  once: the cascade no longer does anything the caller could not do directly, and the bytes are now
+  removable by the same session that removes the rows.
 
-  *The fact that decides it, answered 2026-09-02:* **both cascade.** `blocks.borehole_id -> boreholes`
-  and `block_photos.block_id -> blocks` are `ON DELETE CASCADE`, as is `boreholes.project_id ->
-  projects` (full table in item 0). So a hard delete will not fail on an FK and will not leave
-  dangling rows — it will silently do the thing the paragraph above describes, in full: every block
-  and every photo row of the borehole removed through a path that bypasses RLS, and every JPEG left
-  in the bucket. The verdict is now confirmed rather than conditional. Deleting a project is the same
-  hazard one level up, and nothing in the dashboard offers that either.
+  *So the shape is:* collect the photo object keys, delete the row, then remove the objects —
+  `apps/web/src/supabase/deleteCascade.ts`. **That order is load-bearing and is not the obvious
+  one.** A key is derived from a `block_photos` row and from nothing else, so it has to be read
+  before the cascade destroys the row; but purging the bucket *first* would mean that an RLS refusal
+  — the likely failure, and a silent one — destroyed every photo of a borehole that still existed.
+  Deleting the row first proves the permission before anything irreversible happens to the bytes,
+  and the residual failure is orphaned objects, which the query in item 0 finds. `deleteSitePlan`
+  runs last for the same reason and is non-fatal: a site plan is an object with no row at all, and
+  most projects never have one.
 
-  *Mobile's existing delete is not the precedent it looks like.* `app/project/[id].tsx:44-52` is a
-  bare `DELETE FROM boreholes`, which `Connector.ts:70-74` turns into a real PostgREST delete. But
-  mobile's users are supervisors, and `boreholes` has no assignment-scoped **delete** policy — only
-  select and update. RLS applies a delete policy as a row filter, so the statement succeeds having
-  matched nothing and returns 200; the spot-check at `project_to_user.sql:229-235` says so in as many
-  words, and it is why `saveProjectPeople` counts its deleted rows. `Connector.ts` throws only on
-  `result.error`, so it sees success and completes the transaction — the row stays deleted locally
-  and survives on the server, and should reappear on the next full sync. Derived from the policies,
-  not observed: confirm it with a real supervisor account before treating it as either a bug to fix
-  or a pattern to copy.
+  The three pieces the deferral prescribed were all used: `saveProjectPeople`'s `.delete().select()`
+  and row count (an RLS refusal is a silent success, not an error), `EditMemberModal`'s danger zone
+  for the confirmation UI with `autoFocus` never on the destructive button, and the entry point on
+  the *list* rather than the detail page so the row can be removed in place. Deleting a project asks
+  for its code to be typed back; a single borehole does not.
 
-  *If it is built anyway*, three existing pieces settle the shape. `saveProjectPeople`
-  (`apps/web/src/supabase/projectPeople.ts:103-138`) is the call pattern — `.delete().select('id')`
-  and assert a row came back, because an RLS refusal is a silent success, not an error.
-  `EditMemberModal`'s danger zone (`:297-362`) is the confirmation UI, `autoFocus` on the keep button
-  included. And put the entry point on `ProjectPage`'s borehole row rather than `BoreholePage`: the
-  list updates in place with `setBoreholes(bs => bs.filter(...))`, matching every other mutation in
-  the app, whereas deleting from the detail page has to navigate away and rely on the refetch.
+  Soft delete stayed a non-starter, unchanged: `deleted_at` is on every table and nothing writes or
+  reads it, `BOREHOLE_COLUMNS` does not select it, and the sync rules live in the PowerSync
+  dashboard. It is also the looser of the two on permissions — a soft delete is an UPDATE, and the
+  update policy on `boreholes` is assignment-scoped, so any assigned viewer could issue one through
+  the API. Item 0d's situation exactly, and it needs the same one-pass fix.
+
+- **A deleted borehole can stall the upload queue on a device that was still working on it.**
+  Not fixed, and not fixable from the dashboard — recorded because the delete feature above is what
+  makes it reachable.
+
+  A field device holding unsynced local edits to a block of a borehole that has since been deleted
+  will, on its next connection, upload a `blocks` upsert whose `borehole_id` no longer exists. That
+  is an FK violation. `Connector.ts` deliberately throws rather than calling
+  `transaction.complete()` — which is what makes PowerSync retry — so the operation is retried
+  forever and **every upload queued behind it on that device stalls with it**. The block sits in the
+  local database looking saved, never reaches Supabase, and nothing on the device reports it: the
+  failure mode CLAUDE.md describes as looking like data loss, which is what `blocks.sql`'s addendum
+  was written to close for a different cause.
+
+  Nothing in the repo detects this, and the dashboard cannot: whether a device has queued work for a
+  borehole is not knowable from Postgres. Three things would each help, in increasing order of
+  effort — surfacing the CRUD queue depth and its oldest failing operation somewhere in the field
+  app so a stall is at least visible; having `Connector.uploadData` discard rather than retry an
+  operation that fails with `23503` on a parent that no longer exists (a delete that has already
+  won, not a transient error); or making borehole deletion refuse while any device holds unsynced
+  work, which needs a signal that does not exist today. Until then: prefer to delete boreholes that
+  are finished, and treat deleting one mid-shift as something to coordinate with whoever is on site.

@@ -66,6 +66,39 @@ export function canEditBoreholeDetails(role: MemberRole | null): boolean {
   return role === 'owner' || role === 'admin';
 }
 
+// Who may delete a borehole, taking its blocks, their photos and the photo
+// files with it. Owners and admins, and its own function for the same reason as
+// the ones above — this asks a fourth question, and it is the one that must not
+// loosen by accident.
+//
+// It matches the database exactly: the only policy granting delete on
+// `boreholes` is "Owners and admins can manage all boreholes", a `for all` with
+// `get_current_user_role() in (1, 2)`
+// (packages/supabase/policies/boreholes.sql). Deliberately NOT a call to
+// canEditBoreholeDetails, even though the two currently return the same answer:
+// editing a field and destroying a hole of field data are not the same
+// permission, and relaxing one must never relax the other.
+//
+// Hiding the control is the affordance, not the enforcement — but note that
+// here the enforcement is unusually quiet. RLS applies a delete policy as a row
+// FILTER, so a refused delete succeeds having matched nothing and returns 200;
+// deleteBoreholeAndContents counts the rows it got back for exactly that
+// reason. See apps/web/src/supabase/deleteBorehole.ts.
+export function canDeleteBorehole(role: MemberRole | null): boolean {
+  return role === 'owner' || role === 'admin';
+}
+
+// Who may delete a whole project — every borehole in it, every block, every
+// photo and the site plan. Owners and admins, mirroring "Owners and admins can
+// manage all projects" in packages/supabase/policies/project_to_user.sql (the
+// projects policies live in that file rather than one of their own).
+//
+// Its own function again, and the same silent-refusal caveat as
+// canDeleteBorehole.
+export function canDeleteProject(role: MemberRole | null): boolean {
+  return role === 'owner' || role === 'admin';
+}
+
 // Who may see the member directory at all. Supervisors and above; viewers are
 // kept out. Mirrors `get_current_user_role() in (1, 2, 3)` in the read policy in
 // packages/supabase/policies/user_to_role.sql, which is the enforcement — this
