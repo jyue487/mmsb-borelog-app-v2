@@ -277,7 +277,7 @@ export default function ProjectListPage() {
                               setProjectPendingDeletion(project);
                             }}
                             aria-label={`Delete project ${project.code}`}
-                            className="cursor-pointer rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600 opacity-0 transition hover:bg-red-50 focus-visible:opacity-100 group-focus:opacity-100 group-hover:opacity-100 dark:text-red-400 dark:hover:bg-red-950/40"
+                            className="cursor-pointer rounded-lg border border-red-200 px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40"
                           >
                             Delete
                           </button>

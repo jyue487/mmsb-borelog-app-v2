@@ -23,6 +23,7 @@
 // fails is orphaned objects: billed and unreachable, but recoverable with the query in
 // docs/follow-ups.md item 0, and never a row pointing at a file that is already gone.
 
+import { chunk, IDS_PER_REQUEST } from '../utils/chunk';
 import {
   deletePhotoObjects,
   fetchPhotoObjectPathsForBlocks,
@@ -57,41 +58,49 @@ const REFUSED_MESSAGE =
  * well-logged boreholes — `docs/follow-ups.md` records the same cap biting
  * `fetchBlocksByBoreholeIds` — and here an unread page means the photos of every block in it are
  * never collected, so they strand in the bucket after the cascade removes their rows. Paged, in
- * the shape `fetchBoreholeStatuses.ts` uses.
+ * the shape `fetchBoreholeStatuses.ts` uses, for every id read below.
  */
-const BLOCK_IDS_PER_PAGE = 1000;
+const ROWS_PER_PAGE = 1000;
 
-/** Block ids only. The full rows carry a JSON payload each, and none of it is wanted here. */
+/**
+ * Block ids only. The full rows carry a JSON payload each, and none of it is wanted here.
+ *
+ * Both bounds apply, and they are different bounds. `chunk` limits the ids going OUT, because a
+ * whole project's worth of borehole ids in one `.in()` overruns the URL — a large site
+ * investigation runs to a few hundred holes, and the ceiling is around 200. `.range()` limits
+ * the rows coming BACK. Getting either wrong is silent: an over-long URL is rejected outright,
+ * and an unpaged read just stops at 1000 without saying so.
+ */
 async function fetchBlockIdsByBoreholeIds(
   boreholeIds: string[],
 ): Promise<string[]> {
-  if (boreholeIds.length === 0) {
-    return [];
-  }
-
   const blockIds: string[] = [];
 
-  for (let offset = 0; ; offset += BLOCK_IDS_PER_PAGE) {
-    const { data, error } = await supabase
-      .from('blocks')
-      .select('id')
-      .in('borehole_id', boreholeIds)
-      // A stable order is what makes the paging sound; without it two pages can overlap or
-      // skip rows.
-      .order('id', { ascending: true })
-      .range(offset, offset + BLOCK_IDS_PER_PAGE - 1);
+  for (const boreholeIdChunk of chunk(boreholeIds, IDS_PER_REQUEST)) {
+    for (let offset = 0; ; offset += ROWS_PER_PAGE) {
+      const { data, error } = await supabase
+        .from('blocks')
+        .select('id')
+        .in('borehole_id', boreholeIdChunk)
+        // A stable order is what makes the paging sound; without it two pages can overlap or
+        // skip rows.
+        .order('id', { ascending: true })
+        .range(offset, offset + ROWS_PER_PAGE - 1);
 
-    if (error) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    const page = data ?? [];
-    blockIds.push(...page.map((row) => row.id as string));
+      const page = data ?? [];
+      blockIds.push(...page.map((row) => row.id as string));
 
-    if (page.length < BLOCK_IDS_PER_PAGE) {
-      return blockIds;
+      if (page.length < ROWS_PER_PAGE) {
+        break;
+      }
     }
   }
+
+  return blockIds;
 }
 
 /**
@@ -138,16 +147,32 @@ export async function deleteBoreholeAndContents(
 export async function deleteProjectAndContents(
   projectId: string,
 ): Promise<DeleteResult> {
-  const { data: boreholeRows, error: boreholeError } = await supabase
-    .from('boreholes')
-    .select('id')
-    .eq('project_id', projectId);
+  // Paged for the same reason as the blocks read, even though a project with more than a
+  // thousand boreholes is not a real project: the cost is one comparison, and the failure it
+  // rules out is silent — an unread page means a whole borehole's photos are never collected
+  // and strand in the bucket once the cascade takes their rows.
+  const boreholeIds: string[] = [];
 
-  if (boreholeError) {
-    throw boreholeError;
+  for (let offset = 0; ; offset += ROWS_PER_PAGE) {
+    const { data, error: boreholeError } = await supabase
+      .from('boreholes')
+      .select('id')
+      .eq('project_id', projectId)
+      .order('id', { ascending: true })
+      .range(offset, offset + ROWS_PER_PAGE - 1);
+
+    if (boreholeError) {
+      throw boreholeError;
+    }
+
+    const page = data ?? [];
+    boreholeIds.push(...page.map((row) => row.id as string));
+
+    if (page.length < ROWS_PER_PAGE) {
+      break;
+    }
   }
 
-  const boreholeIds = (boreholeRows ?? []).map((row) => row.id as string);
   const blockIds = await fetchBlockIdsByBoreholeIds(boreholeIds);
   const photoPaths = await fetchPhotoObjectPathsForBlocks(blockIds);
 

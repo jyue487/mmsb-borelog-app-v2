@@ -1,5 +1,6 @@
 // blockPhotos.ts
 
+import { chunk, IDS_PER_REQUEST } from '../utils/chunk';
 import { supabase } from './supabase.server';
 
 /**
@@ -11,12 +12,6 @@ import { supabase } from './supabase.server';
  */
 export const PHOTO_BUCKET = 'block-photos';
 
-/**
- * PostgREST serialises `.in()` into the query string, so one request covering a deep
- * borehole would carry a few hundred UUIDs and push the URL past the ~8 KB header limit in
- * front of the API. Split the ids and issue the chunks in parallel instead.
- */
-const BLOCK_IDS_PER_REQUEST = 100;
 
 /**
  * A tab left open longer than this gets 403s on its `<img>` elements and has to be
@@ -37,16 +32,6 @@ type BlockPhotoRow = {
   created_at: string | null;
 };
 
-function chunk<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-
-  for (let index = 0; index < items.length; index += size) {
-    chunks.push(items.slice(index, index + size));
-  }
-
-  return chunks;
-}
-
 /**
  * PostgREST caps rows per response (1000 by default) and truncates *silently* — a short page is
  * indistinguishable from the end of the table. Chunking by block id does not bound this: one
@@ -63,7 +48,7 @@ const PHOTO_ROWS_PER_PAGE = 1000;
  */
 async function fetchBlockPhotoRows(blockIds: string[]): Promise<BlockPhotoRow[]> {
   const responses = await Promise.all(
-    chunk(blockIds, BLOCK_IDS_PER_REQUEST).map(async (blockIdChunk) => {
+    chunk(blockIds, IDS_PER_REQUEST).map(async (blockIdChunk) => {
       const chunkRows: BlockPhotoRow[] = [];
 
       for (let offset = 0; ; offset += PHOTO_ROWS_PER_PAGE) {
@@ -215,7 +200,7 @@ export async function deletePhotoObjects(paths: string[]): Promise<number> {
   // Chunked for a different reason than the reads above — these paths travel in a JSON body,
   // not the query string — but at the same size: it keeps one failing request from stranding
   // every photo of a deep borehole.
-  for (const pathChunk of chunk(paths, BLOCK_IDS_PER_REQUEST)) {
+  for (const pathChunk of chunk(paths, IDS_PER_REQUEST)) {
     const { error } = await supabase.storage.from(PHOTO_BUCKET).remove(pathChunk);
 
     if (error) {
