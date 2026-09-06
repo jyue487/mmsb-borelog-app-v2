@@ -61,6 +61,43 @@ name. Adding a second name like `EXPO_PUBLIC_POWERSYNC_URL_PRODUCTION` does noth
 `babel-preset-expo` only substitutes the literal property accesses that appear in the source, and
 `Connector.ts` reads exactly one of them.
 
+### Shipping a JS-only change — `eas update`, not a new build
+
+`runtimeVersion` is `{ policy: "fingerprint" }`, so a change that leaves the native project alone
+goes out over the air and never touches Play Console:
+
+```bash
+pnpm --filter apps/mobile exec eas update \
+  --branch production --environment production --platform android --message "…"
+```
+
+**Both flags are load-bearing, and each one fails differently when forgotten.**
+
+`--environment production` selects the EAS environment the `EXPO_PUBLIC_*` values come from.
+`eas update` reads no build profile, and those names are inlined into the bundle at publish time,
+so omitting it publishes a bundle with no Supabase URL, no key and no PowerSync URL — which fails
+on the *device*, after the update has already shipped.
+
+`--platform android` is needed because the default is `all`, which includes the **web** target:
+`app.config.ts` declares `web: { bundler: "metro", output: "static" }`, and static web output
+resolves packages under the `node` export condition. `@op-engineering/op-sqlite` maps that
+condition to `./node/dist/index.js`, which imports `better-sqlite3` — not installed here, and not
+something a React Native app should carry. The export dies with `Unable to resolve
+"better-sqlite3"` before anything is published. Android and iOS resolve through op-sqlite's
+`react-native` condition and never see it, and EAS Update serves only those two platforms anyway,
+so bundling web was always wasted work.
+
+Before relying on an update, confirm the change really is JS-only — the fingerprint is what
+decides, not your reading of the diff:
+
+```bash
+pnpm --filter apps/mobile exec eas fingerprint:compare --build-id <production build id>
+```
+
+A mismatch means a new native build and a new versionCode, not an update. `fingerprint` policy
+makes that safe rather than silent-in-the-bad-way: a mismatched update is simply never delivered,
+where an `appVersion` policy would have handed an incompatible bundle to a running app.
+
 ### Supabase CLI — always go through the package scripts
 
 ```bash
