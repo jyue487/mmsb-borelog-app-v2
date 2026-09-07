@@ -100,6 +100,36 @@ crash-on-launch you would then have to fix through the store, having lost the OT
 supposed to save you. `fingerprint` hashes the native project instead, so it changes on its own
 whenever the native surface does and that mistake becomes unrepresentable.
 
+**Why the fingerprint now excludes the application id.** Production ships two package ids —
+`com.mmsb.borelog` for the managed Google Play private app on company tablets, and
+`com.mmsb.borelog.pub` for the public listing on personal phones — because a Play package name is
+globally unique and immutable, so one Play entry cannot serve both. Both must run the identical JS,
+and the fingerprint hashes the whole normalized Expo config, application id included, so left alone
+the two AABs would compile to different runtime versions and one `eas update` would reach only one
+of them. `apps/mobile/fingerprint.config.js` skips `ExpoConfigAndroidPackage` and
+`ExpoConfigIosBundleIdentifier`, collapsing them onto one runtime version.
+
+This does not weaken the argument above. An application id has no bearing on whether a JS bundle can
+run; a native dependency does, and still bumps the fingerprint for both apps together. What is given
+up is narrower than it looks: `development` and `preview` keep runtime versions of their own anyway,
+because `ExpoConfigNames` is deliberately *not* skipped and their display names differ.
+
+Verified before the first build of either id — all four variants, `platform android`:
+
+```
+production   af94df02f99d8434689ec24d34494c2b158871f2
+public       af94df02f99d8434689ec24d34494c2b158871f2   <- same, deliberately
+preview      d1a8f290265c6ba62858ff7ac5dee810b311014d
+development  808496b151379cd1cae3d3c51d525c149637ff4e
+```
+
+**The timing was the whole point.** Changing the runtime version orphans every binary carrying the
+old hash, permanently: `eas update` has no `--runtime-version` flag, and eas-cli does not honour
+`EXPO_UPDATES_FINGERPRINT_OVERRIDE`, so such a binary is unreachable over the air and only a store
+release can fix it. Doing this before the tablets went out cost nothing, because there was no
+installed base to strand. The same change after deployment would have meant a forced store release
+plus a window in which crews received no fixes at all.
+
 **Why `fallbackToCacheTimeout: 0`.** It stops the launch sequence ever waiting on a network check.
 Crews open this app underground and on sites with no signal; it must start instantly from the cached
 bundle and fetch any update in the background, applying it on the next cold start. That also means

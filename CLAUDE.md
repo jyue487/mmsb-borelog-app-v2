@@ -46,8 +46,9 @@ so the `--filter` argument differs in shape per package.
 
 There are no tests in this repo — no test runner is configured in any package.
 
-Native builds go through EAS (`apps/mobile/eas.json`): `development` / `preview` / `production`
-profiles, each with a distinct bundle id driven by the `APP_VARIANT` env var in `app.config.ts`.
+Native builds go through EAS (`apps/mobile/eas.json`): `development` / `preview` / `production` /
+`production-public` profiles, each with a distinct bundle id driven by the `APP_VARIANT` env var in
+`app.config.ts`. The last two are both production — see *One update, two apps* below.
 
 Env vars are gitignored and must be created locally. `apps/mobile/.env.local` takes the three names
 in `apps/mobile/.env.example` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY`,
@@ -70,6 +71,20 @@ goes out over the air and never touches Play Console:
 pnpm --filter apps/mobile exec eas update \
   --branch production --environment production --platform android --message "…"
 ```
+
+**One update, two apps.** Production ships under *two* package ids: `com.mmsb.borelog`, the managed
+Google Play private app on company tablets, and `com.mmsb.borelog.pub`, the public listing for
+personal phones — built by the `production` and `production-public` profiles respectively. A Play
+package name is globally unique and immutable, so the second audience needs a second id rather than
+a second track.
+
+The single command above still reaches both, and that is entirely down to
+`apps/mobile/fingerprint.config.js`, which excludes the application id from the fingerprint. Both
+AABs therefore compile to one runtime version and both profiles sit on the `production` channel, so
+one publish matches both binaries. **Delete or narrow that file and the two apps silently split**,
+after which the orphaned one cannot be reached over the air at all: `eas update` has no
+`--runtime-version` flag and eas-cli does not honour `EXPO_UPDATES_FINGERPRINT_OVERRIDE`, so only a
+store release can fix it. The app *version* string plays no part in any of this.
 
 **Both flags are load-bearing, and each one fails differently when forgotten.**
 

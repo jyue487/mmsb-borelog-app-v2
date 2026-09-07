@@ -5,12 +5,30 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   const isDevelopment = variant === "development";
   const isPreview = variant === "preview";
+  const isPublic = variant === "public";
 
   // The production identity is deliberately NOT the old app's
   // (com.jyue487.mmsbborelogapp). That app is the pre-PowerSync, local-only
   // version, and reusing its id would replace it on every phone and orphan the
   // mmsb.db data behind a login screen. A distinct id installs alongside it so
   // crews migrate at their own checkpoint. See docs/launch-checklist.md 3.1.
+  //
+  // There are *two* production identities, because a single Play entry cannot
+  // serve both audiences: "com.mmsb.borelog" is the managed Google Play private
+  // app on company tablets, "com.mmsb.borelog.pub" the public listing for
+  // personal phones. A Play package name is globally unique and immutable, so
+  // the second audience needs a second id, not a second track.
+  //
+  // Both ship the same JS. fingerprint.config.js excludes the application id
+  // from the fingerprint, so the two builds compile to one runtime version and
+  // a single `eas update --branch production` reaches both. That file is
+  // load-bearing for this pairing -- read its comment before touching it.
+  //
+  // The suffix is ".pub" rather than ".public" because expo writes
+  // android.package into gradle's `namespace` as well as its `applicationId`,
+  // and AGP rejects a namespace whose segment is a Java keyword: "Namespace
+  // 'com.mmsb.borelog.public' is not a valid Java package name as 'public'
+  // is a Java keyword". That fails at Gradle configure, before Play sees it.
   let appName = "MMSB Borelog";
   let bundleId = "com.mmsb.borelog";
 
@@ -20,6 +38,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   } else if (isPreview) {
     appName = "MMSB Borelog (Preview)";
     bundleId = "com.mmsb.borelog.preview";
+  } else if (isPublic) {
+    // appName is deliberately left at the production value. The display name is
+    // still part of the fingerprint (fingerprint.config.js does not skip
+    // ExpoConfigNames), and matching names are what let these two identities
+    // collapse onto one runtime version while development and preview keep
+    // their own.
+    bundleId = "com.mmsb.borelog.pub";
   }
 
   return {

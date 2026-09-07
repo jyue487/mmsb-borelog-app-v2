@@ -34,6 +34,12 @@
       "env": {
         "APP_VARIANT": "production"
       }
+    },
+    "production-public": {
+      "extends": "production",
+      "env": {
+        "APP_VARIANT": "public"
+      }
     }
   },
   "submit": {
