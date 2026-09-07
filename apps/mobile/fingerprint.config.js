@@ -28,7 +28,19 @@
 //      the strength of their names alone. Skipping names would merge all four
 //      variants for no gain.
 //
-//   3. Deleting or narrowing this file silently re-splits the two apps, and one
+//   3. GitIgnore is skipped because .gitignore is otherwise a fingerprint source
+//      (Sourcer.js -> getGitIgnoreSourcesAsync), and that turns routine repo
+//      hygiene into a silent outage: add one ignore rule, publish an update,
+//      and it is tagged with a new runtime version that no installed binary
+//      asks for. Nobody receives it and nothing reports an error. This is not
+//      hypothetical -- the commit that added the `*.jks` rules below did
+//      exactly that, between the first build of the two apps and the second.
+//      What is given up is narrow: an ignore rule that excluded a file the
+//      native build needs would no longer move the runtime version. That
+//      surfaces as a broken build, not as an update that quietly reaches
+//      nobody.
+//
+//   4. Deleting or narrowing this file silently re-splits the two apps, and one
 //      of them stops receiving updates with no error anywhere. That is not
 //      recoverable over the air: `eas update` has no --runtime-version flag and
 //      eas-cli does not honour EXPO_UPDATES_FINGERPRINT_OVERRIDE, so a binary
@@ -41,5 +53,6 @@ module.exports = {
     "PackageJsonAndroidAndIosScriptsIfNotContainRun",
     "ExpoConfigAndroidPackage",
     "ExpoConfigIosBundleIdentifier",
+    "GitIgnore",
   ],
 };

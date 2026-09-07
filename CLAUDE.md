@@ -86,6 +86,17 @@ after which the orphaned one cannot be reached over the air at all: `eas update`
 `--runtime-version` flag and eas-cli does not honour `EXPO_UPDATES_FINGERPRINT_OVERRIDE`, so only a
 store release can fix it. The app *version* string plays no part in any of this.
 
+**Build the two AABs from the same commit**, always. Anything the fingerprint hashes — a dependency,
+a config plugin, an icon, the Expo config — desynchronises them if it changes in between, and the
+result is one app silently frozen on its own runtime version rather than any visible failure. Check
+before shipping, which costs seconds:
+
+```bash
+cd apps/mobile
+APP_VARIANT=production pnpm exec expo-updates fingerprint:generate --platform android
+APP_VARIANT=public     pnpm exec expo-updates fingerprint:generate --platform android
+```
+
 **Both flags are load-bearing, and each one fails differently when forgotten.**
 
 `--environment production` selects the EAS environment the `EXPO_PUBLIC_*` values come from.

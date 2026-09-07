@@ -109,19 +109,30 @@ the two AABs would compile to different runtime versions and one `eas update` wo
 of them. `apps/mobile/fingerprint.config.js` skips `ExpoConfigAndroidPackage` and
 `ExpoConfigIosBundleIdentifier`, collapsing them onto one runtime version.
 
+It also skips `GitIgnore`, for a different reason. `.gitignore` is otherwise a fingerprint source,
+which makes routine repo hygiene a silent outage: add one ignore rule, publish an update, and it
+carries a runtime version no installed binary asks for — nobody receives it and nothing reports an
+error. That happened here, between the first build of the two apps and the second, off a commit that
+did nothing but add `*.jks`. What the skip gives up is narrow: an ignore rule that excluded a file
+the native build needs no longer moves the runtime version, which surfaces as a broken build rather
+than as an update quietly reaching no one.
+
 This does not weaken the argument above. An application id has no bearing on whether a JS bundle can
 run; a native dependency does, and still bumps the fingerprint for both apps together. What is given
 up is narrower than it looks: `development` and `preview` keep runtime versions of their own anyway,
 because `ExpoConfigNames` is deliberately *not* skipped and their display names differ.
 
-Verified before the first build of either id — all four variants, `platform android`:
+Verified, all four variants, `platform android`:
 
 ```
-production   af94df02f99d8434689ec24d34494c2b158871f2
-public       af94df02f99d8434689ec24d34494c2b158871f2   <- same, deliberately
-preview      d1a8f290265c6ba62858ff7ac5dee810b311014d
-development  808496b151379cd1cae3d3c51d525c149637ff4e
+production   700e634ae883611771bd3a37796c28d722d57b5b
+public       700e634ae883611771bd3a37796c28d722d57b5b   <- same, deliberately
+preview      de529f7e74768508bcc98366745ddb7e88f4fa8b
+development  88f3a6d4b636379a512ef2a901ce0158b27f4547
 ```
+
+Appending a line to `.gitignore` and recomputing leaves `production` on `700e634a…`, which is the
+check that the `GitIgnore` skip is doing what it claims.
 
 **The timing was the whole point.** Changing the runtime version orphans every binary carrying the
 old hash, permanently: `eas update` has no `--runtime-version` flag, and eas-cli does not honour
