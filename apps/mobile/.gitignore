@@ -4,3 +4,12 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+# Signing material. `eas credentials` writes a downloaded keystore into the
+# working directory, and credentials.json holds its passwords in plain text.
+# Both are the upload key for com.mmsb.borelog *and* com.mmsb.borelog.pub --
+# Play expects one certificate (08:E2:AA:83...) for both listings -- so a
+# committed copy is a compromise of both apps at once.
+*.jks
+*.keystore
+credentials.json
