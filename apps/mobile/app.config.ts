@@ -131,6 +131,24 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-sqlite",
       "expo-font",
       "expo-asset",
+      // Not applied automatically: Expo auto-applies config plugins only for a fixed
+      // legacy list (expo-notifications, expo-updates, expo-splash-screen,
+      // react-native-maps, ...), and expo-media-library is not on it. Without this entry
+      // iOS has no NSPhotoLibraryAddUsageDescription and saveToLibraryAsync throws
+      // MissingPListKeyException, and Android gets no requestLegacyExternalStorage.
+      [
+        "expo-media-library",
+        {
+          savePhotosPermission: "Allow MMSB Borelog to save borehole photos to your gallery.",
+          // Save-only integration: nothing here ever reads the library back. An empty list
+          // suppresses READ_MEDIA_IMAGES/VIDEO/AUDIO, which is what keeps this off Google
+          // Play's Photo and Video Permissions declaration. The three permissions the
+          // plugin still adds (READ/WRITE_EXTERNAL_STORAGE,
+          // READ_MEDIA_VISUAL_USER_SELECTED) already merge in from the library's own
+          // AndroidManifest, so this adds nothing new for Play to ask about.
+          granularPermissions: [],
+        },
+      ],
       "@react-native-vector-icons/material-icons",
     ],
     experiments: {

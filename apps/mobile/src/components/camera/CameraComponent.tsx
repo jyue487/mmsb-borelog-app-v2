@@ -6,6 +6,7 @@ import { photoAttachmentQueue } from '@/src/storage/SupabaseRemoteStorageAdapter
 import { randomUUID } from 'expo-crypto';
 import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from 'react';
 import { Alert, Button, View, ViewProps } from 'react-native';
 import { BlockPhoto } from '../blockPhotos/BlockPhoto';
@@ -76,13 +77,15 @@ export function CameraComponent({ inputBlock, setBlockPhotosOnConfirmAsync, ...o
   };
 
   const takePhoto = async () => {
-    const response = await ImagePicker.requestCameraPermissionsAsync();
-    if (!response.granted) {
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!cameraPermission.granted) {
       Alert.alert("Permission Required", "You must allow camera access to take photos.");
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.1 });
+    // Full quality, deliberately. These are work evidence photos and the crews need the
+    // full image; the upload and storage cost is accepted. Do not dial this back.
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 1.0 });
     if (result.canceled || result.assets.length === 0) {
       return;
     }
@@ -90,6 +93,26 @@ export function CameraComponent({ inputBlock, setBlockPhotosOnConfirmAsync, ...o
     const rawImage = result.assets[0];
     console.log(rawImage);
     setAllImageInfos([...allImageInfos, { id: randomUUID(), uri: rawImage.uri, isNew: true, deletedAt: null }]);
+
+    // A copy in the device camera roll, best-effort and deliberately after the line above:
+    // the photo is already queued for sync, so a refused or failed gallery write must never
+    // cost the crew the photo -- and must never cost them the camera either.
+    //
+    // requestPermissionsAsync(true) is write-only, which is not what the picker's
+    // media-library permission grants. It is load-bearing on both platforms and for
+    // different reasons: on Android 12 and below it asks for WRITE_EXTERNAL_STORAGE, which
+    // is exactly what saveToLibraryAsync checks; on Android 13+ it resolves granted with no
+    // dialog (the permission list is empty there, and `all {}` over nothing is true); and on
+    // iOS it is what sets the module's writeOnly flag, without which saving demands *full*
+    // photo library access rather than add-only.
+    try {
+      const libraryPermission = await MediaLibrary.requestPermissionsAsync(true);
+      if (libraryPermission.granted) {
+        await MediaLibrary.saveToLibraryAsync(rawImage.uri);
+      }
+    } catch (error) {
+      console.warn('Failed to save the photo to the device gallery', error);
+    }
   };
 
   const deletePhoto = (id: string, uri: string) => {
