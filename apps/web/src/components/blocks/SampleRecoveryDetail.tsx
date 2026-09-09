@@ -1,9 +1,13 @@
 import type { Block } from '@mmsb/core';
 
 // The three undisturbed-sample types (UD, MZ, PS) render identically: the soil
-// description beside a recovery percentage. Ports
+// description, with a recovery percentage below it.
+//
+// The R% column reuses SptDetail's track sizing verbatim and lands in its fourth
+// column, so recovery sits at the same x on every row of the log whether the block
+// is an SPT or a sample. That deliberately diverges from
 // apps/mobile/src/components/blockComponents/{Ud,Mz,Ps}BlockComponent.tsx, which
-// are three copies of the same markup.
+// still place recovery beside the description.
 
 type SampleRecoveryDetailProps = {
   block: Block<'Ud'> | Block<'Mz'> | Block<'Ps'>;
@@ -13,17 +17,21 @@ export default function SampleRecoveryDetail({
   block,
 }: SampleRecoveryDetailProps) {
   return (
-    <div className="flex items-start gap-2">
-      <p className="min-w-0 flex-1 whitespace-pre-wrap break-words">
+    <div className="space-y-2">
+      <p className="whitespace-pre-wrap break-words">
         {block.soilDescription}
       </p>
 
-      <div className="flex w-16 shrink-0 flex-col items-center border-l border-slate-300 px-1 text-xs tabular-nums dark:border-slate-700">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          R%
-        </span>
+      {/* `col-start-4` rather than three empty spacer cells — and `border-l` on the
+          one cell rather than `divide-x`, which would rule off the empty columns. */}
+      <div className="grid max-w-md grid-cols-[2fr_4fr_1fr_1.5fr] text-xs tabular-nums">
+        <div className="col-start-4 flex flex-col items-center border-l border-slate-300 px-1 dark:border-slate-700">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            R%
+          </span>
 
-        <span>{block.recoveryInPercentage.toFixed(1)}</span>
+          <span>{block.recoveryInPercentage.toFixed(1)}</span>
+        </div>
       </div>
     </div>
   );
