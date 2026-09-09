@@ -817,6 +817,22 @@ None of these is reachable without a block landing within 0.3 m of a page bounda
 they are recorded rather than fixed: the arithmetic that would fix the first two also changes where
 every ordinary block lands, and that wants a real borehole to check against rather than a fixture.
 
+- **Three header fields are unfitted and will print outside the header box.** `LOCATION`, `CLIENT`
+  and `CONSULTANT` (`buildHeader.ts`) are passed to `textNode` raw. The backend does not clip text,
+  so a value wider than the column — `leftWidth` is 268.63 pt, less the label, so roughly 60-70
+  characters of 7 pt bold — draws straight through the vertical rule at the 55% split and on across
+  the right-hand column. The five right-hand fields have the same exposure with a narrower box
+  (217.61 pt): `TYPE OF BORING` and `TYPE OF RIG` are free text and the likeliest to overrun.
+
+  `PROJECT` is the only one that is fitted, and as of the three-line change it both wraps and
+  ellipsises. The fix is the same one line each — run the existing `fitSingleLine` over the value,
+  as `PROJECT` did before it learned to wrap — and it needs no layout change, since every one of
+  these boxes is already a full `lineStep` tall. Left out of the three-line change only to keep it
+  to the one field that was asked about. Wrapping them the way `PROJECT` now wraps would be the
+  nicer answer, but the band has no height left for a second growable field: the three-line case
+  already compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without moving
+  `TICK_PITCH_PT` and every description box in the report.
+
 ## Deferred features
 
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would
