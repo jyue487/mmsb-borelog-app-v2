@@ -1,0 +1,323 @@
+==============================================================================
+empty  —  0 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 1 parts
+       0.00.. 527.20  (filler, geometry of type 1)
+  separators: 1, of which 0 pushed
+
+==============================================================================
+single-page  —  6 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 7 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 351.46  spt-4  2 lines
+     351.46.. 439.33  spt-5  2 lines
+     439.33.. 497.91  spt-6  2 lines
+     497.91.. 527.20  (filler, geometry of type 1)
+  separators: 7, of which 0 pushed
+
+==============================================================================
+ten-page  —  60 block(s) in, 10 page(s) out (10 by depth)
+==============================================================================
+  page 1 (from tick 0) — 6 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 351.46  spt-4  2 lines
+     351.46.. 439.33  spt-5  2 lines
+     439.33.. 527.20  spt-6  2 lines
+  page 2 (from tick 90) — 6 parts
+       0.00..  87.87  spt-7  2 lines
+      87.87.. 175.73  spt-8  2 lines
+     175.73.. 263.60  spt-9  2 lines
+     263.60.. 351.46  spt-10  2 lines
+     351.46.. 439.33  spt-11  2 lines
+     439.33.. 527.20  spt-12  2 lines
+  page 3 (from tick 180) — 6 parts
+       0.00..  87.87  spt-13  2 lines
+      87.87.. 175.73  spt-14  2 lines
+     175.73.. 263.60  spt-15  2 lines
+     263.60.. 351.46  spt-16  2 lines
+     351.46.. 439.33  spt-17  2 lines
+     439.33.. 527.20  spt-18  2 lines
+  page 4 (from tick 270) — 6 parts
+       0.00..  87.87  spt-19  2 lines
+      87.87.. 175.73  spt-20  2 lines
+     175.73.. 263.60  spt-21  2 lines
+     263.60.. 351.46  spt-22  2 lines
+     351.46.. 439.33  spt-23  2 lines
+     439.33.. 527.20  spt-24  2 lines
+  page 5 (from tick 360) — 6 parts
+       0.00..  87.87  spt-25  2 lines
+      87.87.. 175.73  spt-26  2 lines
+     175.73.. 263.60  spt-27  2 lines
+     263.60.. 351.46  spt-28  2 lines
+     351.46.. 439.33  spt-29  2 lines
+     439.33.. 527.20  spt-30  2 lines
+  page 6 (from tick 450) — 6 parts
+       0.00..  87.87  spt-31  2 lines
+      87.87.. 175.73  spt-32  2 lines
+     175.73.. 263.60  spt-33  2 lines
+     263.60.. 351.46  spt-34  2 lines
+     351.46.. 439.33  spt-35  2 lines
+     439.33.. 527.20  spt-36  2 lines
+  page 7 (from tick 540) — 6 parts
+       0.00..  87.87  spt-37  2 lines
+      87.87.. 175.73  spt-38  2 lines
+     175.73.. 263.60  spt-39  2 lines
+     263.60.. 351.46  spt-40  2 lines
+     351.46.. 439.33  spt-41  2 lines
+     439.33.. 527.20  spt-42  2 lines
+  page 8 (from tick 630) — 6 parts
+       0.00..  87.87  spt-43  2 lines
+      87.87.. 175.73  spt-44  2 lines
+     175.73.. 263.60  spt-45  2 lines
+     263.60.. 351.46  spt-46  2 lines
+     351.46.. 439.33  spt-47  2 lines
+     439.33.. 527.20  spt-48  2 lines
+  page 9 (from tick 720) — 6 parts
+       0.00..  87.87  spt-49  2 lines
+      87.87.. 175.73  spt-50  2 lines
+     175.73.. 263.60  spt-51  2 lines
+     263.60.. 351.46  spt-52  2 lines
+     351.46.. 439.33  spt-53  2 lines
+     439.33.. 527.20  spt-54  2 lines
+  page 10 (from tick 810) — 7 parts
+       0.00..  87.87  spt-55  2 lines
+      87.87.. 175.73  spt-56  2 lines
+     175.73.. 263.60  spt-57  2 lines
+     263.60.. 351.46  spt-58  2 lines
+     351.46.. 439.33  spt-59  2 lines
+     439.33.. 497.91  spt-60  2 lines
+     497.91.. 527.20  (filler, geometry of type 1)
+  separators: 61, of which 0 pushed
+
+==============================================================================
+spt-fhpt-collapsed  —  4 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 4 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2 + folded fhpt-1  3 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 0 pushed
+
+==============================================================================
+coring-lugeon-collapsed  —  3 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 3 parts
+       0.00.. 175.73  cor-1 + folded lug-1  3 lines
+     175.73.. 351.46  cor-2  2 lines
+     351.46.. 527.20  (filler, geometry of type 2)
+  separators: 3, of which 0 pushed
+
+==============================================================================
+ud-fhpt-collapsed  —  3 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 3 parts
+       0.00.. 117.15  ud-1 + folded fhpt-1  3 lines
+     117.15.. 205.02  spt-1  2 lines
+     205.02.. 527.20  (filler, geometry of type 1)
+  separators: 3, of which 0 pushed
+
+==============================================================================
+eob-long-remarks  —  4 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 4 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 527.20  eob-1  12 lines
+  separators: 4, of which 0 pushed
+
+==============================================================================
+eob-no-remarks  —  4 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 4 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 527.20  eob-1
+  separators: 4, of which 0 pushed
+
+==============================================================================
+pad-retry  —  3 block(s) in, 3 page(s) out (3 by depth)
+==============================================================================
+  page 1 (from tick 0) — 2 parts
+       0.00.. 468.62  spt-1  2 lines
+     468.62.. 527.20  spt-2 [part 0, continues]  2 lines
+  page 2 (from tick 90) — 1 parts
+       0.00.. 527.20  spt-2 [part 1, continues]
+  page 3 (from tick 180) — 3 parts
+       0.00.. 117.15  spt-2 [part 2, last]
+     117.15.. 175.73  spt-3  2 lines
+     175.73.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 0 pushed
+
+==============================================================================
+split-simple  —  3 block(s) in, 2 page(s) out (2 by depth)
+==============================================================================
+  page 1 (from tick 0) — 2 parts
+       0.00.. 497.91  spt-1  2 lines
+     497.91.. 527.20  spt-2 [part 0, continues]  2 lines
+  page 2 (from tick 90) — 3 parts
+       0.00..  58.58  spt-2 [part 1, last]
+      58.58.. 117.15  spt-3  2 lines
+     117.15.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 0 pushed
+
+==============================================================================
+split-exact  —  3 block(s) in, 2 page(s) out (2 by depth)
+==============================================================================
+  page 1 (from tick 0) — 1 parts
+       0.00.. 527.20  spt-1  2 lines
+  page 2 (from tick 90) — 3 parts
+       0.00.. 175.73  spt-2  2 lines
+     175.73.. 234.31  spt-3  2 lines
+     234.31.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 1 pushed
+    depth p1@509.62  ->  contents p2@0.00   (+17.57pt)
+
+==============================================================================
+split-sliver  —  3 block(s) in, 2 page(s) out (2 by depth)
+==============================================================================
+  page 1 (from tick 0) — 1 parts
+       0.00.. 527.20  spt-1  2 lines
+  page 2 (from tick 90) — 3 parts
+       0.00.. 175.73  spt-2  2 lines
+     175.73.. 234.31  spt-3  2 lines
+     234.31.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 1 pushed
+    depth p1@521.34  ->  contents p2@0.00   (+5.86pt)
+
+==============================================================================
+split-multipage  —  3 block(s) in, 3 page(s) out (3 by depth)
+==============================================================================
+  page 1 (from tick 0) — 2 parts
+       0.00..  29.29  spt-1  2 lines
+      29.29.. 527.20  cor-1 [part 0, continues]  2 lines
+  page 2 (from tick 90) — 1 parts
+       0.00.. 527.20  cor-1 [part 1, continues]
+  page 3 (from tick 180) — 3 parts
+       0.00.. 117.15  cor-1 [part 2, last]
+     117.15.. 175.73  spt-2  2 lines
+     175.73.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 0 pushed
+
+==============================================================================
+split-tiny-block  —  3 block(s) in, 2 page(s) out (2 by depth)
+==============================================================================
+  page 1 (from tick 0) — 1 parts
+       0.00.. 527.20  spt-1  2 lines
+  page 2 (from tick 90) — 3 parts
+       0.00..  24.56  spt-2  2 lines
+      24.56..  64.44  spt-3  2 lines
+      64.44.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 2 pushed
+    depth p1@521.34  ->  contents p2@0.00   (+5.86pt)
+    depth p2@5.86  ->  contents p2@24.56   (+18.70pt)
+
+==============================================================================
+leading-gap  —  2 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 4 parts
+       0.00.. 117.15  (filler, geometry of type 1)
+     117.15.. 292.89  spt-1  2 lines
+     292.89.. 351.46  spt-2  2 lines
+     351.46.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 0 pushed
+
+==============================================================================
+showcase  —  7 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 5 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  ud-1  2 lines
+     175.73.. 263.60  spt-2 + folded fhpt-1  3 lines
+     263.60.. 439.33  cor-1 + folded lug-1  3 lines
+     439.33.. 527.20  eob-1  5 lines
+  separators: 5, of which 0 pushed
+
+==============================================================================
+negative-height  —  3 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 5 parts
+       0.00.. 292.89  (filler, geometry of type 1)
+     292.89.. 317.44  spt-1  2 lines
+     317.44.. 410.04  spt-2  2 lines
+     410.04.. 468.62  spt-3  2 lines
+     468.62.. 527.20  (filler, geometry of type 1)
+  separators: 5, of which 1 pushed
+    depth p1@292.89  ->  contents p1@317.44   (+24.56pt)
+
+==============================================================================
+overflow-photo  —  3 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 3 parts
+       0.00..  87.87  spt-1  1 line
+      87.87.. 112.42  spt-2  1 line
+     112.42.. 527.20  eob-1
+  separators: 3, of which 1 pushed
+    depth p1@93.72  ->  contents p1@112.42   (+18.70pt)
+
+==============================================================================
+overflow-chain  —  6 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 7 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 112.42  spt-2  1 line
+     112.42.. 136.98  spt-3  1 line
+     136.98.. 161.53  spt-4  1 line
+     161.53.. 193.31  spt-5  2 lines
+     193.31.. 281.17  spt-6  2 lines
+     281.17.. 527.20  (filler, geometry of type 1)
+  separators: 7, of which 3 pushed
+    depth p1@93.72  ->  contents p1@112.42   (+18.70pt)
+    depth p1@99.58  ->  contents p1@136.98   (+37.40pt)
+    depth p1@105.44  ->  contents p1@161.53   (+56.09pt)
+
+==============================================================================
+overflow-page-foot  —  8 block(s) in, 2 page(s) out (2 by depth)
+==============================================================================
+  page 1 (from tick 0) — 6 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 351.46  spt-4  2 lines
+     351.46.. 439.33  spt-5  2 lines
+     439.33.. 527.20  spt-6  2 lines
+  page 2 (from tick 90) — 3 parts
+       0.00..  24.56  spt-7  1 line
+      24.56..  87.87  spt-8  2 lines
+      87.87.. 527.20  (filler, geometry of type 1)
+  separators: 9, of which 2 pushed
+    depth p1@521.34  ->  contents p2@0.00   (+5.86pt)
+    depth p2@0.00  ->  contents p2@24.56   (+24.56pt)
+
+==============================================================================
+overflow-long-description  —  3 block(s) in, 1 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 4 parts
+       0.00..  90.30  spt-1  12 lines
+      90.30.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 527.20  (filler, geometry of type 1)
+  separators: 4, of which 1 pushed
+    depth p1@87.87  ->  contents p1@90.30   (+2.43pt)
+
+==============================================================================
+overflow-eob-spill  —  7 block(s) in, 2 page(s) out (1 by depth)
+==============================================================================
+  page 1 (from tick 0) — 6 parts
+       0.00..  87.87  spt-1  2 lines
+      87.87.. 175.73  spt-2  2 lines
+     175.73.. 263.60  spt-3  2 lines
+     263.60.. 351.46  spt-4  2 lines
+     351.46.. 439.33  spt-5  2 lines
+     439.33.. 527.20  spt-6  2 lines
+  page 2 (from tick 90) — 1 parts
+       0.00.. 527.20  eob-1  15 lines
+  separators: 7, of which 1 pushed
+    depth p1@515.48  ->  contents p2@0.00   (+11.72pt)

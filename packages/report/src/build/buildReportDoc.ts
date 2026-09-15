@@ -1,17 +1,19 @@
 import { DAY_END_WORK_TYPE, DAY_START_WORK_TYPE, END_OF_BOREHOLE_BLOCK_TYPE_ID, type Block } from '@mmsb/core';
 
+import { flowContent } from '../layout/flowContent';
 import { paginate } from '../layout/paginate';
 import { BASE_FONT_SIZE_PT, createPageGeometry } from '../layout/pageGeometry';
 import type { DrawNode, ReportDoc, ReportPage, ReportWarning } from '../model/doc';
 import type { ReportInput } from '../model/input';
 import { buildBodyRow } from '../rows/buildBodyRow';
+import { measureRowContent } from '../rows/rowMetrics';
 import type { TextMeasurer } from '../text/measure';
 import { buildBodyNodes } from './buildBodyNodes';
 import { buildColumnHeader } from './buildColumnHeader';
-import { fitDescriptions, prefitKey } from './fitDescriptions';
 import { buildFooter } from './buildFooter';
 import { buildHeader } from './buildHeader';
 import { buildRuler } from './buildRuler';
+import { buildSeparatorNodes, separatorInsets } from './buildSeparators';
 
 /**
  * `ReportInput` → `ReportDoc`. The top of the platform-free half.
@@ -21,6 +23,12 @@ import { buildRuler } from './buildRuler';
  * (`generatePdfPages.ts:225-286`), because the page count was not known until the layout
  * loop had finished. Paginating first makes `pages.length` known before any content is
  * built, so the thunks and the second pass both disappear.
+ *
+ * Two layout passes run before anything is drawn. `paginate()` places depth intervals in
+ * ticks, without a font; `flowContent()` then measures what each row's cells need and places
+ * the contents in points, pushing rows down where an interval is too short for them — which
+ * is the first place that has every page and a measurer at once, and the one that settles
+ * the page count, since a pushed end of borehole can need a page the depths did not.
  */
 
 /** First day-start block's start date; `generatePdfPages.ts:28`. */
@@ -44,35 +52,29 @@ function findDateFinished(blocks: Block[]): Date | null {
 export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): ReportDoc {
 	const geometry = createPageGeometry();
 	const { pages: slices, warnings: paginationWarnings } = paginate(input.blocks);
+	const flow = flowContent(slices, geometry, (block, testBlock) =>
+		measureRowContent(block, testBlock, geometry, measurer),
+	);
 
 	const warnings: ReportWarning[] = [...paginationWarnings];
 	const dateStarted = findDateStarted(input.blocks);
 	const dateFinished = findDateFinished(input.blocks);
-	const totalPages = slices.length;
+	const totalPages = flow.pages.length;
+	const insets = separatorInsets(geometry, measurer);
 
-	// Blocks whose interval crosses a page break are laid out here, across every page they
-	// touch at once, because the loop below sees one page at a time and their type size has
-	// to be agreed between them. Everything else fits itself, later, in its own cell.
-	const prefits = fitDescriptions(slices, geometry, measurer, warnings);
-
-	const pages: ReportPage[] = slices.map((slice) => {
+	const pages: ReportPage[] = flow.pages.map((page) => {
 		const nodes: DrawNode[] = [
-			...buildHeader(input.project, input.borehole, geometry, slice.pageNumber, totalPages, measurer),
+			...buildHeader(input.project, input.borehole, geometry, page.pageNumber, totalPages, measurer),
 			...buildColumnHeader(geometry),
 			...buildFooter(input.borehole, geometry, dateStarted, dateFinished, measurer),
-			...buildRuler(geometry, slice.startTick),
+			...buildRuler(geometry, page.startTick),
+			...buildSeparatorNodes(flow.separators, page.pageNumber - 1, geometry, insets),
 		];
 
-		const rows = slice.rows.map((placed) =>
-			buildBodyRow(
-				placed,
-				BASE_FONT_SIZE_PT,
-				placed.kind === 'block' ? prefits.get(prefitKey(placed.block.id, placed.partIndex)) : undefined,
-			),
-		);
-		nodes.push(...buildBodyNodes(rows, geometry, slice.startTick, measurer, slice.pageNumber, warnings));
+		const rows = page.parts.map((part) => buildBodyRow(part, BASE_FONT_SIZE_PT));
+		nodes.push(...buildBodyNodes(rows, geometry, measurer));
 
-		return { pageNumber: slice.pageNumber, totalPages, nodes };
+		return { pageNumber: page.pageNumber, totalPages, nodes };
 	});
 
 	return {

@@ -6,7 +6,6 @@ import {
 } from '@mmsb/core';
 
 import { TICKS_PER_PAGE } from './constants';
-import { MIN_PART_TICKS } from './pageGeometry';
 import { collapsibleFollower } from './collapsePairs';
 
 /**
@@ -26,10 +25,17 @@ import { collapsibleFollower } from './collapsePairs';
  * or more fitting drew a truncated row and then *dropped the tail* — `blockIndex` advanced
  * regardless, so the remainder came back as a blank leading gap and the description simply
  * stopped mid-sentence. Now a block is split wherever it crosses the boundary and continues
- * on the next page, and it is moved whole only when what is left of the page could not hold
- * one line of anything (see `MIN_PART_TICKS`). `scripts/referenceOracle.ts` still carries the
- * old rule, so the oracle check recognises this divergence rather than failing on it — every
- * row keeps its startTick and tickCount, and only blank filler becomes a block part.
+ * on the next page, however little of it lands on this one. `scripts/referenceOracle.ts`
+ * still carries the old rule, so the oracle check recognises this divergence rather than
+ * failing on it — every row keeps its startTick and tickCount, and only blank filler becomes
+ * a block part.
+ *
+ * Whether the sliver at the foot of a page can hold the block's sample label is not decided
+ * here. This layer only knows depths; `flowContent.ts` measures the contents in points and,
+ * when the strip is too short for them, starts the contents at the top of the next page while
+ * the depth interval stays where the ruler says it is. That used to be a tick rule in this
+ * loop (`MIN_PART_TICKS`), which moved the *row* down to the next page and left it up to
+ * 0.2 m below its true depth.
  */
 
 export type PlacedRow =
@@ -226,27 +232,11 @@ export function paginate(blocks: Block[]): PaginationResult {
 
 			const ticksAvailable = pageEndTick - tick;
 
-			// What is left of the page could not hold one line of anything, so the block goes
-			// to the next page whole rather than leaving a strip too short to print its own
-			// sample label in. It is not consumed, so `naturalHeightInTicks` measures it again
-			// from the new cursor and it still ends at the depth it should. This terminates:
-			// a fresh page always has a full 90 ticks, which is far more than the minimum.
-			if (blockHeight > ticksAvailable && ticksAvailable < MIN_PART_TICKS) {
-				emit({
-					kind: 'empty',
-					referenceBlockTypeId:
-						blocks[blockIndex > 0 ? blockIndex - 1 : blockIndex].blockTypeId,
-					startTick: tick,
-					tickCount: ticksAvailable,
-				});
-				break;
-			}
-
 			// End of borehole never splits. It is a terminator with `top === base`, so it has
 			// no depth interval to divide; the height above is the old text-measurement guess
 			// (`8 + remarks.length / 30`), which is not even a whole number of ticks. It fills
-			// whatever is left of the page and the fitter sizes the remarks to suit — and if
-			// what is left is under the minimum, the case above has already moved it.
+			// whatever is left of the page; if the remarks need more than that, the content
+			// flow carries them on to another page.
 			const isFinalPart =
 				block.blockTypeId === END_OF_BOREHOLE_BLOCK_TYPE_ID || blockHeight <= ticksAvailable;
 			const ticksToRender = Math.min(blockHeight, ticksAvailable);

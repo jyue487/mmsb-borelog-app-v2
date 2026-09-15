@@ -8,15 +8,10 @@ import {
 } from '@mmsb/core';
 
 import { COLUMN_COUNT, DESCRIPTION_COLUMN, SPT_COLUMN_COUNT, SPT_COLUMN_START } from '../layout/constants';
-import { emptyCell, type BodyRow, type PrefitDescription, type RowCell } from '../model/table';
-import type { PlacedRow } from '../layout/paginate';
-import {
-	BLOCK_ROW_SPECS,
-	contentFromDivided,
-	depthLabels,
-	descriptionTokens,
-	sampleLabels,
-} from './blockRowSpec';
+import type { ContentPart } from '../layout/flowContent';
+import { DAY_WORK_STATUS_FONT_SIZE_PT } from '../layout/pageGeometry';
+import { emptyCell, type BodyRow, type RowCell } from '../model/table';
+import { BLOCK_ROW_SPECS, contentFromDivided, depthLabels, sampleLabels } from './blockRowSpec';
 import { getDate, getTime } from '../format/datetime';
 
 /**
@@ -26,11 +21,17 @@ import { getDate, getTime } from '../format/datetime';
  * plus colspans across all 19 old files, which all came to 14 — so the order lives here
  * once instead of being retyped per block type.
  *
- * Every cell is aligned to the top of the row. A block's row is as tall as its depth
+ * Every cell is aligned to the top of the row. A block's row is at least as tall as its depth
  * interval, so centring a value in it floats it an arbitrary distance from the sample it
  * describes; the reader is scanning across a row, and wants the values to start on one
  * line. DATE & TIME is the exception, and only because it is genuinely two things: the
  * shift's start pinned to the top and its end pinned to the bottom.
+ *
+ * The cells are built in two layers. `buildValueCells` makes the thirteen value cells —
+ * everything but DESCRIPTION — from the block alone, which is what `rowMetrics.ts` measures
+ * to decide how tall the row must be. `buildBodyRow` then adds the description lines the
+ * content flow dealt to this part. A row's height therefore comes from its own cells, and
+ * the same cell code decides both what is drawn and how much room it takes.
  */
 
 /** `renderWaterLevelToHtml.ts`: four-way null handling, and string values pass through. */
@@ -53,14 +54,10 @@ function waterLevelLines(dayWorkStatus: DayWorkStatus): string[] {
  *
  * The old markup also applied `transform: scale(0.67)` to these eight divs as a stand-in
  * for a font size it could not otherwise express. That becomes an explicit size on the
- * cell, which is exactly the "cleaner typography" the brief asked for.
+ * cell (`DAY_WORK_STATUS_FONT_SIZE_PT`), which is exactly the "cleaner typography" the brief
+ * asked for.
  */
-function dayWorkStatusCell(
-	dayWorkStatus: DayWorkStatus,
-	baseFontSizePt: number,
-	showStart: boolean,
-	showEnd: boolean,
-): RowCell {
+function dayWorkStatusCell(dayWorkStatus: DayWorkStatus, showStart: boolean, showEnd: boolean): RowCell {
 	const top: string[] = [];
 	const bottom: string[] = [];
 
@@ -78,22 +75,18 @@ function dayWorkStatusCell(
 		content: { kind: 'pinned', top: top.filter((line) => line !== ''), bottom: bottom.filter((line) => line !== '') },
 		align: 'center',
 		valign: 'top',
-		fontSizePt: +(baseFontSizePt * 0.67).toFixed(2),
+		fontSizePt: DAY_WORK_STATUS_FONT_SIZE_PT,
 	};
 }
 
-export function buildBodyRow(
-	placed: PlacedRow,
-	baseFontSizePt: number,
-	prefit?: PrefitDescription,
-): BodyRow {
+export function buildBodyRow(part: ContentPart, baseFontSizePt: number): BodyRow {
 	// Filler rows only need the previous row's column geometry so the vertical rules line up.
-	if (placed.kind === 'empty') {
-		const spec = BLOCK_ROW_SPECS[placed.referenceBlockTypeId];
+	if (part.kind === 'empty') {
+		const spec = BLOCK_ROW_SPECS[part.referenceBlockTypeId];
 		const merged = spec.sptLayout === 'mergedThree';
 		return {
-			startTick: placed.startTick,
-			tickCount: placed.tickCount,
+			topPt: part.topPt,
+			heightPt: part.heightPt,
 			mergedSptColumns: merged,
 			cells: buildSptColumnCells(merged, undefined, undefined).concat([
 				emptyCell(0),
@@ -108,26 +101,55 @@ export function buildBodyRow(
 		};
 	}
 
-	const { block, testBlock } = placed;
+	const { block } = part;
+	const cells = buildValueCells(block, part.testBlock, part.partIndex, part.isFinalPart);
+
+	// 4 — DESCRIPTION. The only column that continues: this part's share of the lines the
+	// content flow dealt across the block's parts.
+	cells.push({
+		column: DESCRIPTION_COLUMN,
+		colSpan: 1,
+		content: { kind: 'rich', lines: part.lines, sizePt: baseFontSizePt, lineHeightPt: part.lineHeightPt },
+		align: 'left',
+		valign: 'top',
+	});
+
+	return {
+		topPt: part.topPt,
+		heightPt: part.heightPt,
+		cells,
+		mergedSptColumns: BLOCK_ROW_SPECS[block.blockTypeId].sptLayout === 'mergedThree',
+	};
+}
+
+/**
+ * The thirteen value cells of a block row — every column but DESCRIPTION — for one part.
+ *
+ * A block whose contents cross a page break is drawn as two or more parts, and only the
+ * first carries its identity. Reprinting `P3`, its depths and its blow counts on the next
+ * page would read as a second sample taken at a second depth; the continuation is the rest
+ * of the description and nothing else. The cells still have to be emitted empty rather than
+ * omitted, because the grid stroker takes the row's vertical rules from its cell boundaries
+ * and `assertRowOccupancy` requires all 14 columns to be tiled.
+ */
+export function buildValueCells(
+	block: Block,
+	testBlock: Block | null,
+	partIndex: number,
+	isFinalPart: boolean,
+): RowCell[] {
 	const spec = BLOCK_ROW_SPECS[block.blockTypeId];
 	const merged = spec.sptLayout === 'mergedThree';
 	const cells: RowCell[] = [];
-
-	// A block whose depth interval crosses a page break is drawn as two or more parts, and
-	// only the first carries its identity. Reprinting `P3`, its depths and its blow counts on
-	// the next page would read as a second sample taken at a second depth; the continuation
-	// is the rest of the description and nothing else. The cells still have to be emitted
-	// empty rather than omitted, because the grid stroker takes the row's vertical rules from
-	// its cell boundaries and `assertRowOccupancy` requires all 14 columns to be tiled.
-	const isContinuation = placed.partIndex > 0;
+	const isContinuation = partIndex > 0;
 
 	// 0 — DATE & TIME. The exception, because it is not a value but two pins: the shift's
 	// start at the top of the cell and its end at the bottom. On a split the end has to
 	// travel to the LAST part, or it would mark the page break instead of the end of shift.
 	cells.push(
 		spec.usesDayWorkStatus
-			? dayWorkStatusCell(block.dayWorkStatus, baseFontSizePt, !isContinuation, placed.isFinalPart)
-			: endOfBoreholeDateTimeCell(block, baseFontSizePt, !isContinuation),
+			? dayWorkStatusCell(block.dayWorkStatus, !isContinuation, isFinalPart)
+			: endOfBoreholeDateTimeCell(block, !isContinuation),
 	);
 
 	// 1 — SAMPLING / TESTING / CORING
@@ -158,16 +180,6 @@ export function buildBodyRow(
 				? linesContent(waterLevelLines(block.dayWorkStatus))
 				: linesContent(endOfBoreholeWaterLevelLines(block)),
 		align: 'center',
-		valign: 'top',
-	});
-
-	// 4 — DESCRIPTION. The only column that continues. `prefit` is set for a split block, and
-	// holds this part's share of a layout agreed across all of them; see fitDescriptions.ts.
-	cells.push({
-		column: DESCRIPTION_COLUMN,
-		colSpan: 1,
-		content: { kind: 'rich', tokens: descriptionTokens(block, testBlock), prefit },
-		align: 'left',
 		valign: 'top',
 	});
 
@@ -204,7 +216,7 @@ export function buildBodyRow(
 	// that only contributes its column boundary to the grid.
 	cells.push(emptyCell(13));
 
-	return { startTick: placed.startTick, tickCount: placed.tickCount, cells, mergedSptColumns: merged };
+	return cells;
 }
 
 function linesContent(lines: string[]) {
@@ -238,7 +250,7 @@ function buildSptColumnCells(
 }
 
 /** End of borehole prints its installation date/time instead of a day-work status. */
-function endOfBoreholeDateTimeCell(block: Block, baseFontSizePt: number, show: boolean): RowCell {
+function endOfBoreholeDateTimeCell(block: Block, show: boolean): RowCell {
 	const lines: string[] = [];
 	if (show && block.blockTypeId === 11 && block.installationDate !== null) {
 		lines.push(getDate(block.installationDate));
@@ -252,7 +264,7 @@ function endOfBoreholeDateTimeCell(block: Block, baseFontSizePt: number, show: b
 		content: lines.length === 0 ? { kind: 'empty' } : { kind: 'lines', lines },
 		align: 'center',
 		valign: 'top',
-		fontSizePt: +(baseFontSizePt * 0.67).toFixed(2),
+		fontSizePt: DAY_WORK_STATUS_FONT_SIZE_PT,
 	};
 }
 

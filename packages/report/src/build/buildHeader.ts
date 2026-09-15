@@ -4,7 +4,7 @@ import { HEADER_HEIGHT_PT, HAIRLINE_PT, type PageGeometry } from '../layout/page
 import type { DrawNode } from '../model/doc';
 import type { ReportProject } from '../model/input';
 import { box, hRule, labelledLine, line, run, textNode, vRule } from './drawText';
-import { fitSingleLine } from '../text/fitTextToBox';
+import { fitSingleLine } from '../text/fitSingleLine';
 import { breakIntoLines } from '../text/lineBreak';
 import { DEFAULT_LINE_HEIGHT_FACTOR, type TextMeasurer } from '../text/measure';
 

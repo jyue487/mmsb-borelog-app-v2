@@ -9,7 +9,8 @@
     "pagination": "node --import ./scripts/register.mjs scripts/dumpPagination.ts",
     "pagination:snap": "node --import ./scripts/register.mjs scripts/dumpPagination.ts --snap",
     "oracle": "node --import ./scripts/register.mjs scripts/diffOracle.ts",
-    "text": "node --import ./scripts/register.mjs scripts/dumpText.ts",
+    "flow": "node --import ./scripts/register.mjs scripts/dumpFlow.ts",
+    "flow:snap": "node --import ./scripts/register.mjs scripts/dumpFlow.ts --snap",
     "rows": "node --import ./scripts/register.mjs scripts/dumpRows.ts",
     "render": "node --import ./scripts/register.mjs scripts/renderFixture.ts"
   },

@@ -66,7 +66,6 @@ export interface ReportPage {
 }
 
 export type ReportWarning =
-	| { kind: 'descriptionClipped'; pageNumber: number; startTick: number }
 	| { kind: 'negativeBlockHeight'; blockId: string; startTick: number }
 	| { kind: 'pageBudgetExhausted'; pageNumber: number };
 

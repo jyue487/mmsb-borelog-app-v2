@@ -1,5 +1,4 @@
 import type { LaidOutLine } from '../text/lineBreak';
-import type { RichToken } from '../text/richText';
 
 /**
  * What a body row contains, before any geometry is applied.
@@ -12,26 +11,19 @@ import type { RichToken } from '../text/richText';
 export type HAlign = 'left' | 'center' | 'right';
 export type VAlign = 'top' | 'middle' | 'bottom';
 
-/** One part's share of a description that was laid out across several pages at once. */
-export interface PrefitDescription {
-	sizePt: number;
-	lineHeightPt: number;
-	lines: LaidOutLine[];
-}
-
 export type CellContent =
 	| { kind: 'empty' }
 	/** Stacked plain lines, e.g. `P3` over `FHPT1`, or a top/base depth pair. */
 	| { kind: 'lines'; lines: string[] }
 	/**
-	 * The DESCRIPTION cell: styled runs, auto-fitted to the box.
+	 * The DESCRIPTION cell: styled runs, already wrapped to the column.
 	 *
-	 * `prefit` is set only when the block's interval crosses a page break, in which case the
-	 * text was fitted once across every part's box together — a decision no single row can
-	 * make, since the other parts are on other pages. Without it the cell fits itself, which
-	 * is what all but a handful of rows do.
+	 * Wrapped before the row exists rather than in the cell, because the row's height is
+	 * derived from the line count (`flowContent.ts`) and a block split across a page break
+	 * carries only its share of the lines on each part. Nothing is fitted or shrunk: the row
+	 * grows to hold whatever is here.
 	 */
-	| { kind: 'rich'; tokens: RichToken[]; prefit?: PrefitDescription }
+	| { kind: 'rich'; lines: LaidOutLine[]; sizePt: number; lineHeightPt: number }
 	/**
 	 * A value over a horizontal rule over a second value — the SPT blow-count columns,
 	 * where the lower half only appears once the increment is complete (25 seating blows,
@@ -59,8 +51,9 @@ export interface RowCell {
 }
 
 export interface BodyRow {
-	startTick: number;
-	tickCount: number;
+	/** Offset from the top of the body band, in points; see `flowContent.ts`. */
+	topPt: number;
+	heightPt: number;
 	cells: RowCell[];
 	/**
 	 * False: columns 5-10 are six single cells (the SPT layout).

@@ -1,9 +1,6 @@
-import { DEFAULT_LINE_HEIGHT_FACTOR } from '../text/measure';
 import {
 	A4_HEIGHT_PT,
 	A4_WIDTH_PT,
-	CELL_PADDING_PT,
-	CELL_TEXT_TOP_INSET_PT,
 	COLUMN_FRACTIONS,
 	CONTENT_WIDTH_PT,
 	PAGE_MARGIN_BOTTOM_PT,
@@ -105,20 +102,8 @@ export const BASE_FONT_SIZE_PT = 6.5;
 export const HAIRLINE_PT = 0.5;
 
 /**
- * The shortest part of a block that is still worth drawing, in ticks.
- *
- * A block whose depth interval straddles a page break is split, and the part on the far side
- * carries only the continued description — its sample label, blow counts and N stay on the
- * first part, because repeating them reads as a second sample at a second depth. That makes
- * the first part the *only* place those values are ever printed, so it has to be tall enough
- * to hold a line of them: less than this and they would appear nowhere at all, and the whole
- * block belongs on the next page instead.
- *
- * Derived rather than chosen. One line costs the top inset, one leading, and the bottom
- * padding; at both 7pt and 6.5pt that is a shade over two ticks, so the answer is three
- * (0.3 m) and the type-size change does not move it.
+ * The DATE & TIME column's type size. The old markup applied `transform: scale(0.67)` to
+ * those eight divs as a stand-in for a font size it could not otherwise express; this is
+ * that scale made an explicit size, rounded the way the CSS pixel value would have been.
  */
-export const MIN_PART_TICKS = Math.ceil(
-	(CELL_TEXT_TOP_INSET_PT + BASE_FONT_SIZE_PT * DEFAULT_LINE_HEIGHT_FACTOR + CELL_PADDING_PT) /
-		TICK_PITCH_PT,
-);
+export const DAY_WORK_STATUS_FONT_SIZE_PT = +(BASE_FONT_SIZE_PT * 0.67).toFixed(2);

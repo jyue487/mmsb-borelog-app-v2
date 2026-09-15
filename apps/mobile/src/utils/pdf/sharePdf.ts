@@ -73,23 +73,15 @@ export async function sharePdf(
 }
 
 /**
- * Turns warnings into something a field engineer can act on. `descriptionClipped` is the
- * one that matters: it means a description was too long for its depth interval and was
- * truncated, which is a data problem that can be fixed on the spot.
+ * Turns warnings into something a field engineer can act on. Text never fails to fit any
+ * more — a row grows to hold whatever is in it — so the only warning worth a sentence is
+ * the one that points at the data: depths that run backwards.
  */
 export function describeWarnings(warnings: ReportWarning[]): string | null {
 	if (warnings.length === 0) {
 		return null;
 	}
 	const parts: string[] = [];
-
-	const clipped = warnings.filter((warning) => warning.kind === 'descriptionClipped');
-	if (clipped.length > 0) {
-		const pages = [...new Set(clipped.map((warning) => warning.pageNumber))].join(', ');
-		parts.push(
-			`${clipped.length} description${clipped.length === 1 ? ' was' : 's were'} too long to fit and got cut short (sheet ${pages}). Shorten the text or split the interval.`,
-		);
-	}
 
 	const depths = warnings.filter((warning) => warning.kind === 'negativeBlockHeight');
 	if (depths.length > 0) {

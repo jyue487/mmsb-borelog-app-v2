@@ -790,48 +790,50 @@ override drops it and the failure looks like a missing module, not a config prob
 and what `pnpm install` resolves, so it wants a device build afterwards to confirm — the same
 timing constraint as item 14. Do both in one pass.
 
-### 16. Three page-break cases a split block still handles poorly
+### 16. Resolved: rows are as tall as their contents, and a short interval no longer overprints
 
-A block whose depth interval crosses a page break is now drawn in parts: as much as fits on the
-page, the rest continuing at the top of the next (`paginate.ts`). A part must be at least
-`MIN_PART_TICKS` — 3 ticks, 0.3 m, derived in `pageGeometry.ts` as the height of one line of
-base-size text — or the whole block moves to the next page instead, because a part shorter than
-that cannot print the sample label and blow counts that only ever appear on the first part.
+Three page-break cases used to slip past `MIN_PART_TICKS` — the 3-tick minimum for a split part
+that stood in for "one line of text" — and a fourth case needed no page break at all: a block
+whose whole interval was under the minimum. A 0.14 m SPT got a 1-tick row (5.86 pt), and while the
+description was shrunk and clipped with a `descriptionClipped` warning, every other cell — sample
+label, depths, WL, blow counts, N, R/r, date/time — was drawn at full size straight over the rule
+and the row below it. That is what a photographed report showed.
 
-That minimum is enforced in one place only, on the decision to split. Three cases slip past it:
+Fixed by adding a second vertical layer (`packages/report/src/layout/flowContent.ts`): depth
+intervals are still placed in ticks by `paginate()`, but each row's *contents* are placed in points,
+a row is made as tall as its cells need (`rows/rowMetrics.ts`), and the rows below are pushed down
+until a block with room to spare absorbs the push. A pushed row is entered through a three-segment
+separator — depth line on the outside, content line on the inside, a diagonal in DATE & TIME and in
+R/r between them — so the ruler still reads true and the extension is visible. When the strip at
+the foot of a page cannot hold a block's head, the contents start on the next page and the strip
+becomes the previous row's extension with the diagonals clipped at the fold; the depth row stays
+put, where `MIN_PART_TICKS` used to move it down by up to 0.2 m. See *PDF generation* in
+`CLAUDE.md`, the `overflow-*` fixtures, and `fixtures/flow.snapshot.txt`.
 
-- **A short trailing part.** The rule guards the part on *this* page, not the one on the next. A
-  9.1 m block starting with 8.9 m of page left splits 89 + 2 ticks, and the 2-tick continuation is
-  below the minimum. It only carries description text, so nothing is lost — but the text is clipped
-  to one line and `descriptionClipped` fires. Splitting on the *larger* remainder, or pulling a
-  tick back from the first part, would fix it.
-- **A folded sample+test pair on a 3-tick part.** Column 1 then holds two lines (`P3` over
-  `FHPT1`), needing 14.95 pt against the 13.07 pt a 3-tick part has. The second label clips
-  silently — there is no warning for an overflowing `lines` cell, only for the description. Either
-  raise the minimum to two lines (5 ticks) when `testBlock !== null`, or warn.
-- **A block shorter than the minimum.** A 0.2 m operation can never satisfy it anywhere, so it is
-  drawn wherever it lands, including in a 1-tick sliver at the foot of a page. Carrying it forward
-  instead would not help and could loop; the `split-tiny-block` fixture pins the current behaviour.
+Consequences worth knowing: the description size ladder (6.5 → 3.5 pt) is gone — text is never
+shrunk or clipped, and there is no `descriptionClipped` warning any more; an end of borehole with
+more remarks than the last page has room for continues on a page of its own; and the render hash
+of any fixture containing a block shorter than its contents changed by design (`split-exact`,
+`split-sliver`, `split-tiny-block`, `negative-height` — the other thirteen fixtures draw the same set
+of nodes as before).
 
-None of these is reachable without a block landing within 0.3 m of a page boundary, which is why
-they are recorded rather than fixed: the arithmetic that would fix the first two also changes where
-every ordinary block lands, and that wants a real borehole to check against rather than a fixture.
+### 17. Three header fields are unfitted and will print outside the header box
 
-- **Three header fields are unfitted and will print outside the header box.** `LOCATION`, `CLIENT`
-  and `CONSULTANT` (`buildHeader.ts`) are passed to `textNode` raw. The backend does not clip text,
-  so a value wider than the column — `leftWidth` is 268.63 pt, less the label, so roughly 60-70
-  characters of 7 pt bold — draws straight through the vertical rule at the 55% split and on across
-  the right-hand column. The five right-hand fields have the same exposure with a narrower box
-  (217.61 pt): `TYPE OF BORING` and `TYPE OF RIG` are free text and the likeliest to overrun.
+`LOCATION`, `CLIENT` and `CONSULTANT` (`buildHeader.ts`) are passed to `textNode` raw. The backend
+does not clip text, so a value wider than the column — `leftWidth` is 268.63 pt, less the label, so
+roughly 60-70 characters of 7 pt bold — draws straight through the vertical rule at the 55% split
+and on across the right-hand column. The five right-hand fields have the same exposure with a
+narrower box (217.61 pt): `TYPE OF BORING` and `TYPE OF RIG` are free text and the likeliest to
+overrun.
 
-  `PROJECT` is the only one that is fitted, and as of the three-line change it both wraps and
-  ellipsises. The fix is the same one line each — run the existing `fitSingleLine` over the value,
-  as `PROJECT` did before it learned to wrap — and it needs no layout change, since every one of
-  these boxes is already a full `lineStep` tall. Left out of the three-line change only to keep it
-  to the one field that was asked about. Wrapping them the way `PROJECT` now wraps would be the
-  nicer answer, but the band has no height left for a second growable field: the three-line case
-  already compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without moving
-  `TICK_PITCH_PT` and every description box in the report.
+`PROJECT` is the only one that is fitted, and as of the three-line change it both wraps and
+ellipsises. The fix is the same one line each — run the existing `fitSingleLine` over the value, as
+`PROJECT` did before it learned to wrap — and it needs no layout change, since every one of these
+boxes is already a full `lineStep` tall. Left out of the three-line change only to keep it to the
+one field that was asked about. Wrapping them the way `PROJECT` now wraps would be the nicer
+answer, but the band has no height left for a second growable field: the three-line case already
+compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without moving
+`TICK_PITCH_PT` and every description box in the report.
 
 ## Deferred features
 

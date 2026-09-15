@@ -53,9 +53,33 @@ import {
 } from '@mmsb/core';
 
 import { COLUMN_COUNT } from '../src/layout/constants.ts';
-import { BASE_FONT_SIZE_PT } from '../src/layout/pageGeometry.ts';
+import type { ContentPart } from '../src/layout/flowContent.ts';
+import { BASE_FONT_SIZE_PT, createPageGeometry } from '../src/layout/pageGeometry.ts';
 import { assertRowOccupancy, buildBodyRow } from '../src/rows/buildBodyRow.ts';
+import { measureRowContent } from '../src/rows/rowMetrics.ts';
 import type { CellContent } from '../src/model/table.ts';
+import { createFixedWidthMeasurer } from '../src/text/measure.ts';
+
+// The description arrives on a row already wrapped, so a stub measurer stands in for the
+// font here — the wrap itself is not what this script checks.
+const geometry = createPageGeometry();
+const measurer = createFixedWidthMeasurer();
+
+function partOf(block: Block, partIndex: number, isFinalPart: boolean): ContentPart {
+	const metrics = measureRowContent(block, null, geometry, measurer);
+	return {
+		kind: 'block',
+		block,
+		testBlock: null,
+		page: 0,
+		topPt: 20 * geometry.tickPitchPt,
+		heightPt: 15 * geometry.tickPitchPt,
+		partIndex,
+		isFinalPart,
+		lines: metrics.lines,
+		lineHeightPt: metrics.lineHeightPt,
+	};
+}
 
 const EPOCH = new Date(0);
 
@@ -147,9 +171,11 @@ function describe(content: CellContent): string {
 		case 'lines':
 			return content.lines.join(' / ');
 		case 'rich':
-			return content.tokens.map((t) => (t.kind === 'break' ? '⏎' : t.italic ? `*${t.text}*` : t.text)).join('');
+			return content.lines
+				.map((line) => line.runs.map((r) => (r.fontId === 'italic' ? `*${r.text}*` : r.text)).join(''))
+				.join('⏎');
 		case 'divided':
-			return `${content.top}${content.hasRule ? '‾' : ' '}${content.bottom}`;
+			return `${content.top}${content.bottom === '' ? '' : `‾${content.bottom}`}`;
 		case 'pinned':
 			return `↑${content.top.join(' ')} ↓${content.bottom.join(' ')}`;
 	}
@@ -183,10 +209,7 @@ for (const blockTypeId of BLOCK_TYPE_ID_LIST) {
 	const block = populate(FACTORIES[blockTypeId]());
 	report(
 		`type ${String(blockTypeId).padStart(2)}`,
-		buildBodyRow(
-			{ kind: 'block', block, testBlock: null, startTick: 20, tickCount: 15, partIndex: 0, isFinalPart: true },
-			BASE_FONT_SIZE_PT,
-		),
+		buildBodyRow(partOf(block, 0, true), BASE_FONT_SIZE_PT),
 	);
 }
 
@@ -208,10 +231,7 @@ const SPLIT_PARTS: { label: string; partIndex: number; isFinalPart: boolean }[] 
 for (const { label, partIndex, isFinalPart } of SPLIT_PARTS) {
 	report(
 		label,
-		buildBodyRow(
-			{ kind: 'block', block: splitBlock, testBlock: null, startTick: 20, tickCount: 15, partIndex, isFinalPart },
-			BASE_FONT_SIZE_PT,
-		),
+		buildBodyRow(partOf(splitBlock, partIndex, isFinalPart), BASE_FONT_SIZE_PT),
 	);
 }
 

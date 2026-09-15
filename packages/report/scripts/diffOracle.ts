@@ -5,7 +5,7 @@
  *
  * Any divergence is printed. A divergence is only acceptable if it is one the migration
  * deliberately made; anything else means the restructuring changed behaviour by accident
- * and needs explaining. There are three deliberate ones, each recognised below rather than
+ * and needs explaining. There are four deliberate ones, each recognised below rather than
  * waved through by fixture name:
  *
  *  - an empty borehole, where the old code threw on an unguarded `blocks[length - 1]`;
@@ -17,6 +17,12 @@
  *    every row keeps its startTick and tickCount and only the labels move. That is the
  *    signature checked for — same geometry, differences confined to filler-versus-block. A
  *    row that actually moved would fail here, as it should.
+ *  - **an end of borehole at the foot of a page.** The old loop sized it by a character
+ *    count of its remarks and, when under half of that fitted, moved it whole to a fresh
+ *    page. Depth pagination no longer measures text at all: the terminator takes the strip
+ *    that is left, and it is the content flow (`flowContent.ts`) that carries long remarks on
+ *    to another page. So the old layout has one row more — the terminator on a page of its
+ *    own — and the strip before it is filler where the new one has the terminator.
  */
 import { FIXTURES } from '../fixtures/builders.ts';
 import { paginate } from '../src/layout/paginate.ts';
@@ -45,6 +51,29 @@ function differsOnlyByPageBreakSplit(oracleRows: ComparedRow[], mineRows: Compar
 		}
 		return o.label === m.label || o.label === FILLER || m.label === FILLER;
 	});
+}
+
+/**
+ * True when the old layout ends with `(filler)` then the terminator on a fresh page, and the
+ * new one ends with the terminator in that filler's slot — and everything before agrees.
+ */
+function differsOnlyByEndOfBoreholeSpill(oracleRows: ComparedRow[], mineRows: ComparedRow[]): boolean {
+	if (oracleRows.length !== mineRows.length + 1 || mineRows.length === 0) {
+		return false;
+	}
+	const strip = oracleRows[oracleRows.length - 2];
+	const moved = oracleRows[oracleRows.length - 1];
+	const mine = mineRows[mineRows.length - 1];
+	if (strip.label !== FILLER || moved.label !== mine.label) {
+		return false;
+	}
+	if (strip.startTick !== mine.startTick || strip.tickCount !== mine.tickCount) {
+		return false;
+	}
+	if (moved.startTick !== strip.startTick + strip.tickCount || moved.startTick % 90 !== 0) {
+		return false;
+	}
+	return oracleRows.slice(0, -2).every((o, i) => JSON.stringify(o) === JSON.stringify(mineRows[i]));
 }
 
 let divergent = 0;
@@ -91,6 +120,15 @@ for (const [name, blocks] of Object.entries(FIXTURES)) {
 		for (const row of changed) {
 			console.log(`    ${String(row.startTick).padStart(4)}+${String(row.tickCount).padEnd(3)}  ${row.label}`);
 		}
+		continue;
+	}
+
+	if (differsOnlyByEndOfBoreholeSpill(oracle.rows, mineRows)) {
+		expected += 1;
+		const mine = mineRows[mineRows.length - 1];
+		console.log(
+			`${name.padEnd(26)} EXPECTED — end of borehole stays in the ${mine.tickCount}-tick strip at ${mine.startTick}; the old loop gave it a page of its own`,
+		);
 		continue;
 	}
 

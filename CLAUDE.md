@@ -266,27 +266,40 @@ Two tiers, and the seam between them is the point:
   `ReportDoc` is plain JSON — a list of `DrawNode`s with resolved coordinates.
 - **`ReportDoc` → PDF** (`src/render/pdfLibBackend.ts`) is the only pdf-lib-aware code.
 
-Layout is driven by a **depth scale in ticks: 1 tick = 0.1 m, 90 ticks = one A4 page (9 m)**.
-`paginate()` is pure: it returns where every block lands rather than threading a mutable counter
-through the renderers, so a block can be measured without being drawn. It special-cases blocks that
-overlap — a permeability test starting inside an SPT interval folds onto the sample's own row
-(`collapsePairs.ts`).
+Layout is driven by a **depth scale in ticks: 1 tick = 0.1 m, 90 ticks = one A4 page (9 m)** — and
+it happens in **two vertical layers**, one in ticks and one in points:
 
-**A block that crosses a page break is split, not moved.** As much of it as fits is drawn on the
-page and the rest continues at the top of the next, as a second `PlacedRow` for the same block
-carrying `partIndex`/`isFinalPart`. Only the first part prints the sample label, depths and blow
-counts — repeating them would read as a second sample at a second depth — so a continuation is the
-rest of the description and nothing else, with the shift's end pin moved to the last part. The
-whole block moves to the next page only when what is left of this one is under `MIN_PART_TICKS`
-(3 ticks, derived from one line of base-size text), which is too short to print those values in.
-End of borehole is exempt: `top === base`, so there is no interval to divide, and it fills whatever
-is left. This deliberately diverges from the old HTML loop — see the oracle note below.
+1. **Depth — `layout/paginate.ts`**, pure and text-free: where every block's depth interval lands,
+   in ticks, page by page. This is what the ruler is drawn from and what a block's line on the
+   ruler side is, so a block always *starts* at its true depth. It special-cases blocks that
+   overlap — a permeability test starting inside an SPT interval folds onto the sample's own row
+   (`collapsePairs.ts`). A block that crosses a page break is split, not moved: `PlacedRow`s
+   carrying `partIndex`/`isFinalPart`. End of borehole never splits — `top === base`, so there is
+   no interval to divide — and fills whatever is left of the page.
+2. **Contents — `layout/flowContent.ts`**, pure but fed by a measurer: where each row's *contents*
+   land, in points. A row is **as tall as its cells need**, never less: `rows/rowMetrics.ts` reads
+   the height off the same cells `buildBodyRow` draws (lines × leading; the description wrapped
+   once at base size), and the flow walks the rows with a content cursor, so a 0.1 m interval with
+   two lines of blow counts becomes a 24 pt row and everything below it is **pushed down** until a
+   block with room to spare absorbs the push. Nothing is ever shrunk or clipped — there is no size
+   ladder and no `descriptionClipped` warning any more. The flow can add pages the depths did not
+   ask for (an end of borehole with long remarks near the foot of the last page).
 
-Because the description then spans two boxes on two pages, **it is fitted once for the whole
-block** by a pre-pass in `buildReportDoc` (`build/fitDescriptions.ts` → `fitTextAcrossBoxes`), which
-picks one type size for every part and deals the lines out in order. Fitting each part on its own
-would set the same sentence at two sizes across the fold. Blocks that fit on one page are untouched
-and still fit themselves in `buildBodyNodes`.
+A pushed row therefore has two tops: its depth top `y1` (on the ruler) and its content top `y2`.
+The separator above it is drawn as **three segments** (`build/buildSeparators.ts`):
+`(x0,y1)-(x1,y2)`, `(x1,y2)-(x2,y2)`, `(x2,y2)-(x3,y1)` — outer ends on the depth line, the inner
+span on the content line, and a diagonal inside DATE & TIME and another inside R/r that say "the
+row above was extended". `x1`/`x2` are the edges of the widest values those columns hold
+(`0000/00/00` at the date size, `100.0` at base size), so the diagonals never cross text; `x3` is
+the SCALE column's left edge, where every row rule stops so it is not mistaken for a ruler tick.
+
+Contents are cut at page breaks the way intervals are. Only the first part prints the head — sample
+label, depths, blow counts — because repeating them would read as a second sample at a second
+depth; a continuation is the rest of the description, with the shift's end pin on the last part.
+So the first part must hold the head: **when the strip left at the foot of a page cannot, the
+contents start at the top of the next page** while the depth part stays in the strip, which becomes
+the previous row's extension with the diagonals clipped at the fold. (This replaced a tick rule,
+`MIN_PART_TICKS`, that moved the *depth row* down instead and left it up to 0.2 m below its depth.)
 
 Two things are load-bearing and easy to break:
 
@@ -296,8 +309,8 @@ Two things are load-bearing and easy to break:
   columns 5-10 into three double-width cells, so interior vertical rules must come from the row,
   not the table. `assertRowOccupancy()` enforces the 14-column tiling.
 
-Description text is fitted with **real font metrics** (`text/fitTextToBox.ts` binary-searches a size
-ladder against `widthOfTextAtSize`). The fonts are pre-subsetted offline by
+Description text is wrapped with **real font metrics** (`text/lineBreak.ts` against
+`widthOfTextAtSize`; only the header's `fitSingleLine` still ellipsises). The fonts are pre-subsetted offline by
 `scripts/subsetFonts.sh` and embedded with `subset: false`, because pdf-lib's runtime subsetter
 mis-maps glyphs for NotoSans. `<i>` in a description is semantic — it marks an in-situ test — which
 is why a third (italic) face is embedded.
@@ -305,18 +318,22 @@ is why a third (italic) face is embedded.
 There is no test runner. Verification is by committed snapshot and differential check:
 
 ```bash
-pnpm --filter @mmsb/report pagination   # where every block lands, vs a committed snapshot
+pnpm --filter @mmsb/report pagination   # depth layer: where every interval lands, vs a committed snapshot
+pnpm --filter @mmsb/report flow         # content layer: every row's box in points and every pushed separator
 pnpm --filter @mmsb/report oracle       # diff against a transliteration of the old HTML loop
 pnpm --filter @mmsb/report rows         # every block type, asserting 14-column occupancy
-pnpm --filter @mmsb/report text         # the size-fitting kernel against real metrics
 pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
 ```
 
+`pagination:snap` and `flow:snap` rewrite the snapshots; `git diff` is the assertion. The `flow`
+snapshot uses the real NotoSans metrics, since a row's height comes from wrapping its description.
+
 `oracle` no longer expects an exact match, because page breaks deliberately changed. It recognises
-three divergences and fails on anything else: the empty borehole the old code threw on, the runaway
-loop on out-of-order depths, and the page-break split — which it detects by signature rather than
-by fixture name (every row keeps its `startTick` and `tickCount`; only blank filler becomes a block
-part). A row that genuinely moved still fails.
+four divergences and fails on anything else: the empty borehole the old code threw on, the runaway
+loop on out-of-order depths, the page-break split — which it detects by signature rather than by
+fixture name (every row keeps its `startTick` and `tickCount`; only blank filler becomes a block
+part) — and an end of borehole left in the strip at the foot of a page where the old loop gave it a
+page of its own. A row that genuinely moved still fails.
 
 The scripts are **not** type-checked — `tsconfig.json` covers `src` alone, so `tsc` will not catch
 a stale call in `scripts/` or `fixtures/`. Run them after changing a signature they use.

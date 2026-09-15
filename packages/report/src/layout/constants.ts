@@ -64,9 +64,10 @@ export const COLUMN_COUNT = COLUMN_FRACTIONS.length;
 /**
  * Left and right breathing room inside a body cell, and the clearance above the rule below it.
  *
- * Here rather than beside the drawing code because the pagination minimum is derived from
- * them: whether a fragment of a split block is tall enough to print anything is a question
- * about these insets, and `paginate()` must be able to answer it without importing a renderer.
+ * Here rather than beside the drawing code because the content flow is derived from them: how
+ * tall a row has to be to hold its cells, and whether the strip left at the foot of a page can
+ * hold a row's head at all, are questions about these insets, and `flowContent()` must be
+ * able to answer them without importing a renderer.
  */
 export const CELL_PADDING_PT = 1.5;
 
@@ -81,8 +82,16 @@ export const CELL_PADDING_PT = 1.5;
  */
 export const CELL_TEXT_TOP_INSET_PT = 3;
 
-/** The one column holding prose rather than a value — the only one whose text is fitted. */
+/** The one column holding prose rather than a value — the only one whose text is wrapped. */
 export const DESCRIPTION_COLUMN = 4;
+
+/**
+ * The DESCRIPTION column is the one cell holding prose rather than a value, so it gets a
+ * text margin instead of a hairline's clearance, and is set a little tighter than the
+ * one-line cells beside it — the lines belong to each other, the cells do not.
+ */
+export const DESCRIPTION_PADDING_X_PT = 4;
+export const DESCRIPTION_LINE_HEIGHT_FACTOR = 1.1;
 
 /** The six SPT sub-columns, which the coring family merges into three double-width cells. */
 export const SPT_COLUMN_START = 5;

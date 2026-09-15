@@ -1,9 +1,7 @@
-
-import { CELL_PADDING_PT, CELL_TEXT_TOP_INSET_PT, DESCRIPTION_COLUMN } from '../layout/constants';
+import { CELL_PADDING_PT, CELL_TEXT_TOP_INSET_PT, DESCRIPTION_PADDING_X_PT } from '../layout/constants';
 import { BASE_FONT_SIZE_PT, HAIRLINE_PT, type PageGeometry } from '../layout/pageGeometry';
-import type { DrawNode, ReportWarning, TextLine } from '../model/doc';
-import type { BodyRow, PrefitDescription, RowCell, VAlign } from '../model/table';
-import { fitTextToBox } from '../text/fitTextToBox';
+import type { DrawNode, TextLine } from '../model/doc';
+import type { BodyRow, RowCell, VAlign } from '../model/table';
 import type { TextMeasurer } from '../text/measure';
 import { hRule, line, run, stack, textNode, vRule } from './drawText';
 
@@ -15,33 +13,12 @@ import { hRule, line, run, stack, textNode, vRule } from './drawText';
  * cavity and Lugeon rows merge them into three double-width cells — so a stroker that drew
  * one full-height rule per column boundary would paint lines through the middle of every
  * CORE RUN / T.C.R. / R.Q.D. cell.
- */
-
-/**
- * The DESCRIPTION column is the one cell holding prose rather than a value, so it gets a
- * text margin instead of a hairline's clearance, and is set a little tighter than the
- * one-line cells beside it — the lines belong to each other, the cells do not.
- */
-export const DESCRIPTION_PADDING_X_PT = 4;
-export const DESCRIPTION_LINE_HEIGHT_FACTOR = 1.1;
-
-/**
- * The usable box inside the DESCRIPTION cell of a row `tickCount` ticks tall.
  *
- * Exported because a block split across a page break has to be fitted once against all of
- * its parts' boxes at once, which happens in `fitDescriptions.ts` — before any row reaches
- * the code below. Both callers must agree on the insets or the pre-fitted lines would be
- * measured against one box and drawn into another.
+ * The horizontal rules between rows are not drawn here. A row's top edge is not always a
+ * straight line — a row pushed down by the one above it is entered through a three-segment
+ * separator that can even straddle a page break — so they come from `buildSeparators.ts`,
+ * which sees the boundaries rather than the rows.
  */
-export function descriptionBoxPt(
-	tickCount: number,
-	geometry: PageGeometry,
-): { widthPt: number; heightPt: number } {
-	return {
-		widthPt: geometry.columnWidth(DESCRIPTION_COLUMN) - DESCRIPTION_PADDING_X_PT * 2,
-		heightPt: tickCount * geometry.tickPitchPt - CELL_TEXT_TOP_INSET_PT - CELL_PADDING_PT,
-	};
-}
 
 /** Mirrors the backend's vertical alignment, for content the builder places itself. */
 function valignOffsetPt(valign: VAlign, boxHeight: number, contentHeight: number): number {
@@ -50,14 +27,7 @@ function valignOffsetPt(valign: VAlign, boxHeight: number, contentHeight: number
 	return 0;
 }
 
-export function buildBodyNodes(
-	rows: BodyRow[],
-	geometry: PageGeometry,
-	pageStartTick: number,
-	measurer: TextMeasurer,
-	pageNumber: number,
-	warnings: ReportWarning[],
-): DrawNode[] {
+export function buildBodyNodes(rows: BodyRow[], geometry: PageGeometry, measurer: TextMeasurer): DrawNode[] {
 	const nodes: DrawNode[] = [];
 
 	// Outer body box and the two vertical edges.
@@ -71,17 +41,10 @@ export function buildBodyNodes(
 	});
 
 	for (const row of rows) {
-		const rowY = geometry.bodyY + (row.startTick - pageStartTick) * geometry.tickPitchPt;
-		const rowH = row.tickCount * geometry.tickPitchPt;
+		const rowY = geometry.bodyY + row.topPt;
+		const rowH = row.heightPt;
 		if (rowH <= 0) {
 			continue;
-		}
-
-		// Horizontal rule at the row's bottom edge. The final row's edge is the body box's
-		// own border, so it is skipped to avoid double-stroking (which prints visibly darker).
-		const bottom = rowY + rowH;
-		if (bottom < geometry.bodyY + geometry.bodyHeightPt - 0.01) {
-			nodes.push(hRule(geometry.contentX, bottom, geometry.contentWidthPt, HAIRLINE_PT));
 		}
 
 		// Interior vertical rules, taken from THIS row's cell boundaries.
@@ -93,23 +56,14 @@ export function buildBodyNodes(
 		}
 
 		for (const cell of row.cells) {
-			nodes.push(...buildCellNodes(cell, rowY, rowH, geometry, measurer, pageNumber, row.startTick, warnings));
+			nodes.push(...buildCellNodes(cell, rowY, rowH, geometry, measurer));
 		}
 	}
 
 	return nodes;
 }
 
-function buildCellNodes(
-	cell: RowCell,
-	rowY: number,
-	rowH: number,
-	geometry: PageGeometry,
-	measurer: TextMeasurer,
-	pageNumber: number,
-	startTick: number,
-	warnings: ReportWarning[],
-): DrawNode[] {
+function buildCellNodes(cell: RowCell, rowY: number, rowH: number, geometry: PageGeometry, measurer: TextMeasurer): DrawNode[] {
 	const paddingX = cell.content.kind === 'rich' ? DESCRIPTION_PADDING_X_PT : CELL_PADDING_PT;
 	const x = geometry.columnX(cell.column) + paddingX;
 	const w = geometry.columnWidth(cell.column, cell.colSpan) - paddingX * 2;
@@ -131,24 +85,13 @@ function buildCellNodes(
 		}
 
 		case 'rich': {
-			// The DESCRIPTION cell — the one place text is fitted rather than placed. A block
-			// split across a page break arrives already fitted, because its size had to be
-			// agreed with the parts on the other pages; the warning was raised there too, once
-			// for the block rather than once per part.
-			let fit: PrefitDescription;
-			if (cell.content.prefit !== undefined) {
-				fit = cell.content.prefit;
-			} else {
-				const own = fitTextToBox(cell.content.tokens, w, h, measurer, DESCRIPTION_LINE_HEIGHT_FACTOR);
-				if (own.overflowed) {
-					warnings.push({ kind: 'descriptionClipped', pageNumber, startTick });
-				}
-				fit = own;
-			}
-			const lines: TextLine[] = fit.lines.map((laidOut) => ({
-				runs: laidOut.runs.map((r) => run(r.text, fit.sizePt, r.fontId)),
+			// The DESCRIPTION cell. The lines arrive wrapped, and the row was made tall enough
+			// for them (`rowMetrics.ts`, `flowContent.ts`), so they are placed as given.
+			const { sizePt: descriptionSizePt, lineHeightPt } = cell.content;
+			const lines: TextLine[] = cell.content.lines.map((laidOut) => ({
+				runs: laidOut.runs.map((r) => run(r.text, descriptionSizePt, r.fontId)),
 			}));
-			return [textNode(lines, x, y, w, h, fit.lineHeightPt, cell.align, cell.valign)];
+			return [textNode(lines, x, y, w, h, lineHeightPt, cell.align, cell.valign)];
 		}
 
 		case 'divided': {
