@@ -55,3 +55,7 @@ app-example
 # spreadsheet. Without this the file is invisible to git and the feature cannot be built
 # by anyone else.
 !apps/web/public/ags/template.xlsx
+
+# images
+*.png
+*.jpeg
