@@ -75,7 +75,7 @@ export function paginateOracle(blocks: Block[], maxPages = 200): { rows: OracleR
 	};
 
 	while (blockIndex < blocks.length) {
-		if (pageIndex > maxPages) {
+		if (pageIndex > maxPages || ranAway) {
 			ranAway = true;
 			break;
 		}
@@ -86,6 +86,13 @@ export function paginateOracle(blocks: Block[], maxPages = 200): { rows: OracleR
 		}
 		while (blockIndex < blocks.length) {
 			if (w[0] === pageIndex * 90) break;
+			// The page guard above cannot catch a cursor that overshoots `pageIndex * 90` and
+			// never equals it again (a leading gap longer than a page does it): the inner loop
+			// then creeps one tick per iteration for ever without turning a page.
+			if (rows.length > 10_000) {
+				ranAway = true;
+				break;
+			}
 
 			const block = blocks[blockIndex];
 			const next = blocks[blockIndex + 1] ?? null;
