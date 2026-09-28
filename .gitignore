@@ -67,3 +67,6 @@ app-example
 !apps/dashboard/public/report/mmsb-logo.png
 !apps/dashboard/src/assets/hero.png
 !apps/dashboard/src/assets/mmsb-logo-transparent.png
+# The mobile app's icon, splash and report logo. EAS leaves ignored files out of the
+# upload even when git tracks them, so without this line prebuild fails on icon.png.
+!apps/mobile/assets/images/*.png
