@@ -83,6 +83,22 @@ export class Connector implements PowerSyncBackendConnector {
             break;
         }
 
+        if (result.error && isPermanentDataError(result.error.code)) {
+          // Postgres will reject this op on every retry, and ops upload strictly in
+          // order, so rethrowing would stall everything queued behind it forever — a
+          // single photo row with block_id = '' held back a borehole's worth of blocks
+          // that way until sign-out wiped the queue. Drop this op and carry on with
+          // the rest. It is lost either way; this way it is the only thing lost.
+          console.error('Discarding upload Postgres will never accept:', {
+            table: op.table,
+            op: op.op,
+            id: op.id,
+            opData: op.opData,
+            error: result.error,
+          });
+          continue;
+        }
+
         if (result.error) {
           console.error('Supabase upload error:', {
             table: op.table,
@@ -108,4 +124,17 @@ export class Connector implements PowerSyncBackendConnector {
       throw error;
     }
   }
+}
+
+/**
+ * Postgres error classes 22 (data exception — e.g. 22P02, '' as a uuid) and 23
+ * (integrity constraint violation — not-null, foreign key, check). Retrying these
+ * sends the same row and gets the same answer.
+ *
+ * Deliberately not 42501 (row-level security): that one clears once someone is
+ * assigned to the project, so the op is worth keeping in the queue until then.
+ * Network failures and 5xx carry no Postgres code and keep retrying too.
+ */
+function isPermanentDataError(code: string | undefined): boolean {
+  return code !== undefined && /^2[23]/.test(code);
 }
