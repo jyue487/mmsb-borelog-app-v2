@@ -169,7 +169,14 @@ export function BlockDetailsInputForm({ style, blocks, setBlocks, boreholeId, in
       { operationType === 'Others' && <OthersInputForm boreholeId={boreholeId} inputBlock={inputBlock} setCheckAndReturnBlock={setCheckAndReturnBlock} /> }
       <CameraComponent inputBlock={inputBlock} setBlockPhotosOnConfirmAsync={setBlockPhotosOnConfirmAsync} />
       {
-        (checkAndReturnBlock !== null || blockPhotosOnConfirmAsync !== null) && (
+        // Photos alone may be confirmed only on an existing block: with no block
+        // they would be saved with block_id = '', which Postgres rejects as a uuid
+        // forever, and every upload queued behind it stalls. Not `&&`: the camera
+        // registers its callback on mount, so that would reduce to
+        // `checkAndReturnBlock !== null` — and a grouping form (Others, Coring &
+        // Cavity, …) resets that to null *after* its sub-form registers, which would
+        // hide Confirm on a photo-only edit.
+        (checkAndReturnBlock !== null || (inputBlock !== null && blockPhotosOnConfirmAsync !== null)) && (
           <Button
             title="Confirm"
             color={styles.confirmButton.color}

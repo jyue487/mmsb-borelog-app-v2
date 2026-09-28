@@ -35,6 +35,9 @@ export function CameraComponent({ inputBlock, setBlockPhotosOnConfirmAsync, ...o
     // 4. Automatically upload file in background
     // 5. Update state to SYNCED when complete
     console.log('blockPhotosOnConfirmAsync running');
+    if (newBlockId === '') {
+      throw new Error('Cannot save photos. Please fill up the block details form first.');
+    }
 
     for (const imageInfo of allImageInfos.filter((imageInfo) => imageInfo.isNew && imageInfo.deletedAt === null)) {
       const imageUri = imageInfo.uri;
