@@ -83,7 +83,7 @@ export function canEditBoreholeDetails(role: MemberRole | null): boolean {
 // here the enforcement is unusually quiet. RLS applies a delete policy as a row
 // FILTER, so a refused delete succeeds having matched nothing and returns 200;
 // deleteBoreholeAndContents counts the rows it got back for exactly that
-// reason. See apps/web/src/supabase/deleteBorehole.ts.
+// reason. See apps/dashboard/src/supabase/deleteBorehole.ts.
 export function canDeleteBorehole(role: MemberRole | null): boolean {
   return role === 'owner' || role === 'admin';
 }

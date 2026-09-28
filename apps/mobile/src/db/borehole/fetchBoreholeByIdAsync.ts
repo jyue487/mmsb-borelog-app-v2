@@ -20,7 +20,7 @@ export async function fetchBoreholeByIdAsync(boreholeId: string): Promise<Boreho
         // `?? ''` because `Borehole` types these four as non-nullable `string` while the
         // column is nullable: a borehole written before the checker columns existed, or by
         // the dashboard's bulk add (which omits them), reads back NULL. Without this the
-        // PDF export throws on `.length`. Matches apps/web/src/supabase/boreholeRow.ts.
+        // PDF export throws on `.length`. Matches apps/dashboard/src/supabase/boreholeRow.ts.
         // The two dates stay on `toDate`, which is the convention for nullable timestamps.
         checkerName: result.checker_name ?? '',
         checkerSignatureBase64: result.checker_signature_base64 ?? '',

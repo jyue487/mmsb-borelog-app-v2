@@ -11,9 +11,9 @@ standard A4 borehole log report.
 Two clients over one Supabase backend:
 
 - `apps/mobile` — Expo/React Native app used offline in the field. The primary app: data entry + PDF generation.
-- `apps/web` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
+- `apps/dashboard` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
 - `packages/core` — the shared domain: interfaces, constants, and the one block parser both clients
-  use. `apps/mobile` and `apps/web` both depend on it; nothing is duplicated any more.
+  use. `apps/mobile` and `apps/dashboard` both depend on it; nothing is duplicated any more.
 - `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
   both apps. Platform-free.
 - `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the separate
@@ -25,7 +25,7 @@ Two clients over one Supabase backend:
 
 pnpm workspace + Turborepo. Node 24, pnpm 11.
 
-`pnpm build` from the root works and is fully cached (`@mmsb/core` → `web`; `apps/mobile` has no
+`pnpm build` from the root works and is fully cached (`@mmsb/core` → `dashboard`; `apps/mobile` has no
 build task — it ships via EAS). Per-package:
 
 ```bash
@@ -35,14 +35,14 @@ pnpm --filter apps/mobile android      # / ios
 pnpm --filter apps/mobile check-types  # tsc --noEmit — currently clean, keep it that way
 pnpm --filter apps/mobile lint         # expo lint
 
-# web (apps/web)
-pnpm --filter web dev                  # vite dev server
-pnpm --filter web build                # tsc -b && vite build
-pnpm --filter web lint
+# dashboard (apps/dashboard)
+pnpm --filter dashboard dev            # vite dev server
+pnpm --filter dashboard build          # tsc -b && vite build
+pnpm --filter dashboard lint
 ```
 
-Note the package names are inconsistent: `apps/mobile` (literally, a path), `web`, `@mmsb/core` —
-so the `--filter` argument differs in shape per package.
+Note the package names are inconsistent: `apps/mobile` (literally, a path), `dashboard`,
+`@mmsb/core` — so the `--filter` argument differs in shape per package.
 
 There are no tests in this repo — no test runner is configured in any package.
 
@@ -52,7 +52,7 @@ Native builds go through EAS (`apps/mobile/eas.json`): `development` / `preview`
 
 Env vars are gitignored and must be created locally. `apps/mobile/.env.local` takes the three names
 in `apps/mobile/.env.example` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY`,
-`EXPO_PUBLIC_POWERSYNC_URL`); `apps/web/.env` takes `VITE_SUPABASE_URL` and
+`EXPO_PUBLIC_POWERSYNC_URL`); `apps/dashboard/.env` takes `VITE_SUPABASE_URL` and
 `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
 `.env.local` is for local development only — **cloud builds never read it**. EAS resolves the same
@@ -257,7 +257,7 @@ dashboard produce byte-identical output. There is no WebView and no `expo-print`
 
 The package is strictly platform-free — no `expo-*`, no `react-native`, no DOM, no `fs`, no
 `fetch`. Hosts hand in asset bytes (`apps/mobile/src/utils/pdf/loadReportAssets.ts`,
-`apps/web/src/utils/downloadBorelogPdf.ts`) and get bytes back. That is what makes the whole layout
+`apps/dashboard/src/utils/downloadBorelogPdf.ts`) and get bytes back. That is what makes the whole layout
 runnable and testable in Node with no device and no PDF.
 
 Two tiers, and the seam between them is the point:
@@ -358,7 +358,7 @@ its own repo, `github.com/jyue487/mmsb_excel2borelog` — reads a filled **AGS w
 the professional report with reportlab. `packages/ags-excel` fills that workbook from Supabase data
 so nobody has to type it in.
 
-The template is `apps/web/public/ags/template.xlsx` (2.4 MB, committed — note the `!` negation in
+The template is `apps/dashboard/public/ags/template.xlsx` (2.4 MB, committed — note the `!` negation in
 `.gitignore`, which otherwise excludes every `*.xlsx`). It is the Keynetix AGS workbook: eleven
 sheets, and **its worksheet formulas are the program**. There are 120,310 shared formulas on the SPT
 sheet alone, turning a typed grid into hidden AGS `GROUP`/`HEADING`/`UNIT`/`DATA` rows. It is

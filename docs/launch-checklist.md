@@ -1,7 +1,7 @@
 # Launch checklist
 
 Taking both apps to production for the first time (September 2026): `apps/mobile` to Google Play as
-a closed testing track for company staff, and `apps/web` to a public URL.
+a closed testing track for company staff, and `apps/dashboard` to a public URL.
 
 **The ordering is the content.** An Android App Bundle is immutable once uploaded, so a handful of
 these items become unfixable-without-a-new-store-release the moment the first production build
@@ -208,7 +208,7 @@ yours aside first if it holds extra keys.
 Review `packages/supabase/policies/` against the tables in `apps/mobile/src/powersync/AppSchema.ts`,
 paying particular attention to the `project_to_user` scoping.
 
-**Why it belongs in Phase 0:** `apps/web/src/supabase/supabase.server.ts:3-4` reads the publishable
+**Why it belongs in Phase 0:** `apps/dashboard/src/supabase/supabase.server.ts:3-4` reads the publishable
 key from `import.meta.env`, which means Vite bakes it into a publicly downloadable JS bundle. That
 is correct and by design — but it means RLS is the security boundary **for the dashboard**. Anyone
 who finds the URL has the anon key. Do this before the site is reachable, not after.
@@ -411,8 +411,8 @@ hard-refreshed a deep link to watch it work. If a bookmarked
 
 ### 2.1 Deploy to Cloudflare Pages — **done 2026-09-04**
 
-Connect the repo; build command `pnpm install && pnpm build --filter web`; output directory
-`apps/web/dist`.
+Connect the repo; build command `pnpm install && pnpm build --filter dashboard`; output directory
+`apps/dashboard/dist`.
 
 The form, in full — the repo is a monorepo, so three of these are not the defaults:
 
@@ -422,7 +422,7 @@ The form, in full — the repo is a monorepo, so three of these are not the defa
 | Production branch | `jiayue-turborepo` — **not** `main`. Pushing that branch deploys the live dashboard. |
 | Framework preset | **None** — not "Vite". The preset assumes the Vite app is the repo root. |
 | Root directory | `/` (leave empty). Turbo has to run from the workspace root. |
-| Build command | `pnpm install --frozen-lockfile && pnpm build --filter web` |
+| Build command | `pnpm install --frozen-lockfile && pnpm build --filter dashboard` |
 | Build output directory | **leave empty** — see below |
 
 Connecting to Git is a browser flow — it installs the Cloudflare GitHub App on the repository — so
@@ -461,8 +461,8 @@ So there is a third field the Pages form does not have:
 
 | Field | Value |
 | --- | --- |
-| Deploy command | `cd apps/web && npx wrangler@4.128.0 deploy` |
-| Version command | `cd apps/web && npx wrangler@4.128.0 versions upload --preview-alias <branch>` |
+| Deploy command | `cd apps/dashboard && npx wrangler@4.128.0 deploy` |
+| Version command | `cd apps/dashboard && npx wrangler@4.128.0 versions upload --preview-alias <branch>` |
 
 The **version command** is what non-production branches run instead of the deploy command: it
 uploads a version and returns a preview URL without putting it on production traffic. Pin the same
@@ -502,7 +502,7 @@ likewise commercially usable if you prefer its interface.
 
 ### 2.2 Add the SPA fallback — **done**
 
-On Workers static assets the mechanism is **`not_found_handling` in `apps/web/wrangler.jsonc`**,
+On Workers static assets the mechanism is **`not_found_handling` in `apps/dashboard/wrangler.jsonc`**,
 not `_redirects`:
 
 ```jsonc
@@ -532,7 +532,7 @@ request time, so a `_redirects` file carried over from Pages or Netlify takes th
 down rather than being ignored. `apps/web/public/_redirects` was added in aa52501 and removed again
 once this surfaced.
 
-**Why:** routes are declared inline in `apps/web/src/app/main.tsx` via react-router's
+**Why:** routes are declared inline in `apps/dashboard/src/app/main.tsx` via react-router's
 `BrowserRouter`, which is client-side only. Without the fallback the site works while navigating
 within it, but a hard refresh or a pasted link to
 `/projects/abc/boreholes/BH-1` returns a 404 from the CDN, because no such file exists. This
@@ -664,7 +664,7 @@ on that:
 
 - **Clean the test data out before 3.5.** The dashboard can now do this: the project list has a
   Delete for owners and admins, and it removes the photo files as well as the rows
-  (`apps/web/src/supabase/deleteCascade.ts`). Cascade alone would strand the JPEGs — item 0's class,
+  (`apps/dashboard/src/supabase/deleteCascade.ts`). Cascade alone would strand the JPEGs — item 0's class,
   at project scale — so if anything is deleted any other way, empty the `block-photos` bucket from
   the dashboard while nobody real is using it, or run item 0's orphan query afterwards.
 - **The licence expires at 3.5.** From the moment a crew signs in, production carries data that

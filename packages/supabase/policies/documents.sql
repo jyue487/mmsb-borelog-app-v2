@@ -65,7 +65,7 @@
 -- The MIME restriction is a guard against the wrong file being picked, not a
 -- security control — Storage takes the content type from the client. The web
 -- uploader sends `application/pdf` explicitly; see
--- apps/web/src/supabase/sitePlan.ts.
+-- apps/dashboard/src/supabase/sitePlan.ts.
 --
 -- 25 MB, because a site plan is a scanned or exported CAD drawing rather than a
 -- text PDF and routinely runs to several megabytes.
@@ -84,7 +84,7 @@ on conflict (id) do update
 -- -----------------------------------
 --
 -- The key is `site-plans/<projects.id>.pdf`, written in exactly one place —
--- sitePlanPath() in apps/web/src/supabase/sitePlan.ts. Because the project id is
+-- sitePlanPath() in apps/dashboard/src/supabase/sitePlan.ts. Because the project id is
 -- *in* the key, "which project does this object belong to?" is answered without
 -- a row anywhere, which is what lets the whole feature ship with no migration.
 --
@@ -136,7 +136,7 @@ $$;
 --   viewer (4)                 assigned projects   no
 --
 -- The bucket name is hardcoded, matching the literal in
--- apps/web/src/supabase/sitePlan.ts. One bucket, one constant on each side, kept
+-- apps/dashboard/src/supabase/sitePlan.ts. One bucket, one constant on each side, kept
 -- in sync by hand — the same arrangement as `Testing`.
 
 drop policy if exists "site plans readable by managers and assigned members" on storage.objects;

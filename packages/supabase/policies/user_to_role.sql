@@ -5,7 +5,7 @@
 -- reference SQL: run it by hand in the Supabase SQL editor.
 --
 -- Role ids, from public.roles: 1 = owner, 2 = admin, 3 = supervisor, 4 = viewer.
--- These are mirrored in apps/web/src/supabase/memberRow.ts and again in
+-- These are mirrored in apps/dashboard/src/supabase/memberRow.ts and again in
 -- packages/supabase/functions/_shared/members.ts.
 --
 -- ---------------------------------------------------------------------------
@@ -20,8 +20,8 @@
 -- NARROWED. It used to admit every active member; it now admits supervisors and
 -- above, plus your own row, plus anyone who shares a project with you. Viewers
 -- lost the org-wide member directory, which is the point — see the Members page
--- gating in apps/web/src/app/RequireRole.tsx and canViewMembers() in
--- apps/web/src/data/memberRoles.ts.
+-- gating in apps/dashboard/src/app/RequireRole.tsx and canViewMembers() in
+-- apps/dashboard/src/data/memberRoles.ts.
 --
 -- The project already has RLS enabled on user_to_role, a `security definer`
 -- helper `public.get_current_user_role()` returning the caller's role_id, and
@@ -164,7 +164,7 @@ $$;
 -- * CLAUSE 1 IS LOAD-BEARING. Do not "simplify" it away.                *
 -- ***********************************************************************
 --
--- apps/web/src/context/auth.tsx resolves the signed-in user's own role by
+-- apps/dashboard/src/context/auth.tsx resolves the signed-in user's own role by
 -- selecting their user_to_role row — through this policy. Clause 2 does not
 -- cover a viewer (role 4), and clause 3 does not cover a viewer with no project
 -- assignments. Drop clause 1 and every such user reads zero rows, `role`
@@ -172,7 +172,7 @@ $$;
 -- They are locked out of the ENTIRE dashboard, not just the Members page,
 -- recoverable only from the SQL editor. Same class of trap as STEP 1 above.
 --
--- Clause 2 mirrors canViewMembers() in apps/web/src/data/memberRoles.ts, which
+-- Clause 2 mirrors canViewMembers() in apps/dashboard/src/data/memberRoles.ts, which
 -- hides the nav item and gates the /members route. That is the affordance; this
 -- is the enforcement. Move them together.
 --
@@ -211,7 +211,7 @@ create policy "members readable by supervisors and above"
 -- viewers only. Renumbering the `roles` table inverts this clause silently.
 --
 -- The same rule, stated twice more: canManageMemberWithRole in
--- apps/web/src/data/memberRoles.ts, and callerOutranksRole in
+-- apps/dashboard/src/data/memberRoles.ts, and callerOutranksRole in
 -- ../functions/_shared/members.ts. The edge functions are the enforcement that
 -- matters, since their service role client bypasses RLS entirely; this is what
 -- keeps a direct API call bounded by the same rule.

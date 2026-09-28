@@ -5,7 +5,7 @@ import type { BlockPhoto } from '../../supabase/blockPhotos';
 import { buildDownloadUrl } from '../../utils/blockPhotoFilenames';
 
 // The full-size photo popup, scoped to one block. There is no shared Modal component in
-// apps/web and nothing uses createPortal — all eight existing modals hand-roll the same
+// apps/dashboard and nothing uses createPortal — all eight existing modals hand-roll the same
 // overlay, the same `onMouseDown` backdrop check and their own Escape listener, so this
 // follows that shape rather than introducing a second convention.
 

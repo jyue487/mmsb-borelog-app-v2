@@ -173,7 +173,7 @@ needs its app data cleared or a reinstall. No app-code change can reach it.
 *Re-analysed 2026-09-02, and the trigger this entry used to give does not exist. Left open, because
 the defect underneath it does — but it is a different one, and narrower than it looked.*
 
-`apps/web/src/app/BoreholePage.tsx:390-405` renders *"No blocks logged — Nothing has been recorded
+`apps/dashboard/src/app/BoreholePage.tsx:390-405` renders *"No blocks logged — Nothing has been recorded
 for this borehole yet"* whenever the blocks query returns an empty array. RLS returns an empty array
 rather than an error, so nothing distinguishes "no field data" from "not yours to read".
 
@@ -298,7 +298,7 @@ i.e. whatever order sync happened to insert rows in, and it changes on reinstall
 
 *Fixed 2026-09-02* by adding the same second sort key to both copies: depth, then `id`. `id` is the
 only key that is total, non-null and identical on both clients, and
-`apps/web/src/supabase/fetchBoreholeStatuses.ts` already used it as the stable key for `blocks`. The
+`apps/dashboard/src/supabase/fetchBoreholeStatuses.ts` already used it as the stable key for `blocks`. The
 two implementations agree on numbering for a given array order — web's single-pass rule table and
 mobile's per-type loop both consume the array in order — so one shared tiebreak is the whole fix.
 `apps/mobile/src/utils/block/sortBlocksFunctions/sortBlocks.ts` also stopped sorting the caller's
@@ -310,7 +310,7 @@ in-memory sort is what the numbering depends on.
 
 ### 2. Resolved: `verifierSignDate` is mapped
 
-`BOREHOLE_COLUMNS` in `apps/web/src/supabase/boreholeRow.ts` selected `verifier_sign_date` and
+`BOREHOLE_COLUMNS` in `apps/dashboard/src/supabase/boreholeRow.ts` selected `verifier_sign_date` and
 `mapBoreholeRow` right below it assigned `null` regardless.
 
 This was filed as latent and was not: `packages/report/src/build/buildFooter.ts:167` draws the
@@ -392,7 +392,7 @@ of that pair would be inconsistent — both belong in one later pass.
 Three places decided independently whether a sample gets a number or a `*`:
 `reindexSptBlocks.ts` withheld the index when `recoveryLengthInMillimetres === 0`;
 `SptBlockComponent.tsx` and `packages/report`'s `sampleNumber()` printed `*` when
-`recoveryInPercentage === 0`; and `apps/web`'s `blockGutterSpec.ts` printed `*` when the index was
+`recoveryInPercentage === 0`; and `apps/dashboard`'s `blockGutterSpec.ts` printed `*` when the index was
 negative. The first two normally agree because the percentage is *derived* from the length — but
 through `.toFixed(1)` (`checkAndReturnSptBlock.ts`), so a nonzero length under 0.05 % of penetration
 rounds to `0` and they part company. The defaults part company too: both fields seed `-1`, which
@@ -419,7 +419,7 @@ key, and a second no-recovery sample in the same hole would repeat it.
 
 ### 6. Resolved: `ProjectPage`'s progress summary is derived from the blocks
 
-`apps/web/src/app/ProjectPage.tsx` derives completion from `Math.round(boreholes.length * 0.7)` and
+`apps/dashboard/src/app/ProjectPage.tsx` derives completion from `Math.round(boreholes.length * 0.7)` and
 feeds it to both the donut and the Completed/Remaining stats, and the boreholes table's status column
 reads off the same number — so 70% of every project is always "Completed". Placeholder pending a real
 way to classify a borehole as complete. Worth removing or labelling before anyone reads the dashboard
@@ -430,9 +430,9 @@ The borehole log page deliberately has no status badge rather than invent a seco
 *Half resolved 2026-08-25:* the hardcoded five-name team list went. The panel is now **People** and
 reads `project_to_user`.
 
-*Fully resolved 2026-09-01.* `apps/web/src/supabase/fetchBoreholeStatuses.ts` derives the status from
+*Fully resolved 2026-09-01.* `apps/dashboard/src/supabase/fetchBoreholeStatuses.ts` derives the status from
 the blocks — no blocks is `notStarted`, an End of Borehole block is `completed`, anything else is
-`inProgress` — and `apps/web/src/data/boreholeStatus.ts` holds the labels, badge classes and tallies.
+`inProgress` — and `apps/dashboard/src/data/boreholeStatus.ts` holds the labels, badge classes and tallies.
 The donut, the Completed/Remaining tiles and the table's status column now all read the same derived
 map, so they cannot disagree.
 
@@ -460,7 +460,7 @@ tree. Everything else differed from core by import style alone.
 **Layer C — the JSON tree.** This turned out to be a deletion, not a move. All 44 files under
 `apps/mobile/src/json/**` were pure field copying — the 18 serializers were one line of
 `JSON.stringify(block)` each, and the per-type deserializers copied every field verbatim. The only
-semantic work in the tree was `Date` revival, which `apps/web/src/blocks/parseBlockPayload.ts` already
+semantic work in the tree was `Date` revival, which `apps/dashboard/src/blocks/parseBlockPayload.ts` already
 did generically and exhaustively. That file moved into `packages/core/src/json/` as `parseBlock`,
 `serializeBlock`, `parseUntilObject` and `toDate`; both clients call it; the 44 files and
 `src/utils/json/parseUntilObject.ts` are gone. Only six mobile files imported from that tree.
@@ -725,7 +725,7 @@ workspace package, not just `apps/mobile` — rewrites the peer hash of the enti
 **4,888 lines of lockfile diff, and not one package version changes.** What changes is identity:
 every `node_modules/.pnpm/<name>@<version>_<peer hash>` directory is renamed, so every symlink under
 `apps/mobile/node_modules` repoints. Observed 2026-09-04 when wrangler was briefly added to
-`apps/web` — a package `apps/mobile` does not depend on, in an app that does not build for a device.
+`apps/dashboard` — a package `apps/mobile` does not depend on, in an app that does not build for a device.
 
 What it costs:
 
@@ -759,7 +759,7 @@ But `getDefaultConfig` already walks the pnpm workspace and returns every member
 
 ```bash
 node -e "const {getDefaultConfig}=require('expo/metro-config');console.log(getDefaultConfig(__dirname).watchFolders)"
-# <root>/node_modules, apps/web, apps/mobile,
+# <root>/node_modules, apps/dashboard, apps/mobile,
 # packages/{supabase,report,core,ags-excel}
 ```
 
@@ -840,7 +840,7 @@ compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would
   need write access to `blocks`, which is a product decision rather than plumbing.
 - ~~**PDF generation on web.**~~ *Done 2026-08-29.* The tick arithmetic moved out of the mobile
-  generator into `packages/report`, which is platform-free, so `apps/web` now generates the identical
+  generator into `packages/report`, which is platform-free, so `apps/dashboard` now generates the identical
   report. `scaleTickIndexWrapper` is gone — `paginate()` is pure. The renderer is behind a dynamic
   `import()` because pdf-lib + fontkit are ~1.1 MB.
 - ~~**Block photos on web.**~~ *Done 2026-08-30.* The backend half was already in place — the two
@@ -848,7 +848,7 @@ compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without
   above), so this was web client code only. Each log row grew a fixed 200px third column of thumbnails
   with a `+N` badge for overflow, and clicking one opens a block-scoped gallery. The whole address
   scheme is that the attachment queue writes files flat at the bucket root as `<block_photos.id>.jpg`,
-  so `apps/web/src/supabase/blockPhotos.ts` derives the storage key from the row id and batch-signs
+  so `apps/dashboard/src/supabase/blockPhotos.ts` derives the storage key from the row id and batch-signs
   with `createSignedUrls` — signed URLs work whether or not the bucket is public, which is what keeps
   the bucket's dashboard-only privacy flag from mattering. Two wrinkles worth remembering: the
   `block_photos` query is chunked at 100 block ids because `.in()` serialises into the URL, and a row
@@ -907,7 +907,7 @@ compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without
   `.in()`, so a project past that cap exports a workbook that is quietly missing blocks, and
   `sortAndReindexAllBlocks` then renumbers what survived, so the sample references come out wrong
   rather than merely incomplete. It bites at roughly 1000 blocks per project — a handful of
-  well-logged boreholes. `apps/web/src/supabase/fetchBoreholeStatuses.ts` shows the fix: loop
+  well-logged boreholes. `apps/dashboard/src/supabase/fetchBoreholeStatuses.ts` shows the fix: loop
   `.order('id').range(offset, offset + PAGE_SIZE - 1)` until a short page arrives. Not done here
   because the export additionally deserializes every payload, so paging it deserves a look at
   whether the whole thing should stream.
@@ -962,7 +962,7 @@ compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without
   removable by the same session that removes the rows.
 
   *So the shape is:* collect the photo object keys, delete the row, then remove the objects —
-  `apps/web/src/supabase/deleteCascade.ts`. **That order is load-bearing and is not the obvious
+  `apps/dashboard/src/supabase/deleteCascade.ts`. **That order is load-bearing and is not the obvious
   one.** A key is derived from a `block_photos` row and from nothing else, so it has to be read
   before the cascade destroys the row; but purging the bucket *first* would mean that an RLS refusal
   — the likely failure, and a silent one — destroyed every photo of a borehole that still existed.

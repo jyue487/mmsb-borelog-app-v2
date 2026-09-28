@@ -4,7 +4,7 @@
 
 **Goal:** Add a Members tab to the web dashboard sidebar with an admin-facing page that lists members and lets an admin add or remove one, backed entirely by in-memory dummy data.
 
-**Architecture:** A `Member` domain type lives in `@mmsb/core` alongside `Project`/`Borehole`. `apps/web/src/data/dummyMembers.ts` seeds the list with the signed-in user plus fabricated rows. `MembersPage` owns all state and renders a table modelled on `ProjectListPage`; two modals modelled on `AddProjectModal` handle add and remove-confirm. Every mutation funnels through two callbacks in `MembersPage`, which is the seam the real backend replaces later.
+**Architecture:** A `Member` domain type lives in `@mmsb/core` alongside `Project`/`Borehole`. `apps/dashboard/src/data/dummyMembers.ts` seeds the list with the signed-in user plus fabricated rows. `MembersPage` owns all state and renders a table modelled on `ProjectListPage`; two modals modelled on `AddProjectModal` handle add and remove-confirm. Every mutation funnels through two callbacks in `MembersPage`, which is the seam the real backend replaces later.
 
 **Tech Stack:** React 19 (React Compiler), react-router 8, Tailwind v4, lucide-react, TypeScript 6, Vite 8, pnpm workspace + Turborepo.
 
@@ -13,10 +13,10 @@
 ## Global Constraints
 
 - **No test runner exists in this repo.** No package defines a `test` script and no framework is installed. This plan does **not** add one — adding Vitest + React Testing Library is a separate decision the user has not made. Every task therefore substitutes a **typecheck + lint + explicit manual browser check** for an automated test cycle. Do not write test files; do not install a test framework.
-- **`pnpm --filter web lint` exits 1 at the baseline.** `apps/web/src/context/AuthContextProvider.tsx:65` has a pre-existing `react-refresh/only-export-components` **error** (the file exports both `useAuth` and `AuthContextProvider`), and `ProjectPage.tsx` and `AddProjectModal.tsx` carry pre-existing `react-hooks/exhaustive-deps` warnings. None of these are this plan's to fix — moving `useAuth` to its own module would ripple through every consumer and is out of scope. So "lint passes" below means **no new errors relative to that baseline**, not exit code 0. Verify by comparing against a `git stash`ed tree if in doubt.
-- **Package filter names are inconsistent.** Use `pnpm --filter web …` for the web app and `pnpm --filter @mmsb/core …` for core. (`apps/mobile` is not touched by this plan.)
-- **`verbatimModuleSyntax: true`** in `apps/web/tsconfig.app.json` — type-only imports MUST use `import type { X }` or inline `type` specifiers, or the build fails.
-- **`noUnusedLocals` and `noUnusedParameters` are on** — an unused import fails `pnpm --filter web build`.
+- **`pnpm --filter dashboard lint` exits 1 at the baseline.** `apps/dashboard/src/context/AuthContextProvider.tsx:65` has a pre-existing `react-refresh/only-export-components` **error** (the file exports both `useAuth` and `AuthContextProvider`), and `ProjectPage.tsx` and `AddProjectModal.tsx` carry pre-existing `react-hooks/exhaustive-deps` warnings. None of these are this plan's to fix — moving `useAuth` to its own module would ripple through every consumer and is out of scope. So "lint passes" below means **no new errors relative to that baseline**, not exit code 0. Verify by comparing against a `git stash`ed tree if in doubt.
+- **Package filter names are inconsistent.** Use `pnpm --filter dashboard …` for the web app and `pnpm --filter @mmsb/core …` for core. (`apps/mobile` is not touched by this plan.)
+- **`verbatimModuleSyntax: true`** in `apps/dashboard/tsconfig.app.json` — type-only imports MUST use `import type { X }` or inline `type` specifiers, or the build fails.
+- **`noUnusedLocals` and `noUnusedParameters` are on** — an unused import fails `pnpm --filter dashboard build`.
 - **Web uses relative imports only.** No `@/` alias (that is mobile-only).
 - **Every colour class needs a `dark:` counterpart.** The dashboard is styled for both themes throughout.
 - **Do not touch Supabase, `AppSchema`, RLS, or `apps/mobile`.** This is front-end-only with dummy data.
@@ -80,7 +80,7 @@ Expected: exits 0, no output errors.
 
 - [ ] **Step 4: Verify the type is reachable from the web app**
 
-Run: `pnpm --filter web build`
+Run: `pnpm --filter dashboard build`
 Expected: PASS. This proves the new export resolves through the workspace link before any consumer depends on it.
 
 - [ ] **Step 5: Commit**
@@ -95,8 +95,8 @@ git commit -m "Add Member type to @mmsb/core"
 ### Task 2: Dummy data and role display metadata
 
 **Files:**
-- Create: `apps/web/src/data/dummyMembers.ts` (new `data/` directory)
-- Create: `apps/web/src/data/memberRoles.ts`
+- Create: `apps/dashboard/src/data/dummyMembers.ts` (new `data/` directory)
+- Create: `apps/dashboard/src/data/memberRoles.ts`
 
 **Interfaces:**
 - Consumes: `Member`, `MemberRole` from `@mmsb/core` (Task 1).
@@ -106,7 +106,7 @@ git commit -m "Add Member type to @mmsb/core"
 
 - [ ] **Step 1: Create the data module**
 
-Create `apps/web/src/data/dummyMembers.ts` with this exact content:
+Create `apps/dashboard/src/data/dummyMembers.ts` with this exact content:
 
 ```ts
 // dummyMembers.ts
@@ -174,7 +174,7 @@ Note the spread in both branches: `FABRICATED_MEMBERS` is module state and must 
 
 - [ ] **Step 2: Create the role display module**
 
-Create `apps/web/src/data/memberRoles.ts`. Everything the UI needs to *show* a role lives here, so the table badge and the dropdown option can never drift apart:
+Create `apps/dashboard/src/data/memberRoles.ts`. Everything the UI needs to *show* a role lives here, so the table badge and the dropdown option can never drift apart:
 
 ```ts
 // memberRoles.ts
@@ -214,13 +214,13 @@ export const MEMBER_ROLE_DESCRIPTIONS: Record<MemberRole, string> = {
 
 - [ ] **Step 3: Verify it compiles**
 
-Run: `pnpm --filter web build`
+Run: `pnpm --filter dashboard build`
 Expected: PASS. (Neither module is imported yet — this only proves the types line up.)
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/web/src/data/dummyMembers.ts apps/web/src/data/memberRoles.ts
+git add apps/dashboard/src/data/dummyMembers.ts apps/dashboard/src/data/memberRoles.ts
 git commit -m "Add dummy member data and role display metadata"
 ```
 
@@ -231,9 +231,9 @@ git commit -m "Add dummy member data and role display metadata"
 This is the first visible deliverable: a Members tab you can click that renders the table. The modals are stubbed out in Tasks 4 and 5, so this task wires no add/remove behaviour yet.
 
 **Files:**
-- Create: `apps/web/src/app/MembersPage.tsx`
-- Modify: `apps/web/src/app/main.tsx`
-- Modify: `apps/web/src/components/AppSidebar.tsx`
+- Create: `apps/dashboard/src/app/MembersPage.tsx`
+- Modify: `apps/dashboard/src/app/main.tsx`
+- Modify: `apps/dashboard/src/components/AppSidebar.tsx`
 
 **Interfaces:**
 - Consumes: `Member` from `@mmsb/core` (Task 1); `createDummyMembers`, `MEMBER_ROLE_RANK`, `MEMBER_ROLE_LABELS`, `MEMBER_ROLE_BADGE_CLASSES` (Task 2); `useAuth()` from `../context/AuthContextProvider`, which returns `{ userId, email, isSignIn, loading }`.
@@ -241,7 +241,7 @@ This is the first visible deliverable: a Members tab you can click that renders 
 
 - [ ] **Step 1: Create the page**
 
-Create `apps/web/src/app/MembersPage.tsx`. The `Add member` button and Remove buttons are wired to local state that nothing consumes yet — that is intentional; Tasks 4 and 5 attach the modals.
+Create `apps/dashboard/src/app/MembersPage.tsx`. The `Add member` button and Remove buttons are wired to local state that nothing consumes yet — that is intentional; Tasks 4 and 5 attach the modals.
 
 ```tsx
 // MembersPage.tsx
@@ -437,7 +437,7 @@ export default function MembersPage() {
 
 - [ ] **Step 2: Register the route**
 
-In `apps/web/src/app/main.tsx`, add the import alongside the other page imports:
+In `apps/dashboard/src/app/main.tsx`, add the import alongside the other page imports:
 
 ```tsx
 import MembersPage from './MembersPage.tsx';
@@ -451,7 +451,7 @@ and add the route inside the `<Route element={<AppLayout />}>` block, after the 
 
 - [ ] **Step 3: Add the sidebar entry**
 
-In `apps/web/src/components/AppSidebar.tsx`, extend the lucide import on line 3:
+In `apps/dashboard/src/components/AppSidebar.tsx`, extend the lucide import on line 3:
 
 ```tsx
 import { Layers, Settings, Users } from 'lucide-react';
@@ -475,15 +475,15 @@ Three details that matter:
 
 - [ ] **Step 4: Verify it compiles and lints**
 
-Run: `pnpm --filter web build`
+Run: `pnpm --filter dashboard build`
 Expected: PASS.
 
-Run: `pnpm --filter web lint`
+Run: `pnpm --filter dashboard lint`
 Expected: PASS (warnings about the not-yet-consumed state are acceptable; errors are not).
 
 - [ ] **Step 5: Verify in the browser**
 
-Run: `pnpm --filter web dev`, sign in, then check:
+Run: `pnpm --filter dashboard dev`, sign in, then check:
 - The sidebar shows Projects → **Members** → Settings, with the `Users` icon.
 - Clicking Members navigates to `/members` and highlights that entry in indigo — and only that entry.
 - The table lists 5 members in this exact order: Nadia Rahman (Admin), then your own row (Admin, named "You", with a "You" chip), then the supervisors Arjun Pillai and Lim Wei Sheng, then Siti Aminah (Viewer). Admins first, then alphabetical within each role — and since the seeded self row is literally named "You", it sorts after Nadia among the admins. That is correct behaviour, not a bug: the sort rule is role rank then name, with no special case pinning the signed-in user to the top.
@@ -493,7 +493,7 @@ Run: `pnpm --filter web dev`, sign in, then check:
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/web/src/app/MembersPage.tsx apps/web/src/app/main.tsx apps/web/src/components/AppSidebar.tsx
+git add apps/dashboard/src/app/MembersPage.tsx apps/dashboard/src/app/main.tsx apps/dashboard/src/components/AppSidebar.tsx
 git commit -m "Add Members page, route and sidebar entry"
 ```
 
@@ -502,8 +502,8 @@ git commit -m "Add Members page, route and sidebar entry"
 ### Task 4: Add member modal
 
 **Files:**
-- Create: `apps/web/src/components/AddMemberModal.tsx`
-- Modify: `apps/web/src/app/MembersPage.tsx`
+- Create: `apps/dashboard/src/components/AddMemberModal.tsx`
+- Modify: `apps/dashboard/src/app/MembersPage.tsx`
 
 **Interfaces:**
 - Consumes: `MEMBER_ROLE_LIST`, `Member`, `MemberRole` from `@mmsb/core` (Task 1); `MEMBER_ROLE_LABELS`, `MEMBER_ROLE_DESCRIPTIONS` (Task 2); `sortMembers` from Task 3.
@@ -511,7 +511,7 @@ git commit -m "Add Members page, route and sidebar entry"
 
 - [ ] **Step 1: Create the modal**
 
-Create `apps/web/src/components/AddMemberModal.tsx`. The structure mirrors `AddProjectModal.tsx` (fixed overlay, `role="dialog"`, Escape to close, mousedown-on-backdrop to close, header/body/footer split by borders). There is no async work here, so — unlike `AddProjectModal` — there is no `isSubmitting` state.
+Create `apps/dashboard/src/components/AddMemberModal.tsx`. The structure mirrors `AddProjectModal.tsx` (fixed overlay, `role="dialog"`, Escape to close, mousedown-on-backdrop to close, header/body/footer split by borders). There is no async work here, so — unlike `AddProjectModal` — there is no `isSubmitting` state.
 
 ```tsx
 // AddMemberModal.tsx
@@ -788,7 +788,7 @@ The `as MemberRole` cast on the `<select>` change handler is the one unavoidable
 
 - [ ] **Step 2: Wire it into the page**
 
-Three edits to `apps/web/src/app/MembersPage.tsx`.
+Three edits to `apps/dashboard/src/app/MembersPage.tsx`.
 
 **(a)** Add the import below the `useState` import:
 
@@ -840,15 +840,15 @@ Delete the Task 3 comment above it that explains the narrow destructuring — it
 
 - [ ] **Step 3: Verify it compiles and lints**
 
-Run: `pnpm --filter web build`
+Run: `pnpm --filter dashboard build`
 Expected: PASS.
 
-Run: `pnpm --filter web lint`
+Run: `pnpm --filter dashboard lint`
 Expected: PASS.
 
 - [ ] **Step 4: Verify in the browser**
 
-Run `pnpm --filter web dev` and, on `/members`:
+Run `pnpm --filter dashboard dev` and, on `/members`:
 - Click **Add member** — the modal opens with the name field focused and Role defaulting to Viewer.
 - Submit it empty — both "Enter the member's full name." and "Enter an email address." appear; the modal stays open.
 - Type `not-an-email` — on submit you get "Enter a valid email address."
@@ -861,7 +861,7 @@ Run `pnpm --filter web dev` and, on `/members`:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/web/src/components/AddMemberModal.tsx apps/web/src/app/MembersPage.tsx
+git add apps/dashboard/src/components/AddMemberModal.tsx apps/dashboard/src/app/MembersPage.tsx
 git commit -m "Add member modal to the Members page"
 ```
 
@@ -870,8 +870,8 @@ git commit -m "Add member modal to the Members page"
 ### Task 5: Remove member confirmation modal
 
 **Files:**
-- Create: `apps/web/src/components/RemoveMemberModal.tsx`
-- Modify: `apps/web/src/app/MembersPage.tsx`
+- Create: `apps/dashboard/src/components/RemoveMemberModal.tsx`
+- Modify: `apps/dashboard/src/app/MembersPage.tsx`
 
 **Interfaces:**
 - Consumes: `Member` from `@mmsb/core` (Task 1). Introduces the `memberPendingRemoval` state itself — Task 3 could not declare it, since unused state fails the build under `noUnusedLocals`.
@@ -879,7 +879,7 @@ git commit -m "Add member modal to the Members page"
 
 - [ ] **Step 1: Create the modal**
 
-Create `apps/web/src/components/RemoveMemberModal.tsx`:
+Create `apps/dashboard/src/components/RemoveMemberModal.tsx`:
 
 ```tsx
 // RemoveMemberModal.tsx
@@ -990,7 +990,7 @@ This one is a `<div>`, not a `<form>` — there is no input to submit, and the c
 
 - [ ] **Step 2: Wire it into the page**
 
-Three edits to `apps/web/src/app/MembersPage.tsx`.
+Three edits to `apps/dashboard/src/app/MembersPage.tsx`.
 
 **(a)** Add the import next to the `AddMemberModal` import:
 
@@ -1036,15 +1036,15 @@ Filtering preserves order, so no re-sort is needed here.
 
 - [ ] **Step 3: Verify it compiles and lints**
 
-Run: `pnpm --filter web build`
+Run: `pnpm --filter dashboard build`
 Expected: PASS.
 
-Run: `pnpm --filter web lint`
+Run: `pnpm --filter dashboard lint`
 Expected: PASS, with **no** unused-variable warnings left over from Task 3 — every piece of state is now consumed.
 
 - [ ] **Step 4: Verify in the browser**
 
-Run `pnpm --filter web dev` and, on `/members`:
+Run `pnpm --filter dashboard dev` and, on `/members`:
 - Click Remove on Siti Aminah — the dialog names her and shows her email.
 - Cancel, Escape, and clicking the backdrop each dismiss it with the row still present.
 - Click Remove and confirm — the row disappears and the member count drops by one.
@@ -1054,7 +1054,7 @@ Run `pnpm --filter web dev` and, on `/members`:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/web/src/components/RemoveMemberModal.tsx apps/web/src/app/MembersPage.tsx
+git add apps/dashboard/src/components/RemoveMemberModal.tsx apps/dashboard/src/app/MembersPage.tsx
 git commit -m "Add remove member confirmation to the Members page"
 ```
 
@@ -1065,7 +1065,7 @@ git commit -m "Add remove member confirmation to the Members page"
 After Task 5, run the full workspace build once to confirm nothing else regressed:
 
 - [ ] Run: `pnpm build` from the repo root. Expected: PASS (`@mmsb/core` → `web`).
-- [ ] Run: `pnpm --filter web lint`. Expected: PASS.
+- [ ] Run: `pnpm --filter dashboard lint`. Expected: PASS.
 - [ ] Run: `pnpm --filter apps/mobile check-types`. Expected: PASS — proves the `@mmsb/core` change did not disturb mobile (which does not depend on core, so this should be unaffected).
 - [ ] Confirm `git status` is clean and the branch holds five commits, one per task.
 
@@ -1085,4 +1085,4 @@ These are recorded so the next person does not mistake them for oversights:
   must push the password explicitly or it silently never applies. Still out of scope: invite emails,
   and any self-service password reset. Note passwords can only ever be **replaced**, not shown —
   Supabase keeps a bcrypt hash, and storing a readable second copy was considered and rejected.
-- Automated tests. There is no test runner in this repo; if one is wanted, adding Vitest + React Testing Library to `apps/web` is its own piece of work, and the validation logic in `AddMemberModal` is the first thing worth covering.
+- Automated tests. There is no test runner in this repo; if one is wanted, adding Vitest + React Testing Library to `apps/dashboard` is its own piece of work, and the validation logic in `AddMemberModal` is the first thing worth covering.

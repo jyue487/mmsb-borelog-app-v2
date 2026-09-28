@@ -85,7 +85,7 @@ export async function fetchSitePlanUrl(
  * What the panel needs to know about a project's site plan, beyond the fact that
  * one exists. Declared here rather than reusing storage-js's `FileObject`,
  * because that type reaches us only as a transitive dependency of
- * `@supabase/supabase-js` — nothing in apps/web/package.json names it.
+ * `@supabase/supabase-js` — nothing in apps/dashboard/package.json names it.
  *
  * Both fields are nullable because Storage types them that way: `list` returns
  * the same row shape for folders, where neither is populated.

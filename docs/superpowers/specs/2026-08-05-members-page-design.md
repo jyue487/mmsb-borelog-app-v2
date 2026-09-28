@@ -1,7 +1,7 @@
 # Members page (web dashboard) — design
 
 **Date:** 2026-08-05
-**Scope:** `apps/web` front end only. No Supabase schema, no auth changes, no RLS. All data is
+**Scope:** `apps/dashboard` front end only. No Supabase schema, no auth changes, no RLS. All data is
 in-memory dummy data seeded on mount.
 
 ## Goal
@@ -39,7 +39,7 @@ export type Member = {
 };
 ```
 
-It goes in `@mmsb/core` rather than a web-local types file because `apps/web` already imports its
+It goes in `@mmsb/core` rather than a web-local types file because `apps/dashboard` already imports its
 domain types (`Project`, `Borehole`) from there, and `Member` is pure TypeScript with no
 react-native dependency. `apps/mobile` does not depend on `@mmsb/core`, so nothing on the mobile
 side is affected.
@@ -53,13 +53,13 @@ so adding a fourth role later is one edit plus a compiler error at the colour ma
 | --- | --- |
 | `packages/core/src/interfaces/Member.ts` | New. Type + role list above. |
 | `packages/core/src/index.ts` | Add `export * from './interfaces/Member';` |
-| `apps/web/src/data/dummyMembers.ts` | New. `createDummyMembers(currentUserEmail: string \| null): Member[]` |
-| `apps/web/src/data/memberRoles.ts` | New. Role display metadata keyed by `MemberRole`: sort rank, labels, badge classes, dropdown descriptions. Shared by the page and the add modal so the table badge and the dropdown option cannot drift apart. |
-| `apps/web/src/app/MembersPage.tsx` | New. Route component, owns the `members` state. |
-| `apps/web/src/components/AddMemberModal.tsx` | New. |
-| `apps/web/src/components/RemoveMemberModal.tsx` | New. |
-| `apps/web/src/app/main.tsx` | Add `<Route path="/members" element={<MembersPage />} />` inside `AppLayout`. |
-| `apps/web/src/components/AppSidebar.tsx` | Add a `Members` `NavLink` (lucide `Users` icon) between Projects and Settings. |
+| `apps/dashboard/src/data/dummyMembers.ts` | New. `createDummyMembers(currentUserEmail: string \| null): Member[]` |
+| `apps/dashboard/src/data/memberRoles.ts` | New. Role display metadata keyed by `MemberRole`: sort rank, labels, badge classes, dropdown descriptions. Shared by the page and the add modal so the table badge and the dropdown option cannot drift apart. |
+| `apps/dashboard/src/app/MembersPage.tsx` | New. Route component, owns the `members` state. |
+| `apps/dashboard/src/components/AddMemberModal.tsx` | New. |
+| `apps/dashboard/src/components/RemoveMemberModal.tsx` | New. |
+| `apps/dashboard/src/app/main.tsx` | Add `<Route path="/members" element={<MembersPage />} />` inside `AppLayout`. |
+| `apps/dashboard/src/components/AppSidebar.tsx` | Add a `Members` `NavLink` (lucide `Users` icon) between Projects and Settings. |
 
 ## Sidebar entry
 
@@ -195,7 +195,7 @@ Three things about the shipped design are not obvious from the diff:
 
 - **`MEMBER_ROLE_LIST` gained `owner`, in first position.** The list is privilege order
   (`memberRoleRank` is `indexOf`) *and* it matches the `roles` ids 1..4, mirrored as one
-  compiler-checked `Record<MemberRole, number>` in `apps/web/src/supabase/memberRow.ts`. Owner is
+  compiler-checked `Record<MemberRole, number>` in `apps/dashboard/src/supabase/memberRow.ts`. Owner is
   excluded from `ASSIGNABLE_MEMBER_ROLES`: it is never granted or revoked from the dashboard, only
   in SQL.
 - **Add member is an edge function, not an insert.** `LoginPage` signs in with
@@ -227,7 +227,7 @@ The two clients authenticate differently, and the Members page had been ignoring
 | Client | Sign-in |
 | --- | --- |
 | `apps/mobile` | `supabase.auth.signInWithPassword` (`src/app/auth/sign-in.tsx`) |
-| `apps/web` | `supabase.auth.signInWithOtp`, `shouldCreateUser: false` (`LoginPage.tsx`) |
+| `apps/dashboard` | `supabase.auth.signInWithOtp`, `shouldCreateUser: false` (`LoginPage.tsx`) |
 
 Everyone added from the Members page went through `inviteUserByEmail` — an account with **no
 password**. Correct for owners, admins and viewers, who only ever open the dashboard. Wrong for
@@ -352,7 +352,7 @@ round trip, split client-side — and `Member` carries `deletedAt: Date | null`.
   button would be a shortcut, not new capability.
 - Removed rows sort by `deletedAt` descending, not by role rank. Nobody scans this list for a person
   by seniority; they scan it for "who did we just remove".
-- `MEMBER_COLUMNS` gained `deleted_at` in **both** copies — `apps/web/src/supabase/memberRow.ts` and
+- `MEMBER_COLUMNS` gained `deleted_at` in **both** copies — `apps/dashboard/src/supabase/memberRow.ts` and
   `packages/supabase/functions/_shared/members.ts`. The edge functions return rows straight to
   `mapMemberRow`, so a column in one and not the other arrives as `undefined` rather than as an
   error. `mapMemberRow` maps it with `row.deleted_at ? new Date(...) : null` for exactly that reason:
@@ -388,8 +388,8 @@ for now. If it comes back, the thing to re-check first is that `boreholes.drille
 
 No test runner exists in this repo. Verification is:
 
-1. `pnpm --filter web build` (runs `tsc -b`) passes.
-2. `pnpm --filter web lint` passes.
-3. Manual pass in `pnpm --filter web dev`: sidebar entry highlights on `/members`; add a member and
+1. `pnpm --filter dashboard build` (runs `tsc -b`) passes.
+2. `pnpm --filter dashboard lint` passes.
+3. Manual pass in `pnpm --filter dashboard dev`: sidebar entry highlights on `/members`; add a member and
    see it land in the right sort position; duplicate email is rejected; remove a member via the
    confirm dialog; your own row's Remove button is disabled.

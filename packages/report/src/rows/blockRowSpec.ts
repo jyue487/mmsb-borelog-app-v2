@@ -36,7 +36,7 @@ import { parseRichText, type RichToken } from '../text/richText';
  *
  * They were near-identical: every one emitted the same 14 cells in the same order and
  * differed only in which of them carried a value. Following the precedent already set on
- * web by `apps/web/src/components/blocks/blockGutterSpec.ts`, that variation becomes data.
+ * web by `apps/dashboard/src/components/blocks/blockGutterSpec.ts`, that variation becomes data.
  *
  * `Record<BlockTypeId, …>` is exhaustive, so a 19th block type is a compile error here —
  * the convention CLAUDE.md documents for keeping the parallel directories in step.

@@ -12,7 +12,7 @@ import hashlib
 import sys
 import zipfile
 
-TEMPLATE = 'apps/web/public/ags/template.xlsx'
+TEMPLATE = 'apps/dashboard/public/ags/template.xlsx'
 DEFAULT = 'packages/ags-excel/out/fixture.xlsx'
 
 # workbook.xml gains fullCalcOnLoad; the rest are the sheets we fill.

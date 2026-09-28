@@ -14,7 +14,7 @@ import { FIXTURE_BLOCKS, FIXTURE_BOREHOLE } from '../fixtures/borehole.ts';
 import { fillAgsWorkbook } from '../src/fillAgsWorkbook.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const templatePath = resolve(here, '../../../apps/web/public/ags/template.xlsx');
+const templatePath = resolve(here, '../../../apps/dashboard/public/ags/template.xlsx');
 const outputPath = process.argv[2] ?? resolve(here, '../out/fixture.xlsx');
 
 const template = new Uint8Array(readFileSync(templatePath));

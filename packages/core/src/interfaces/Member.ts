@@ -5,7 +5,7 @@
 // Order is significant — it is privilege order, most privileged first, and
 // `memberRoleRank` in the web app is `MEMBER_ROLE_LIST.indexOf(role)`. It also
 // matches the `roles` lookup table in Supabase, whose ids run 1..4 in this same
-// sequence (see MEMBER_ROLE_TO_ROLE_ID in apps/web/src/supabase/memberRow.ts).
+// sequence (see MEMBER_ROLE_TO_ROLE_ID in apps/dashboard/src/supabase/memberRow.ts).
 export const MEMBER_ROLE_LIST = [
   'owner',
   'admin',

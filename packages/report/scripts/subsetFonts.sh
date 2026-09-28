@@ -45,4 +45,4 @@ echo "Now copy into the two app asset trees (they are duplicated deliberately â€
 echo "across a pnpm symlink through Metro's and Vite's asset pipelines is the kind of thing"
 echo "that works locally and fails on EAS):"
 echo "  cp $OUT/NotoSans-*.ttf $REPO_ROOT/apps/mobile/assets/fonts/report/"
-echo "  cp $OUT/NotoSans-*.ttf $REPO_ROOT/apps/web/public/report/"
+echo "  cp $OUT/NotoSans-*.ttf $REPO_ROOT/apps/dashboard/public/report/"

@@ -19,12 +19,12 @@ export const CORS_HEADERS = {
 };
 
 // The columns the web client's mapMemberRow expects back. Mirrored in
-// apps/web/src/supabase/memberRow.ts — a column in one and not the other arrives
+// apps/dashboard/src/supabase/memberRow.ts — a column in one and not the other arrives
 // as `undefined` on the client rather than as an error anywhere.
 export const MEMBER_COLUMNS =
   'user_id, name, email, role_id, created_at, deleted_at';
 
-// Mirrors MEMBER_ROLE_TO_ROLE_ID in apps/web/src/supabase/memberRow.ts. `owner`
+// Mirrors MEMBER_ROLE_TO_ROLE_ID in apps/dashboard/src/supabase/memberRow.ts. `owner`
 // is absent deliberately: it is not assignable from the dashboard, and leaving
 // it out of this map is what makes that a rejection rather than a policy note.
 export const ASSIGNABLE_ROLE_IDS: Record<string, number> = {
@@ -45,7 +45,7 @@ export const ADMIN_ROLE_ID = 2;
 // Does the caller sit strictly above this role, and so may act on someone who
 // holds it — remove them, set their password, or grant them the role?
 //
-// Mirrors canManageMemberWithRole in apps/web/src/data/memberRoles.ts and the
+// Mirrors canManageMemberWithRole in apps/dashboard/src/data/memberRoles.ts and the
 // `role_id > public.get_current_user_role()` clause in
 // ../../policies/user_to_role.sql. All three are the same rule, and all three
 // depend on role_id being ordered by privilege (1 owner, 2 admin, 3 supervisor,

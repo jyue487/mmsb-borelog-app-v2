@@ -26,7 +26,7 @@
 -- Why the default matters as much as the backfill
 -- ---------------------------------------------------------------------------
 --
--- The nulls are not only historical. apps/web/src/components/AddBulkBoreholesModal.tsx
+-- The nulls are not only historical. apps/dashboard/src/components/AddBulkBoreholesModal.tsx
 -- inserts the verifier columns and omits the checker ones entirely, so a backfill
 -- on its own would be undone by the next bulk add. `default ''` closes that with no
 -- change to the dashboard: an insert that omits the column now lands as ''.

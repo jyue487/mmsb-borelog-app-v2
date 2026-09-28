@@ -11,7 +11,7 @@ const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 if (!supabaseUrl || !supabasePublishableKey) {
   throw new Error(
     `Missing ${!supabaseUrl ? 'VITE_SUPABASE_URL' : 'VITE_SUPABASE_PUBLISHABLE_KEY'}. ` +
-    'Add it to apps/web/.env for local development, and to the Pages project\'s ' +
+    'Add it to apps/dashboard/.env for local development, and to the Pages project\'s ' +
     'environment variables for deployed builds -- both Production and Preview.'
   );
 }

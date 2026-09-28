@@ -26,7 +26,7 @@
 --
 -- Insert and delete are owners and admins only, through the `for all` policy
 -- below. Boreholes are created on the dashboard in bulk
--- (apps/web/src/components/AddBulkBoreholesModal.tsx); the field app records
+-- (apps/dashboard/src/components/AddBulkBoreholesModal.tsx); the field app records
 -- into boreholes that already exist.
 --
 -- ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@
 --
 --   * it is the URL key on the dashboard —
 --     /projects/:projectCode/boreholes/:boreholeName, resolved by
---     fetchBoreholeByProjectIdAndName in apps/web/src/app/BoreholePage.tsx — so
+--     fetchBoreholeByProjectIdAndName in apps/dashboard/src/app/BoreholePage.tsx — so
 --     a rename breaks every link anyone has kept;
 --   * it is what the report and the AGS export are filed under;
 --   * there is NO unique constraint on (project_id, name), and the only
@@ -226,8 +226,8 @@ create trigger boreholes_name_immutable
 --     was removed rather than made to work.
 --
 -- Keep both clients in step with this file:
---   apps/web/src/data/memberRoles.ts        canEditBoreholeDetails -> (1, 2)
---   apps/web/src/components/EditBoreholeModal.tsx   the only rename UI
+--   apps/dashboard/src/data/memberRoles.ts        canEditBoreholeDetails -> (1, 2)
+--   apps/dashboard/src/components/EditBoreholeModal.tsx   the only rename UI
 --   apps/mobile/src/components/borehole/EditBoreholeInputForm.tsx   name is text
 --
 -- PowerSync's sync rules decide what actually reaches a device and live in the

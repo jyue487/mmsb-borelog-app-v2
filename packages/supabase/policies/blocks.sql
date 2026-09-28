@@ -25,7 +25,7 @@
 -- Owners and admins are deliberately READ-ONLY here for now, even though they
 -- can manage projects and boreholes outright. Recording and editing a borehole
 -- log is the field app's job, and the dashboard has no write path to `blocks`
--- at all (apps/web/src/app/BoreholePage.tsx only reads). Granting a write nobody
+-- at all (apps/dashboard/src/app/BoreholePage.tsx only reads). Granting a write nobody
 -- makes would be an untested policy waiting to be discovered by accident. When
 -- editing on web lands, add the policies then and change the table above.
 --

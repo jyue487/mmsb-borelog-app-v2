@@ -15,7 +15,7 @@
 -- passes --workdir .., so paths resolve relative to packages/. See the README.
 --
 -- Role ids, from public.roles: 1 = owner, 2 = admin, 3 = supervisor, 4 = viewer.
--- These are mirrored in apps/web/src/supabase/memberRow.ts and again in
+-- These are mirrored in apps/dashboard/src/supabase/memberRow.ts and again in
 -- packages/supabase/functions/_shared/members.ts.
 --
 -- ---------------------------------------------------------------------------
@@ -223,7 +223,7 @@ create policy "Owners and admins can manage all projects"
 --   delete from public.project_to_user where user_id = auth.uid();
 --     -- must report 0 rows. Note this is a SILENT no-op, not an error: RLS
 --     -- filters the rows a delete can see rather than rejecting the statement.
---     -- That is why saveProjectPeople in apps/web/src/supabase/projectPeople.ts
+--     -- That is why saveProjectPeople in apps/dashboard/src/supabase/projectPeople.ts
 --     -- asks for the deleted rows back with .select() and checks the count.
 --
 -- Signed in as an ADMIN with no assignment rows at all:

@@ -1,7 +1,7 @@
 /**
  * Date and time formatting for the report.
  *
- * Ported verbatim from `apps/mobile/src/utils/datetime.ts` (which `apps/web/src/utils/
+ * Ported verbatim from `apps/mobile/src/utils/datetime.ts` (which `apps/dashboard/src/utils/
  * datetime.ts` already duplicates byte for byte). Worth keeping exactly as-is: these use
  * `getFullYear`/`getMonth`/`getDate` rather than `toLocaleString`, so output does not vary
  * with the device's locale — which is what lets two devices produce byte-identical PDFs.

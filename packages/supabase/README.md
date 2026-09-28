@@ -1,7 +1,7 @@
 # @mmsb/supabase
 
 The backend both clients share: edge functions and the RLS policy SQL for the one Supabase project
-that `apps/web` and `apps/mobile` both talk to.
+that `apps/dashboard` and `apps/mobile` both talk to.
 
 Not a package anything imports. It has no build output and nothing depends on it — it lives under
 `packages/` because it is shared infrastructure rather than either app's, and it carries a

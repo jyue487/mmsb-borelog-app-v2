@@ -40,7 +40,7 @@ yarn-error.*
 *.tsbuildinfo
 
 # examples (scratch files in apps/mobile — do NOT blanket-ignore *.html,
-# it swallows apps/web/index.html, the Vite entry point)
+# it swallows apps/dashboard/index.html, the Vite entry point)
 apps/mobile/demo*.html
 apps/mobile/header.html
 app-example
@@ -51,11 +51,19 @@ app-example
 # xlsx
 *.xlsx
 # ...except the AGS export template. The Excel exporter patches a copy of it, so it is a
-# runtime input like the report's fonts in apps/web/public/report, not a scratch
+# runtime input like the report's fonts in apps/dashboard/public/report, not a scratch
 # spreadsheet. Without this the file is invisible to git and the feature cannot be built
 # by anyone else.
-!apps/web/public/ags/template.xlsx
+!apps/dashboard/public/ags/template.xlsx
 
 # images
 *.png
 *.jpeg
+# ...except the dashboard's own assets. These four were tracked before *.png was added, so
+# the rule never applied to them -- until the rename, at which point the new paths were fresh
+# and ignored, and `git add -A` staged the old ones as plain deletions.
+# Nothing errors: the login page loses its hero and the report loses its logo at build time.
+!apps/dashboard/public/favicon.png
+!apps/dashboard/public/report/mmsb-logo.png
+!apps/dashboard/src/assets/hero.png
+!apps/dashboard/src/assets/mmsb-logo-transparent.png
