@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { supabase } from '@/src/db/supabase';
-import { powersync } from '@/src/powersync/system';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState<string>('');
@@ -27,8 +26,8 @@ export default function SignInScreen() {
       throw new Error('No session after sign in!');
     }
 
-    await powersync.disconnectAndClear();
-    // await setupPowerSync();
+    // No disconnectAndClear() here: it would delete whatever is still in the
+    // upload queue. Sign-out clears the database, and only once the queue is empty.
     setLoading(false);
   }
 

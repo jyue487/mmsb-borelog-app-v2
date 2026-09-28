@@ -104,7 +104,6 @@ export default function ProjectScreen() {
           )
         }
         {isAddButtonPressed && <AddBoreholeInputForm addBorehole={addBorehole} setIsAddButtonPressed={setIsAddButtonPressed} />}
-        <Button title='Disconnect Powersync' onPress={async () => await powersync.disconnectAndClear()} />
         <Button title='Connect Powersync' onPress={async () => await setupPowerSync()} />
       </View>
     );
