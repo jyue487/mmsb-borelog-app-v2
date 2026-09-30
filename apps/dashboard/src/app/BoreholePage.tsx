@@ -375,7 +375,7 @@ export default function BoreholePage() {
               type="button"
               disabled={isExporting || project === null || blocks.length === 0}
               onClick={async () => {
-                if (project === null) {
+                if (project === null || projectCode === undefined) {
                   return;
                 }
                 setDownloadError(null);
@@ -384,7 +384,7 @@ export default function BoreholePage() {
                   // Dynamic import: pdf-lib + fontkit are ~1.1 MB, and a static import would
                   // put them in the main bundle for every page load.
                   const { downloadBorelogPdf } = await import('../utils/downloadBorelogPdf');
-                  await downloadBorelogPdf(project, borehole, blocks);
+                  await downloadBorelogPdf(projectCode, project, borehole, blocks);
                 } catch (error) {
                   console.error('PDF generation failed:', error);
                   setDownloadError(

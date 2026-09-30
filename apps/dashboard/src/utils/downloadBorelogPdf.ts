@@ -48,6 +48,7 @@ async function loadAssets() {
 }
 
 export async function downloadBorelogPdf(
+	projectCode: string,
 	project: ReportProject,
 	borehole: Borehole,
 	blocks: Block[],
@@ -67,7 +68,7 @@ export async function downloadBorelogPdf(
 	try {
 		const anchor = document.createElement('a');
 		anchor.href = url;
-		anchor.download = `${sanitiseFilename(project.title)}-${sanitiseFilename(borehole.name)}.pdf`;
+		anchor.download = `${sanitiseFilename(projectCode)}-${sanitiseFilename(borehole.name)}.pdf`;
 		anchor.click();
 	} finally {
 		URL.revokeObjectURL(url);

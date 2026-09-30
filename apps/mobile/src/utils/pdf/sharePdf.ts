@@ -59,7 +59,7 @@ export async function sharePdf(
 		},
 	);
 
-	const filename = `${sanitiseFilename(project.title)}-${sanitiseFilename(borehole.name)}.pdf`;
+	const filename = `${sanitiseFilename(project.code)}-${sanitiseFilename(borehole.name)}.pdf`;
 	const file = new File(Paths.document, filename);
 	file.create({ overwrite: true });
 	file.write(bytes);
