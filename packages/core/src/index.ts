@@ -36,6 +36,7 @@ export * from './constants/waterLevel';
 export * from './constants/colour';
 export * from './constants/rock';
 export * from './constants/soil';
+export * from './constants/sptStandard';
 
 // Only the parked HTML PDF pipeline in apps/mobile reads these. Exported so mobile
 // stops carrying its own copy; delete alongside that pipeline (docs/follow-ups.md item 8).
