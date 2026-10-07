@@ -17,7 +17,9 @@ export const SEATING_DRIVE_REFUSAL_BLOWS = 25;
 export type MainDriveRefusalBlows = 50 | 100;
 
 /** Projects whose client specifies a 100-blow main drive. */
-const SPT100_PROJECT_CODES: ReadonlySet<string> = new Set<string>([]);
+const SPT100_PROJECT_CODES: ReadonlySet<string> = new Set<string>([
+  "MM1402"
+]);
 
 export function getMainDriveRefusalBlows(projectCode: string): MainDriveRefusalBlows {
 	return SPT100_PROJECT_CODES.has(projectCode) ? 100 : 50;
