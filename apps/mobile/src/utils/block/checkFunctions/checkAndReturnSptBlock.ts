@@ -4,6 +4,7 @@ import {
   Block,
   ColourProperties,
   DayWorkStatus,
+  MainDriveRefusalBlows,
   SoilProperties,
   SPT_BLOCK_TYPE_ID,
   SptBlock,
@@ -15,6 +16,8 @@ import { checkAndReturnSptBlockDescription } from "./checkAndReturnSptBlockDescr
 
 type Params = {
   boreholeId: string;
+  /** The project's main-drive limit: an increment reaching it ends the test early. */
+  mainDriveRefusalBlows: MainDriveRefusalBlows;
   dayWorkStatus: DayWorkStatus;
   topDepthInMetresStr: string;
   seatingIncBlows1Str: string;
@@ -48,6 +51,7 @@ type Params = {
 
 export function checkAndReturnSptBlock({
   boreholeId,
+  mainDriveRefusalBlows,
   dayWorkStatus,
   topDepthInMetresStr,
   seatingIncBlows1Str,
@@ -104,7 +108,7 @@ export function checkAndReturnSptBlock({
   if (!stringIsNonNegativeInteger(mainIncPen1Str)) {
     throw new Error(`mainIncPen1Str`);
   }
-  if (parseInt(mainIncBlows1Str) < 50) {
+  if (parseInt(mainIncBlows1Str) < mainDriveRefusalBlows) {
     if (!stringIsNonNegativeInteger(mainIncBlows2Str)) {
       throw new Error(`mainIncBlows2Str`);
     }
@@ -112,7 +116,7 @@ export function checkAndReturnSptBlock({
       throw new Error(`mainIncPen2Str`);
     }
   }
-  if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) < 50) {
+  if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) < mainDriveRefusalBlows) {
     if (!stringIsNonNegativeInteger(mainIncBlows3Str)) {
       throw new Error(`mainIncBlows3Str`);
     }
@@ -120,7 +124,7 @@ export function checkAndReturnSptBlock({
       throw new Error(`mainIncPen3Str`);
     }
   }
-  if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) + parseInt(mainIncBlows3Str) < 50) {
+  if (parseInt(mainIncBlows1Str) + parseInt(mainIncBlows2Str) + parseInt(mainIncBlows3Str) < mainDriveRefusalBlows) {
     if (!stringIsNonNegativeInteger(mainIncBlows4Str)) {
       throw new Error(`mainIncBlows4Str`);
     }

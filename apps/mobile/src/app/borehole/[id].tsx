@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 // Local Imports
 import { BlockComponent } from '@/src/components/blockComponents/BlockComponent';
 import { BlockDetailsInputForm } from '@/src/components/blockDetailsInputForms/BlockDetailsInputForm';
+import { ProjectConfigProvider } from '@/src/context/ProjectConfigContext';
 import { fetchAllBlocksByBoreholeIdDbAsync } from '@/src/db/blocks/fetchAllBlocksByBoreholeIdDbAsync';
 import { fetchBoreholeByIdAsync } from '@/src/db/borehole/fetchBoreholeByIdAsync';
 import { fetchProjectByIdAsync } from '@/src/db/project/fetchProjectByIdAsync';
@@ -121,7 +122,7 @@ export default function BoreholeScreen() {
   );
 
   return (
-    <>
+    <ProjectConfigProvider projectCode={project.code}>
       <Stack.Screen
         options={{
           title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,
@@ -148,7 +149,7 @@ export default function BoreholeScreen() {
           />
         </KeyboardAvoidingView>
       </GestureHandlerRootView>
-    </>
+    </ProjectConfigProvider>
   );
 }
 

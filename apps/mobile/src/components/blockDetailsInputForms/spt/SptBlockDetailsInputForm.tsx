@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { SpecificBlockDetailsInputFormProps } from "@/src/components/blockDetailsInputForms/BlockDetailsInputForm";
 import { SptBlockInputQuestions } from "@/src/components/inputQuestions/SptBlockInputQuestions";
+import { useProjectConfig } from "@/src/context/ProjectConfigContext";
 import {
   BaseBlock,
   ColourProperties,
@@ -16,6 +17,7 @@ import { depthInMetresToString } from "@/src/utils/depth";
 import { isNonNegative } from "@/src/utils/numbers";
 
 export function SptBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndReturnBlock, ...otherProps }: SpecificBlockDetailsInputFormProps) {
+  const { mainDriveRefusalBlows } = useProjectConfig();
   const block: BaseBlock & SptBlock = (inputBlock !== null && inputBlock.blockTypeId === SPT_BLOCK_TYPE_ID) ? inputBlock : createDefaultSptBlock();
   const [dayWorkStatus, setDayWorkStatus] = useState<DayWorkStatus>(block.dayWorkStatus);
   const [topDepthInMetresStr, setTopDepthInMetresStr] = useState<string>(depthInMetresToString(block.topDepthInMetres));
@@ -51,6 +53,7 @@ export function SptBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndRe
     setCheckAndReturnBlock(() => () => {
       return checkAndReturnSptBlock({
         boreholeId: boreholeId,
+        mainDriveRefusalBlows: mainDriveRefusalBlows,
         dayWorkStatus: dayWorkStatus,
         topDepthInMetresStr: topDepthInMetresStr,
         seatingIncBlows1Str: seatingIncBlows1Str,
@@ -84,6 +87,7 @@ export function SptBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndRe
     });
   }, [
     boreholeId,
+    mainDriveRefusalBlows,
     dayWorkStatus,
     topDepthInMetresStr,
     seatingIncBlows1Str,
@@ -118,6 +122,7 @@ export function SptBlockDetailsInputForm({ boreholeId, inputBlock, setCheckAndRe
   return (
     <>
       <SptBlockInputQuestions
+        mainDriveRefusalBlows={mainDriveRefusalBlows}
         dayWorkStatus={dayWorkStatus} setDayWorkStatus={setDayWorkStatus}
         topDepthInMetresStr={topDepthInMetresStr} setTopDepthInMetresStr={setTopDepthInMetresStr}
         seatingIncBlows1Str={seatingIncBlows1Str} setSeatingIncBlows1Str={setSeatingIncBlows1Str}

@@ -2,6 +2,7 @@ import { Text, View, type ViewProps } from "react-native";
 
 import { DayWorkStatusComponent } from "@/src/components/dayWorkStatus/DayWorkStatusComponent";
 import { styles } from "@/src/constants/styles";
+import { useProjectConfig } from "@/src/context/ProjectConfigContext";
 import { BaseBlock, Block, DISTURBED_SAMPLE_SYMBOL, SPT_SYMBOL, SptBlock } from '@mmsb/core';
 
 export type SptBlockProps = ViewProps & {
@@ -11,6 +12,7 @@ export type SptBlockProps = ViewProps & {
 };
 
 export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: SptBlockProps) {
+	const { mainDriveRefusalBlows } = useProjectConfig();
 	return (
 		<>
 			<View style={styles.blockComponentLeftColumn}>
@@ -46,8 +48,8 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 								<Text>{block.mainIncPen1}</Text>
 							</View>
 							<View style={{ flex: 1, alignItems: 'center' }}>
-								<Text>{block.mainIncBlows1 < 50 ? block.mainIncBlows2 : null}</Text>
-								<Text>{block.mainIncBlows1 < 50 ? block.mainIncPen2 : null}</Text>
+								<Text>{block.mainIncBlows1 < mainDriveRefusalBlows ? block.mainIncBlows2 : null}</Text>
+								<Text>{block.mainIncBlows1 < mainDriveRefusalBlows ? block.mainIncPen2 : null}</Text>
 							</View>
 							<View style={{ flex: 1, alignItems: 'center' }}>
 								<Text>{block.mainIncBlows3}</Text>
@@ -62,7 +64,7 @@ export function SptBlockComponent({ block, blocks, setBlocks, ...otherProps }: S
 					<View style={{ flex: 1, borderLeftWidth: 0.5, borderRightWidth: 0.5, alignItems: 'center' }}>
 						<Text>N</Text>
 						<Text>{block.sptNValue}</Text>
-						<Text>{block.sptNValue === 50 ? (block.totalMainPenetrationInMillimetres) : null}
+						<Text>{block.sptNValue === mainDriveRefusalBlows ? (block.totalMainPenetrationInMillimetres) : null}
 						</Text>
 					</View>
 					<View style={{ flex: 1.5, borderLeftWidth: 0.5, alignItems: 'center' }}>

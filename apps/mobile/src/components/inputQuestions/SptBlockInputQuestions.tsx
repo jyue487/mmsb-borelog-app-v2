@@ -2,11 +2,13 @@ import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { DayWorkStatusInputQuestions } from '@/src/components/inputQuestions/DayWorkStatusInputQuestions';
-import { ColourProperties, DayWorkStatus, SoilProperties } from '@mmsb/core';
+import { ColourProperties, DayWorkStatus, MainDriveRefusalBlows, SoilProperties } from '@mmsb/core';
 import { ColourPropertiesInputQuestions } from "./ColourPropertiesInputQuestions";
 import { SoilPropertiesInputQuestions } from "./SoilPropertiesInputQuestions";
 
 type SptBlockInputQuestionsProps = {
+  /** The project's main-drive limit (50, or 100 for some clients); reaching it ends the drive. */
+  mainDriveRefusalBlows: MainDriveRefusalBlows;
   dayWorkStatus: DayWorkStatus; setDayWorkStatus: React.Dispatch<React.SetStateAction<DayWorkStatus>>;
   topDepthInMetresStr: string; setTopDepthInMetresStr: React.Dispatch<React.SetStateAction<string>>;
   seatingIncBlows1Str: string; setSeatingIncBlows1Str: React.Dispatch<React.SetStateAction<string>>;
@@ -39,6 +41,7 @@ type SptBlockInputQuestionsProps = {
 };
 
 export function SptBlockInputQuestions({
+  mainDriveRefusalBlows,
   dayWorkStatus, setDayWorkStatus,
   topDepthInMetresStr, setTopDepthInMetresStr,
   seatingIncBlows1Str, setSeatingIncBlows1Str,
@@ -267,8 +270,8 @@ export function SptBlockInputQuestions({
                   setIsMainIncBlows2Active(false);
                   return;
                 }
-                if (mainIncBlows1 >= 50) {
-                  setMainIncBlows1Str('50');
+                if (mainIncBlows1 >= mainDriveRefusalBlows) {
+                  setMainIncBlows1Str(mainDriveRefusalBlows.toString());
                   setMainIncPen1Str('');
                   setIsMainIncPen1Active(true);
                   setIsMainIncBlows2Active(false);
@@ -320,8 +323,8 @@ export function SptBlockInputQuestions({
                   return;
                 }
                 const mainIncBlows1: number = parseInt(mainIncBlows1Str);
-                if (mainIncBlows1 + mainIncBlows2 >= 50) {
-                  setMainIncBlows2Str((50 - mainIncBlows1).toString());
+                if (mainIncBlows1 + mainIncBlows2 >= mainDriveRefusalBlows) {
+                  setMainIncBlows2Str((mainDriveRefusalBlows - mainIncBlows1).toString());
                   setMainIncPen2Str('');
                   setIsMainIncPen2Active(true);
                   setIsMainIncBlows3Active(false);
@@ -372,8 +375,8 @@ export function SptBlockInputQuestions({
                 }
                 const mainIncBlows1: number = parseInt(mainIncBlows1Str);
                 const mainIncBlows2: number = parseInt(mainIncBlows2Str);
-                if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 >= 50) {
-                  setMainIncBlows3Str((50 - mainIncBlows1 - mainIncBlows2).toString());
+                if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 >= mainDriveRefusalBlows) {
+                  setMainIncBlows3Str((mainDriveRefusalBlows - mainIncBlows1 - mainIncBlows2).toString());
                   setMainIncPen3Str('');
                   setIsMainIncPen3Active(true);
                   setIsMainIncBlows4Active(false);
@@ -421,8 +424,8 @@ export function SptBlockInputQuestions({
                 const mainIncBlows1: number = parseInt(mainIncBlows1Str);
                 const mainIncBlows2: number = parseInt(mainIncBlows2Str);
                 const mainIncBlows3: number = parseInt(mainIncBlows3Str);
-                if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 + mainIncBlows4 >= 50) {
-                  setMainIncBlows4Str((50 - mainIncBlows1 - mainIncBlows2 - mainIncBlows3).toString());
+                if (mainIncBlows1 + mainIncBlows2 + mainIncBlows3 + mainIncBlows4 >= mainDriveRefusalBlows) {
+                  setMainIncBlows4Str((mainDriveRefusalBlows - mainIncBlows1 - mainIncBlows2 - mainIncBlows3).toString());
                   setMainIncPen4Str('');
                   setIsMainIncPen4Active(true);
                   return;
