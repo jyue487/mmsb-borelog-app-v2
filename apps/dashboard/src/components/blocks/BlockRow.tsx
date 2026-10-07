@@ -18,6 +18,7 @@ import {
   VANE_SHEAR_TEST_BLOCK_TYPE_ID,
   WASH_BORING_BLOCK_TYPE_ID,
   type Block,
+  type MainDriveRefusalBlows,
 } from '@mmsb/core';
 import { useState } from 'react';
 
@@ -44,10 +45,18 @@ function DescriptionDetail({ description }: { description: string }) {
   return <p className="whitespace-pre-wrap break-words">{description}</p>;
 }
 
-function BlockDetail({ block }: { block: Block }) {
+function BlockDetail({
+  block,
+  mainDriveRefusalBlows,
+}: {
+  block: Block;
+  mainDriveRefusalBlows: MainDriveRefusalBlows;
+}) {
   switch (block.blockTypeId) {
     case SPT_BLOCK_TYPE_ID:
-      return <SptDetail block={block} />;
+      return (
+        <SptDetail block={block} mainDriveRefusalBlows={mainDriveRefusalBlows} />
+      );
 
     case CORING_BLOCK_TYPE_ID:
       return <CoringDetail block={block} />;
@@ -89,12 +98,15 @@ type BlockRowProps = {
    * so can span two blocks that happen to share one.
    */
   photoFilenames: Map<string, string>;
+  /** The project's SPT main-drive refusal limit, from `getMainDriveRefusalBlows`. */
+  mainDriveRefusalBlows: MainDriveRefusalBlows;
 };
 
 export default function BlockRow({
   block,
   photos,
   photoFilenames,
+  mainDriveRefusalBlows,
 }: BlockRowProps) {
   const gutterSpec = BLOCK_GUTTER_SPECS[block.blockTypeId];
   const labels = gutterSpec.labels(block);
@@ -155,7 +167,7 @@ export default function BlockRow({
       <div className="min-w-0 flex-1 space-y-3 px-3 py-2">
         <DayWorkStatusLines dayWorkStatus={block.dayWorkStatus} />
 
-        <BlockDetail block={block} />
+        <BlockDetail block={block} mainDriveRefusalBlows={mainDriveRefusalBlows} />
       </div>
 
       <BlockPhotoStrip

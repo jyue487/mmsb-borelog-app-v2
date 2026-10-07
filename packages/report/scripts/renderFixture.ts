@@ -39,6 +39,7 @@ const measurer = createPdfLibMeasurer({
 const doc = buildReportDoc(
 	{
 		project: {
+			code: 'FIXTURE',
 			title: 'Proposed Mixed Development at Jalan Ampang',
 			location: 'Kuala Lumpur, Wilayah Persekutuan',
 			client: 'MMSB Development Sdn Bhd',

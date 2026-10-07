@@ -28,12 +28,13 @@ export function measureRowContent(
 	testBlock: Block | null,
 	geometry: PageGeometry,
 	measurer: TextMeasurer,
+	mainDriveRefusalBlows: number,
 ): RowContentMetrics {
 	let headPt = 0;
 	let pinnedTopPt = 0;
 	let pinnedBottomPt = 0;
 
-	for (const cell of buildValueCells(block, testBlock, 0, true)) {
+	for (const cell of buildValueCells(block, testBlock, 0, true, mainDriveRefusalBlows)) {
 		const sizePt = cell.fontSizePt ?? BASE_FONT_SIZE_PT;
 		const leadingPt = sizePt * DEFAULT_LINE_HEIGHT_FACTOR;
 		const { content } = cell;

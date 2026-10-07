@@ -27,7 +27,7 @@ export type CellContent =
 	/**
 	 * A value over a horizontal rule over a second value — the SPT blow-count columns,
 	 * where the lower half only appears once the increment is complete (25 seating blows,
-	 * 50 main blows). The rule is what divides the two, so there is one if and only if
+	 * the project's main-drive limit of 50 or 100). The rule is what divides the two, so there is one if and only if
 	 * `bottom` is non-empty; the old markup drew it unconditionally, which underlined a
 	 * blow count for no reason on every incomplete increment.
 	 */

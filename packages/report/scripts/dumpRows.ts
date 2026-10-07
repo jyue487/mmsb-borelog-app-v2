@@ -65,8 +65,8 @@ import { createFixedWidthMeasurer } from '../src/text/measure.ts';
 const geometry = createPageGeometry();
 const measurer = createFixedWidthMeasurer();
 
-function partOf(block: Block, partIndex: number, isFinalPart: boolean): ContentPart {
-	const metrics = measureRowContent(block, null, geometry, measurer);
+function partOf(block: Block, partIndex: number, isFinalPart: boolean, mainDriveRefusalBlows = 50): ContentPart {
+	const metrics = measureRowContent(block, null, geometry, measurer, mainDriveRefusalBlows);
 	return {
 		kind: 'block',
 		block,
@@ -209,7 +209,7 @@ for (const blockTypeId of BLOCK_TYPE_ID_LIST) {
 	const block = populate(FACTORIES[blockTypeId]());
 	report(
 		`type ${String(blockTypeId).padStart(2)}`,
-		buildBodyRow(partOf(block, 0, true), BASE_FONT_SIZE_PT),
+		buildBodyRow(partOf(block, 0, true), BASE_FONT_SIZE_PT, 50),
 	);
 }
 
@@ -231,8 +231,37 @@ const SPLIT_PARTS: { label: string; partIndex: number; isFinalPart: boolean }[] 
 for (const { label, partIndex, isFinalPart } of SPLIT_PARTS) {
 	report(
 		label,
-		buildBodyRow(partOf(splitBlock, partIndex, isFinalPart), BASE_FONT_SIZE_PT),
+		buildBodyRow(partOf(splitBlock, partIndex, isFinalPart), BASE_FONT_SIZE_PT, 50),
 	);
+}
+
+/**
+ * The main-drive refusal limit is per project: 50 usually, 100 for some clients. The same
+ * blow counts must print differently under each — a penetration under the increment that
+ * reached the limit, and under N, and nowhere else.
+ */
+const refusalAt50 = {
+	...populate(FACTORIES[SPT_BLOCK_TYPE_ID]()),
+	mainIncBlows1: 30, mainIncPen1: 75,
+	mainIncBlows2: 20, mainIncPen2: 40,
+	mainIncBlows3: null, mainIncPen3: null,
+	mainIncBlows4: null, mainIncPen4: null,
+	sptNValue: 50, totalMainPenetrationInMillimetres: 115,
+} as Block;
+const refusalAt100 = {
+	...populate(FACTORIES[SPT_BLOCK_TYPE_ID]()),
+	mainIncBlows1: 30, mainIncPen1: 75,
+	mainIncBlows2: 40, mainIncPen2: 75,
+	mainIncBlows3: 30, mainIncPen3: 20,
+	mainIncBlows4: null, mainIncPen4: null,
+	sptNValue: 100, totalMainPenetrationInMillimetres: 170,
+} as Block;
+for (const [label, block, limit] of [
+	['N=50 refusal, limit 50 (penetration under m2 and N)', refusalAt50, 50],
+	['N=50, limit 100 (not a refusal: no penetration)', { ...refusalAt50, mainIncPen2: 75, mainIncBlows3: 0, mainIncPen3: 75, mainIncBlows4: 0, mainIncPen4: 75, totalMainPenetrationInMillimetres: 300 } as Block, 100],
+	['N=100 refusal, limit 100 (penetration under m3 and N)', refusalAt100, 100],
+] as const) {
+	report(label, buildBodyRow(partOf(block, 0, true, limit), BASE_FONT_SIZE_PT, limit));
 }
 
 console.log(

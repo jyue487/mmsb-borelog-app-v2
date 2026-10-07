@@ -1,4 +1,10 @@
-import { DAY_END_WORK_TYPE, DAY_START_WORK_TYPE, END_OF_BOREHOLE_BLOCK_TYPE_ID, type Block } from '@mmsb/core';
+import {
+	DAY_END_WORK_TYPE,
+	DAY_START_WORK_TYPE,
+	END_OF_BOREHOLE_BLOCK_TYPE_ID,
+	getMainDriveRefusalBlows,
+	type Block,
+} from '@mmsb/core';
 
 import { flowContent } from '../layout/flowContent';
 import { paginate } from '../layout/paginate';
@@ -51,9 +57,10 @@ function findDateFinished(blocks: Block[]): Date | null {
 
 export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): ReportDoc {
 	const geometry = createPageGeometry();
+	const mainDriveRefusalBlows = getMainDriveRefusalBlows(input.project.code);
 	const { pages: slices, warnings: paginationWarnings } = paginate(input.blocks);
 	const flow = flowContent(slices, geometry, (block, testBlock) =>
-		measureRowContent(block, testBlock, geometry, measurer),
+		measureRowContent(block, testBlock, geometry, measurer, mainDriveRefusalBlows),
 	);
 
 	const warnings: ReportWarning[] = [...paginationWarnings];
@@ -71,7 +78,7 @@ export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): Repo
 			...buildSeparatorNodes(flow.separators, page.pageNumber - 1, geometry, insets),
 		];
 
-		const rows = page.parts.map((part) => buildBodyRow(part, BASE_FONT_SIZE_PT));
+		const rows = page.parts.map((part) => buildBodyRow(part, BASE_FONT_SIZE_PT, mainDriveRefusalBlows));
 		nodes.push(...buildBodyNodes(rows, geometry, measurer));
 
 		return { pageNumber: page.pageNumber, totalPages, nodes };

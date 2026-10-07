@@ -1,7 +1,7 @@
 import type { Block, Borehole } from '@mmsb/core';
 
 /**
- * Only the project fields the header actually prints.
+ * Only the project fields the report reads: the ones the header prints, plus the code.
  *
  * Deliberately NOT `@mmsb/core`'s `Project`: core's copy carries `terminationCriteria` and
  * mobile's hand-synced copy does not (see the note at the top of
@@ -11,6 +11,8 @@ import type { Block, Borehole } from '@mmsb/core';
  * stay a separate project instead of a prerequisite.
  */
 export interface ReportProject {
+	/** Not printed — it selects the project's SPT main-drive refusal limit (`getMainDriveRefusalBlows`). */
+	code: string;
 	title: string;
 	location: string;
 	client: string;

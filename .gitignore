@@ -50,11 +50,13 @@ app-example
 
 # xlsx
 *.xlsx
-# ...except the AGS export template. The Excel exporter patches a copy of it, so it is a
+# ...except the AGS export templates (the second is for clients on a 100-blow SPT main drive).
+# The Excel exporter patches a copy of one, so it is a
 # runtime input like the report's fonts in apps/dashboard/public/report, not a scratch
 # spreadsheet. Without this the file is invisible to git and the feature cannot be built
 # by anyone else.
 !apps/dashboard/public/ags/template.xlsx
+!apps/dashboard/public/ags/template-SPT100.xlsx
 
 # images
 *.png

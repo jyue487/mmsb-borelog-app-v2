@@ -1,4 +1,4 @@
-import type { SptBlock } from '@mmsb/core';
+import type { MainDriveRefusalBlows, SptBlock } from '@mmsb/core';
 
 /**
  * Reproduces the SPT sheet's own formula chain in TypeScript.
@@ -13,13 +13,16 @@ import type { SptBlock } from '@mmsb/core';
  * Verified against two real workbooks: `MM1346-VBH-P10.xlsx` row 7 (1,1 / 1,0,0,0 →
  * `N=1 (1,1,1,0,0,0)`) and `CBH-S13-P08` row 7 (1,0 / 1,2,1,2 → `N=6 (1,0,1,2,1,2)`).
  *
+ * The main-drive refusal limit is the project's (50, or 100 for some clients), and it must be
+ * the one the template was built for: `template.xlsx` tests `K7=50` in AB and `AG7<>50` in AL,
+ * `template-SPT100.xlsx` tests 100 in both. `agsTemplateFileName` pairs the two.
+ *
  * Note `null`, not zero, means "increment not driven" — Excel's `ISBLANK` is false for 0,
  * and a real log records genuine zero-blow increments. `packages/report` draws the same
  * distinction.
  */
 
 const STANDARD_PENETRATION_MM = 75;
-const MAIN_DRIVE_REFUSAL_BLOWS = 50;
 
 /** Columns U, V, X, Y, Z, AA: bare blow count at the standard 75 mm, else `blows/penmm`. */
 function increment(blows: number | null, penetrationMm: number | null): string {
@@ -39,7 +42,7 @@ export interface SptResult {
 	readonly reportedResult: string;
 }
 
-export function computeSptResult(block: SptBlock): SptResult {
+export function computeSptResult(block: SptBlock, mainDriveRefusalBlows: MainDriveRefusalBlows): SptResult {
 	const seatingBlows = [block.seatingIncBlows1, block.seatingIncBlows2] as const;
 	const seatingPens = [block.seatingIncPen1, block.seatingIncPen2] as const;
 	const mainBlows = [
@@ -62,11 +65,11 @@ export function computeSptResult(block: SptBlock): SptResult {
 
 	const [x, y, z, aa] = mainBlows.map((blows, index) => increment(blows, mainPens[index]));
 
-	// AB: the first half of the main drive. A first increment of 50 is refusal on its own.
+	// AB: the first half of the main drive. A first increment at the limit is refusal on its own.
 	const ab =
 		mainBlows[0] === null
 			? ''
-			: mainBlows[0] === MAIN_DRIVE_REFUSAL_BLOWS
+			: mainBlows[0] === mainDriveRefusalBlows
 				? `${mainBlows[0]}/${mainPens[0]}mm`
 				: mainBlows[1] === null
 					? x
@@ -87,6 +90,6 @@ export function computeSptResult(block: SptBlock): SptResult {
 
 	return {
 		nValue: ag,
-		reportedResult: ag === MAIN_DRIVE_REFUSAL_BLOWS ? ak : aj,
+		reportedResult: ag === mainDriveRefusalBlows ? ak : aj,
 	};
 }

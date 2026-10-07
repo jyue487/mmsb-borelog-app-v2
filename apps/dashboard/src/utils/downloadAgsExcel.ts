@@ -1,5 +1,5 @@
 import type { AgsBorehole, AgsProject } from '@mmsb/ags-excel';
-import { fillAgsWorkbook } from '@mmsb/ags-excel';
+import { agsTemplateFileName, fillAgsWorkbook } from '@mmsb/ags-excel';
 
 import { sanitiseFilename } from './sanitiseFilename';
 
@@ -14,24 +14,28 @@ import { sanitiseFilename } from './sanitiseFilename';
  * IMPORTANT: this module must stay behind a dynamic `import()`, the same discipline
  * downloadBorelogPdf.ts and downloadBlockPhotosZip.ts keep. It pulls in fflate and, on
  * first use, fetches a 2.4 MB template — neither belongs in the main bundle.
+ *
+ * Which template depends on the project: clients on a 100-blow SPT main drive get
+ * `template-SPT100.xlsx`, whose refusal formulas test 100 rather than 50.
  */
 
-const TEMPLATE_URL = '/ags/template.xlsx';
+const cachedTemplates = new Map<string, Uint8Array>();
 
-let cachedTemplate: Uint8Array | null = null;
-
-async function loadTemplate(): Promise<Uint8Array> {
-	if (cachedTemplate !== null) {
-		return cachedTemplate;
+async function loadTemplate(projectCode: string): Promise<Uint8Array> {
+	const url = `/ags/${agsTemplateFileName(projectCode)}`;
+	const cached = cachedTemplates.get(url);
+	if (cached !== undefined) {
+		return cached;
 	}
 
-	const response = await fetch(TEMPLATE_URL);
+	const response = await fetch(url);
 	if (!response.ok) {
 		throw new Error(`Could not load the AGS template (${response.status}).`);
 	}
 
-	cachedTemplate = new Uint8Array(await response.arrayBuffer());
-	return cachedTemplate;
+	const bytes = new Uint8Array(await response.arrayBuffer());
+	cachedTemplates.set(url, bytes);
+	return bytes;
 }
 
 /**
@@ -57,7 +61,7 @@ export async function downloadAgsExcel(
 		throw new Error('There is nothing to export — this project has no boreholes with data.');
 	}
 
-	const bytes = fillAgsWorkbook(await loadTemplate(), { project, boreholes });
+	const bytes = fillAgsWorkbook(await loadTemplate(project.code), { project, boreholes });
 
 	// Same idiom as downloadBorelogPdf.ts.
 	const url = URL.createObjectURL(

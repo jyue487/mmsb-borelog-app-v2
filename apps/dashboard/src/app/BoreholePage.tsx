@@ -1,6 +1,6 @@
 // BoreholePage.tsx
 
-import type { Block, Borehole } from '@mmsb/core';
+import { getMainDriveRefusalBlows, type Block, type Borehole } from '@mmsb/core';
 import type { ReportProject } from '@mmsb/report';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -44,6 +44,7 @@ async function fetchProjectByCode(
   return {
     id: data.id,
     project: {
+      code: projectCode,
       title: data.title,
       location: data.location,
       client: data.client,
@@ -351,7 +352,7 @@ export default function BoreholePage() {
                     '../utils/downloadAgsExcel'
                   );
                   await downloadAgsExcel(
-                    { code: projectCode, ...project },
+                    project,
                     [{ borehole, blocks }],
                     agsWorkbookFilename(projectCode, borehole.name),
                   );
@@ -471,6 +472,9 @@ export default function BoreholePage() {
                     block={block}
                     photos={photosByBlockId.get(block.id) ?? []}
                     photoFilenames={photoFilenames}
+                    mainDriveRefusalBlows={getMainDriveRefusalBlows(
+                      projectCode ?? '',
+                    )}
                   />
                 ))}
               </div>

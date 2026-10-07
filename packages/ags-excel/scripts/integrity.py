@@ -1,6 +1,9 @@
 """Proves the exporter changed only what it meant to change.
 
-    python3 packages/ags-excel/scripts/integrity.py [workbook.xlsx]
+    python3 packages/ags-excel/scripts/integrity.py [workbook.xlsx] [template.xlsx]
+
+Pass the template the workbook was filled from — `template-SPT100.xlsx` for a 100-blow
+project — since that is what "unchanged" has to be measured against.
 
 The template's worksheet formulas are the program that turns typed input into the AGS
 output the report reads, so the guarantee this package sells is "everything not explicitly
@@ -29,7 +32,9 @@ EXPECTED_CHANGES = {
 }
 
 output = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
-template_zip = zipfile.ZipFile(TEMPLATE)
+template = sys.argv[2] if len(sys.argv) > 2 else TEMPLATE
+print(f'against {template}')
+template_zip = zipfile.ZipFile(template)
 output_zip = zipfile.ZipFile(output)
 
 template_names = set(template_zip.namelist())

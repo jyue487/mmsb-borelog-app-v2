@@ -4,9 +4,11 @@ import {
 	DAY_START_AND_END_WORK_TYPE,
 	DAY_START_WORK_TYPE,
 	END_OF_BOREHOLE_BLOCK_TYPE_ID,
+	getMainDriveRefusalBlows,
 	SPT_BLOCK_TYPE_ID,
 	type Block,
 	type DayWorkStatus,
+	type MainDriveRefusalBlows,
 } from '@mmsb/core';
 
 import type { AgsBorehole, AgsExcelInput } from '../model/input';
@@ -167,11 +169,15 @@ function toWaterStrikeRows(rows: readonly ProgressRow[]): WaterStrikeRow[] {
 	);
 }
 
-function buildSptRows(holeId: string, blocks: readonly Block[]): SptRow[] {
+function buildSptRows(
+	holeId: string,
+	blocks: readonly Block[],
+	mainDriveRefusalBlows: MainDriveRefusalBlows,
+): SptRow[] {
 	return blocks
 		.filter((block) => block.blockTypeId === SPT_BLOCK_TYPE_ID)
 		.map((block) => {
-			const { nValue, reportedResult } = computeSptResult(block);
+			const { nValue, reportedResult } = computeSptResult(block, mainDriveRefusalBlows);
 			return {
 				holeId,
 				testDepthInMetres: block.topDepthInMetres,
@@ -271,6 +277,7 @@ export function buildWorkbookRows(input: AgsExcelInput): WorkbookRows {
 	const samples: SampleRow[] = [];
 	const core: CoreRow[] = [];
 	const waterStrikes: WaterStrikeRow[] = [];
+	const mainDriveRefusalBlows = getMainDriveRefusalBlows(input.project.code);
 
 	for (const entry of input.boreholes) {
 		// Blocks carry no stored order. Callers reindex on read, but sorting again here keeps
@@ -284,7 +291,7 @@ export function buildWorkbookRows(input: AgsExcelInput): WorkbookRows {
 		holes.push(buildHoleRow(entry, blocks));
 		progress.push(...progressRows);
 		waterStrikes.push(...toWaterStrikeRows(progressRows));
-		spt.push(...buildSptRows(holeId, blocks));
+		spt.push(...buildSptRows(holeId, blocks, mainDriveRefusalBlows));
 		geology.push(...buildGeologyRows(holeId, blocks));
 		samples.push(...buildSampleRows(holeId, blocks));
 		core.push(...buildCoreRows(holeId, blocks));

@@ -57,7 +57,7 @@ const output: string[] = [];
 
 for (const [name, blocks] of Object.entries(FIXTURES)) {
 	const { pages: slices } = paginate(blocks);
-	const flow = flowContent(slices, geometry, (block, testBlock) => measureRowContent(block, testBlock, geometry, measurer));
+	const flow = flowContent(slices, geometry, (block, testBlock) => measureRowContent(block, testBlock, geometry, measurer, 50));
 
 	output.push('='.repeat(78));
 	output.push(`${name}  —  ${blocks.length} block(s) in, ${flow.pages.length} page(s) out (${slices.length} by depth)`);

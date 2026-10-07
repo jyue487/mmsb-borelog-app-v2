@@ -18,6 +18,7 @@ import {
 	PS_BLOCK_TYPE_ID,
 	PS_SYMBOL,
 	RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+	SEATING_DRIVE_REFUSAL_BLOWS,
 	SPT_BLOCK_TYPE_ID,
 	SPT_SYMBOL,
 	UD_BLOCK_TYPE_ID,
@@ -55,12 +56,15 @@ export interface BlockRowSpec {
 	description: (block: Block) => RichToken[];
 	/** Columns 5-10: six single cells, or three double-width ones. */
 	sptLayout: 'six' | 'mergedThree';
-	/** Six entries when sptLayout is 'six'; omitted means six blanks. */
-	sptCells?: (block: Block) => DividedValue[];
+	/**
+	 * Six entries when sptLayout is 'six'; omitted means six blanks. Takes the project's
+	 * main-drive refusal limit (50 or 100), which decides which increment shows its penetration.
+	 */
+	sptCells?: (block: Block, mainDriveRefusalBlows: number) => DividedValue[];
 	/** Three entries when sptLayout is 'mergedThree'; omitted means three blanks. */
 	mergedCells?: (block: Block) => string[];
-	/** Column 11. */
-	sptN?: (block: Block) => DividedValue;
+	/** Column 11. Takes the main-drive refusal limit, as `sptCells` does. */
+	sptN?: (block: Block, mainDriveRefusalBlows: number) => DividedValue;
 	/** Column 12 (R/r). */
 	recovery?: (block: Block) => string;
 	/** End of borehole prints its installation date/time and its own water level instead. */
@@ -116,8 +120,8 @@ const NO_VALUE: DividedValue = { top: '', bottom: '' };
 
 /**
  * An SPT blow-count cell. The lower half shows the penetration only once the increment
- * has actually completed — 25 blows for a seating increment, 50 cumulative for the main
- * increment — which is the condition the old markup spelled out inline for each of the six
+ * has actually completed — 25 blows for a seating increment, the project's refusal limit
+ * (50, or 100 for some clients) cumulative for the main increment — which is the condition the old markup spelled out inline for each of the six
  * columns.
  */
 function blowCell(blows: number | null, penetration: number | null, isComplete: boolean): DividedValue {
@@ -166,7 +170,7 @@ export const BLOCK_ROW_SPECS: Record<BlockTypeId, BlockRowSpec> = {
 		},
 		description: (block) => plain(blockDescription(block)),
 		sptLayout: 'six',
-		sptCells: (block) => {
+		sptCells: (block, refusal) => {
 			if (block.blockTypeId !== SPT_BLOCK_TYPE_ID) return [NO_VALUE, NO_VALUE, NO_VALUE, NO_VALUE, NO_VALUE, NO_VALUE];
 			const s1 = block.seatingIncBlows1;
 			const s2 = block.seatingIncBlows2;
@@ -175,19 +179,19 @@ export const BLOCK_ROW_SPECS: Record<BlockTypeId, BlockRowSpec> = {
 			const m3 = block.mainIncBlows3;
 			const m4 = block.mainIncBlows4;
 			return [
-				blowCell(s1, block.seatingIncPen1, s1 === 25),
-				blowCell(s2, block.seatingIncPen2, s2 !== null && s1 + s2 === 25),
-				blowCell(m1, block.mainIncPen1, m1 === 50),
-				blowCell(m2, block.mainIncPen2, m2 !== null && m1 + m2 === 50),
-				blowCell(m3, block.mainIncPen3, m2 !== null && m3 !== null && m1 + m2 + m3 === 50),
-				blowCell(m4, block.mainIncPen4, m2 !== null && m3 !== null && m4 !== null && m1 + m2 + m3 + m4 === 50),
+				blowCell(s1, block.seatingIncPen1, s1 === SEATING_DRIVE_REFUSAL_BLOWS),
+				blowCell(s2, block.seatingIncPen2, s2 !== null && s1 + s2 === SEATING_DRIVE_REFUSAL_BLOWS),
+				blowCell(m1, block.mainIncPen1, m1 === refusal),
+				blowCell(m2, block.mainIncPen2, m2 !== null && m1 + m2 === refusal),
+				blowCell(m3, block.mainIncPen3, m2 !== null && m3 !== null && m1 + m2 + m3 === refusal),
+				blowCell(m4, block.mainIncPen4, m2 !== null && m3 !== null && m4 !== null && m1 + m2 + m3 + m4 === refusal),
 			];
 		},
-		sptN: (block) => {
+		sptN: (block, refusal) => {
 			if (block.blockTypeId !== SPT_BLOCK_TYPE_ID) return NO_VALUE;
 			return {
 				top: String(block.sptNValue),
-				bottom: block.sptNValue === 50 ? `${block.totalMainPenetrationInMillimetres}mm` : '',
+				bottom: block.sptNValue === refusal ? `${block.totalMainPenetrationInMillimetres}mm` : '',
 			};
 		},
 		recovery: (block) => (block as { recoveryInPercentage: number }).recoveryInPercentage.toFixed(1),

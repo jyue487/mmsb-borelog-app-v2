@@ -382,6 +382,13 @@ formula cell the report reads — column A (`PROJ_ID`) on each sheet, and SPT's 
 `src/map/sptResult.ts` reproduces that formula chain in TypeScript. Change a blow-count rule there
 and the workbook lies until someone opens it in Excel.
 
+**Some clients use a 100-blow SPT main drive instead of 50.** That is per project, keyed on the
+project code in `packages/core/src/constants/sptStandard.ts` (`getMainDriveRefusalBlows`) — the one
+list every surface reads: the mobile form and validation (via `useProjectConfig()`), both apps'
+SPT views, the PDF row spec and the workbook. Those projects export from `template-SPT100.xlsx`,
+whose refusal formulas (SPT columns AB and AL) test 100; `agsTemplateFileName` pairs template and
+limit, and `computeSptResult` must be given the same limit or column T's cache lies.
+
 Two data-format rules that are easy to get wrong, both taken from real workbooks: **percentages are
 stored as fractions** (0.9, not 90 — the cells are percent-formatted), and **dates are Excel serials
 while times are bare integers** (`46037` in a date-styled cell, but `900` and `1730` as plain

@@ -79,7 +79,7 @@ function dayWorkStatusCell(dayWorkStatus: DayWorkStatus, showStart: boolean, sho
 	};
 }
 
-export function buildBodyRow(part: ContentPart, baseFontSizePt: number): BodyRow {
+export function buildBodyRow(part: ContentPart, baseFontSizePt: number, mainDriveRefusalBlows: number): BodyRow {
 	// Filler rows only need the previous row's column geometry so the vertical rules line up.
 	if (part.kind === 'empty') {
 		const spec = BLOCK_ROW_SPECS[part.referenceBlockTypeId];
@@ -102,7 +102,7 @@ export function buildBodyRow(part: ContentPart, baseFontSizePt: number): BodyRow
 	}
 
 	const { block } = part;
-	const cells = buildValueCells(block, part.testBlock, part.partIndex, part.isFinalPart);
+	const cells = buildValueCells(block, part.testBlock, part.partIndex, part.isFinalPart, mainDriveRefusalBlows);
 
 	// 4 — DESCRIPTION. The only column that continues: this part's share of the lines the
 	// content flow dealt across the block's parts.
@@ -137,6 +137,7 @@ export function buildValueCells(
 	testBlock: Block | null,
 	partIndex: number,
 	isFinalPart: boolean,
+	mainDriveRefusalBlows: number,
 ): RowCell[] {
 	const spec = BLOCK_ROW_SPECS[block.blockTypeId];
 	const merged = spec.sptLayout === 'mergedThree';
@@ -187,7 +188,7 @@ export function buildValueCells(
 	cells.push(
 		...buildSptColumnCells(
 			merged,
-			isContinuation ? undefined : spec.sptCells?.(block),
+			isContinuation ? undefined : spec.sptCells?.(block, mainDriveRefusalBlows),
 			isContinuation ? undefined : spec.mergedCells?.(block),
 		),
 	);
@@ -197,7 +198,7 @@ export function buildValueCells(
 		column: 11,
 		colSpan: 1,
 		content:
-			isContinuation || spec.sptN === undefined ? { kind: 'empty' } : contentFromDivided(spec.sptN(block)),
+			isContinuation || spec.sptN === undefined ? { kind: 'empty' } : contentFromDivided(spec.sptN(block, mainDriveRefusalBlows)),
 		align: 'center',
 		valign: 'top',
 	});

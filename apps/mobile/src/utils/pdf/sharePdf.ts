@@ -44,6 +44,7 @@ export async function sharePdf(
 	const { bytes, warnings, pageCount } = await renderBorelogPdf(
 		{
 			project: {
+				code: project.code,
 				title: project.title,
 				location: project.location,
 				client: project.client,
