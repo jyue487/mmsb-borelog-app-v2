@@ -1,0 +1,23 @@
+{
+  "name": "@mmsb/borelog",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc -p tsconfig.check.json",
+    "render": "node --import ./scripts/register.mjs scripts/render.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "latest"
+  }
+}

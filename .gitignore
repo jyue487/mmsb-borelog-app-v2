@@ -68,6 +68,10 @@ app-example
 !apps/dashboard/public/favicon.png
 !apps/dashboard/public/report/mmsb-logo.png
 !apps/dashboard/src/assets/hero.png
+# The borelog's logos and its 202 legend patterns: drawn into every page, and a missing
+# legend silently falls back to 999.png rather than failing.
+!packages/borelog/assets/*.png
+!packages/borelog/assets/legends/*.png
 !apps/dashboard/src/assets/mmsb-logo-transparent.png
 # The mobile app's icon, splash and report logo. EAS leaves ignored files out of the
 # upload even when git tracks them, so without this line prebuild fails on icon.png.
