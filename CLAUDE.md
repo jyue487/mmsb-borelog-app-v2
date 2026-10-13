@@ -14,19 +14,20 @@ Two clients over one Supabase backend:
 - `apps/dashboard` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
 - `packages/core` — the shared domain: interfaces, constants, and the one block parser both clients
   use. `apps/mobile` and `apps/dashboard` both depend on it; nothing is duplicated any more.
-- `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
-  both apps. Platform-free.
+- `packages/fieldlog` — the fieldlog, the borehole log drawn from the field app's blocks:
+  pagination, layout and pdf-lib rendering, shared by both apps. Platform-free.
 - `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the borelog
-  renderer that reads it. Platform-free, like `report`.
+  renderer that reads it. Platform-free, like `fieldlog`.
 - `packages/borelog` — the borelog: a filled AGS workbook → the professional borehole log PDF. A
   TypeScript port of a separate Python/reportlab program, pixel-equivalent to it. Platform-free.
 - `packages/supabase` — the shared backend: Deno edge functions and RLS policy SQL. **Not** at the
   repo root, which is where the Supabase CLI expects to find it — see the warning below.
 
-Vocabulary: the **fieldlog** is what `packages/report` draws from the field app's blocks (the code
-still calls it "borelog" in places — `renderBorelogPdf`, `downloadBorelogPdf`); the **borelog** is
-what `packages/borelog` draws from an AGS workbook. `docs/python-borelog-integration.md` has the
-plan and the follow-ups (dashboard tab, one workbook per project, the rename).
+Vocabulary: the **fieldlog** is what `packages/fieldlog` draws from the field app's blocks; the
+**borelog** is what `packages/borelog` draws from an AGS workbook. Keep the two words apart in code
+and UI. Inside `packages/fieldlog` the types still say `Report*` (`ReportInput`, `ReportDoc`,
+`ReportAssets`) — internal names, not a third document. `docs/python-borelog-integration.md` has
+the plan and the remaining follow-ups (dashboard tab, one workbook per project).
 
 ## Commands
 
@@ -245,7 +246,7 @@ exhaustive `Record<BlockTypeId, …>` will point you at most of them:
 | Renumbering | `src/utils/block/reindexBlocksFunctions/reindex<Type>Blocks.ts` |
 | Read-only display | `src/components/blockComponents/<Type>BlockComponent.tsx` |
 | Entry form | `src/components/blockDetailsInputForms/<group>/<type>/…` |
-| PDF row | one entry in `BLOCK_ROW_SPECS` in `packages/report/src/rows/blockRowSpec.ts` |
+| PDF row | one entry in `BLOCK_ROW_SPECS` in `packages/fieldlog/src/rows/blockRowSpec.ts` |
 
 `checkAndReturn*` is the validation convention throughout: input forms keep every field as a
 `string` in state, and the check function parses/validates and either throws or returns a fully
@@ -258,13 +259,13 @@ Required In-situ Tests / End of Borehole / Others). The mapping lives in
 
 ### PDF generation
 
-The report lives in `packages/report` and is **drawn directly with pdf-lib**, not rendered through
-a browser. Both apps call one function, `renderBorelogPdf(input, assets)`, so the field app and the
+The fieldlog lives in `packages/fieldlog` and is **drawn directly with pdf-lib**, not rendered through
+a browser. Both apps call one function, `renderFieldlogPdf(input, assets)`, so the field app and the
 dashboard produce byte-identical output. There is no WebView and no `expo-print` in the path.
 
 The package is strictly platform-free — no `expo-*`, no `react-native`, no DOM, no `fs`, no
 `fetch`. Hosts hand in asset bytes (`apps/mobile/src/utils/pdf/loadReportAssets.ts`,
-`apps/dashboard/src/utils/downloadBorelogPdf.ts`) and get bytes back. That is what makes the whole layout
+`apps/dashboard/src/utils/downloadFieldlogPdf.ts`) and get bytes back. That is what makes the whole layout
 runnable and testable in Node with no device and no PDF.
 
 Two tiers, and the seam between them is the point:
@@ -325,11 +326,11 @@ is why a third (italic) face is embedded.
 There is no test runner. Verification is by committed snapshot and differential check:
 
 ```bash
-pnpm --filter @mmsb/report pagination   # depth layer: where every interval lands, vs a committed snapshot
-pnpm --filter @mmsb/report flow         # content layer: every row's box in points and every pushed separator
-pnpm --filter @mmsb/report oracle       # diff against a transliteration of the old HTML loop
-pnpm --filter @mmsb/report rows         # every block type, asserting 14-column occupancy
-pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
+pnpm --filter @mmsb/fieldlog pagination   # depth layer: where every interval lands, vs a committed snapshot
+pnpm --filter @mmsb/fieldlog flow         # content layer: every row's box in points and every pushed separator
+pnpm --filter @mmsb/fieldlog oracle       # diff against a transliteration of the old HTML loop
+pnpm --filter @mmsb/fieldlog rows         # every block type, asserting 14-column occupancy
+pnpm --filter @mmsb/fieldlog render [fx]  # a real PDF from a fixture
 ```
 
 `pagination:snap` and `flow:snap` rewrite the snapshots; `git diff` is the assertion. The `flow`
@@ -360,7 +361,7 @@ and `expo-print`, and `src/constants/textSize.ts` — once the new path is prove
 
 ### Excel export (AGS)
 
-`packages/report` is not the only renderer of a borehole log. The professional one, the borelog, is
+`packages/fieldlog` is not the only renderer of a borehole log. The professional one, the borelog, is
 drawn from a filled **AGS workbook** — by `packages/borelog` (below), which replaces a Python
 program with reportlab, `github.com/jyue487/mmsb_excel2borelog`, still in use until the port has
 been through real projects. `packages/ags-excel` fills that workbook from Supabase data so nobody
@@ -418,7 +419,7 @@ in-situ tests, which get a row of their own even though they sit inside a host b
 (because `GEOL_DESC` is where the report reads the description column from) and therefore truncate
 that host. Detail Description and Backfill are still unfilled.
 
-Like `@mmsb/report`, the package is strictly platform-free — and here the compiler enforces it:
+Like `@mmsb/fieldlog`, the package is strictly platform-free — and here the compiler enforces it:
 `tsconfig.json` (what `build` uses, covering `src` alone) has no node types, so an
 `import 'node:fs'` in the package is a compile error. `tsconfig.check.json` adds them for the dev
 scripts and fixtures only.
@@ -506,7 +507,7 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
   schema now (`AppSchema.ts`) — do not add migrations there.
 - `src/utils/excel/shareExcel.ts` is dead — the file is commented out end to end, and the
   commented-out button that called it is gone from `borehole/[id].tsx`. Nothing references it.
-- `src/utils/pdf/` holds two pipelines: the live `sharePdf.ts` → `@mmsb/report`, and the parked
+- `src/utils/pdf/` holds two pipelines: the live `sharePdf.ts` → `@mmsb/fieldlog`, and the parked
   legacy HTML one behind `sharePdfLegacyHtml.ts`. Only the first is referenced.
 - Further deferred defects and debt — most of them latent, with the trigger that would make each one
   bite — are recorded in `docs/follow-ups.md`.

@@ -7,9 +7,9 @@ so the dashboard can do it.
 
 To avoid ambiguity, from here on:
 
-- **fieldlog** — the report `@mmsb/report` draws today from the field app's blocks (the mobile
-  "Download PDF" and the dashboard's borehole-page PDF). Everything currently *named* "borelog" in
-  the code (`renderBorelogPdf`, `downloadBorelogPdf`, …) is in fact the fieldlog; see follow-up 3.
+- **fieldlog** — the log `@mmsb/fieldlog` draws from the field app's blocks (the mobile
+  "Share fieldlog" and the dashboard's "Download fieldlog"). Renamed from `@mmsb/report`, with
+  `renderBorelogPdf` → `renderFieldlogPdf` and `downloadBorelogPdf` → `downloadFieldlogPdf`.
 - **borelog** — the professional borehole log the Python program draws from a filled AGS
   workbook (`github.com/jyue487/mmsb_excel2borelog`, reportlab).
 
@@ -115,7 +115,7 @@ directory scanning.
 
 ## Target design — `packages/borelog` (`@mmsb/borelog`)
 
-**Built** (`packages/borelog`). A sibling of `packages/report` (the fieldlog) and `packages/ags-excel`, with the same shape as the
+**Built** (`packages/borelog`). A sibling of `packages/fieldlog` and `packages/ags-excel`, with the same shape as the
 latter: raw TypeScript (`main`/`types`/`exports` → `./src/index.ts`), and **platform-free** —
 `tsconfig.json` has `lib: ["ES2020"]` and no node or DOM types, so the package runs unchanged in
 the browser and in Node. Hosts hand in bytes and get bytes back.
@@ -142,7 +142,7 @@ scripts/                   render (xlsx → PDFs in Node), compare (against the 
 
 Grouping by hole id costs nothing on today's single-hole workbooks — the output is the same — and
 is what follow-up 2 needs. Output is deterministic (`CreationDate`, `ModDate`, `Producer` and
-`Creator` pinned, as in `packages/report`), so identical input hashes identically.
+`Creator` pinned, as in `packages/fieldlog`), so identical input hashes identically.
 
 ## Verification
 
@@ -194,9 +194,10 @@ blank final page.
 2. **One workbook per project.** On upload, list every borehole in the workbook (from
    `Holes - AGS`) and let the admin pick which to export — one PDF each, or several zipped with
    the `fflate` the dashboard already has. The parser already groups by hole id (above).
-3. **Rename the current export to fieldlog**: `packages/report` → `packages/fieldlog`,
-   `renderBorelogPdf` → `renderFieldlogPdf`, `downloadBorelogPdf` → `downloadFieldlogPdf`, and the
-   "Download PDF" buttons say which one they produce. Mechanical, and separate from the above.
+3. ~~**Rename the current export to fieldlog**~~ — done: `packages/report` → `packages/fieldlog`,
+   `renderBorelogPdf` → `renderFieldlogPdf`, `downloadBorelogPdf` → `downloadFieldlogPdf`, the
+   dashboard's fonts and logo moved to `public/fieldlog/`, and the buttons now read "Download
+   fieldlog" / "Share fieldlog".
 4. **Skip Excel for data already in Supabase**: DB → `fillAgsWorkbook` → `@mmsb/borelog`, all in
    memory, as a "Download borelog" button next to the fieldlog one on the borehole page.
 5. **Fix the preserved quirks**: logger from Holes `K`, hole type from Holes `C`, SPT graph scaled
