@@ -18,7 +18,7 @@ import type { MainDriveRefusalBlows, SptBlock } from '@mmsb/core';
  * `template-SPT100.xlsx` tests 100 in both. `agsTemplateFileName` pairs the two.
  *
  * Note `null`, not zero, means "increment not driven" — Excel's `ISBLANK` is false for 0,
- * and a real log records genuine zero-blow increments. `packages/report` draws the same
+ * and a real log records genuine zero-blow increments. `packages/fieldlog` draws the same
  * distinction.
  */
 

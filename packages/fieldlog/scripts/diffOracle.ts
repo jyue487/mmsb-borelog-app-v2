@@ -1,7 +1,7 @@
 /**
  * Differential check: does the restructured paginate() place blocks where the old loop did?
  *
- *   pnpm --filter @mmsb/report oracle
+ *   pnpm --filter @mmsb/fieldlog oracle
  *
  * Any divergence is printed. A divergence is only acceptable if it is one the migration
  * deliberately made; anything else means the restructuring changed behaviour by accident

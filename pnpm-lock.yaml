@@ -20,9 +20,9 @@ importers:
       '@mmsb/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@mmsb/report':
+      '@mmsb/fieldlog':
         specifier: workspace:*
-        version: link:../../packages/report
+        version: link:../../packages/fieldlog
       '@supabase/ssr':
         specifier: ^0.12.4
         version: 0.12.4(@supabase/supabase-js@2.110.8)
@@ -108,9 +108,9 @@ importers:
       '@mmsb/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@mmsb/report':
+      '@mmsb/fieldlog':
         specifier: workspace:*
-        version: link:../../packages/report
+        version: link:../../packages/fieldlog
       '@op-engineering/op-sqlite':
         specifier: ~18.1.4
         version: 18.1.4(react-native@0.81.5(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)
@@ -313,7 +313,7 @@ importers:
         specifier: latest
         version: 7.0.2
 
-  packages/report:
+  packages/fieldlog:
     dependencies:
       '@mmsb/core':
         specifier: workspace:*

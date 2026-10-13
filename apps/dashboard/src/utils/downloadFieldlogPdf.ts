@@ -1,12 +1,12 @@
 import type { Block, Borehole } from '@mmsb/core';
-import { renderBorelogPdf, type ReportProject, type ReportWarning } from '@mmsb/report';
+import { renderFieldlogPdf, type ReportProject, type ReportWarning } from '@mmsb/fieldlog';
 
 import { sanitiseFilename } from './sanitiseFilename';
 
 /**
- * Generates the borehole log in the browser and hands it to the user as a download.
+ * Generates the fieldlog in the browser and hands it to the user as a download.
  *
- * The same `@mmsb/report` code the field app runs, so the office and the field produce
+ * The same `@mmsb/fieldlog` code the field app runs, so the office and the field produce
  * byte-identical PDFs. Closes the "PDF generation on web" deferral in docs/follow-ups.md,
  * which was blocked precisely because the pagination arithmetic lived only inside the
  * mobile generator.
@@ -16,7 +16,7 @@ import { sanitiseFilename } from './sanitiseFilename';
  * load pays ~500 KB gzipped for a feature most visits never use.
  */
 
-const ASSET_BASE = '/report';
+const ASSET_BASE = '/fieldlog';
 
 let cachedAssets: {
 	fontRegular: Uint8Array;
@@ -47,7 +47,7 @@ async function loadAssets() {
 	return cachedAssets;
 }
 
-export async function downloadBorelogPdf(
+export async function downloadFieldlogPdf(
 	projectCode: string,
 	project: ReportProject,
 	borehole: Borehole,
@@ -55,7 +55,7 @@ export async function downloadBorelogPdf(
 ): Promise<{ warnings: ReportWarning[]; pageCount: number }> {
 	const assets = await loadAssets();
 
-	const { bytes, warnings, pageCount } = await renderBorelogPdf(
+	const { bytes, warnings, pageCount } = await renderFieldlogPdf(
 		{ project, borehole, blocks },
 		{
 			...assets,

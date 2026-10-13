@@ -9,7 +9,7 @@ const config = getDefaultConfig(projectRoot);
 
 // pnpm symlinks packages/* into apps/mobile/node_modules, but the real files live under
 // the workspace root. Metro must watch the real location or edits to @mmsb/core and
-// @mmsb/report are invisible to fast refresh and, worse, to EAS bundling.
+// @mmsb/fieldlog are invisible to fast refresh and, worse, to EAS bundling.
 config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
 	path.resolve(projectRoot, 'node_modules'),

@@ -12,7 +12,7 @@
   "dependencies": {
     "@mmsb/ags-excel": "workspace:*",
     "@mmsb/core": "workspace:*",
-    "@mmsb/report": "workspace:*",
+    "@mmsb/fieldlog": "workspace:*",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.110.8",
     "@tailwindcss/vite": "^4.3.3",

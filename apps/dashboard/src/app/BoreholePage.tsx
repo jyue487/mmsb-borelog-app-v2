@@ -1,7 +1,7 @@
 // BoreholePage.tsx
 
 import { getMainDriveRefusalBlows, type Block, type Borehole } from '@mmsb/core';
-import type { ReportProject } from '@mmsb/report';
+import type { ReportProject } from '@mmsb/fieldlog';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
@@ -384,8 +384,8 @@ export default function BoreholePage() {
                 try {
                   // Dynamic import: pdf-lib + fontkit are ~1.1 MB, and a static import would
                   // put them in the main bundle for every page load.
-                  const { downloadBorelogPdf } = await import('../utils/downloadBorelogPdf');
-                  await downloadBorelogPdf(projectCode, project, borehole, blocks);
+                  const { downloadFieldlogPdf } = await import('../utils/downloadFieldlogPdf');
+                  await downloadFieldlogPdf(projectCode, project, borehole, blocks);
                 } catch (error) {
                   console.error('PDF generation failed:', error);
                   setDownloadError(

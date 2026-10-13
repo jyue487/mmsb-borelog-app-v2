@@ -2,8 +2,8 @@
  * Prints where every row's CONTENTS land, in points, for every fixture — the content layer's
  * counterpart to `dumpPagination.ts`, which prints the depth layer in ticks.
  *
- *   pnpm --filter @mmsb/report flow        # print
- *   pnpm --filter @mmsb/report flow:snap   # rewrite the snapshot
+ *   pnpm --filter @mmsb/fieldlog flow        # print
+ *   pnpm --filter @mmsb/fieldlog flow:snap   # rewrite the snapshot
  *
  * Unlike pagination this needs a font, because a row's height comes from wrapping its
  * description; the real NotoSans metrics are used so the snapshot is the layout the PDF

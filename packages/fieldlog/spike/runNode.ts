@@ -5,7 +5,7 @@
  * runner — which is the point: it gives the migration a headless feedback loop that
  * needs neither a device nor a browser.
  *
- *   pnpm --filter @mmsb/report spike
+ *   pnpm --filter @mmsb/fieldlog spike
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';

@@ -28,7 +28,7 @@ export function legendCodesFor(data: BorelogData): string[] {
 
 /**
  * Pinned so identical input renders identical bytes — pdf-lib otherwise stamps the
- * current time. Same value as the fieldlog's (packages/report/src/render/pdfLibBackend.ts).
+ * current time. Same value as the fieldlog's (packages/fieldlog/src/render/pdfLibBackend.ts).
  */
 const FIXED_TIMESTAMP = new Date(Date.UTC(2000, 0, 1));
 

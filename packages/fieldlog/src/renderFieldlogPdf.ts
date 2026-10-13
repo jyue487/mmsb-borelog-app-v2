@@ -16,7 +16,7 @@ import { createPdfLibMeasurer } from './render/pdfLibMeasurer';
  * this package's.
  */
 
-export interface RenderBorelogPdfResult {
+export interface RenderFieldlogPdfResult {
 	bytes: Uint8Array;
 	warnings: ReportWarning[];
 	pageCount: number;
@@ -24,10 +24,10 @@ export interface RenderBorelogPdfResult {
 	doc: ReportDoc;
 }
 
-export async function renderBorelogPdf(
+export async function renderFieldlogPdf(
 	input: ReportInput,
 	assets: ReportAssets,
-): Promise<RenderBorelogPdfResult> {
+): Promise<RenderFieldlogPdfResult> {
 	// Measuring needs embedded fonts and embedding needs a document, so a scratch document
 	// produces the measurer before the real one is built.
 	const scratch = await PDFDocument.create();

@@ -13,13 +13,13 @@
 # move. That is what makes this safe.
 #
 # Requires fonttools (`pip install fonttools`). Run from the repo root:
-#   bash packages/report/scripts/subsetFonts.sh
+#   bash packages/fieldlog/scripts/subsetFonts.sh
 #
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-SRC="$REPO_ROOT/packages/report/assets/src"
-OUT="$REPO_ROOT/packages/report/assets"
+SRC="$REPO_ROOT/packages/fieldlog/assets/src"
+OUT="$REPO_ROOT/packages/fieldlog/assets"
 
 # ASCII printable, plus the symbols a borehole log actually prints: degree, micro,
 # multiply, divide, plus-minus, vulgar fractions, en/em dash, curly quotes, ellipsis.
@@ -45,4 +45,4 @@ echo "Now copy into the two app asset trees (they are duplicated deliberately â€
 echo "across a pnpm symlink through Metro's and Vite's asset pipelines is the kind of thing"
 echo "that works locally and fails on EAS):"
 echo "  cp $OUT/NotoSans-*.ttf $REPO_ROOT/apps/mobile/assets/fonts/report/"
-echo "  cp $OUT/NotoSans-*.ttf $REPO_ROOT/apps/dashboard/public/report/"
+echo "  cp $OUT/NotoSans-*.ttf $REPO_ROOT/apps/dashboard/public/fieldlog/"

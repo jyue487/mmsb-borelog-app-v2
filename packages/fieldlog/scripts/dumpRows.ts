@@ -1,7 +1,7 @@
 /**
  * Builds a body row for every one of the 18 block types and prints its cells.
  *
- *   pnpm --filter @mmsb/report rows
+ *   pnpm --filter @mmsb/fieldlog rows
  *
  * Two things are being checked. First, that each type puts its values in the columns the
  * old renderer put them in — that is what the printed table shows. Second, and enforced

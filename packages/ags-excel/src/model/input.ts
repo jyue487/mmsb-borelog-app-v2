@@ -3,7 +3,7 @@ import type { Block, Borehole } from '@mmsb/core';
 /**
  * Project header fields, as the AGS workbook's Project sheet wants them.
  *
- * Deliberately not `ReportProject` from `@mmsb/report`: that type has no `code`, and the
+ * Deliberately not `ReportProject` from `@mmsb/fieldlog`: that type has no `code`, and the
  * project code is what every other sheet's `PROJ_ID` column keys off.
  */
 export interface AgsProject {

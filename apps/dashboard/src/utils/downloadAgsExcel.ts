@@ -12,7 +12,7 @@ import { sanitiseFilename } from './sanitiseFilename';
  * write is copied through byte for byte.
  *
  * IMPORTANT: this module must stay behind a dynamic `import()`, the same discipline
- * downloadBorelogPdf.ts and downloadBlockPhotosZip.ts keep. It pulls in fflate and, on
+ * downloadFieldlogPdf.ts and downloadBlockPhotosZip.ts keep. It pulls in fflate and, on
  * first use, fetches a 2.4 MB template — neither belongs in the main bundle.
  *
  * Which template depends on the project: clients on a 100-blow SPT main drive get
@@ -63,7 +63,7 @@ export async function downloadAgsExcel(
 
 	const bytes = fillAgsWorkbook(await loadTemplate(project.code), { project, boreholes });
 
-	// Same idiom as downloadBorelogPdf.ts.
+	// Same idiom as downloadFieldlogPdf.ts.
 	const url = URL.createObjectURL(
 		new Blob([bytes as BlobPart], {
 			type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

@@ -10,7 +10,7 @@ import { sanitiseFilename } from './sanitiseFilename';
 // 1, 2, 3, 4 across both blocks. That is what makes the name unique without having to put
 // the block symbol in it, and two blocks sharing an interval is routine — blockGutterSpec
 // carries `hidesRepeatedBaseDepth` because `top === base` is normal for permeability
-// tests, and packages/report has collapsePairs.ts for tests landing inside an SPT.
+// tests, and packages/fieldlog has collapsePairs.ts for tests landing inside an SPT.
 //
 // This module is deliberately free of heavy imports so the gallery can pull the filenames
 // in without also pulling in the zip chunk.

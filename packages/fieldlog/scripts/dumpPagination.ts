@@ -6,8 +6,8 @@
  * Because paginate() is pure and platform-free, this needs neither a device nor a PDF —
  * it is the fastest feedback loop available for the part where the real thinking is.
  *
- *   pnpm --filter @mmsb/report pagination        # print
- *   pnpm --filter @mmsb/report pagination:snap   # rewrite the snapshot
+ *   pnpm --filter @mmsb/fieldlog pagination        # print
+ *   pnpm --filter @mmsb/fieldlog pagination:snap   # rewrite the snapshot
  */
 import { FIXTURES } from '../fixtures/builders.ts';
 import { paginate, type PlacedRow } from '../src/layout/paginate.ts';

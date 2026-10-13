@@ -1,7 +1,7 @@
 /**
  * Renders a fixture borehole to a real PDF.
  *
- *   pnpm --filter @mmsb/report render [fixture-name]
+ *   pnpm --filter @mmsb/fieldlog render [fixture-name]
  *
  * This is the first end-to-end run of the whole pipeline: paginate → rows → DrawNodes →
  * pdf-lib. Output goes to spike/out-<fixture>.pdf for visual comparison.

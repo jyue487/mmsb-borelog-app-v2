@@ -1,7 +1,7 @@
 // Bundles every photo of a borehole into one zip.
 //
 // IMPORTANT: fflate stays behind a dynamic `import()`, the same discipline
-// downloadBorelogPdf.ts follows for pdf-lib. It is far smaller than pdf-lib, but there is
+// downloadFieldlogPdf.ts follows for pdf-lib. It is far smaller than pdf-lib, but there is
 // still no reason for a page that never downloads photos to carry a zip encoder.
 
 export type DownloadablePhoto = {
@@ -83,7 +83,7 @@ export async function downloadBlockPhotosZip(
 		});
 	});
 
-	// Same idiom as downloadBorelogPdf.ts.
+	// Same idiom as downloadFieldlogPdf.ts.
 	const url = URL.createObjectURL(
 		new Blob([archive as BlobPart], { type: 'application/zip' }),
 	);

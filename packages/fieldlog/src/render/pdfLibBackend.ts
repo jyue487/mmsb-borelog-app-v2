@@ -107,8 +107,8 @@ export async function renderReportDoc(doc: ReportDoc, assets: ReportAssets): Pro
 	// Every input to this function is fixed, so the output should be too.
 	pdf.setCreationDate(FIXED_TIMESTAMP);
 	pdf.setModificationDate(FIXED_TIMESTAMP);
-	pdf.setProducer('@mmsb/report');
-	pdf.setCreator('@mmsb/report');
+	pdf.setProducer('@mmsb/fieldlog');
+	pdf.setCreator('@mmsb/fieldlog');
 
 	// subset:false is deliberate — pdf-lib's runtime subsetter mis-maps glyphs for NotoSans.
 	// The faces are pre-subsetted offline by scripts/subsetFonts.sh, which is both smaller

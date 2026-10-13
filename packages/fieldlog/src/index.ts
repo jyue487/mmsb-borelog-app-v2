@@ -17,4 +17,4 @@ export * from './rows/rowMetrics';
 export * from './build/buildReportDoc';
 export * from './render/pdfLibMeasurer';
 export * from './render/pdfLibBackend';
-export * from './renderBorelogPdf';
+export * from './renderFieldlogPdf';

@@ -1,6 +1,6 @@
 /**
  * LEGACY — the pre-2026-08 HTML + expo-print pipeline, kept as a fallback while the pdf-lib
- * renderer in `packages/report` is validated against real boreholes.
+ * renderer in `packages/fieldlog` is validated against real boreholes.
  *
  * Not referenced by the app. To fall back, import `sharePdfLegacyHtml` instead of `sharePdf`
  * in `apps/mobile/src/app/borehole/[id].tsx` (note it returns void, so drop the `warnings`

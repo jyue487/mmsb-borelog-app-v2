@@ -6,7 +6,7 @@ import { buildSheetPatches } from './xlsx/writeRows';
 /**
  * Fills a copy of the AGS template from borehole data and returns the new workbook's bytes.
  *
- * Platform-free by design, the same contract `@mmsb/report` keeps: no `expo-*`, no
+ * Platform-free by design, the same contract `@mmsb/fieldlog` keeps: no `expo-*`, no
  * `react-native`, no DOM, no `fs`, no `fetch`. The host supplies the template's bytes and
  * gets bytes back, so the whole path runs and is checkable in Node with no browser.
  *
