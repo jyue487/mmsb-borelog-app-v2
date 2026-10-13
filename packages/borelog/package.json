@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "check-types": "tsc -p tsconfig.check.json",
-    "render": "node --import ./scripts/register.mjs scripts/render.ts"
+    "render": "node --import ./scripts/register.mjs scripts/render.ts",
+    "compare": "bash scripts/compare.sh"
   },
   "exports": {
     ".": "./src/index.ts"
