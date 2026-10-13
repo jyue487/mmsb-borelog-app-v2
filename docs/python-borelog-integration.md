@@ -115,27 +115,29 @@ directory scanning.
 
 ## Target design — `packages/borelog` (`@mmsb/borelog`)
 
-A sibling of `packages/report` (the fieldlog) and `packages/ags-excel`, with the same shape as the
+**Built** (`packages/borelog`). A sibling of `packages/report` (the fieldlog) and `packages/ags-excel`, with the same shape as the
 latter: raw TypeScript (`main`/`types`/`exports` → `./src/index.ts`), and **platform-free** —
 `tsconfig.json` has `lib: ["ES2020"]` and no node or DOM types, so the package runs unchanged in
 the browser and in Node. Hosts hand in bytes and get bytes back.
 
 ```
 src/
-  xlsx/readWorkbook.ts     unzip (fflate) → sheets by trimmed name, shared/inline strings,
-                           date detection from styles.xml number formats, cached values
+  xlsx/readWorkbook.ts     unzip (fflate) → sheets by name, shared/inline strings, cached
+                           values, and openpyxl's own date detection from styles.xml
   xlsx/cellConvert.ts      utils/excel_input.py
-  parse/                   one parser per sheet, same cells as above
+  py/number.ts             Python's round(), f'{x:.2f}', str(float), float(), int()
+  parse/parseSheets.ts     parsers/*.py, same cells
   parse/parseBorelogWorkbook.ts
-                           → { project, boreholes[] }: every Holes row, every other sheet
-                           grouped by hole id (column B)
-  render/canvas.ts         the reportlab Canvas calls the program uses, over a pdf-lib page
-  render/paragraph.ts      the reportlab Paragraph / KeepInFrame subset the program uses
+                           → { project, boreholes[], borelogData(holeId) }: every Holes row,
+                           every other sheet grouped by hole id (column B)
+  render/canvas.ts         the reportlab Canvas calls the program makes, over a pdf-lib page
+  render/paragraph.ts      reportlab's Paragraph and KeepInFrame(shrink), from its source
   render/config.ts         constants/config.py
-  render/draw*.ts, render/drawers/*  line-for-line ports of the drawing code
-  renderBorelog.ts         (project, borehole, assets) → PDF bytes
-assets/                    company_logo.png, footer_logo.png, legends/*.png
-scripts/                   render an xlsx in Node; compare against the Python output
+  render/drawHeader.ts, drawBody.ts, drawers.ts
+                           draw_header.py, draw_body.py, drawers/*.py — line for line
+  renderBorelog.ts         generate_borelog_pdf.py: (BorelogData, assets) → PDF bytes
+assets/                    company_logo.png, footer_logo.png, legends/*.png (202)
+scripts/                   render (xlsx → PDFs in Node), compare (against the Python program)
 ```
 
 Grouping by hole id costs nothing on today's single-hole workbooks — the output is the same — and
@@ -144,10 +146,43 @@ is what follow-up 2 needs. Output is deterministic (`CreationDate`, `ModDate`, `
 
 ## Verification
 
-There is no test runner, and the goal is "looks the same as the Python program", so the check is
-differential: render the same sample workbooks with the Python program and with the port,
-rasterise both, and diff page by page. Page counts must match and pixel differences must be
-explained (anti-aliasing at most). The sample workbooks are real client data and stay out of git.
+Done, and rerunnable. There is no test runner, and the goal is "prints what the Python program
+printed", so the check is differential, against the Python program itself, three ways:
+
+```bash
+MMSB_EXCEL2BORELOG=~/Desktop/mmsb_excel2borelog PYTHON=<python with reportlab, openpyxl, pillow> \
+  pnpm --filter @mmsb/borelog compare
+```
+
+| Check | Against | Result on the six sample workbooks |
+| --- | --- | --- |
+| parse | every field of every row the Python parsers read | 0 differences |
+| paragraph | reportlab's line breaks, heights, page splits and shrink scales, 3,213 cases | 0 differences |
+| pixels | every page of every borelog, rasterised by Ghostscript at 200 dpi | page counts equal; 2 pixels differ in all 37 pages, both inside SPT graph dots |
+
+The samples are real client workbooks and stay out of git: copy them into
+`packages/borelog/samples/` (gitignored). Output is deterministic — two renders of the same input
+are byte-identical.
+
+### Where the port deliberately differs
+
+All of these are cases where the Python program crashed or printed something wrong; none occurs
+in the sample workbooks.
+
+- A bare `&` in text prints as `&`. reportlab's markup parser turned `G&P` into `G&P;`.
+- An unknown tag in a description (`<abc>`) prints as text. reportlab failed the whole workbook.
+- A character Helvetica cannot encode prints as `?`; a line break typed into a single-line cell
+  is dropped. reportlab drew an empty box.
+- A hole with no Progress or Geology rows gets a clear error naming it. Python raised `IndexError`.
+- A workbook with several holes: each hole's borelog takes only its own rows. Python drew the
+  hole on row 6 with *every* row of every sheet. With one hole the two are identical.
+- An empty percentage cell typed as text (`""`) prints empty. Python raised `IndexError`.
+- Two consecutive `<br/>` straddling a page break split one line differently. Typed Excel text
+  cannot contain `<br/>`.
+
+Two Python quirks to know about, kept because the replica keeps everything: a missing progress
+time prints as `None` (`dd/mm/yyyy None`), and an empty description on the last stratum adds a
+blank final page.
 
 ## Follow-ups
 

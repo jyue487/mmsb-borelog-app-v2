@@ -16,10 +16,17 @@ Two clients over one Supabase backend:
   use. `apps/mobile` and `apps/dashboard` both depend on it; nothing is duplicated any more.
 - `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
   both apps. Platform-free.
-- `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the separate
-  Python program that renders the professional report from it. Platform-free, like `report`.
+- `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the borelog
+  renderer that reads it. Platform-free, like `report`.
+- `packages/borelog` — the borelog: a filled AGS workbook → the professional borehole log PDF. A
+  TypeScript port of a separate Python/reportlab program, pixel-equivalent to it. Platform-free.
 - `packages/supabase` — the shared backend: Deno edge functions and RLS policy SQL. **Not** at the
   repo root, which is where the Supabase CLI expects to find it — see the warning below.
+
+Vocabulary: the **fieldlog** is what `packages/report` draws from the field app's blocks (the code
+still calls it "borelog" in places — `renderBorelogPdf`, `downloadBorelogPdf`); the **borelog** is
+what `packages/borelog` draws from an AGS workbook. `docs/python-borelog-integration.md` has the
+plan and the follow-ups (dashboard tab, one workbook per project, the rename).
 
 ## Commands
 
@@ -353,10 +360,11 @@ and `expo-print`, and `src/constants/textSize.ts` — once the new path is prove
 
 ### Excel export (AGS)
 
-`packages/report` is not the only renderer of a borelog. A separate Python program — currently in
-its own repo, `github.com/jyue487/mmsb_excel2borelog` — reads a filled **AGS workbook** and draws
-the professional report with reportlab. `packages/ags-excel` fills that workbook from Supabase data
-so nobody has to type it in.
+`packages/report` is not the only renderer of a borehole log. The professional one, the borelog, is
+drawn from a filled **AGS workbook** — by `packages/borelog` (below), which replaces a Python
+program with reportlab, `github.com/jyue487/mmsb_excel2borelog`, still in use until the port has
+been through real projects. `packages/ags-excel` fills that workbook from Supabase data so nobody
+has to type it in. Everything said below about what "the Python side" reads applies to both.
 
 The template is `apps/dashboard/public/ags/template.xlsx` (2.4 MB, committed — note the `!` negation in
 `.gitignore`, which otherwise excludes every `*.xlsx`). It is the Keynetix AGS workbook: eleven
@@ -424,6 +432,39 @@ python3 packages/ags-excel/scripts/integrity.py  # only intended parts changed; 
 
 `integrity.py` is the check that matters: it fails if any zip entry outside the eight patched
 sheets differs, or if a formula count changes.
+
+### Borelog (AGS workbook → PDF)
+
+`packages/borelog` is a line-for-line port of the Python program, and its contract is *exact
+replica*: same cells read, same text printed, same page breaks — quirks included (`Logged By IZWAN`
+and `Hole Type Rotary` are hardcoded, the SPT axis stops at N = 50, SPT results pair with `D`
+samples by order). Fix those as deliberate, separate changes, and expect `compare` to report them.
+
+Three pieces carry the fidelity, and each reproduces a Python library rather than approximating it:
+
+- `src/xlsx/readWorkbook.ts` reads cached values as `openpyxl.load_workbook(data_only=True)` does,
+  including its int-vs-float distinction (`34` vs `34.0` print differently) and its date-format
+  detection. Formulas are never evaluated — same as Python, so a workbook needs Excel's caches.
+- `src/py/number.ts` is Python's `round()` and `:.2f` (ties to even) and `str(float)`.
+- `src/render/paragraph.ts` is reportlab's `Paragraph` and `KeepInFrame(shrink)`, ported from the
+  reportlab 4.4 source: greedy wrap with 5% space shrinkage, `split` refusing to leave fewer than
+  two lines, the quadratic shrink search. Lines are drawn as one string per face, as reportlab
+  does, so glyph advances come from the viewer just as they did.
+
+The fonts are the standard-14 Helvetica faces — the AFM metrics reportlab measured with — so
+nothing is embedded. pdf-lib's `widthOfTextAtSize` applies kerning that reportlab never did, which
+is why `Fonts.stringWidth` sums glyph by glyph.
+
+```bash
+pnpm --filter @mmsb/borelog render <xlsx> [out-dir]   # one PDF per hole
+MMSB_EXCEL2BORELOG=<python repo> PYTHON=<python with reportlab, openpyxl, pillow> \
+  pnpm --filter @mmsb/borelog compare                 # parse, paragraph and pixel diffs vs Python
+```
+
+`compare` reads workbooks from `packages/borelog/samples/`, which is gitignored (real client
+data), and needs Ghostscript. Expected today: parse 0, paragraph 0, and 2 pixels in 37 pages
+(inside SPT graph dots — Bézier circles). The PNG assets need the `!` negations in `.gitignore`;
+a missing legend silently falls back to `999.png`.
 
 ### Web dashboard
 
