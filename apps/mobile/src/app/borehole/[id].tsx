@@ -100,7 +100,7 @@ export default function BoreholeScreen() {
         )
       }
       <Button
-        title={isSharingPdf ? 'Generating PDF...' : 'Share PDF'}
+        title={isSharingPdf ? 'Generating fieldlog...' : 'Share fieldlog'}
         disabled={isSharingPdf || blocks.length === 0}
         onPress={async () => {
           setIsSharingPdf(true);
