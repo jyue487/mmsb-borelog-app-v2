@@ -442,8 +442,15 @@ sheets differs, or if a formula count changes.
 
 `packages/borelog` is a line-for-line port of the Python program, and its contract is *exact
 replica*: same cells read, same text printed, same page breaks — quirks included (`Logged By IZWAN`
-and `Hole Type Rotary` are hardcoded, the SPT axis stops at N = 50, SPT results pair with `D`
-samples by order). Fix those as deliberate, separate changes, and expect `compare` to report them.
+and `Hole Type Rotary` are hardcoded, SPT results pair with `D` samples by order). Fix those as
+deliberate, separate changes, and expect `compare` to report them.
+
+One has been fixed: the SPT graph's axis runs to **SPT-N Max**, read from `'Project - AGS'!D13`
+(added by `template_v2.xlsx`), where Python fixed it at 50. It keeps 50 minor ticks
+and a labelled major one every 10th, so the labels read 10…40 or 20…80. A blank D13 — every
+workbook from an older template — **refuses to print** (`requireSptNMax` in `renderBorelog.ts`)
+rather than guess. `render --python`, which `compare` uses, substitutes Python's 50, and at 50
+the output is byte-identical to before, so `compare` still expects the numbers below.
 
 Three pieces carry the fidelity, and each reproduces a Python library rather than approximating it:
 
@@ -460,8 +467,16 @@ The fonts are the standard-14 Helvetica faces — the AFM metrics reportlab meas
 nothing is embedded. pdf-lib's `widthOfTextAtSize` applies kerning that reportlab never did, which
 is why `Fonts.stringWidth` sums glyph by glyph.
 
+Printing several holes is `renderBorelogs(workbook, holeIds, loadAssets)` → `zipBorelogs`
+(`src/printBorelogs.ts`): a failing hole becomes `<workbook> - <hole>.error.txt` instead of
+stopping the rest, as Python's per-workbook `.error.txt` did. The dashboard's **Borelog** tab
+(`apps/dashboard/src/app/BorelogPage.tsx`, owners and admins via `canPrintBorelog`) is that in a
+browser: upload one workbook, tick holes, download the zip. Nothing leaves the browser. Its legend
+PNGs are globbed straight from `packages/borelog/assets` (`src/utils/borelogAssets.ts`), not
+copied into `public/`.
+
 ```bash
-pnpm --filter @mmsb/borelog render <xlsx> [out-dir]   # one PDF per hole
+pnpm --filter @mmsb/borelog render <xlsx> [out-dir] [--holes BH1,BH3]   # PDF or .error.txt per hole
 MMSB_EXCEL2BORELOG=<python repo> PYTHON=<python with reportlab, openpyxl, pillow> \
   pnpm --filter @mmsb/borelog compare                 # parse, paragraph and pixel diffs vs Python
 ```

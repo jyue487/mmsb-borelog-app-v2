@@ -107,6 +107,7 @@ carried over deliberately and fixed afterwards (follow-up 5):
 - "Logged By" is hardcoded `IZWAN`; Holes `K` (logger) is read but unused.
 - "Hole Type" is hardcoded `Rotary`; Holes `C` is read but unused.
 - The SPT graph axis ends at N = 50, so an SPT100 project's N > 50 plots past the column.
+  *(Since fixed: the axis runs to SPT-N Max, `'Project - AGS'!D13`.)*
 - SPT results are paired with `D` samples by order, not by depth.
 - Descriptions are reportlab markup, so `<i>`, `<b>` and entities in a cell are interpreted.
 
@@ -186,20 +187,19 @@ blank final page.
 
 ## Follow-ups
 
-1. **A "Borelog" tab in the dashboard sidebar**, for owners and admins only (not supervisors or
-   viewers): upload an `.xlsx`, export the PDF. A new `canExportBorelog` predicate in
-   `apps/dashboard/src/data/memberRoles.ts`, a `RequireRole` route in `main.tsx`, and a `NavLink`
-   in `AppSidebar.tsx` behind the same predicate. Assets served from `public/borelog/`, legends
-   fetched only for the codes the workbook uses.
-2. **One workbook per project.** On upload, list every borehole in the workbook (from
-   `Holes - AGS`) and let the admin pick which to export — one PDF each, or several zipped with
-   the `fflate` the dashboard already has. The parser already groups by hole id (above).
+1. ~~**A "Borelog" tab in the dashboard sidebar**~~ — done: `/borelog`, owners and admins only
+   (`canPrintBorelog`, a `RequireRole` route, a `NavLink` between Projects and Members). Legends
+   are globbed from `packages/borelog/assets` and fetched only for the codes a hole uses.
+2. ~~**One workbook per project.**~~ — done: on upload the tab lists every hole on `Holes - AGS`,
+   the admin ticks some, and gets one zip — a PDF per hole, or `<hole>.error.txt` where one
+   fails (`renderBorelogs` / `zipBorelogs`).
 3. ~~**Rename the current export to fieldlog**~~ — done: `packages/report` → `packages/fieldlog`,
    `renderBorelogPdf` → `renderFieldlogPdf`, `downloadBorelogPdf` → `downloadFieldlogPdf`, the
    dashboard's fonts and logo moved to `public/fieldlog/`, and the buttons now read "Download
    fieldlog" / "Share fieldlog".
 4. **Skip Excel for data already in Supabase**: DB → `fillAgsWorkbook` → `@mmsb/borelog`, all in
    memory, as a "Download borelog" button next to the fieldlog one on the borehole page.
-5. **Fix the preserved quirks**: logger from Holes `K`, hole type from Holes `C`, SPT graph scaled
-   by the project's SPT-N Max (`'Project - AGS'!D13`, from `projects.spt_n_max`), SPT pairing by depth.
+5. **Fix the preserved quirks**: logger from Holes `K`, hole type from Holes `C`, SPT pairing by
+   depth. ~~SPT graph scaled by SPT-N Max~~ — done: the axis runs to `'Project - AGS'!D13`, and a
+   blank D13 refuses to print.
 6. **Retire the Python repo** once the port has been used on real projects.
