@@ -50,13 +50,15 @@ app-example
 
 # xlsx
 *.xlsx
-# ...except the AGS export templates (the second is for clients on a 100-blow SPT main drive).
-# The Excel exporter patches a copy of one, so it is a
+# ...except the AGS export templates. The exporter patches a copy of template_v2, which reads
+# SPT-N Max from its Project sheet; the first two (fixed at 50 and 100) are kept for reference
+# but no longer read. A template is a
 # runtime input like the report's fonts in apps/dashboard/public/fieldlog, not a scratch
 # spreadsheet. Without this the file is invisible to git and the feature cannot be built
 # by anyone else.
 !apps/dashboard/public/ags/template.xlsx
 !apps/dashboard/public/ags/template-SPT100.xlsx
+!apps/dashboard/public/ags/template_v2.xlsx
 
 # images
 *.png
