@@ -20,6 +20,7 @@ import {
 } from '../data/boreholeStatus';
 import {
   canDeleteProject,
+  canEditProjectDetails,
   canManageProjectPeople,
   canManageSitePlan,
   MEMBER_ROLE_BADGE_CLASSES,
@@ -679,14 +680,16 @@ export default function ProjectPage() {
         <div className="grid flex-1 grid-cols-1 gap-3 lg:min-h-0 lg:grid-cols-12 lg:grid-rows-[minmax(0,1.0fr)_minmax(0,1.4fr)]">
           {/* Top left: no panel title and no repeated project code */}
           <section className="group relative min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-3">
-            <button
-              type="button"
-              onClick={() => setIsEditProjectModalOpen(true)}
-              aria-label="Edit project details"
-              className="absolute right-4 top-4 z-10 rounded-lg p-2 text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <Pencil className="h-4 w-4" aria-hidden="true" />
-            </button>
+            {canEditProjectDetails(role) && (
+              <button
+                type="button"
+                onClick={() => setIsEditProjectModalOpen(true)}
+                aria-label="Edit project details"
+                className="absolute right-4 top-4 z-10 rounded-lg p-2 text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <Pencil className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
 
             <div className="flex h-full min-h-0 flex-col">
               <dl className="min-h-0 flex-1 overflow-y-auto pr-10">
@@ -710,6 +713,11 @@ export default function ProjectPage() {
                 <ProjectDetail
                   label="Consultant"
                   value={project.consultant}
+                />
+
+                <ProjectDetail
+                  label="SPT-N Max"
+                  value={String(project.sptNMax)}
                 />
               </dl>
             </div>
@@ -1110,7 +1118,7 @@ export default function ProjectPage() {
         </DeleteConfirmModal>
       )}
 
-      {isEditProjectModalOpen && (
+      {isEditProjectModalOpen && canEditProjectDetails(role) && (
         <EditProjectModal
           project={project}
           onClose={() => setIsEditProjectModalOpen(false)}

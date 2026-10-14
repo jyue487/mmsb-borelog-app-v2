@@ -1,4 +1,4 @@
-import type { Block, Borehole } from '@mmsb/core';
+import type { Block, Borehole, MainDriveRefusalBlows } from '@mmsb/core';
 
 /**
  * Project header fields, as the AGS workbook's Project sheet wants them.
@@ -12,6 +12,8 @@ export interface AgsProject {
 	readonly location: string;
 	readonly client: string;
 	readonly consultant: string;
+	/** `projects.spt_n_max`: written to `D13`, and the limit `computeSptResult` caches against. */
+	readonly sptNMax: MainDriveRefusalBlows;
 }
 
 export interface AgsBorehole {

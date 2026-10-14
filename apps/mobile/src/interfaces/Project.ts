@@ -6,6 +6,8 @@
 // error today rather than a data loss — addProjectDbAsync and editProjectDbAsync both
 // name their columns explicitly — but the moment someone widened that SET list the
 // UPDATE would sync an empty string back and wipe what the office entered.
+import type { MainDriveRefusalBlows } from '@mmsb/core';
+
 export interface Project {
     id: string; // must
     code: string; // must
@@ -13,7 +15,10 @@ export interface Project {
     location: string;
     client: string;
     consultant: string;
+    // projects.spt_n_max — set from the dashboard only. addProjectDbAsync writes the
+    // default of 50 and editProjectDbAsync never touches it.
+    sptNMax: MainDriveRefusalBlows;
 }
 
-export type AddProjectParams = Omit<Project, 'id'>;
-export type EditProjectParams = Omit<Project, 'code'>;
+export type AddProjectParams = Omit<Project, 'id' | 'sptNMax'>;
+export type EditProjectParams = Omit<Project, 'code' | 'sptNMax'>;

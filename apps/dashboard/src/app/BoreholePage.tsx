@@ -1,6 +1,6 @@
 // BoreholePage.tsx
 
-import { getMainDriveRefusalBlows, type Block, type Borehole } from '@mmsb/core';
+import { parseSptNMax, type Block, type Borehole } from '@mmsb/core';
 import type { ReportProject } from '@mmsb/fieldlog';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -24,8 +24,8 @@ import { buildPhotoFilenames } from '../utils/blockPhotoFilenames';
 import { sanitiseFilename } from '../utils/sanitiseFilename';
 
 /**
- * The report header prints title/location/client/consultant, so they are fetched on every
- * load. This used to be skipped whenever the borehole arrived in router state, and the
+ * The fieldlog header prints title/location/client/consultant, and SPT-N Max decides how
+ * every SPT reads, so they are fetched on every load. This used to be skipped whenever the borehole arrived in router state, and the
  * version before that selected only `id`.
  */
 async function fetchProjectByCode(
@@ -33,7 +33,7 @@ async function fetchProjectByCode(
 ): Promise<{ id: string; project: ReportProject }> {
   const { data, error } = await supabase
     .from('projects')
-    .select('id, title, location, client, consultant')
+    .select('id, title, location, client, consultant, spt_n_max')
     .eq('code', projectCode)
     .single();
 
@@ -49,6 +49,7 @@ async function fetchProjectByCode(
       location: data.location,
       client: data.client,
       consultant: data.consultant,
+      sptNMax: parseSptNMax(data.spt_n_max),
     },
   };
 }
@@ -347,7 +348,7 @@ export default function BoreholePage() {
                 setIsExportingExcel(true);
                 try {
                   // Dynamic import for the same reason as the PDF: this pulls in fflate and
-                  // fetches a 2.4 MB template that most visits never need.
+                  // fetches a 2.6 MB template that most visits never need.
                   const { agsWorkbookFilename, downloadAgsExcel } = await import(
                     '../utils/downloadAgsExcel'
                   );
@@ -466,17 +467,18 @@ export default function BoreholePage() {
             <div className="min-h-0 flex-1 overflow-auto">
               {/* Widened from 680px by the 200px photo column on the right of every row. */}
               <div className="min-w-[900px] border-t border-slate-200 dark:border-slate-800">
-                {blocks.map((block) => (
-                  <BlockRow
-                    key={block.id}
-                    block={block}
-                    photos={photosByBlockId.get(block.id) ?? []}
-                    photoFilenames={photoFilenames}
-                    mainDriveRefusalBlows={getMainDriveRefusalBlows(
-                      projectCode ?? '',
-                    )}
-                  />
-                ))}
+                {/* The project is set before the blocks on every load, so this only
+                    guards the type: an SPT must never render against a guessed limit. */}
+                {project !== null &&
+                  blocks.map((block) => (
+                    <BlockRow
+                      key={block.id}
+                      block={block}
+                      photos={photosByBlockId.get(block.id) ?? []}
+                      photoFilenames={photoFilenames}
+                      mainDriveRefusalBlows={project.sptNMax}
+                    />
+                  ))}
               </div>
             </div>
           )}

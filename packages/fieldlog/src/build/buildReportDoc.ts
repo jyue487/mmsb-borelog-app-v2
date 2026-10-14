@@ -2,7 +2,6 @@ import {
 	DAY_END_WORK_TYPE,
 	DAY_START_WORK_TYPE,
 	END_OF_BOREHOLE_BLOCK_TYPE_ID,
-	getMainDriveRefusalBlows,
 	type Block,
 } from '@mmsb/core';
 
@@ -57,7 +56,7 @@ function findDateFinished(blocks: Block[]): Date | null {
 
 export function buildReportDoc(input: ReportInput, measurer: TextMeasurer): ReportDoc {
 	const geometry = createPageGeometry();
-	const mainDriveRefusalBlows = getMainDriveRefusalBlows(input.project.code);
+	const mainDriveRefusalBlows = input.project.sptNMax;
 	const { pages: slices, warnings: paginationWarnings } = paginate(input.blocks);
 	const flow = flowContent(slices, geometry, (block, testBlock) =>
 		measureRowContent(block, testBlock, geometry, measurer, mainDriveRefusalBlows),

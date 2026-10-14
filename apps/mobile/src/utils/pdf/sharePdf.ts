@@ -49,6 +49,7 @@ export async function sharePdf(
 				location: project.location,
 				client: project.client,
 				consultant: project.consultant,
+				sptNMax: project.sptNMax,
 			},
 			borehole,
 			blocks,

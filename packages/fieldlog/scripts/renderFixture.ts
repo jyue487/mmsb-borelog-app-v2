@@ -44,6 +44,7 @@ const doc = buildReportDoc(
 			location: 'Kuala Lumpur, Wilayah Persekutuan',
 			client: 'MMSB Development Sdn Bhd',
 			consultant: 'Geotechnical Consultants Sdn Bhd',
+			sptNMax: 50,
 		},
 		borehole: {
 			id: 'fixture-borehole',

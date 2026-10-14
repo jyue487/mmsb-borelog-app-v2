@@ -66,7 +66,8 @@ export function buildSheetPatches(rows: WorkbookRows): Map<string, SheetPatch> {
 
 	// Project - AGS: a fixed block of header cells, not a repeating grid. D9 (contractor),
 	// D10 (date) and D11 (remarks) have no source and stay blank, as they are in the real
-	// workbooks. A18 is the hidden AGS output row that every other sheet's column A points
+	// workbooks. D13 (SPT-N Max) is what the SPT sheet's refusal formulas test, so it must
+	// match the limit the SPT caches were computed with — both come from `projectSptNMax`. A18 is the hidden AGS output row that every other sheet's column A points
 	// at; caching it keeps the workbook internally coherent.
 	patches.set(
 		PROJECT_SHEET_NAME,
@@ -81,6 +82,7 @@ export function buildSheetPatches(rows: WorkbookRows): Map<string, SheetPatch> {
 			[6, row([['D', optionalText(rows.projectClient)]])],
 			[7, row([['D', optionalText(rows.projectEngineer)]])],
 			[8, row([['D', optionalText(rows.projectLocation)]])],
+			[13, row([['D', numberCell(rows.projectSptNMax)]])],
 			[18, row([['A', cacheCell(projectCode)]])],
 		]),
 	);
