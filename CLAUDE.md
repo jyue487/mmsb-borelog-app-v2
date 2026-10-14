@@ -367,8 +367,9 @@ program with reportlab, `github.com/jyue487/mmsb_excel2borelog`, still in use un
 been through real projects. `packages/ags-excel` fills that workbook from Supabase data so nobody
 has to type it in. Everything said below about what "the Python side" reads applies to both.
 
-The template is `apps/dashboard/public/ags/template.xlsx` (2.4 MB, committed — note the `!` negation in
-`.gitignore`, which otherwise excludes every `*.xlsx`). It is the Keynetix AGS workbook: eleven
+The template is `apps/dashboard/public/ags/template_v2.xlsx` (2.6 MB, committed — note the `!` negation in
+`.gitignore`, which otherwise excludes every `*.xlsx`). `template.xlsx` and `template-SPT100.xlsx`
+beside it are its predecessors, kept for reference and read by nothing. It is the Keynetix AGS workbook: eleven
 sheets, and **its worksheet formulas are the program**. There are 120,310 shared formulas on the SPT
 sheet alone, turning a typed grid into hidden AGS `GROUP`/`HEADING`/`UNIT`/`DATA` rows. It is
 `.xlsx`, not `.xlsm` — there is no VBA anywhere in it.
@@ -391,12 +392,15 @@ formula cell the report reads — column A (`PROJ_ID`) on each sheet, and SPT's 
 `src/map/sptResult.ts` reproduces that formula chain in TypeScript. Change a blow-count rule there
 and the workbook lies until someone opens it in Excel.
 
-**Some clients use a 100-blow SPT main drive instead of 50.** That is per project, keyed on the
-project code in `packages/core/src/constants/sptStandard.ts` (`getMainDriveRefusalBlows`) — the one
-list every surface reads: the mobile form and validation (via `useProjectConfig()`), both apps'
-SPT views, the PDF row spec and the workbook. Those projects export from `template-SPT100.xlsx`,
-whose refusal formulas (SPT columns AB and AL) test 100; `agsTemplateFileName` pairs template and
-limit, and `computeSptResult` must be given the same limit or column T's cache lies.
+**Some clients use a 100-blow SPT main drive instead of 50.** That is per project, stored as
+`projects.spt_n_max` (NOT NULL, default 50; `Project.sptNMax`, read through `parseSptNMax` in
+`packages/core/src/constants/sptStandard.ts`) and set by owners and admins in the dashboard's
+Edit project modal. Every surface reads it off the project: the mobile form and validation (via
+`useProjectConfig()`), both apps' SPT views, the fieldlog row spec and the workbook. The field app
+never changes it — `addProjectDbAsync` inserts the default explicitly, because a PowerSync insert
+uploads every column and an omitted one would upsert a null. In the workbook it goes into
+`'Project - AGS'!D13`, which the SPT refusal formulas (columns AB and AL) test against;
+`computeSptResult` must be given the same limit or column T's cache lies.
 
 Two data-format rules that are easy to get wrong, both taken from real workbooks: **percentages are
 stored as fractions** (0.9, not 90 — the cells are percent-formatted), and **dates are Excel serials

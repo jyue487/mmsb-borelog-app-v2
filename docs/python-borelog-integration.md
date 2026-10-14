@@ -201,5 +201,5 @@ blank final page.
 4. **Skip Excel for data already in Supabase**: DB → `fillAgsWorkbook` → `@mmsb/borelog`, all in
    memory, as a "Download borelog" button next to the fieldlog one on the borehole page.
 5. **Fix the preserved quirks**: logger from Holes `K`, hole type from Holes `C`, SPT graph scaled
-   by `getMainDriveRefusalBlows` for SPT100 projects, SPT pairing by depth.
+   by the project's SPT-N Max (`'Project - AGS'!D13`, from `projects.spt_n_max`), SPT pairing by depth.
 6. **Retire the Python repo** once the port has been used on real projects.
