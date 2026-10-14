@@ -69,14 +69,19 @@ const SPT_FONT_SIZE = 6.5;
 export class SptGraphDrawer {
 	private i = 0;
 	private readonly list: readonly SptInformation[];
+	private readonly sptNMax: number;
 
-	constructor(list: readonly SptInformation[]) {
+	constructor(list: readonly SptInformation[], sptNMax: number) {
 		this.list = list;
+		this.sptNMax = sptNMax;
 	}
 
-	/** The axis runs 0 to 50 across the column; a larger N plots past it, as it did in Python. */
+	/**
+	 * The axis runs 0 to SPT-N Max across the column. The Python program fixed it at 50, so an
+	 * SPT100 project's N > 50 plotted past the column; an N above SPT-N Max still would.
+	 */
 	private getXFromNValue(nValue: number): number {
-		return cfg.GRAPH_COLUMN_LEFT + (nValue / 50) * cfg.GRAPH_COLUMN_WIDTH;
+		return cfg.GRAPH_COLUMN_LEFT + (nValue / this.sptNMax) * cfg.GRAPH_COLUMN_WIDTH;
 	}
 
 	drawOnPage(c: Canvas, pageNumber: number): void {

@@ -20,6 +20,9 @@ const toSnake = (value: unknown): unknown =>
 const out: Record<string, unknown> = {};
 for (const path of process.argv.slice(2)) {
 	const workbook = parseBorelogWorkbook(new Uint8Array(readFileSync(path)));
-	out[basename(path)] = toSnake(workbook.borelogData(workbook.boreholes[0].id));
+	const data = workbook.borelogData(workbook.boreholes[0].id);
+	// Not a field the Python parsers have: it is what the port reads in place of their fixed 50.
+	const { sptNMax: _, ...project } = data.project;
+	out[basename(path)] = toSnake({ ...data, project });
 }
 console.log(JSON.stringify(out));

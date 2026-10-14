@@ -34,6 +34,7 @@ export function parseProjectInformation(ws: Worksheet): ProjectInformation {
 		contractor: xl.excelCellToString(ws.cell('D9')),
 		date: xl.excelCellToString(ws.cell('D10')),
 		remarks: xl.excelCellToString(ws.cell('D11')),
+		sptNMax: xl.excelCellToFloat(ws.cell('D13')),
 	};
 }
 

@@ -12,6 +12,12 @@ export interface ProjectInformation {
 	contractor: string;
 	date: string;
 	remarks: string;
+	/**
+	 * `D13`, SPT-N Max: the SPT main-drive limit the graph's axis runs to. Not something the
+	 * Python program read — it drew a fixed 0–50 axis. Null when the cell is blank, as it is on
+	 * every workbook filled from a template older than `template_v2.xlsx`.
+	 */
+	sptNMax: number | null;
 }
 
 export interface BoreholeInformation {

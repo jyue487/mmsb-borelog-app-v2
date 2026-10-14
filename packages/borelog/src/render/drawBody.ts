@@ -91,7 +91,11 @@ function drawColumnHeaderTable(c: Canvas, x: number, top: number): number {
 	return height;
 }
 
-function drawTopRuler(c: Canvas, numTicks = 50, fontSize = 5): void {
+/**
+ * The SPT graph's N axis: 50 minor ticks, a labelled major tick every 10th, whatever the
+ * axis runs to — so the labels read 10…40 for SPT-N Max 50 and 20…80 for 100.
+ */
+function drawTopRuler(c: Canvas, sptNMax: number, numTicks = 50, fontSize = 5): void {
 	c.saveState();
 	c.setLineWidth(0.3);
 	const dx = cfg.GRAPH_COLUMN_WIDTH / numTicks;
@@ -101,7 +105,7 @@ function drawTopRuler(c: Canvas, numTicks = 50, fontSize = 5): void {
 		if (i > 0 && i < numTicks && i % 10 === 0) {
 			c.line(x, y, x, y + 2 * mm);
 			c.setFontSize(fontSize);
-			c.drawCentredString(x, y + 2.5 * mm, String(i));
+			c.drawCentredString(x, y + 2.5 * mm, String((i * sptNMax) / numTicks));
 		} else {
 			c.line(x, y, x, y + 1 * mm);
 		}
@@ -136,14 +140,16 @@ export function drawColumnHeader(c: Canvas, x: number, y: number): number {
 	return y - h;
 }
 
-export function drawBody(c: Canvas, y: number, pageNumber: number): number {
+export function drawBody(c: Canvas, y: number, pageNumber: number, sptNMax: number): number {
 	const y1 = y;
 	const y2 = cfg.BODY_Y_BOTTOM;
 	c.saveState();
 	c.setLineWidth(0.6);
 	for (const x of cfg.COLUMN_SEPARATORS_X) c.line(x, y1, x, y2);
 
-	const interval = (10 / 50) * cfg.GRAPH_COLUMN_WIDTH;
+	// The graph's vertical grid, one line per major tick of the N axis: fifths of the column,
+	// whatever SPT-N Max is.
+	const interval = (1 / 5) * cfg.GRAPH_COLUMN_WIDTH;
 	let graphX = cfg.GRAPH_COLUMN_LEFT + interval;
 	while (graphX < cfg.GRAPH_COLUMN_RIGHT) {
 		c.line(graphX, y1, graphX, y2);
@@ -170,7 +176,7 @@ export function drawBody(c: Canvas, y: number, pageNumber: number): number {
 		}
 	}
 
-	drawTopRuler(c);
+	drawTopRuler(c, sptNMax);
 
 	c.restoreState();
 	return y2;
