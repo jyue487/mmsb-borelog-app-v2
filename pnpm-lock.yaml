@@ -17,6 +17,9 @@ importers:
       '@mmsb/ags-excel':
         specifier: workspace:*
         version: link:../../packages/ags-excel
+      '@mmsb/borelog':
+        specifier: workspace:*
+        version: link:../../packages/borelog
       '@mmsb/core':
         specifier: workspace:*
         version: link:../../packages/core

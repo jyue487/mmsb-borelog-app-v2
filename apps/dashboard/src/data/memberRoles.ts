@@ -47,6 +47,15 @@ export function canManageSitePlan(role: MemberRole | null): boolean {
   return role === 'owner' || role === 'admin';
 }
 
+// Who may print borelogs from an uploaded AGS workbook (the Borelog tab).
+// Owners and admins. There is no policy to mirror: the workbook is parsed and
+// drawn in the browser and nothing is read from or written to Supabase, so this
+// gate — with RequireRole on the route — is the whole of it. Its own function
+// for the same reason as the rest: it answers its own question.
+export function canPrintBorelog(role: MemberRole | null): boolean {
+  return role === 'owner' || role === 'admin';
+}
+
 // Who may edit a project's details (title, location, client, consultant and
 // SPT-N Max) from the dashboard. Owners and admins, and its own function for the
 // same reason as the ones around it.

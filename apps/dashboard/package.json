@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@mmsb/ags-excel": "workspace:*",
+    "@mmsb/borelog": "workspace:*",
     "@mmsb/core": "workspace:*",
     "@mmsb/fieldlog": "workspace:*",
     "@supabase/ssr": "^0.12.4",

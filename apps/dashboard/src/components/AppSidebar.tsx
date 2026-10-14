@@ -1,11 +1,11 @@
 // AppSidebar.tsx
 
-import { Layers, Settings, Users } from 'lucide-react';
+import { Layers, Printer, Settings, Users } from 'lucide-react';
 import { NavLink, useMatch } from 'react-router';
 
 import mmsbLogo from '../assets/mmsb-logo-transparent.png';
 import { useAuth } from '../context/authContext';
-import { canViewMembers } from '../data/memberRoles';
+import { canPrintBorelog, canViewMembers } from '../data/memberRoles';
 
 const ACTIVE_CLASSES =
   'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300';
@@ -101,6 +101,16 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
               </ul>
             )}
           </li>
+
+          {/* Owners and admins only; RequireRole in main.tsx gates the route too. */}
+          {canPrintBorelog(role) && (
+            <li>
+              <NavLink to="/borelog" onClick={onNavigate} className={navLinkClassName}>
+                <Printer className="size-4 shrink-0" aria-hidden="true" />
+                Borelog
+              </NavLink>
+            </li>
+          )}
 
           {/* Viewers do not get the member directory. The route is gated too —
               RequireRole in main.tsx — so hiding the link is the affordance, not
