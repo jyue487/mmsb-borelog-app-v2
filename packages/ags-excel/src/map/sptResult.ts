@@ -14,11 +14,11 @@ import type { MainDriveRefusalBlows, SptBlock } from '@mmsb/core';
  * `N=1 (1,1,1,0,0,0)`) and `CBH-S13-P08` row 7 (1,0 / 1,2,1,2 → `N=6 (1,0,1,2,1,2)`).
  *
  * The main-drive refusal limit is the project's (50, or 100 for some clients), and it must be
- * the one the template was built for: `template.xlsx` tests `K7=50` in AB and `AG7<>50` in AL,
- * `template-SPT100.xlsx` tests 100 in both. `agsTemplateFileName` pairs the two.
+ * the one written to `'Project - AGS'!D13`, which the template tests in AB (`K7=D13`) and AL
+ * (`AG7<>D13`). Both come from `AgsProject.sptNMax`.
  *
  * Note `null`, not zero, means "increment not driven" — Excel's `ISBLANK` is false for 0,
- * and a real log records genuine zero-blow increments. `packages/report` draws the same
+ * and a real log records genuine zero-blow increments. `packages/fieldlog` draws the same
  * distinction.
  */
 

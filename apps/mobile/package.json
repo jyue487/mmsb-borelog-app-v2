@@ -14,7 +14,7 @@
   "dependencies": {
     "@dr.pogodin/react-native-fs": "^2.40.1",
     "@mmsb/core": "workspace:*",
-    "@mmsb/report": "workspace:*",
+    "@mmsb/fieldlog": "workspace:*",
     "@op-engineering/op-sqlite": "~18.1.4",
     "@powersync/attachments-storage-react-native": "~0.1.1",
     "@powersync/react-native": "~2.2.0",

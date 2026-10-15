@@ -4,7 +4,6 @@ import {
 	DAY_START_AND_END_WORK_TYPE,
 	DAY_START_WORK_TYPE,
 	END_OF_BOREHOLE_BLOCK_TYPE_ID,
-	getMainDriveRefusalBlows,
 	SPT_BLOCK_TYPE_ID,
 	type Block,
 	type DayWorkStatus,
@@ -277,7 +276,7 @@ export function buildWorkbookRows(input: AgsExcelInput): WorkbookRows {
 	const samples: SampleRow[] = [];
 	const core: CoreRow[] = [];
 	const waterStrikes: WaterStrikeRow[] = [];
-	const mainDriveRefusalBlows = getMainDriveRefusalBlows(input.project.code);
+	const mainDriveRefusalBlows = input.project.sptNMax;
 
 	for (const entry of input.boreholes) {
 		// Blocks carry no stored order. Callers reindex on read, but sorting again here keeps
@@ -305,6 +304,7 @@ export function buildWorkbookRows(input: AgsExcelInput): WorkbookRows {
 		// `PROJ_ENG` on the Project sheet's hidden AGS row, fed from D7. The consultant is the
 		// engineer of record; nothing in the data model names the drilling contractor.
 		projectEngineer: input.project.consultant,
+		projectSptNMax: input.project.sptNMax,
 		holes,
 		progress,
 		spt,

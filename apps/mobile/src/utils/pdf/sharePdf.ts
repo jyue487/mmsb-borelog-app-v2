@@ -1,6 +1,6 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { renderBorelogPdf, type ReportWarning } from '@mmsb/report';
+import { renderFieldlogPdf, type ReportWarning } from '@mmsb/fieldlog';
 
 import { Block, Borehole } from '@mmsb/core';
 import { Project } from '@/src/interfaces/Project';
@@ -9,7 +9,7 @@ import { loadReportAssets } from './loadReportAssets';
 /**
  * Generates the borehole log and hands it to the share sheet.
  *
- * Layout and drawing both live in `@mmsb/report`, which is platform-free — so this file is
+ * Layout and drawing both live in `@mmsb/fieldlog`, which is platform-free — so this file is
  * only asset loading, file IO and sharing, and the web dashboard produces a byte-identical
  * PDF from the same code. No WebView and no `expo-print` in the path.
  *
@@ -41,7 +41,7 @@ export async function sharePdf(
 ): Promise<SharePdfResult> {
 	const assets = await loadReportAssets();
 
-	const { bytes, warnings, pageCount } = await renderBorelogPdf(
+	const { bytes, warnings, pageCount } = await renderFieldlogPdf(
 		{
 			project: {
 				code: project.code,
@@ -49,6 +49,7 @@ export async function sharePdf(
 				location: project.location,
 				client: project.client,
 				consultant: project.consultant,
+				sptNMax: project.sptNMax,
 			},
 			borehole,
 			blocks,

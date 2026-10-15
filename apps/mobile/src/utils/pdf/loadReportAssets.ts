@@ -1,6 +1,6 @@
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
-import type { ReportAssets } from '@mmsb/report';
+import type { ReportAssets } from '@mmsb/fieldlog';
 
 /**
  * Loads the fonts and logo the report embeds, once per session.

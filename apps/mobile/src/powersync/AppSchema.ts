@@ -14,6 +14,7 @@ const projects = new Table(
     location: column.text,
     client: column.text,
     consultant: column.text,
+    spt_n_max: column.integer,
     created_at: column.text,
     created_by: column.text,
     updated_at: column.text,

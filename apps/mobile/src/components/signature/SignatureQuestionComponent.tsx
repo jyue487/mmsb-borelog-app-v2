@@ -14,7 +14,7 @@ type Props = {
 
 /**
  * The footer draws each signature into a box at most ~113pt wide, aspect-fitted
- * (packages/report/src/build/buildFooter.ts and pdfLibBackend.ts's 'image' case). 640px on
+ * (packages/fieldlog/src/build/buildFooter.ts and pdfLibBackend.ts's 'image' case). 640px on
  * the long edge is past 400dpi across that box — beyond what any printer or zoom level
  * resolves.
  */

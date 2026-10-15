@@ -14,12 +14,20 @@ Two clients over one Supabase backend:
 - `apps/dashboard` — Vite/React dashboard for office use (project/borehole admin). Much newer and thinner.
 - `packages/core` — the shared domain: interfaces, constants, and the one block parser both clients
   use. `apps/mobile` and `apps/dashboard` both depend on it; nothing is duplicated any more.
-- `packages/report` — the borehole log report: pagination, layout and pdf-lib rendering, shared by
-  both apps. Platform-free.
-- `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the separate
-  Python program that renders the professional report from it. Platform-free, like `report`.
+- `packages/fieldlog` — the fieldlog, the borehole log drawn from the field app's blocks:
+  pagination, layout and pdf-lib rendering, shared by both apps. Platform-free.
+- `packages/ags-excel` — fills the AGS spreadsheet template from borehole data, for the borelog
+  renderer that reads it. Platform-free, like `fieldlog`.
+- `packages/borelog` — the borelog: a filled AGS workbook → the professional borehole log PDF. A
+  TypeScript port of a separate Python/reportlab program, pixel-equivalent to it. Platform-free.
 - `packages/supabase` — the shared backend: Deno edge functions and RLS policy SQL. **Not** at the
   repo root, which is where the Supabase CLI expects to find it — see the warning below.
+
+Vocabulary: the **fieldlog** is what `packages/fieldlog` draws from the field app's blocks; the
+**borelog** is what `packages/borelog` draws from an AGS workbook. Keep the two words apart in code
+and UI. Inside `packages/fieldlog` the types still say `Report*` (`ReportInput`, `ReportDoc`,
+`ReportAssets`) — internal names, not a third document. `docs/python-borelog-integration.md` has
+the plan and the remaining follow-ups (dashboard tab, one workbook per project).
 
 ## Commands
 
@@ -238,7 +246,7 @@ exhaustive `Record<BlockTypeId, …>` will point you at most of them:
 | Renumbering | `src/utils/block/reindexBlocksFunctions/reindex<Type>Blocks.ts` |
 | Read-only display | `src/components/blockComponents/<Type>BlockComponent.tsx` |
 | Entry form | `src/components/blockDetailsInputForms/<group>/<type>/…` |
-| PDF row | one entry in `BLOCK_ROW_SPECS` in `packages/report/src/rows/blockRowSpec.ts` |
+| PDF row | one entry in `BLOCK_ROW_SPECS` in `packages/fieldlog/src/rows/blockRowSpec.ts` |
 
 `checkAndReturn*` is the validation convention throughout: input forms keep every field as a
 `string` in state, and the check function parses/validates and either throws or returns a fully
@@ -251,13 +259,13 @@ Required In-situ Tests / End of Borehole / Others). The mapping lives in
 
 ### PDF generation
 
-The report lives in `packages/report` and is **drawn directly with pdf-lib**, not rendered through
-a browser. Both apps call one function, `renderBorelogPdf(input, assets)`, so the field app and the
+The fieldlog lives in `packages/fieldlog` and is **drawn directly with pdf-lib**, not rendered through
+a browser. Both apps call one function, `renderFieldlogPdf(input, assets)`, so the field app and the
 dashboard produce byte-identical output. There is no WebView and no `expo-print` in the path.
 
 The package is strictly platform-free — no `expo-*`, no `react-native`, no DOM, no `fs`, no
 `fetch`. Hosts hand in asset bytes (`apps/mobile/src/utils/pdf/loadReportAssets.ts`,
-`apps/dashboard/src/utils/downloadBorelogPdf.ts`) and get bytes back. That is what makes the whole layout
+`apps/dashboard/src/utils/downloadFieldlogPdf.ts`) and get bytes back. That is what makes the whole layout
 runnable and testable in Node with no device and no PDF.
 
 Two tiers, and the seam between them is the point:
@@ -318,11 +326,11 @@ is why a third (italic) face is embedded.
 There is no test runner. Verification is by committed snapshot and differential check:
 
 ```bash
-pnpm --filter @mmsb/report pagination   # depth layer: where every interval lands, vs a committed snapshot
-pnpm --filter @mmsb/report flow         # content layer: every row's box in points and every pushed separator
-pnpm --filter @mmsb/report oracle       # diff against a transliteration of the old HTML loop
-pnpm --filter @mmsb/report rows         # every block type, asserting 14-column occupancy
-pnpm --filter @mmsb/report render [fx]  # a real PDF from a fixture
+pnpm --filter @mmsb/fieldlog pagination   # depth layer: where every interval lands, vs a committed snapshot
+pnpm --filter @mmsb/fieldlog flow         # content layer: every row's box in points and every pushed separator
+pnpm --filter @mmsb/fieldlog oracle       # diff against a transliteration of the old HTML loop
+pnpm --filter @mmsb/fieldlog rows         # every block type, asserting 14-column occupancy
+pnpm --filter @mmsb/fieldlog render [fx]  # a real PDF from a fixture
 ```
 
 `pagination:snap` and `flow:snap` rewrite the snapshots; `git diff` is the assertion. The `flow`
@@ -353,13 +361,15 @@ and `expo-print`, and `src/constants/textSize.ts` — once the new path is prove
 
 ### Excel export (AGS)
 
-`packages/report` is not the only renderer of a borelog. A separate Python program — currently in
-its own repo, `github.com/jyue487/mmsb_excel2borelog` — reads a filled **AGS workbook** and draws
-the professional report with reportlab. `packages/ags-excel` fills that workbook from Supabase data
-so nobody has to type it in.
+`packages/fieldlog` is not the only renderer of a borehole log. The professional one, the borelog, is
+drawn from a filled **AGS workbook** — by `packages/borelog` (below), which replaces a Python
+program with reportlab, `github.com/jyue487/mmsb_excel2borelog`, still in use until the port has
+been through real projects. `packages/ags-excel` fills that workbook from Supabase data so nobody
+has to type it in. Everything said below about what "the Python side" reads applies to both.
 
-The template is `apps/dashboard/public/ags/template.xlsx` (2.4 MB, committed — note the `!` negation in
-`.gitignore`, which otherwise excludes every `*.xlsx`). It is the Keynetix AGS workbook: eleven
+The template is `apps/dashboard/public/ags/template_v2.xlsx` (2.6 MB, committed — note the `!` negation in
+`.gitignore`, which otherwise excludes every `*.xlsx`). `template.xlsx` and `template-SPT100.xlsx`
+beside it are its predecessors, kept for reference and read by nothing. It is the Keynetix AGS workbook: eleven
 sheets, and **its worksheet formulas are the program**. There are 120,310 shared formulas on the SPT
 sheet alone, turning a typed grid into hidden AGS `GROUP`/`HEADING`/`UNIT`/`DATA` rows. It is
 `.xlsx`, not `.xlsm` — there is no VBA anywhere in it.
@@ -382,12 +392,15 @@ formula cell the report reads — column A (`PROJ_ID`) on each sheet, and SPT's 
 `src/map/sptResult.ts` reproduces that formula chain in TypeScript. Change a blow-count rule there
 and the workbook lies until someone opens it in Excel.
 
-**Some clients use a 100-blow SPT main drive instead of 50.** That is per project, keyed on the
-project code in `packages/core/src/constants/sptStandard.ts` (`getMainDriveRefusalBlows`) — the one
-list every surface reads: the mobile form and validation (via `useProjectConfig()`), both apps'
-SPT views, the PDF row spec and the workbook. Those projects export from `template-SPT100.xlsx`,
-whose refusal formulas (SPT columns AB and AL) test 100; `agsTemplateFileName` pairs template and
-limit, and `computeSptResult` must be given the same limit or column T's cache lies.
+**Some clients use a 100-blow SPT main drive instead of 50.** That is per project, stored as
+`projects.spt_n_max` (NOT NULL, default 50; `Project.sptNMax`, read through `parseSptNMax` in
+`packages/core/src/constants/sptStandard.ts`) and set by owners and admins in the dashboard's
+Edit project modal. Every surface reads it off the project: the mobile form and validation (via
+`useProjectConfig()`), both apps' SPT views, the fieldlog row spec and the workbook. The field app
+never changes it — `addProjectDbAsync` inserts the default explicitly, because a PowerSync insert
+uploads every column and an omitted one would upsert a null. In the workbook it goes into
+`'Project - AGS'!D13`, which the SPT refusal formulas (columns AB and AL) test against;
+`computeSptResult` must be given the same limit or column T's cache lies.
 
 Two data-format rules that are easy to get wrong, both taken from real workbooks: **percentages are
 stored as fractions** (0.9, not 90 — the cells are percent-formatted), and **dates are Excel serials
@@ -410,7 +423,7 @@ in-situ tests, which get a row of their own even though they sit inside a host b
 (because `GEOL_DESC` is where the report reads the description column from) and therefore truncate
 that host. Detail Description and Backfill are still unfilled.
 
-Like `@mmsb/report`, the package is strictly platform-free — and here the compiler enforces it:
+Like `@mmsb/fieldlog`, the package is strictly platform-free — and here the compiler enforces it:
 `tsconfig.json` (what `build` uses, covering `src` alone) has no node types, so an
 `import 'node:fs'` in the package is a compile error. `tsconfig.check.json` adds them for the dev
 scripts and fixtures only.
@@ -424,6 +437,54 @@ python3 packages/ags-excel/scripts/integrity.py  # only intended parts changed; 
 
 `integrity.py` is the check that matters: it fails if any zip entry outside the eight patched
 sheets differs, or if a formula count changes.
+
+### Borelog (AGS workbook → PDF)
+
+`packages/borelog` is a line-for-line port of the Python program, and its contract is *exact
+replica*: same cells read, same text printed, same page breaks — quirks included (`Logged By IZWAN`
+and `Hole Type Rotary` are hardcoded, SPT results pair with `D` samples by order). Fix those as
+deliberate, separate changes, and expect `compare` to report them.
+
+One has been fixed: the SPT graph's axis runs to **SPT-N Max**, read from `'Project - AGS'!D13`
+(added by `template_v2.xlsx`), where Python fixed it at 50. It keeps 50 minor ticks
+and a labelled major one every 10th, so the labels read 10…40 or 20…80. A blank D13 — every
+workbook from an older template — **refuses to print** (`requireSptNMax` in `renderBorelog.ts`)
+rather than guess. `render --python`, which `compare` uses, substitutes Python's 50, and at 50
+the output is byte-identical to before, so `compare` still expects the numbers below.
+
+Three pieces carry the fidelity, and each reproduces a Python library rather than approximating it:
+
+- `src/xlsx/readWorkbook.ts` reads cached values as `openpyxl.load_workbook(data_only=True)` does,
+  including its int-vs-float distinction (`34` vs `34.0` print differently) and its date-format
+  detection. Formulas are never evaluated — same as Python, so a workbook needs Excel's caches.
+- `src/py/number.ts` is Python's `round()` and `:.2f` (ties to even) and `str(float)`.
+- `src/render/paragraph.ts` is reportlab's `Paragraph` and `KeepInFrame(shrink)`, ported from the
+  reportlab 4.4 source: greedy wrap with 5% space shrinkage, `split` refusing to leave fewer than
+  two lines, the quadratic shrink search. Lines are drawn as one string per face, as reportlab
+  does, so glyph advances come from the viewer just as they did.
+
+The fonts are the standard-14 Helvetica faces — the AFM metrics reportlab measured with — so
+nothing is embedded. pdf-lib's `widthOfTextAtSize` applies kerning that reportlab never did, which
+is why `Fonts.stringWidth` sums glyph by glyph.
+
+Printing several holes is `renderBorelogs(workbook, holeIds, loadAssets)` → `zipBorelogs`
+(`src/printBorelogs.ts`): a failing hole becomes `<workbook> - <hole>.error.txt` instead of
+stopping the rest, as Python's per-workbook `.error.txt` did. The dashboard's **Borelog** tab
+(`apps/dashboard/src/app/BorelogPage.tsx`, owners and admins via `canPrintBorelog`) is that in a
+browser: upload one workbook, tick holes, download the zip. Nothing leaves the browser. Its legend
+PNGs are globbed straight from `packages/borelog/assets` (`src/utils/borelogAssets.ts`), not
+copied into `public/`.
+
+```bash
+pnpm --filter @mmsb/borelog render <xlsx> [out-dir] [--holes BH1,BH3]   # PDF or .error.txt per hole
+MMSB_EXCEL2BORELOG=<python repo> PYTHON=<python with reportlab, openpyxl, pillow> \
+  pnpm --filter @mmsb/borelog compare                 # parse, paragraph and pixel diffs vs Python
+```
+
+`compare` reads workbooks from `packages/borelog/samples/`, which is gitignored (real client
+data), and needs Ghostscript. Expected today: parse 0, paragraph 0, and 2 pixels in 37 pages
+(inside SPT graph dots — Bézier circles). The PNG assets need the `!` negations in `.gitignore`;
+a missing legend silently falls back to `999.png`.
 
 ### Web dashboard
 
@@ -465,7 +526,7 @@ queries Supabase directly via `src/supabase/supabase.server.ts` and maps snake_c
   schema now (`AppSchema.ts`) — do not add migrations there.
 - `src/utils/excel/shareExcel.ts` is dead — the file is commented out end to end, and the
   commented-out button that called it is gone from `borehole/[id].tsx`. Nothing references it.
-- `src/utils/pdf/` holds two pipelines: the live `sharePdf.ts` → `@mmsb/report`, and the parked
+- `src/utils/pdf/` holds two pipelines: the live `sharePdf.ts` → `@mmsb/fieldlog`, and the parked
   legacy HTML one behind `sharePdfLegacyHtml.ts`. Only the first is referenced.
 - Further deferred defects and debt — most of them latent, with the trigger that would make each one
   bite — are recorded in `docs/follow-ups.md`.

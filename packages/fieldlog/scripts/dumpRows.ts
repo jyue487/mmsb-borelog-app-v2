@@ -1,0 +1,269 @@
+/**
+ * Builds a body row for every one of the 18 block types and prints its cells.
+ *
+ *   pnpm --filter @mmsb/fieldlog rows
+ *
+ * Two things are being checked. First, that each type puts its values in the columns the
+ * old renderer put them in — that is what the printed table shows. Second, and enforced
+ * rather than eyeballed, that every row tiles all 14 columns exactly once: the old code
+ * held that invariant only by convention, and a miscount there silently shifts a block
+ * type's values into the wrong column.
+ */
+import {
+	ASPHALT_BLOCK_TYPE_ID,
+	BLOCK_TYPE_ID_LIST,
+	CAVITY_BLOCK_TYPE_ID,
+	CONCRETE_SLAB_BLOCK_TYPE_ID,
+	CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+	CORING_BLOCK_TYPE_ID,
+	CUSTOM_BLOCK_TYPE_ID,
+	DAY_START_AND_END_WORK_TYPE,
+	END_OF_BOREHOLE_BLOCK_TYPE_ID,
+	FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+	HA_BLOCK_TYPE_ID,
+	LUGEON_TEST_BLOCK_TYPE_ID,
+	MZ_BLOCK_TYPE_ID,
+	PRESSUREMETER_TEST_BLOCK_TYPE_ID,
+	PS_BLOCK_TYPE_ID,
+	RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID,
+	SPT_BLOCK_TYPE_ID,
+	UD_BLOCK_TYPE_ID,
+	VANE_SHEAR_TEST_BLOCK_TYPE_ID,
+	WASH_BORING_BLOCK_TYPE_ID,
+	createDefaultAsphaltBlock,
+	createDefaultCavityBlock,
+	createDefaultConcreteSlabBlock,
+	createDefaultConstantHeadPermeabilityTestBlock,
+	createDefaultCoringBlock,
+	createDefaultCustomBlock,
+	createDefaultEndOfBoreholeBlock,
+	createDefaultFallingHeadPermeabilityTestBlock,
+	createDefaultHaBlock,
+	createDefaultLugeonTestBlock,
+	createDefaultMzBlock,
+	createDefaultPressuremeterTestBlock,
+	createDefaultPsBlock,
+	createDefaultRisingHeadPermeabilityTestBlock,
+	createDefaultSptBlock,
+	createDefaultUdBlock,
+	createDefaultVaneShearTestBlock,
+	createDefaultWashBoringBlock,
+	type Block,
+	type BlockTypeId,
+} from '@mmsb/core';
+
+import { COLUMN_COUNT } from '../src/layout/constants.ts';
+import type { ContentPart } from '../src/layout/flowContent.ts';
+import { BASE_FONT_SIZE_PT, createPageGeometry } from '../src/layout/pageGeometry.ts';
+import { assertRowOccupancy, buildBodyRow } from '../src/rows/buildBodyRow.ts';
+import { measureRowContent } from '../src/rows/rowMetrics.ts';
+import type { CellContent } from '../src/model/table.ts';
+import { createFixedWidthMeasurer } from '../src/text/measure.ts';
+
+// The description arrives on a row already wrapped, so a stub measurer stands in for the
+// font here — the wrap itself is not what this script checks.
+const geometry = createPageGeometry();
+const measurer = createFixedWidthMeasurer();
+
+function partOf(block: Block, partIndex: number, isFinalPart: boolean, mainDriveRefusalBlows = 50): ContentPart {
+	const metrics = measureRowContent(block, null, geometry, measurer, mainDriveRefusalBlows);
+	return {
+		kind: 'block',
+		block,
+		testBlock: null,
+		page: 0,
+		topPt: 20 * geometry.tickPitchPt,
+		heightPt: 15 * geometry.tickPitchPt,
+		partIndex,
+		isFinalPart,
+		lines: metrics.lines,
+		lineHeightPt: metrics.lineHeightPt,
+	};
+}
+
+const EPOCH = new Date(0);
+
+const FACTORIES: Record<BlockTypeId, () => Block> = {
+	[SPT_BLOCK_TYPE_ID]: createDefaultSptBlock,
+	[CORING_BLOCK_TYPE_ID]: createDefaultCoringBlock,
+	[CAVITY_BLOCK_TYPE_ID]: createDefaultCavityBlock,
+	[UD_BLOCK_TYPE_ID]: createDefaultUdBlock,
+	[MZ_BLOCK_TYPE_ID]: createDefaultMzBlock,
+	[PS_BLOCK_TYPE_ID]: createDefaultPsBlock,
+	[HA_BLOCK_TYPE_ID]: createDefaultHaBlock,
+	[WASH_BORING_BLOCK_TYPE_ID]: createDefaultWashBoringBlock,
+	[CONCRETE_SLAB_BLOCK_TYPE_ID]: createDefaultConcreteSlabBlock,
+	[ASPHALT_BLOCK_TYPE_ID]: createDefaultAsphaltBlock,
+	[END_OF_BOREHOLE_BLOCK_TYPE_ID]: createDefaultEndOfBoreholeBlock,
+	[CUSTOM_BLOCK_TYPE_ID]: createDefaultCustomBlock,
+	[VANE_SHEAR_TEST_BLOCK_TYPE_ID]: createDefaultVaneShearTestBlock,
+	[FALLING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID]: createDefaultFallingHeadPermeabilityTestBlock,
+	[RISING_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID]: createDefaultRisingHeadPermeabilityTestBlock,
+	[CONSTANT_HEAD_PERMEABILITY_TEST_BLOCK_TYPE_ID]: createDefaultConstantHeadPermeabilityTestBlock,
+	[LUGEON_TEST_BLOCK_TYPE_ID]: createDefaultLugeonTestBlock,
+	[PRESSUREMETER_TEST_BLOCK_TYPE_ID]: createDefaultPressuremeterTestBlock,
+};
+
+/** Realistic values so the cells are not all blank defaults. */
+function populate(block: Block): Block {
+	const populated = {
+		...block,
+		id: `b-${block.blockTypeId}`,
+		createdAt: EPOCH,
+		topDepthInMetres: 2.0,
+		baseDepthInMetres: 3.5,
+		dayWorkStatus: {
+			...block.dayWorkStatus,
+			dayWorkStatusType: DAY_START_AND_END_WORK_TYPE,
+			startDate: EPOCH,
+			startTime: EPOCH,
+			endDate: EPOCH,
+			endTime: EPOCH,
+			startWaterLevelInMetres: 1.25,
+			endWaterLevelInMetres: 2.5,
+		},
+	} as Block;
+
+	const overrides: Record<string, unknown> = {
+		description: 'Firm silty CLAY',
+		soilDescription: 'Firm silty CLAY',
+		recoveryInPercentage: 87.5,
+		sampleIndex: 3,
+		sptIndex: 3,
+		disturbedSampleIndex: 3,
+		haSampleIndex: 3,
+		rockSampleIndex: 3,
+		permeabilityTestIndex: 1,
+		lugeonTestIndex: 1,
+		vaneShearTestIndex: 1,
+		pressuremeterTestIndex: 1,
+		seatingIncBlows1: 12,
+		seatingIncBlows2: 13,
+		seatingIncPen1: 75,
+		seatingIncPen2: 75,
+		mainIncBlows1: 14,
+		mainIncBlows2: 15,
+		mainIncBlows3: 10,
+		mainIncBlows4: 11,
+		mainIncPen1: 75,
+		mainIncPen2: 75,
+		mainIncPen3: 75,
+		mainIncPen4: 75,
+		sptNValue: 50,
+		totalMainPenetrationInMillimetres: 240,
+		coreRunInMetres: 1.5,
+		coreRecoveryInPercentage: 92,
+		rqdInPercentage: 45,
+		remarks: 'Terminated on refusal',
+	};
+	for (const [key, value] of Object.entries(overrides)) {
+		if (key in populated) {
+			(populated as Record<string, unknown>)[key] = value;
+		}
+	}
+	return populated;
+}
+
+function describe(content: CellContent): string {
+	switch (content.kind) {
+		case 'empty':
+			return '·';
+		case 'lines':
+			return content.lines.join(' / ');
+		case 'rich':
+			return content.lines
+				.map((line) => line.runs.map((r) => (r.fontId === 'italic' ? `*${r.text}*` : r.text)).join(''))
+				.join('⏎');
+		case 'divided':
+			return `${content.top}${content.bottom === '' ? '' : `‾${content.bottom}`}`;
+		case 'pinned':
+			return `↑${content.top.join(' ')} ↓${content.bottom.join(' ')}`;
+	}
+}
+
+const HEADINGS = ['DATE/TIME', 'SAMPLE', 'DEPTH', 'WL', 'DESCRIPTION', 'S1', 'S2', 'M1', 'M2', 'M3', 'M4', 'SPT(N)', 'R/r', 'SCALE'];
+
+let failures = 0;
+
+function report(label: string, row: ReturnType<typeof buildBodyRow>): void {
+	try {
+		assertRowOccupancy(row);
+	} catch (error) {
+		failures += 1;
+		console.log(`${label}: OCCUPANCY FAILURE — ${(error as Error).message}`);
+	}
+
+	const byColumn = new Array<string>(COLUMN_COUNT).fill('');
+	for (const cell of row.cells) {
+		byColumn[cell.column] = describe(cell.content) + (cell.colSpan > 1 ? ` (span ${cell.colSpan})` : '');
+	}
+
+	console.log(`\n${label}  ${row.mergedSptColumns ? '[merged SPT columns]' : ''}`);
+	for (let i = 0; i < COLUMN_COUNT; i++) {
+		if (byColumn[i] === '' || byColumn[i] === '·') continue;
+		console.log(`   ${String(i).padStart(2)} ${HEADINGS[i].padEnd(12)} ${byColumn[i]}`);
+	}
+}
+
+for (const blockTypeId of BLOCK_TYPE_ID_LIST) {
+	const block = populate(FACTORIES[blockTypeId]());
+	report(
+		`type ${String(blockTypeId).padStart(2)}`,
+		buildBodyRow(partOf(block, 0, true), BASE_FONT_SIZE_PT, 50),
+	);
+}
+
+/**
+ * The three faces of a block split across a page break, on the type that shows the most.
+ *
+ * The occupancy assertion is the point: a continuation blanks eleven of its columns, and
+ * blanking them by *omitting* the cells rather than emitting empty ones would take the row's
+ * vertical rules with them. The printed cells are the second point — part 0 keeps the sample
+ * label and blow counts, the last part keeps the end-of-shift pin, and the middle keeps
+ * neither.
+ */
+const splitBlock = populate(FACTORIES[SPT_BLOCK_TYPE_ID]());
+const SPLIT_PARTS: { label: string; partIndex: number; isFinalPart: boolean }[] = [
+	{ label: 'split part 0 (continues)', partIndex: 0, isFinalPart: false },
+	{ label: 'split part 1 (continues)', partIndex: 1, isFinalPart: false },
+	{ label: 'split part 2 (last)', partIndex: 2, isFinalPart: true },
+];
+for (const { label, partIndex, isFinalPart } of SPLIT_PARTS) {
+	report(
+		label,
+		buildBodyRow(partOf(splitBlock, partIndex, isFinalPart), BASE_FONT_SIZE_PT, 50),
+	);
+}
+
+/**
+ * The main-drive refusal limit is per project: 50 usually, 100 for some clients. The same
+ * blow counts must print differently under each — a penetration under the increment that
+ * reached the limit, and under N, and nowhere else.
+ */
+const refusalAt50 = {
+	...populate(FACTORIES[SPT_BLOCK_TYPE_ID]()),
+	mainIncBlows1: 30, mainIncPen1: 75,
+	mainIncBlows2: 20, mainIncPen2: 40,
+	mainIncBlows3: null, mainIncPen3: null,
+	mainIncBlows4: null, mainIncPen4: null,
+	sptNValue: 50, totalMainPenetrationInMillimetres: 115,
+} as Block;
+const refusalAt100 = {
+	...populate(FACTORIES[SPT_BLOCK_TYPE_ID]()),
+	mainIncBlows1: 30, mainIncPen1: 75,
+	mainIncBlows2: 40, mainIncPen2: 75,
+	mainIncBlows3: 30, mainIncPen3: 20,
+	mainIncBlows4: null, mainIncPen4: null,
+	sptNValue: 100, totalMainPenetrationInMillimetres: 170,
+} as Block;
+for (const [label, block, limit] of [
+	['N=50 refusal, limit 50 (penetration under m2 and N)', refusalAt50, 50],
+	['N=50, limit 100 (not a refusal: no penetration)', { ...refusalAt50, mainIncPen2: 75, mainIncBlows3: 0, mainIncPen3: 75, mainIncBlows4: 0, mainIncPen4: 75, totalMainPenetrationInMillimetres: 300 } as Block, 100],
+	['N=100 refusal, limit 100 (penetration under m3 and N)', refusalAt100, 100],
+] as const) {
+	report(label, buildBodyRow(partOf(block, 0, true, limit), BASE_FONT_SIZE_PT, limit));
+}
+
+console.log(
+	`\n${failures === 0 ? `All ${BLOCK_TYPE_ID_LIST.length} block types and 3 split parts tile 14 columns exactly.` : `${failures} row(s) FAILED occupancy.`}`,
+);

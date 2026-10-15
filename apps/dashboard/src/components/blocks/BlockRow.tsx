@@ -98,7 +98,7 @@ type BlockRowProps = {
    * so can span two blocks that happen to share one.
    */
   photoFilenames: Map<string, string>;
-  /** The project's SPT main-drive refusal limit, from `getMainDriveRefusalBlows`. */
+  /** The project's SPT main-drive refusal limit, `projects.spt_n_max`. */
   mainDriveRefusalBlows: MainDriveRefusalBlows;
 };
 

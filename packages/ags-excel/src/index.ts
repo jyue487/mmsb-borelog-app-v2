@@ -1,4 +1,4 @@
-export { agsTemplateFileName } from './agsTemplate';
+export { AGS_TEMPLATE_FILE_NAME } from './agsTemplate';
 export { fillAgsWorkbook } from './fillAgsWorkbook';
 export type { AgsBorehole, AgsExcelInput, AgsProject } from './model/input';
 export type {

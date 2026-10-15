@@ -1,4 +1,8 @@
-import type { Project } from "@mmsb/core";
+import {
+  SPT_N_MAX_OPTIONS,
+  type MainDriveRefusalBlows,
+  type Project,
+} from "@mmsb/core";
 import { X } from "lucide-react";
 import { useEffect, useState, type SubmitEvent } from "react";
 
@@ -23,6 +27,9 @@ export default function EditProjectModal({
   const [location, setLocation] = useState(project.location ?? "");
   const [client, setClient] = useState(project.client ?? "");
   const [consultant, setConsultant] = useState(project.consultant ?? "");
+  const [sptNMax, setSptNMax] = useState<MainDriveRefusalBlows>(
+    project.sptNMax,
+  );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,6 +59,7 @@ export default function EditProjectModal({
           location: location.trim(),
           client: client.trim(),
           consultant: consultant.trim(),
+          spt_n_max: sptNMax,
           updated_at: new Date().toISOString(),
           updated_by: userId,
         })
@@ -263,6 +271,43 @@ export default function EditProjectModal({
               disabled={isSubmitting}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="edit-project-spt-n-max"
+              className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+            >
+              SPT-N Max
+            </label>
+
+            <select
+              id="edit-project-spt-n-max"
+              name="sptNMax"
+              value={sptNMax}
+              onChange={(event) => {
+                setSptNMax(
+                  Number(event.target.value) as MainDriveRefusalBlows,
+                );
+
+                if (submitError) {
+                  setSubmitError(null);
+                }
+              }}
+              disabled={isSubmitting}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            >
+              {SPT_N_MAX_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+
+            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              The SPT main-drive refusal limit. 50 for almost every project;
+              100 only where the client specifies it.
+            </p>
           </div>
 
           {submitError && (

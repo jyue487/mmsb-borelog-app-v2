@@ -2,8 +2,9 @@
 
     python3 packages/ags-excel/scripts/integrity.py [workbook.xlsx] [template.xlsx]
 
-Pass the template the workbook was filled from — `template-SPT100.xlsx` for a 100-blow
-project — since that is what "unchanged" has to be measured against.
+Pass the template the workbook was filled from, since that is what "unchanged" has to be
+measured against. It defaults to `template_v2.xlsx`, the one the exporter uses for every
+project.
 
 The template's worksheet formulas are the program that turns typed input into the AGS
 output the report reads, so the guarantee this package sells is "everything not explicitly
@@ -15,7 +16,7 @@ import hashlib
 import sys
 import zipfile
 
-TEMPLATE = 'apps/dashboard/public/ags/template.xlsx'
+TEMPLATE = 'apps/dashboard/public/ags/template_v2.xlsx'
 DEFAULT = 'packages/ags-excel/out/fixture.xlsx'
 
 # workbook.xml gains fullCalcOnLoad; the rest are the sheets we fill.

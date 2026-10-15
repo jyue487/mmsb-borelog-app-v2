@@ -1,3 +1,5 @@
+import type { MainDriveRefusalBlows } from '../constants/sptStandard';
+
 export interface Project {
   id: string; // must
   code: string; // must
@@ -9,6 +11,8 @@ export interface Project {
   // significant and must be preserved verbatim. Web-only for now — the mobile
   // copy of this interface deliberately omits it (see apps/mobile/src/interfaces/Project.ts).
   terminationCriteria: string;
+  // SPT main-drive refusal limit, `projects.spt_n_max`. See constants/sptStandard.ts.
+  sptNMax: MainDriveRefusalBlows;
 }
 
 export type AddProjectParams = Omit<Project, 'id'>;

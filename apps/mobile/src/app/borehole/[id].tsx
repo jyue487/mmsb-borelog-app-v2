@@ -100,7 +100,7 @@ export default function BoreholeScreen() {
         )
       }
       <Button
-        title={isSharingPdf ? 'Generating PDF...' : 'Share PDF'}
+        title={isSharingPdf ? 'Generating fieldlog...' : 'Share fieldlog'}
         disabled={isSharingPdf || blocks.length === 0}
         onPress={async () => {
           setIsSharingPdf(true);
@@ -122,7 +122,7 @@ export default function BoreholeScreen() {
   );
 
   return (
-    <ProjectConfigProvider projectCode={project.code}>
+    <ProjectConfigProvider sptNMax={project.sptNMax}>
       <Stack.Screen
         options={{
           title: `${(projectTitle.length < 10) ? projectTitle : projectTitle.slice(0, 10)}... / ${boreholeName.toUpperCase()}`,

@@ -313,7 +313,7 @@ in-memory sort is what the numbering depends on.
 `BOREHOLE_COLUMNS` in `apps/dashboard/src/supabase/boreholeRow.ts` selected `verifier_sign_date` and
 `mapBoreholeRow` right below it assigned `null` regardless.
 
-This was filed as latent and was not: `packages/report/src/build/buildFooter.ts:167` draws the
+This was filed as latent and was not: `packages/fieldlog/src/build/buildFooter.ts:167` draws the
 verifier date, and web has generated PDFs since 2026-08-29 — so the same borehole exported from the
 dashboard and from the field app disagreed. What hid it is that nothing has ever written the column
 (all 17 rows are null as of 2026-09-02), so the two outputs happened to match.
@@ -391,7 +391,7 @@ of that pair would be inconsistent — both belong in one later pass.
 
 Three places decided independently whether a sample gets a number or a `*`:
 `reindexSptBlocks.ts` withheld the index when `recoveryLengthInMillimetres === 0`;
-`SptBlockComponent.tsx` and `packages/report`'s `sampleNumber()` printed `*` when
+`SptBlockComponent.tsx` and `packages/fieldlog`'s `sampleNumber()` printed `*` when
 `recoveryInPercentage === 0`; and `apps/dashboard`'s `blockGutterSpec.ts` printed `*` when the index was
 negative. The first two normally agree because the percentage is *derived* from the length — but
 through `.toFixed(1)` (`checkAndReturnSptBlock.ts`), so a nonzero length under 0.05 % of penetration
@@ -404,7 +404,7 @@ makes the reindexer the single decision point, and it generalises: UD/MZ/PS and 
 `recoveryInPercentage` / `coreRecoveryInPercentage` rules without a special case, because their
 reindexers encode them.
 
-Changed: `sampleNumber()` in `packages/report/src/rows/blockRowSpec.ts` (now takes the index alone,
+Changed: `sampleNumber()` in `packages/fieldlog/src/rows/blockRowSpec.ts` (now takes the index alone,
 covering SPT, UD/MZ/PS and coring) and the five `src/components/blockComponents/*BlockComponent.tsx`
 that printed the star.
 
@@ -475,7 +475,7 @@ pipeline. It is exported now so mobile stopped carrying a second copy; delete it
 
 *Can the mobile app still be built through EAS with the domain living in a workspace package?* **Yes,
 and it already was** — `@mmsb/core`'s raw TypeScript has been in the device bundle since the
-`@mmsb/report` migration, because report imports runtime constants (not just types) from core in five
+`@mmsb/fieldlog` migration, because report imports runtime constants (not just types) from core in five
 files on the live `sharePdf` path. Direct imports only add a second edge to a node already in the
 graph. Verified with a full `npx expo export --platform android`: 1,895 modules, bundled clean.
 
@@ -492,7 +492,7 @@ Three traps, all of which fail at your desk rather than on EAS if you run the pr
    to true) *and* in tsc (`resolvePackageJsonExports`, via `expo/tsconfig.base`). Anything mobile
    needs must be in `src/index.ts`.
 2. **Do not set `resolver.disableHierarchicalLookup`.** It would break `pdf-lib` resolving from
-   `packages/report/node_modules`; the comment in `metro.config.js` says so.
+   `packages/fieldlog/node_modules`; the comment in `metro.config.js` says so.
 3. **Do not point core's `main` at `dist/`.** It would never reach the EAS builder.
 
 Pre-flight, in order: `pnpm --filter apps/mobile check-types`, then
@@ -508,7 +508,7 @@ Core's own tsconfig inherits nothing and would not have caught either.
 
 `apps/mobile/src/utils/pdf/` still contains the pre-2026-08 HTML + `expo-print` renderer — 29
 `render*ToHtml.ts` files plus the two platform generators and `generatePdfPages.ts` — entered via
-`sharePdfLegacyHtml.ts`. Nothing references it; it is kept only as a fallback until `@mmsb/report`
+`sharePdfLegacyHtml.ts`. Nothing references it; it is kept only as a fallback until `@mmsb/fieldlog`
 has been validated against real boreholes on real devices.
 
 Deleting it is ~2,000 lines and also retires `expo-print` and `packages/core/src/constants/textSize.ts`
@@ -531,7 +531,7 @@ gneiss 814, shale 817, others 999), and every soil code checks out against real 
 `sandy` -> 303, `SAND` + `clayey` -> 402, and so on.
 
 This went unnoticed because until the Excel exporter nothing *read* these codes: the input forms
-write `soilCode`/`rockCode`, the deserializers revive them, and `packages/report` never touches
+write `soilCode`/`rockCode`, the deserializers revive them, and `packages/fieldlog` never touches
 them. `@mmsb/ags-excel` is their first consumer, and it writes them into `GEOL_LEG`, which is what
 selects each stratum's hatch image. So every cored borehole currently exports a legend code with no
 image behind it.
@@ -636,7 +636,7 @@ the precondition for deleting the ~2,000-line legacy pipeline. It would have rep
 between two identical reports, which is the worst kind of wrong answer.
 
 *Fixed 2026-09-02.* `renderReportDoc` now sets `CreationDate` and `ModDate` to a fixed
-`2000-01-01T00:00:00Z`, and sets `Producer`/`Creator` to `@mmsb/report` so the claim about the
+`2000-01-01T00:00:00Z`, and sets `Producer`/`Creator` to `@mmsb/fieldlog` so the claim about the
 producer is true as well. The date is arbitrary and nothing reads it — a borehole log's own dates are
 drawn on the page. Verified across all twelve fixtures: each renders the same hash on every run, and
 twelve different hashes, so it is stable rather than constant.
@@ -799,7 +799,7 @@ description was shrunk and clipped with a `descriptionClipped` warning, every ot
 label, depths, WL, blow counts, N, R/r, date/time — was drawn at full size straight over the rule
 and the row below it. That is what a photographed report showed.
 
-Fixed by adding a second vertical layer (`packages/report/src/layout/flowContent.ts`): depth
+Fixed by adding a second vertical layer (`packages/fieldlog/src/layout/flowContent.ts`): depth
 intervals are still placed in ticks by `paginate()`, but each row's *contents* are placed in points,
 a row is made as tall as its cells need (`rows/rowMetrics.ts`), and the rows below are pushed down
 until a block with room to spare absorbs the push. A pushed row is entered through a three-segment
@@ -840,7 +840,7 @@ compresses the 7 pt slots to 9.18 pt, and `HEADER_HEIGHT_PT` cannot grow without
 - **Editing blocks on web.** The log is read-only. This is also the point at which the dashboard would
   need write access to `blocks`, which is a product decision rather than plumbing.
 - ~~**PDF generation on web.**~~ *Done 2026-08-29.* The tick arithmetic moved out of the mobile
-  generator into `packages/report`, which is platform-free, so `apps/dashboard` now generates the identical
+  generator into `packages/fieldlog`, which is platform-free, so `apps/dashboard` now generates the identical
   report. `scaleTickIndexWrapper` is gone — `paginate()` is pure. The renderer is behind a dynamic
   `import()` because pdf-lib + fontkit are ~1.1 MB.
 - ~~**Block photos on web.**~~ *Done 2026-08-30.* The backend half was already in place — the two

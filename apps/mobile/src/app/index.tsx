@@ -1,4 +1,5 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons/static";
+import { parseSptNMax } from "@mmsb/core";
 import { Stack, router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -80,6 +81,7 @@ export default function ProjectListScreen() {
       location: row.location,
       client: row.client,
       consultant: row.consultant,
+      sptNMax: parseSptNMax(row.spt_n_max),
     }));
     setProjects(projects);
   };

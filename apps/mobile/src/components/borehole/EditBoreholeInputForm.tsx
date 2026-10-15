@@ -155,7 +155,7 @@ export function EditBoreholeInputForm ({
             // Only a signature that actually CHANGED gets today's date. The state above is
             // seeded from oldBorehole, so testing `length === 0` alone would re-stamp the
             // sign-off date every time someone edited an unrelated field — and that date is
-            // printed on the report (packages/report/src/build/buildFooter.ts). The fallback
+            // printed on the report (packages/fieldlog/src/build/buildFooter.ts). The fallback
             // covers legacy rows that carry a signature but no date.
             checkerSignDate:
               checkerSignatureBase64.length === 0

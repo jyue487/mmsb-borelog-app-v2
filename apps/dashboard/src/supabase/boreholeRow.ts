@@ -60,7 +60,7 @@ export function mapBoreholeRow(row: BoreholeRow): Borehole {
     checkerSignDate: toDate(row.checker_sign_date),
     verifierName: row.verifier_name ?? '',
     verifierSignatureBase64: row.verifier_signature_base64 ?? '',
-    // The report's footer draws this (packages/report/src/build/buildFooter.ts), so a
+    // The report's footer draws this (packages/fieldlog/src/build/buildFooter.ts), so a
     // web-generated PDF used to print a blank verifier date where the same borehole
     // exported from mobile printed it. Mobile maps the column the same way.
     verifierSignDate: toDate(row.verifier_sign_date),

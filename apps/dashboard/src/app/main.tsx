@@ -2,9 +2,10 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { AuthContextProvider } from '../context/auth.tsx';
-import { canViewMembers } from '../data/memberRoles.ts';
+import { canPrintBorelog, canViewMembers } from '../data/memberRoles.ts';
 import AppLayout from './AppLayout.tsx';
 import LoginPage from './auth/LoginPage.tsx';
+import BorelogPage from './BorelogPage.tsx';
 import BoreholePage from './BoreholePage.tsx';
 import './index.css';
 import MembersPage from './MembersPage.tsx';
@@ -33,6 +34,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Route path="/projects" element={<ProjectListPage />} />
               <Route path="/projects/:projectCode" element={<ProjectPage />} />
               <Route path="/projects/:projectCode/boreholes/:boreholeName" element={<BoreholePage />} />
+              <Route element={<RequireRole allow={canPrintBorelog} />}>
+                <Route path="/borelog" element={<BorelogPage />} />
+              </Route>
               <Route element={<RequireRole allow={canViewMembers} />}>
                 <Route path="/members" element={<MembersPage />} />
               </Route>

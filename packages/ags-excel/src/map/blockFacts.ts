@@ -31,7 +31,7 @@ import {
 /**
  * Per-block-type facts the AGS sheets need, as exhaustive `Record<BlockTypeId, …>` tables.
  *
- * Same convention as `BLOCK_ROW_SPECS` in `@mmsb/report`: a 19th block type becomes a
+ * Same convention as `BLOCK_ROW_SPECS` in `@mmsb/fieldlog`: a 19th block type becomes a
  * compile error here rather than a silently missing row.
  */
 
@@ -235,7 +235,7 @@ export function sampleOf(block: Block): SampleFacts | null {
  * A test is not a sample, and AGS has no `SAMP_TYPE` code for one — but this sheet is where
  * the consumer reads the labels it draws in the log's sample column, so the test belongs
  * here for the same reason the PDF prints `FHPT1` in that column
- * (`packages/report/src/rows/blockRowSpec.ts`). Type is left blank, as it is for hand-auger
+ * (`packages/fieldlog/src/rows/blockRowSpec.ts`). Type is left blank, as it is for hand-auger
  * samples, and there is nothing to report as recovery.
  */
 function insituTest(symbol: string, index: number, baseDepthInMetres: number): SampleFacts {

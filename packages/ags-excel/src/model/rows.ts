@@ -9,6 +9,8 @@
  * source for it, or because a human leaves it blank too.
  */
 
+import type { MainDriveRefusalBlows } from '@mmsb/core';
+
 export interface HoleRow {
 	readonly holeId: string;
 	/** `HOLE_TYPE` — an AGS code such as `RC`. Not derivable from free-text `typeOfBoring`. */
@@ -107,6 +109,8 @@ export interface WorkbookRows {
 	readonly projectClient: string;
 	readonly projectLocation: string;
 	readonly projectEngineer: string;
+	/** `D13`, which the SPT sheet's refusal formulas (AB and AL) test against. */
+	readonly projectSptNMax: MainDriveRefusalBlows;
 	readonly holes: readonly HoleRow[];
 	readonly progress: readonly ProgressRow[];
 	readonly spt: readonly SptRow[];
