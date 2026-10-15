@@ -15,7 +15,8 @@ export interface ProjectInformation {
 	/**
 	 * `D13`, SPT-N Max: the SPT main-drive limit the graph's axis runs to. Not something the
 	 * Python program read — it drew a fixed 0–50 axis. Null when the cell is blank, as it is on
-	 * every workbook filled from a template older than `template_v2.xlsx`.
+	 * every workbook filled from a template older than `template_v2.xlsx`; the renderer then
+	 * draws to `DEFAULT_SPT_N_MAX`, 50.
 	 */
 	sptNMax: number | null;
 }

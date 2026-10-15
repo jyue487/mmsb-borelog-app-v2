@@ -16,6 +16,8 @@ type LoadedWorkbook = {
   /** The file name without `.xlsx`, which every PDF in the zip is named after. */
   stem: string;
   workbook: BorelogWorkbook;
+  /** What a blank SPT-N Max (D13) is drawn as. */
+  defaultSptNMax: number;
 };
 
 type PrintSummary = {
@@ -66,7 +68,9 @@ export default function BorelogPage() {
     setSelectedHoleIds(new Set());
 
     try {
-      const { parseBorelogWorkbook } = await import('@mmsb/borelog');
+      const { DEFAULT_SPT_N_MAX, parseBorelogWorkbook } = await import(
+        '@mmsb/borelog'
+      );
       const workbook = parseBorelogWorkbook(
         new Uint8Array(await file.arrayBuffer()),
       );
@@ -75,7 +79,12 @@ export default function BorelogPage() {
         throw new Error('The Holes - AGS sheet lists no boreholes.');
       }
 
-      setLoaded({ fileName: file.name, stem: stemOf(file.name), workbook });
+      setLoaded({
+        fileName: file.name,
+        stem: stemOf(file.name),
+        workbook,
+        defaultSptNMax: DEFAULT_SPT_N_MAX,
+      });
       setSelectedHoleIds(new Set(workbook.boreholes.map((hole) => hole.id)));
     } catch (error) {
       console.error('Could not read the workbook:', error);
@@ -258,19 +267,13 @@ export default function BorelogPage() {
                   SPT-N Max
                 </dt>
                 <dd className="mt-1 font-semibold">
-                  {sptNMax ?? 'Not specified'}
+                  {sptNMax ??
+                    `${loaded.defaultSptNMax} (cell D13 is blank, so assumed)`}
                 </dd>
               </div>
             </dl>
           )}
 
-          {loaded && sptNMax === null && (
-            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-              This workbook has no SPT-N Max (Project - AGS, cell D13), so every
-              borelog in it will fail. Fill D13 in with 50 or 100, or export the
-              workbook again from the project page.
-            </p>
-          )}
         </section>
 
         {loaded && (

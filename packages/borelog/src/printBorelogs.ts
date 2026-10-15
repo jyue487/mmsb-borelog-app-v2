@@ -17,7 +17,7 @@ export type LoadBorelogAssets = (legendCodes: readonly string[]) => Promise<Bore
 /**
  * Draws the borelog of each named borehole in a workbook, in the order given.
  *
- * A borehole that fails — no progress rows, no SPT-N Max, a sample/SPT mismatch — becomes an
+ * A borehole that fails — no progress rows, a sample/SPT mismatch — becomes an
  * `error` entry instead of stopping the others, which is what the Python program's
  * `<name>.error.txt` did per workbook.
  */

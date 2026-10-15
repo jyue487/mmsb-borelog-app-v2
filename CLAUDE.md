@@ -448,9 +448,9 @@ deliberate, separate changes, and expect `compare` to report them.
 One has been fixed: the SPT graph's axis runs to **SPT-N Max**, read from `'Project - AGS'!D13`
 (added by `template_v2.xlsx`), where Python fixed it at 50. It keeps 50 minor ticks
 and a labelled major one every 10th, so the labels read 10…40 or 20…80. A blank D13 — every
-workbook from an older template — **refuses to print** (`requireSptNMax` in `renderBorelog.ts`)
-rather than guess. `render --python`, which `compare` uses, substitutes Python's 50, and at 50
-the output is byte-identical to before, so `compare` still expects the numbers below.
+workbook from an older template — is **drawn to 50**, Python's fixed axis (`resolveSptNMax` in
+`renderBorelog.ts`); a filled one that is not a multiple of 50 refuses to print. At 50 the
+output is byte-identical to before, so `compare` still expects the numbers below.
 
 Three pieces carry the fidelity, and each reproduces a Python library rather than approximating it:
 

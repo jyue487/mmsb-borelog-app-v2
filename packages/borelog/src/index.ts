@@ -9,7 +9,13 @@ export type {
 	SptInformation,
 } from './model';
 export { parseBorelogWorkbook, type BorelogWorkbook } from './parse/parseBorelogWorkbook';
-export { FALLBACK_LEGEND_CODE, legendCodesFor, renderBorelog, type BorelogAssets } from './renderBorelog';
+export {
+	DEFAULT_SPT_N_MAX,
+	FALLBACK_LEGEND_CODE,
+	legendCodesFor,
+	renderBorelog,
+	type BorelogAssets,
+} from './renderBorelog';
 export {
 	borelogFileStem,
 	renderBorelogs,

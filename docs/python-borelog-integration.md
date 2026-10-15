@@ -201,5 +201,5 @@ blank final page.
    memory, as a "Download borelog" button next to the fieldlog one on the borehole page.
 5. **Fix the preserved quirks**: logger from Holes `K`, hole type from Holes `C`, SPT pairing by
    depth. ~~SPT graph scaled by SPT-N Max~~ — done: the axis runs to `'Project - AGS'!D13`, and a
-   blank D13 refuses to print.
+   blank D13 is drawn to 50 as before.
 6. **Retire the Python repo** once the port has been used on real projects.

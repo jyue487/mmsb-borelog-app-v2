@@ -32,17 +32,17 @@ export function legendCodesFor(data: BorelogData): string[] {
  */
 const FIXED_TIMESTAMP = new Date(Date.UTC(2000, 0, 1));
 
+/** The SPT graph's axis when D13 is blank: the Python program's fixed 0–50. */
+export const DEFAULT_SPT_N_MAX = 50;
+
 /**
- * SPT-N Max sets the SPT graph's axis, so a borelog is refused rather than drawn against a
- * guessed one: a workbook from a template older than `template_v2.xlsx` has no D13 at all.
- * A multiple of 50 keeps the axis labels whole (they step by a tenth of it every 10 ticks).
+ * SPT-N Max sets the SPT graph's axis. A workbook from a template older than
+ * `template_v2.xlsx` has no D13 at all, and is drawn to 50 as it always was. A filled one must
+ * be a multiple of 50, which keeps the axis labels whole (they step by a tenth of it every 10
+ * ticks).
  */
-function requireSptNMax(sptNMax: number | null): number {
-	if (sptNMax === null) {
-		throw new Error(
-			'SPT-N Max (Project - AGS, cell D13) is empty. Fill it in with 50 or 100, or re-export the workbook from the dashboard.',
-		);
-	}
+function resolveSptNMax(sptNMax: number | null): number {
+	if (sptNMax === null) return DEFAULT_SPT_N_MAX;
 	if (!(sptNMax > 0 && sptNMax % 50 === 0)) {
 		throw new Error(`SPT-N Max (Project - AGS, cell D13) is ${sptNMax}; it must be a multiple of 50, such as 50 or 100.`);
 	}
@@ -53,7 +53,7 @@ function requireSptNMax(sptNMax: number | null): number {
 export async function renderBorelog(data: BorelogData, assets: BorelogAssets): Promise<Uint8Array> {
 	if (data.progress.length === 0) throw new Error(`Borehole ${data.borehole.id} has no progress rows, so its depth is unknown.`);
 	if (data.geology.length === 0) throw new Error(`Borehole ${data.borehole.id} has no geology rows.`);
-	const sptNMax = requireSptNMax(data.project.sptNMax);
+	const sptNMax = resolveSptNMax(data.project.sptNMax);
 
 	const doc = await PDFDocument.create();
 	doc.setCreationDate(FIXED_TIMESTAMP);
